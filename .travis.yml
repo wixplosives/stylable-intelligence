@@ -1,0 +1,20 @@
+language: node_js
+
+node_js:
+  - "7"
+  - "6"
+os:
+  - linux
+
+addons:
+  firefox: "latest"
+
+before_install: yarn global add greenkeeper-lockfile@1
+
+before_script:
+  - greenkeeper-lockfile-update ;
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CHROME_BIN=chromium-browser ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export DISPLAY=:99.0; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sh -e /etc/init.d/xvfb start; fi
+
+after_script: greenkeeper-lockfile-upload
