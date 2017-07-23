@@ -3,10 +3,10 @@ import StylableDotCompletionProvider,{Completion,snippet} from '../src/provider'
 import { workspace, languages, window, commands, ExtensionContext, Disposable, CompletionItemProvider ,TextDocument,Position,CancellationToken,CompletionItem,CompletionItemKind, Range} from 'vscode';
 import { expect } from "chai";
 
-function assertCompletions(actualCompletions:Completion[],expectedCompletions:Partial<Completion>[]){
+function assertCompletions(actualCompletions:Completion[],expectedCompletions:Partial<Completion>[],prefix:string=''){
     expectedCompletions.forEach(expected => {
         const actual = actualCompletions.find((comp)=>comp.label===expected.label);
-        expect(actual,'completion not found: '+expected.label+' ').to.not.be.equal(undefined);
+        expect(actual,prefix+'completion not found: '+expected.label+' ').to.not.be.equal(undefined);
         if(actual){
              for(var field in expected){
                 let actualVal:any = (actual as any)[field];
@@ -20,23 +20,48 @@ function assertCompletions(actualCompletions:Completion[],expectedCompletions:Pa
     });
 }
 
-function assertNoCompletions(actualCompletions:Completion[],nonCompletions:Partial<Completion>[]){
+function assertNoCompletions(actualCompletions:Completion[],nonCompletions:Partial<Completion>[],prefix:string=''){
     nonCompletions.forEach(notAllowed => {
         const actual = actualCompletions.find((comp)=>comp.label===notAllowed.label);
-        expect(actual,'unallowed completion found: '+notAllowed.label+' ').to.be.equal(undefined);
+        expect(actual,prefix+'unallowed completion found: '+notAllowed.label+' ').to.be.equal(undefined);
 
     });
 }
 
 const startPos = { line:0, character:0};
-function completions(src:string,extrafiles:{[path:string]:string} = {}){
-    const provider = new StylableDotCompletionProvider();
+const provider = new StylableDotCompletionProvider();
+interface assertable{
+    assertCompletions:(expectedCompletions:Partial<Completion>[])=>void;
+    assertNoCompletions:(nonCompletions:Partial<Completion>[])=>void
+}
+function completions(src:string,extrafiles:{[path:string]:string} = {}):Thenable<assertable>{
+    const singleLineSrc = src.split('\n').join('');
+    let normalCompletions:Completion[];
+    return completionsIntenal(src,extrafiles)
+    .then((completions)=>{ normalCompletions = completions; })
+    .then(()=>{return completionsIntenal(singleLineSrc,extrafiles)})
+    .then((completions)=>{
+        return {
+            assertNoCompletions:(expectedNoCompletions:Partial<Completion>[])=>{
+                assertNoCompletions(normalCompletions,expectedNoCompletions);
+                assertNoCompletions(completions,expectedNoCompletions,'single line: ');
+            },
+            assertCompletions:(expectedNoCompletions:Partial<Completion>[])=>{
+                assertCompletions(normalCompletions,expectedNoCompletions);
+                assertCompletions(completions,expectedNoCompletions,'single line: ');
+            }
+        }
+
+    })
+}
+function completionsIntenal(src:string,extrafiles:{[path:string]:string} = {}):Thenable<Completion[]>{
     const caretPos = src.indexOf('|');
 
     const linesTillCaret = src.substr(0,caretPos).split('\n');
     const character = linesTillCaret[linesTillCaret.length-1].length;
 
     src = src.replace('|',"");
+
 
     return provider.provideCompletionItemsFromSrc(src,{
         line:linesTillCaret.length-1,
@@ -67,15 +92,15 @@ describe('completion unit test',function(){
             .baga{
 
             }
-            `).then((res:Completion[])=>{
-                assertCompletions(res,
+            `).then((asserter)=>{
+                asserter.assertCompletions(
                     [
                         importCompletion,
                         rootCompletion,
                         classCompletion('gaga')
                     ]
                 );
-                assertNoCompletions(res,[
+                asserter.assertNoCompletions([
                      statesDirectiveCompletion,
                     extendsDirectiveCompletion,
                     mixinDirectiveCompletion,
@@ -89,12 +114,12 @@ describe('completion unit test',function(){
             .gaga{
                 color:red;
             }
-            `).then((res:Completion[])=>{
-                assertCompletions(res,[
+            `).then((asserter)=>{
+                asserter.assertCompletions([
                     rootCompletion,
                     classCompletion('gaga')
                 ]);
-                assertNoCompletions(res,[
+                asserter.assertNoCompletions([
                     importCompletion,
                     statesDirectiveCompletion,
                     extendsDirectiveCompletion,
@@ -109,13 +134,13 @@ describe('completion unit test',function(){
             .gaga{
                 color:red;
             }
-            `).then((res:Completion[])=>{
+            `).then((asserter)=>{
 
-                assertCompletions(res,[
+                asserter.assertCompletions([
                     importCompletion
 
                 ]);
-                 assertNoCompletions(res,[
+                 asserter.assertNoCompletions([
                     rootCompletion,
                     classCompletion('gaga'),
                     statesDirectiveCompletion,
@@ -133,9 +158,9 @@ describe('completion unit test',function(){
             .gaga{
                 |
             }
-            `).then((res:Completion[])=>{
+            `).then((asserter)=>{
 
-                assertCompletions(res,[
+                asserter.assertCompletions([
                     statesDirectiveCompletion,
                     extendsDirectiveCompletion,
                     mixinDirectiveCompletion,
@@ -144,6 +169,7 @@ describe('completion unit test',function(){
 
             });
         });
+
         it('should complete -sb-states, -sb-extends, -sb-mixin, -sb-variant inside simple rules after dash',function(){
             return completions(
             `
@@ -152,9 +178,9 @@ describe('completion unit test',function(){
                 color:red;
             }
 
-            `).then((res:Completion[])=>{
+            `).then((asserter)=>{
 
-                assertCompletions(res,[
+                asserter.assertCompletions([
                     statesDirectiveCompletion,
                     extendsDirectiveCompletion,
                     mixinDirectiveCompletion,
@@ -174,9 +200,9 @@ describe('completion unit test',function(){
                 -|
             }
 
-            `).then((res:Completion[])=>{
+            `).then((asserter)=>{
 
-                assertNoCompletions(res,[
+                asserter.assertNoCompletions([
                     statesDirectiveCompletion,
                     extendsDirectiveCompletion,
                     mixinDirectiveCompletion,
@@ -222,11 +248,11 @@ describe('completion unit test',function(){
             ].map((src)=>{
 
                 it('complex rule '+src.slice(0,src.indexOf('{')),function(){
-                    return completions(src).then((res:Completion[])=>{
-                        assertCompletions(res,[
+                    return completions(src).then((asserter)=>{
+                        asserter.assertCompletions([
                             mixinDirectiveCompletion
                         ])
-                        assertNoCompletions(res,[
+                        asserter.assertNoCompletions([
                             statesDirectiveCompletion,
                             extendsDirectiveCompletion,
                             variantDirectiveCompletion
@@ -246,14 +272,14 @@ describe('completion unit test',function(){
                     -|
                 }
 
-                `).then((res:Completion[])=>{
+                `).then((asserter)=>{
 
-                    assertCompletions(res,[
+                    asserter.assertCompletions([
                         importFromDirectiveCompletion,
                         importDefaultDirectiveCompletion,
                         importNamedDirectiveCompletion
                     ]);
-                    assertNoCompletions(res,[
+                    asserter.assertNoCompletions([
                         statesDirectiveCompletion,
                         extendsDirectiveCompletion,
                         variantDirectiveCompletion,
@@ -271,9 +297,9 @@ describe('completion unit test',function(){
                     -sb-named: a, b;
                     -|
                 }
-                `).then((res:Completion[])=>{
+                `).then((asserter)=>{
 
-                    assertNoCompletions(res,[
+                    asserter.assertNoCompletions([
                         importFromDirectiveCompletion,
                         importDefaultDirectiveCompletion,
                         importNamedDirectiveCompletion,
@@ -294,11 +320,11 @@ describe('completion unit test',function(){
                     -sb-states:hello;
                 }
                 .gaga:|
-                `).then((res:Completion[])=>{
-                     assertCompletions(res,[
+                `).then((asserter)=>{
+                    asserter.assertCompletions([
                         stateCompletion('hello')
                     ]);
-                    assertNoCompletions(res,[
+                    asserter.assertNoCompletions([
                         importCompletion
                     ]);
                 });
@@ -316,11 +342,11 @@ describe('completion unit test',function(){
                     -sb-states:cheerio;
                 }
                 .zagzag button.gaga:hover:| .baga
-                `).then((res:Completion[])=>{
-                     assertCompletions(res,[
+                `).then((asserter)=>{
+                    asserter.assertCompletions([
                         stateCompletion('hello')
                     ]);
-                    assertNoCompletions(res,[
+                    asserter.assertNoCompletions([
                         importCompletion,
                         stateCompletion('goodbye'),
                         stateCompletion('cheerio')
@@ -334,8 +360,8 @@ describe('completion unit test',function(){
                     -sb-states:hello;
                 }
                 .zagzag button.gaga:hello:| .baga
-                `).then((res:Completion[])=>{
-                    assertNoCompletions(res,[
+                `).then((asserter)=>{
+                    asserter.assertNoCompletions([
                         importCompletion,
                         stateCompletion('hello')
 
@@ -357,11 +383,11 @@ describe('completion unit test',function(){
                 }
                 `,{
                     'comp.css':``
-                }).then((res:Completion[])=>{
-                     assertCompletions(res,[
+                }).then((asserter)=>{
+                    asserter.assertCompletions([
                         extendsCompletion('Comp')
                     ]);
-                    assertNoCompletions(res,[
+                    asserter.assertNoCompletions([
                         importCompletion,
                         mixinDirectiveCompletion
                  ]);
@@ -380,11 +406,11 @@ describe('completion unit test',function(){
                 }
                 `,{
                     'comp.css':``
-                }).then((res:Completion[])=>{
-                     assertCompletions(res,[
+                }).then((asserter)=>{
+                    asserter.assertCompletions([
                         extendsCompletion('Comp')
                     ]);
-                    assertNoCompletions(res,[
+                    asserter.assertNoCompletions([
                         importCompletion,
                         mixinDirectiveCompletion
                  ]);
@@ -403,8 +429,8 @@ describe('completion unit test',function(){
                 }
                 `,{
                     'comp.css':``
-                }).then((res:Completion[])=>{
-                    assertNoCompletions(res,[
+                }).then((asserter)=>{
+                    asserter.assertNoCompletions([
                         extendsCompletion('Comp'),
                         importCompletion,
                         mixinDirectiveCompletion

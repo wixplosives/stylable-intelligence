@@ -190,7 +190,7 @@ export default class Provider{
         const lastSelector = prevPart && isSelector(prevPart) ? prevPart :
                              lastPart && isSelector(lastPart) ?  lastPart : null
         if(lastSelector){
-            if( lastChar==='-' ||  lastChar===' '){
+            if( lastChar==='-' ||  lastChar===' ' ||  lastChar==='\t' || lastChar=="{"){
                 if(lastSelector.selector === ':import'){
                     completions.push(...getNewCompletions({
                         "-sb-from":fromDirective,
