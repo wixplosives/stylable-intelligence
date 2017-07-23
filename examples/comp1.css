@@ -1,0 +1,27 @@
+:import {
+    -sb-from: "./comp1.css";
+    -sb-default:Gaga;
+}
+.root{
+    -sb-states:hello;
+}
+.root:hello{
+    -sb-mixin:baga;
+}
+
+
+
+.gaga{
+    -sb-extends:
+
+}
+
+
+
+.gaga:baga{
+
+}
+
+.gaga:baga{
+
+}

@@ -3,23 +3,41 @@
   "version": "0.0.1",
   "description": "Extension for vscode",
   "author": "Nadav Abraami (nadav@wix.com)",
+  "publisher": "Nadav Abraami (nadav@wix.com)",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/wixplosives/typescript-boilerplate/issues"
-  },
   "repository": {
     "type": "git",
-    "url": "git@github.com:wix/typescript-boilerplate.git"
+    "url": "git@github.com:wix/stylable-inteligence.git"
   },
-  "files":["dist/src"],
-  "testGlob": "./dist/test/**/*.spec.js?(x)",
-  "homepage": "https://github.com/wix/typescript-boilerplate#readme",
-  "keywords": ["typescript", "tdd"],
+  "bugs": {
+    "url": "https://github.com/wixplosives/stylable-inteligence/issues"
+  },
+  "engines": {
+    "vscode": "^1.15.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:css"
+  ],
   "main": "dist/src/index.js",
+  "files": [
+    "dist/src"
+  ],
+  "testGlob": "./dist/test/**/*.spec.js?(x)",
+  "homepage": "https://github.com/wix/stylable-inteligence#readme",
+  "keywords": [
+    "typescript",
+    "tdd"
+  ],
   "browser": "dist/src/index.js",
   "scripts": {
+    "vscode:prepublish": "tsc -p ./",
     "build": "tsc -d",
     "bundle": "webpack --progress",
+    "compile": "tsc -watch -d",
+    "postinstall": "node ./node_modules/vscode/bin/install",
     "pretest": "rimraf dist && yarn build && yarn bundle",
     "reset": "rimraf node_modules dist && yarn install && yarn test",
     "test": "yarn test:node && yarn test:browser",
@@ -30,6 +48,7 @@
   "devDependencies": {
     "@types/chai": "~4.0.1",
     "@types/mocha": "~2.2.41",
+    "@types/node": "^8.0.13",
     "@types/sinon": "~2.3.1",
     "@types/sinon-chai": "~2.7.28",
     "chai": "~4.1.0",
@@ -48,12 +67,20 @@
     "sinon": "~2.3.5",
     "sinon-chai": "~2.11.0",
     "source-map-support": "~0.4.15",
+    "tslib": "~1.7.1",
     "typescript": "~2.4.1",
-    "tslib":"~1.7.1",
+    "vscode": "1.1.4",
     "webpack": "~3.2.0",
     "webpack-dev-server": "~2.5.0"
   },
   "peerDependencies": {
-    "tslib":"~1.7.1"
+    "tslib": "~1.7.1"
+  },
+  "dependencies": {
+    "@types/lodash": "4.14.71",
+    "lodash": "4.17.4",
+    "postcss": "^6.0.7",
+    "postcss-nested": "^2.0.4",
+    "stylable": "1.0.5"
   }
 }

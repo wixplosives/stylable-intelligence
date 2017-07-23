@@ -3,30 +3,38 @@
  *--------------------------------------------------------*/
 'use strict';
 
-import { workspace, languages, window, commands, ExtensionContext, Disposable } from 'vscode';
-import ContentProvider, { encodeLocation } from './provider';
+
+import { workspace, languages, window, commands, ExtensionContext, Disposable, CompletionItemProvider ,TextDocument,Position,CancellationToken,CompletionItem,CompletionItemKind, Range,SnippetString} from 'vscode';
+import Provider, { Completion,snippet } from './provider';
+
+
+const provider = new Provider()
+export class StylableDotCompletionProvider implements CompletionItemProvider {
+    public provideCompletionItems(
+        document: TextDocument,
+        position: Position,
+        token: CancellationToken | null): Thenable<CompletionItem[]> {
+        const src = document.getText();
+        return provider.provideCompletionItemsFromSrc(src,{line:position.line, character:position.character}).then((res)=>{
+            return res.map((com:Completion)=>{
+                let vsCodeCompletion = new CompletionItem(com.label);
+                vsCodeCompletion.detail = com.detail;
+                if(typeof com.insertText==='string'){
+                    vsCodeCompletion.insertText = com.insertText;
+                }else if(com.insertText){
+                    const a: SnippetString = new SnippetString(com.insertText.source);
+
+                    vsCodeCompletion.insertText = a;
+
+                }
+                vsCodeCompletion.sortText = com.sortText;
+                return vsCodeCompletion;
+            })
+        })
+    }
+
+}
 
 export function activate(context: ExtensionContext) {
-
-	const provider = new ContentProvider();
-
-	// register content provider for scheme `references`
-	// register document link provider for scheme `references`
-	const providerRegistrations = Disposable.from(
-		workspace.registerTextDocumentContentProvider(ContentProvider.scheme, provider),
-		languages.registerDocumentLinkProvider({ scheme: ContentProvider.scheme }, provider)
-	);
-
-	// register command that crafts an uri with the `references` scheme,
-	// open the dynamic document, and shows it in the next editor
-	const commandRegistration = commands.registerTextEditorCommand('editor.printReferences', editor => {
-		const uri = encodeLocation(editor.document.uri, editor.selection.active);
-		return workspace.openTextDocument(uri).then(doc => window.showTextDocument(doc, editor.viewColumn + 1));
-	});
-
-	context.subscriptions.push(
-		provider,
-		commandRegistration,
-		providerRegistrations
-	);
+	context.subscriptions.push(languages.registerCompletionItemProvider('css',new StylableDotCompletionProvider(),'.','-',':'));
 }
