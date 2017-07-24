@@ -18,7 +18,7 @@ export class snippet{
 
 const rootClass = new Completion('.root','','b');
 const importsDirective = new Completion(':import','','a',new snippet('import {\n\t-sb-from: "$1";\n}'));
-const extendsDirective = new Completion('-sb-extends:','','a',new snippet('-sb-extends:$1;'));
+const extendsDirective = new Completion('-sb-type:','','a',new snippet('-sb-type:$1;'));
 const statesDirective = new Completion('-sb-states:','','a',new snippet('-sb-states:$1;'));
 const mixinDirective = new Completion('-sb-mixin:','','a',new snippet('-sb-mixin:$1;'));
 const variantDirective = new Completion('-sb-variant:','','a',new snippet('-sb-variant:true;'));
@@ -140,7 +140,16 @@ function getChunkTargets(selectorChunk:string):string[]{
     }
     return targets;
 }
-        ;debugger;
+
+const lineEndsRegexp = /{|}|;/;
+
+export interface ExtendedResolver extends Resolver{
+    resolveDependencies(stylesheet:Stylesheet):Thenable<void>
+}
+
+function isSpacy(char:string){
+    return char === '' || char === ' ' || char === '\t' || char === '\n';
+}
 
 export default class Provider{
 
@@ -148,19 +157,36 @@ export default class Provider{
      public provideCompletionItemsFromSrc(
         src: string,
         position: Position,
+        filePath:string,
+        resolver:ExtendedResolver
         ): Thenable<Completion[]> {
 
 
-        const completions:Completion[] = [];
 
         let lines = src.split('\n');
         let currentLine = lines[position.line];
-        const trimmedLine = currentLine.trim();
         let fixedSrc = src;
-        if(isIligealLine(currentLine)){
+        if(currentLine.match(lineEndsRegexp)){
+            let currentLocation = 0;
+            let splitLine = currentLine.split(lineEndsRegexp);
+            for(var i=0;i<splitLine.length;i++){
+                currentLocation+= splitLine[i].length + 1;
+                if(currentLocation>=position.character){
+                    currentLine = splitLine[i];
+                    if(isIligealLine(currentLine)){
+                        lines.splice(position.line,1,lines[position.line].substr(currentLocation,currentLine.length));
+                    }
+                    break;
+                }
+            }
+
+        }else if(isIligealLine(currentLine)){
             lines.splice(position.line,1, "");
             fixedSrc = lines.join('\n');
         }
+
+
+
         let ast:PostCss.Root;
         try{
             const res = processor.process(fixedSrc,{
@@ -168,15 +194,32 @@ export default class Provider{
             });
             ast = res.root;
         }catch(error){
-            return Promise.resolve(completions);
+            return Promise.resolve([]);
         }
+
         let stylesheet:Stylesheet|undefined = undefined;
         try{
-             stylesheet = Stylesheet.fromCSS(fixedSrc);
+             stylesheet = Stylesheet.fromCSS(fixedSrc,undefined,filePath);
         }catch(error){
             console.error('stylable transpiling failed');
         }
+        return resolver.resolveDependencies(stylesheet!)
+        .then(()=>{
+            return this.provideCompletionItemsFromAst(src,position,filePath,resolver,ast,stylesheet!,currentLine)
+        });
 
+    }
+    public provideCompletionItemsFromAst(
+        src: string,
+        position: Position,
+        filePath:string,
+        resolver:ExtendedResolver,
+        ast:PostCss.Root,
+        stylesheet:Stylesheet,
+        currentLine:string
+    ): Thenable<Completion[]>   {
+        const completions:Completion[] = [];
+        const trimmedLine = currentLine.trim();
         const position1Based:Position = {
             line:position.line+1,
             character:position.character
@@ -190,7 +233,7 @@ export default class Provider{
         const lastSelector = prevPart && isSelector(prevPart) ? prevPart :
                              lastPart && isSelector(lastPart) ?  lastPart : null
         if(lastSelector){
-            if( lastChar==='-' ||  lastChar===' ' ||  lastChar==='\t' || lastChar=="{"){
+            if( lastChar==='-' ||  isSpacy(lastChar) || lastChar=="{"){
                 if(lastSelector.selector === ':import'){
                     completions.push(...getNewCompletions({
                         "-sb-from":fromDirective,
@@ -203,46 +246,60 @@ export default class Provider{
                         '-sb-mixin':mixinDirective
                     };
                     if(isSimple(lastSelector.selector)){
-                        declarationBlockDirectived["-sb-extends"] = extendsDirective;
+                        declarationBlockDirectived["-sb-type"] = extendsDirective;
                         declarationBlockDirectived["-sb-variant"] = variantDirective;
                         declarationBlockDirectived["-sb-states"] = statesDirective;
                     }
                     completions.push(...getNewCompletions(declarationBlockDirectived, lastSelector));
                 }
-            }else if(stylesheet && trimmedLine.indexOf('-sb-extends:')===0 && lastChar==":" && trimmedLine.split(':').length===2){
+            }else if(stylesheet && trimmedLine.indexOf('-sb-type:')===0 && lastChar==":" && trimmedLine.split(':').length===2){
                 stylesheet.imports.forEach((importJson)=>{
                 if(importJson.from.lastIndexOf('.css')===importJson.from.length-4 && importJson.defaultExport){
                     completions.push(new Completion(importJson.defaultExport,'yours','a',new snippet(' '+importJson.defaultExport+';\n')));
                 }
             });
             }
-        }else{
-            if(currentLine.trim().length<2){
-                if(lastChar===':'||lastChar===" "){
-                    completions.push(importsDirective);
-                }
-                if(lastChar==='.'||lastChar===" "){
-                    completions.push(rootClass);
-                    addExistingClasses(stylesheet,completions);
-                }
-            }else if(lastChar===':' && stylesheet!==undefined){
+        }
+        if(currentLine.trim().length<2){
+            if(lastChar===':'||isSpacy(lastChar)){
+                completions.push(importsDirective);
+            }
+            if(lastChar==='.'|| isSpacy(lastChar)){
+                completions.push(rootClass);
+                addExistingClasses(stylesheet,completions);
+            }
+        }else if(lastChar===':' && stylesheet!==undefined){
 
-                const lastChunk = getLastSelectorChunck(trimmedLine);
-                const targets = getChunkTargets(lastChunk);
-                if(targets.length){
-                    targets.forEach((target)=>{
-                        if(target.charAt(0)==='.'){
-                            const cls = stylesheet!.typedClasses[target.slice(1)];
-                            if(cls && cls["-sb-states"]){
+            const lastChunk = getLastSelectorChunck(trimmedLine);
+            const targets = getChunkTargets(lastChunk);
+            if(targets.length){
+
+                targets.forEach((target)=>{
+                    if(target.charAt(0)==='.'){
+                        const cls = stylesheet!.typedClasses[target.slice(1)];
+                        if(cls){
+                            if(cls["-sb-states"]){
                                 cls["-sb-states"]!.forEach((state)=>{
-                                    completions.push(new Completion(state,'yours','a') )
+                                    completions.push(new Completion(state,'from: local file','a') )
                                 })
                             }
+                            if(cls["-sb-type"]){
+                                const symbols = resolver.resolveSymbols(stylesheet!);
+                                const importName:string = cls["-sb-type"]!;
+                                const imported:Stylesheet = symbols[importName]
+                                if(imported && imported.typedClasses.root["-sb-states"]){
+                                    imported.typedClasses.root["-sb-states"]!.forEach((state:string)=>{
+                                        completions.push(new Completion(state,'from: '+imported.source,'a') )
+                                    })
+                                }
+                            }
                         }
-                    })
-                }
+
+                    }
+                })
             }
         }
+
 
 
 

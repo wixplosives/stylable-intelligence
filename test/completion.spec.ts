@@ -1,8 +1,8 @@
-import StylableDotCompletionProvider,{Completion,snippet} from '../src/provider'
-
+import StylableDotCompletionProvider,{Completion,snippet,ExtendedResolver} from '../src/provider'
+import {Resolver,Stylesheet} from 'stylable'
+import * as _ from 'lodash';
 import { workspace, languages, window, commands, ExtensionContext, Disposable, CompletionItemProvider ,TextDocument,Position,CancellationToken,CompletionItem,CompletionItemKind, Range} from 'vscode';
 import { expect } from "chai";
-
 function assertCompletions(actualCompletions:Completion[],expectedCompletions:Partial<Completion>[],prefix:string=''){
     expectedCompletions.forEach(expected => {
         const actual = actualCompletions.find((comp)=>comp.label===expected.label);
@@ -34,26 +34,36 @@ interface assertable{
     assertCompletions:(expectedCompletions:Partial<Completion>[])=>void;
     assertNoCompletions:(nonCompletions:Partial<Completion>[])=>void
 }
-function completions(src:string,extrafiles:{[path:string]:string} = {}):Thenable<assertable>{
+function completions(src:string,extrafiles:{[path:string]:string} = {},checkSingleLine:boolean = false):Thenable<assertable>{
     const singleLineSrc = src.split('\n').join('');
     let normalCompletions:Completion[];
     return completionsIntenal(src,extrafiles)
     .then((completions)=>{ normalCompletions = completions; })
     .then(()=>{return completionsIntenal(singleLineSrc,extrafiles)})
-    .then((completions)=>{
+    .then((singleLineCompletions)=>{
         return {
             assertNoCompletions:(expectedNoCompletions:Partial<Completion>[])=>{
                 assertNoCompletions(normalCompletions,expectedNoCompletions);
-                assertNoCompletions(completions,expectedNoCompletions,'single line: ');
+                checkSingleLine && assertNoCompletions(singleLineCompletions,expectedNoCompletions,'single line: ');
             },
             assertCompletions:(expectedNoCompletions:Partial<Completion>[])=>{
                 assertCompletions(normalCompletions,expectedNoCompletions);
-                assertCompletions(completions,expectedNoCompletions,'single line: ');
+                checkSingleLine && assertCompletions(singleLineCompletions,expectedNoCompletions,'single line: ');
             }
         }
 
     })
 }
+
+class TestResolver extends Resolver implements ExtendedResolver{
+    resolveModule(filePath:string){
+        return super.resolveModule('projectRoot'+filePath.slice(1));
+    }
+    resolveDependencies(s:Stylesheet){
+        return Promise.resolve(null).then(()=>{});
+    }
+}
+
 function completionsIntenal(src:string,extrafiles:{[path:string]:string} = {}):Thenable<Completion[]>{
     const caretPos = src.indexOf('|');
 
@@ -62,24 +72,29 @@ function completionsIntenal(src:string,extrafiles:{[path:string]:string} = {}):T
 
     src = src.replace('|',"");
 
+    const resolver = new TestResolver({});
+    _.forEach(extrafiles,(file:string,fileName:string)=>{
+        const fullPath:string = 'projectRoot/'+fileName
+        resolver.add(fullPath,Stylesheet.fromCSS(file,undefined,fullPath));
+    })
 
     return provider.provideCompletionItemsFromSrc(src,{
         line:linesTillCaret.length-1,
         character
-    })
+    },'main.css',resolver)
 }
 
 const importCompletion:Partial<Completion> = {label:':import',sortText:'a',insertText:'import {\n\t-sb-from: "$1";\n}'};
 const rootCompletion:Partial<Completion> = {label:'.root',sortText:'b'};
 const statesDirectiveCompletion:Partial<Completion> = {label:'-sb-states:',sortText:'a',insertText:'-sb-states:$1;'};
-const extendsDirectiveCompletion:Partial<Completion> = {label:'-sb-extends:',sortText:'a',insertText:'-sb-extends:$1;'};
+const extendsDirectiveCompletion:Partial<Completion> = {label:'-sb-type:',sortText:'a',insertText:'-sb-type:$1;'};
 const mixinDirectiveCompletion:Partial<Completion> = {label:'-sb-mixin:',sortText:'a',insertText:'-sb-mixin:$1;'};
 const variantDirectiveCompletion:Partial<Completion> = {label:'-sb-variant:',sortText:'a',insertText:'-sb-variant:true;'};
 const importFromDirectiveCompletion:Partial<Completion> = {label:'-sb-from:',sortText:'a',insertText:'-sb-from:"$1";'};
 const importDefaultDirectiveCompletion:Partial<Completion> = {label:'-sb-default:',sortText:'a',insertText:'-sb-default:$1;'};
 const importNamedDirectiveCompletion:Partial<Completion> = {label:'-sb-named:',sortText:'a',insertText:'-sb-named:$1;'};
 const classCompletion:(className:string)=>Partial<Completion> = (className:string)=>{return{label:'.'+className,sortText:'b'}}
-const stateCompletion:(stateName:string)=>Partial<Completion> = (stateName:string)=>{return{label:stateName,sortText:'a'}}
+const stateCompletion:(stateName:string, from?:string)=>Partial<Completion> = (stateName:string, from= "local file")=>{return{label:stateName,sortText:'a',detail:'from: '+from}}
 const extendsCompletion:(typeName:string)=>Partial<Completion> = (typeName:string)=>{return{label:typeName,sortText:'a'}}
 describe('completion unit test',function(){
     describe('root level',function(){
@@ -152,13 +167,13 @@ describe('completion unit test',function(){
         });
     });
     describe('directives',function(){
-        it('should complete -sb-states, -sb-extends, -sb-mixin, -sb-variant inside simple rules',function(){
+        it('should complete -sb-states, -sb-type, -sb-mixin, -sb-variant inside simple rules',function(){
             return completions(
             `
             .gaga{
                 |
             }
-            `).then((asserter)=>{
+            `,{},true).then((asserter)=>{
 
                 asserter.assertCompletions([
                     statesDirectiveCompletion,
@@ -170,7 +185,7 @@ describe('completion unit test',function(){
             });
         });
 
-        it('should complete -sb-states, -sb-extends, -sb-mixin, -sb-variant inside simple rules after dash',function(){
+        it('should complete -sb-states, -sb-type, -sb-mixin, -sb-variant inside simple rules after dash',function(){
             return completions(
             `
             .gaga{
@@ -178,7 +193,7 @@ describe('completion unit test',function(){
                 color:red;
             }
 
-            `).then((asserter)=>{
+            `,{},true).then((asserter)=>{
 
                 asserter.assertCompletions([
                     statesDirectiveCompletion,
@@ -189,18 +204,18 @@ describe('completion unit test',function(){
 
             });
         });
-        it('should not complete -sb-states, -sb-extends, -sb-mixin, -sb-variant inside simple rules when exists',function(){
+        it('should not complete -sb-states, -sb-type, -sb-mixin, -sb-variant inside simple rules when exists',function(){
             return completions(
             `
             .gaga{
                 -sb-states: a, b;
-                -sb-extends: Comp;
+                -sb-type: Comp;
                 -sb-mixin: MixA;
                 -sb-variant: BigButton;
                 -|
             }
 
-            `).then((asserter)=>{
+            `,{},true).then((asserter)=>{
 
                 asserter.assertNoCompletions([
                     statesDirectiveCompletion,
@@ -211,7 +226,7 @@ describe('completion unit test',function(){
 
             });
         });
-        describe('should not complete -sb-states, -sb-extends, -sb-variant inside complex rules',function(){
+        describe('should not complete -sb-states, -sb-type, -sb-variant inside complex rules',function(){
             [
                 `
             .gaga:hover{
@@ -248,7 +263,7 @@ describe('completion unit test',function(){
             ].map((src)=>{
 
                 it('complex rule '+src.slice(0,src.indexOf('{')),function(){
-                    return completions(src).then((asserter)=>{
+                    return completions(src,{},true).then((asserter)=>{
                         asserter.assertCompletions([
                             mixinDirectiveCompletion
                         ])
@@ -272,7 +287,7 @@ describe('completion unit test',function(){
                     -|
                 }
 
-                `).then((asserter)=>{
+                `,{},true).then((asserter)=>{
 
                     asserter.assertCompletions([
                         importFromDirectiveCompletion,
@@ -297,7 +312,7 @@ describe('completion unit test',function(){
                     -sb-named: a, b;
                     -|
                 }
-                `).then((asserter)=>{
+                `,{},true).then((asserter)=>{
 
                     asserter.assertNoCompletions([
                         importFromDirectiveCompletion,
@@ -320,7 +335,7 @@ describe('completion unit test',function(){
                     -sb-states:hello;
                 }
                 .gaga:|
-                `).then((asserter)=>{
+                `,{},true).then((asserter)=>{
                     asserter.assertCompletions([
                         stateCompletion('hello')
                     ]);
@@ -342,7 +357,7 @@ describe('completion unit test',function(){
                     -sb-states:cheerio;
                 }
                 .zagzag button.gaga:hover:| .baga
-                `).then((asserter)=>{
+                `,{},true).then((asserter)=>{
                     asserter.assertCompletions([
                         stateCompletion('hello')
                     ]);
@@ -360,7 +375,7 @@ describe('completion unit test',function(){
                     -sb-states:hello;
                 }
                 .zagzag button.gaga:hello:| .baga
-                `).then((asserter)=>{
+                `,{},true).then((asserter)=>{
                     asserter.assertNoCompletions([
                         importCompletion,
                         stateCompletion('hello')
@@ -379,11 +394,11 @@ describe('completion unit test',function(){
                     -sb-default:Comp;
                 }
                 .gaga{
-                    -sb-extends:|
+                    -sb-type:|
                 }
                 `,{
                     'comp.css':``
-                }).then((asserter)=>{
+                },true).then((asserter)=>{
                     asserter.assertCompletions([
                         extendsCompletion('Comp')
                     ]);
@@ -402,11 +417,11 @@ describe('completion unit test',function(){
                     -sb-default:Comp;
                 }
                 .gaga{
-                    -sb-extends:| ;
+                    -sb-type:| ;
                 }
                 `,{
                     'comp.css':``
-                }).then((asserter)=>{
+                },true).then((asserter)=>{
                     asserter.assertCompletions([
                         extendsCompletion('Comp')
                     ]);
@@ -414,6 +429,89 @@ describe('completion unit test',function(){
                         importCompletion,
                         mixinDirectiveCompletion
                  ]);
+             });
+         });
+
+         it('complete states for localy imported component',function(){
+                return completions(
+                `
+                :import{
+                    -sb-from: "./comp.css";
+                    -sb-default: Comp;
+
+                }
+                .gaga{
+                    -sb-type: Comp;
+                }
+                .gaga:|
+                `,
+                {
+                    'comp.css':`
+                            .root{
+                                -sb-states:shmover;
+                            }
+                        `
+                },true).then((asserter)=>{
+                    asserter.assertCompletions([
+                        stateCompletion('shmover','projectRoot/comp.css')
+                    ]);
+             });
+         });
+
+         it('complete states for localy imported component (including local states)',function(){
+                return completions(
+                `
+                :import{
+                    -sb-from: "./comp.css";
+                    -sb-default: Comp;
+
+                }
+                .gaga{
+                    -sb-type: Comp;
+                    -sb-states: hello;
+                }
+                .gaga:|
+                `,
+                {
+                    'comp.css':`
+                            .root{
+                                -sb-states:shmover;
+                            }
+                        `
+                },true).then((asserter)=>{
+                    asserter.assertCompletions([
+                        stateCompletion('shmover','projectRoot/comp.css'),
+                        stateCompletion('hello')
+                    ]);
+             });
+         });
+
+         xit('complete states for localy imported variant',function(){
+                return completions(
+                `
+                :import{
+                    -sb-from: "./comp.css";
+                    -sb-named: zagzag;
+
+                }
+                .gaga{
+                    -sb-type: zagzag;
+                }
+                .gaga:|
+                `,
+                {
+                    'comp.css':`
+                            .root{
+                                -sb-states:shmover;
+                            }
+                            .zagzag{
+                                -sb-variant:true;
+                            }
+                        `
+                },true).then((asserter)=>{
+                    asserter.assertCompletions([
+                        stateCompletion('shmover','projectRoot/comp.css')
+                    ]);
              });
          });
 
@@ -425,11 +523,11 @@ describe('completion unit test',function(){
                     -sb-default:Comp;
                 }
                 .gaga{
-                    -sb-extends::| ;
+                    -sb-type::| ;
                 }
                 `,{
                     'comp.css':``
-                }).then((asserter)=>{
+                },true).then((asserter)=>{
                     asserter.assertNoCompletions([
                         extendsCompletion('Comp'),
                         importCompletion,

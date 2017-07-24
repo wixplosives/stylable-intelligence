@@ -13,7 +13,7 @@
     "url": "https://github.com/wixplosives/stylable-inteligence/issues"
   },
   "engines": {
-    "vscode": "^1.15.0"
+    "vscode": "^1.14.2"
   },
   "categories": [
     "Other"
@@ -69,7 +69,7 @@
     "source-map-support": "~0.4.15",
     "tslib": "~1.7.1",
     "typescript": "~2.4.1",
-    "vscode": "1.1.4",
+    "vscode": "1.14.2",
     "webpack": "~3.2.0",
     "webpack-dev-server": "~2.5.0"
   },
