@@ -1,16 +1,3 @@
 :import {
-    -sb-from: "./comp2.css";
-    -sb-default:Comp;
-}
-
-.gaga{
-    -sb-type: Comp;
-    -sb-states:hello;
-}
-
-.gaga:shmover{
-
-}
-.gaga:baga{
-
+    -sb-from: "./comp.css";
 }

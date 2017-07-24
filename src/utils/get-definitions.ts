@@ -55,7 +55,6 @@ function getClassDefinition(stylesheet:Stylesheet,symbolName:string,resolver:Res
     }
     const type:string | undefined = stylesheet.typedClasses[symbolName]["-sb-type"]
     if(type){
-        resolver.resolveSymbols(stylesheet);
         const symbols = resolver.resolveSymbols(stylesheet);
         if(symbols[type]){
             const internalClassDef = getClassDefinition(symbols[type],'root',resolver);

@@ -116,7 +116,9 @@ describe('completion unit test',function(){
         });
         it('should complete root and existing classes at top level after "."',function(){
             return completions(
-            `.|
+            `
+            .|
+
             .gaga{
                 color:red;
             }
@@ -335,6 +337,20 @@ describe('completion unit test',function(){
                     ]);
                 });
             });
+        it('should not break for untyped classes',function(){
+            return completions(
+            `
+            .gaga{
+            }
+            .gaga:|
+            `,{},true).then((asserter)=>{
+
+                asserter.assertNoCompletions([
+                    importCompletion,
+                    stateCompletion('hello')
+                ]);
+            });
+        });
         it('should complete available states after : in complex selectors',function(){
                 return completions(
                 `
@@ -477,6 +493,7 @@ describe('completion unit test',function(){
              });
          });
 
+
         it('complete states for localy imported component ( recursive )',function(){
                 return completions(
                 `
@@ -540,6 +557,26 @@ describe('completion unit test',function(){
                     asserter.assertCompletions([
                         stateCompletion('shmover','projectRoot/comp.css')
                     ]);
+             });
+         });
+
+
+         it('should not break while typing',function(){
+                return completions(
+                `
+                .|
+                .gaga{
+                    -sb-states:hello;
+                }
+                .gaga:hello{
+
+                }
+                `,{
+                    'comp.css':``
+                },false).then((asserter)=>{
+                    asserter.assertCompletions([
+                        classCompletion('gaga')
+                 ]);
              });
          });
 

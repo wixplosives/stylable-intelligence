@@ -1,4 +1,7 @@
 //must remain independant from vscode
+
+
+debugger;
 import * as PostCss from 'postcss';
 import {Stylesheet,Resolver} from 'stylable';
 const PostCssNested = require('postcss-nested');
@@ -145,7 +148,9 @@ function getChunkTargets(selectorChunk:string):string[]{
     return targets;
 }
 
-const lineEndsRegexp = /{|}|;/;
+
+
+const lineEndsRegexp = /({|}|;)/;
 
 export interface ExtendedResolver extends Resolver{
     resolveDependencies(stylesheet:Stylesheet):Thenable<void>
@@ -176,18 +181,21 @@ export default class Provider{
         if(currentLine.match(lineEndsRegexp)){
             let currentLocation = 0;
             let splitLine = currentLine.split(lineEndsRegexp);
-            for(var i=0;i<splitLine.length;i++){
+            for(var i=0;i<splitLine.length;i+=2){
                 currentLocation+= splitLine[i].length + 1;
                 if(currentLocation>=position.character){
                     currentLine = splitLine[i];
                     if(isIligealLine(currentLine)){
-                        lines.splice(position.line,1,lines[position.line].substr(currentLocation,currentLine.length));
+                        splitLine[i] = '\n'
+                        lines.splice(position.line,1,splitLine.join(''));
+                        fixedSrc = lines.join('\n');
                     }
                     break;
                 }
             }
 
-        }else if(isIligealLine(currentLine)){
+        }
+        else if(isIligealLine(currentLine)){
             lines.splice(position.line,1, "");
             fixedSrc = lines.join('\n');
         }
@@ -227,11 +235,13 @@ export default class Provider{
     ): Thenable<Completion[]>   {
         const completions:Completion[] = [];
         const trimmedLine = currentLine.trim();
+
         const position1Based:Position = {
             line:position.line+1,
             character:position.character
         }
         const path = pathFromPosition(ast,position1Based);
+
         const posInSrc = getPositionInSrc(src,position);
         const lastChar = src.charAt(posInSrc);
         const lastPart:PostCss.NodeBase = path[path.length-1];
@@ -261,13 +271,13 @@ export default class Provider{
                 }
             }else if(stylesheet && trimmedLine.indexOf('-sb-type:')===0 && lastChar==":" && trimmedLine.split(':').length===2){
                 stylesheet.imports.forEach((importJson)=>{
-                if(importJson.from.lastIndexOf('.css')===importJson.from.length-4 && importJson.defaultExport){
-                    completions.push(new Completion(importJson.defaultExport,'yours','a',new snippet(' '+importJson.defaultExport+';\n')));
-                }
-            });
+                    if(importJson.from.lastIndexOf('.css')===importJson.from.length-4 && importJson.defaultExport){
+                        completions.push(new Completion(importJson.defaultExport,'yours','a',new snippet(' '+importJson.defaultExport+';\n')));
+                    }
+                });
             }
         }
-        if(currentLine.trim().length<2){
+        if(trimmedLine.length<2){
             if(lastChar===':'||isSpacy(lastChar)){
                 completions.push(importsDirective);
             }
@@ -286,7 +296,7 @@ export default class Provider{
                         const clsDef = getDefinition(stylesheet,target.slice(1),resolver)
                         if(isClassDefinition(clsDef)){
                             clsDef.states.forEach((stateDef)=>{
-                                const from = 'from: '  + (stateDef.from ? stateDef.from : 'local file');
+                                const from = 'from: '  + stateDef.from;
                                 completions.push(new Completion(stateDef.name,from,'a') )
                             })
                         }
