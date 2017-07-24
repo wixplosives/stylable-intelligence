@@ -320,6 +320,7 @@ export default class Provider{
                     const clsDef = getDefinition(stylesheet, className, resolver)
                     if(isClassDefinition(clsDef)){
                         clsDef.states.forEach((stateDef)=>{
+                            if(focusChunk.states.indexOf(stateDef.name) !== -1){ return }
                             const from = 'from: '  + stateDef.from;
                             completions.push(stateCompletion(stateDef.name,stateDef.from))
                         })
