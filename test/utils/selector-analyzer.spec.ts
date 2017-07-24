@@ -13,7 +13,7 @@ import {
 } from '../../src/utils/selector-analyzer';
 
 
-describe.only('selector-analyzer', () => {
+describe('selector-analyzer', () => {
 
     describe('queries list', () => {
 
@@ -115,6 +115,7 @@ describe.only('selector-analyzer', () => {
     describe('position in query', () => {
 
         const testCases:any = {
+            /* css classes */
             'CSS class': {
                 selector:'.a|',
                 expected:{
@@ -139,6 +140,7 @@ describe.only('selector-analyzer', () => {
                     index:0
                 }
             },
+            /* operators */
             'descendent operator': {
                 selector:'.a |.b',
                 expected:{
@@ -171,6 +173,25 @@ describe.only('selector-analyzer', () => {
                     index:1
                 }
             },
+            /* type selectors */
+            'type selector': {
+                selector:'div|',
+                expected:{
+                    focusChunk:createSelectorChunk({type:'div'}),
+                    simpleSelector:'div',
+                    index:0
+                }
+            },
+            /* pseudo classes */
+            'state': {
+                selector:'.a:hover|',
+                expected:{
+                    focusChunk:createSelectorChunk({classes:['a'], states:['hover']}),
+                    simpleSelector:':hover',
+                    index:0
+                }
+            },
+            /* pseudo elements */
             'internal part': {
                 selector:'.a::b|',
                 expected:{
@@ -203,14 +224,25 @@ describe.only('selector-analyzer', () => {
                     index:3
                 }
             },
-            'state': {
-                selector:'.a:hover|',
+            /* junk */
+            'space around multi chunk': {
+                selector:'   .a .b|   ',
                 expected:{
-                    focusChunk:createSelectorChunk({classes:['a'], states:['hover']}),
-                    simpleSelector:':hover',
-                    index:0
+                    focusChunk:createSelectorChunk({classes:['b']}),
+                    simpleSelector:'.b',
+                    index:2
                 }
             },
+            /* complex selectors */
+            'complex invalid state': {
+                selector:'.a div.b:hover:| .c',
+                expected:{
+                    focusChunk:createSelectorChunk({type:'div', classes:['b'], states:['hover']}),
+                    simpleSelector:':',
+                    index:2
+                }
+            }
+
         }
 
         Object.keys(testCases).forEach(testName => {

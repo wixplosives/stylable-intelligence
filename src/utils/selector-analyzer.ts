@@ -58,8 +58,9 @@ export function parseSelector(inputSelector:string, cursorIndex:number=0):{selec
     }
 
     const firstSelector = tokenizedSelectors.nodes[0];
-    let selector = inputSelector;
-    let currentPosition = 0;
+    const spaceBeforeSelector = inputSelector.match(/^(\s)*/);
+    let selector = inputSelector.trim();
+    let currentPosition = spaceBeforeSelector && spaceBeforeSelector[0].length || 0;
     let currentSourceQuery:string = '';
     res.push(createSelectorChunk());
     for(let i = 0; i < firstSelector.nodes.length; i++){
@@ -76,7 +77,7 @@ export function parseSelector(inputSelector:string, cursorIndex:number=0):{selec
                     currentTarget = createSelectorDescendent();
                     res.push(currentTarget, createSelectorChunk());
                     const startSpaceMatch = selector.match(/^(\s)*/);
-                    currentSourceQuery = startSpaceMatch && startSpaceMatch[0] || 'no spaces found! - should not happen';
+                    currentSourceQuery = startSpaceMatch && startSpaceMatch[0] || ' ';
                     selector = selector.slice(currentSourceQuery.length);
                     break;
                 case 'operator':
@@ -101,6 +102,12 @@ export function parseSelector(inputSelector:string, cursorIndex:number=0):{selec
                     break;
                 case 'element':
                     currentTarget.type = selectorQueryItem.name;
+                    currentSourceQuery = selectorQueryItem.name;
+                    selector = selector.slice(currentSourceQuery.length);
+                    break;
+                case 'invalid':
+                    currentSourceQuery = selectorQueryItem.value;
+                    selector = selector.slice(currentSourceQuery.length).trim();
                     break;
             }
         } else {
