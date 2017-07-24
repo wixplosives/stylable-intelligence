@@ -72,7 +72,7 @@ function completionsIntenal(src:string,extrafiles:{[path:string]:string} = {}):T
     return provider.provideCompletionItemsFromSrc(src,{
         line:linesTillCaret.length-1,
         character
-    },'main.css',resolver)
+    },'projectRoot/main.css',resolver)
 }
 
 const importCompletion:Partial<Completion> = {label:':import',sortText:'a',insertText:'import {\n\t-sb-from: "$1";\n}'};
@@ -85,7 +85,7 @@ const importFromDirectiveCompletion:Partial<Completion> = {label:'-sb-from:',sor
 const importDefaultDirectiveCompletion:Partial<Completion> = {label:'-sb-default:',sortText:'a',insertText:'-sb-default:$1;'};
 const importNamedDirectiveCompletion:Partial<Completion> = {label:'-sb-named:',sortText:'a',insertText:'-sb-named:$1;'};
 const classCompletion:(className:string)=>Partial<Completion> = (className:string)=>{return{label:'.'+className,sortText:'b'}}
-const stateCompletion:(stateName:string, from?:string)=>Partial<Completion> = (stateName:string, from= "local file")=>{return{label:stateName,sortText:'a',detail:'from: '+from}}
+const stateCompletion:(stateName:string, from?:string)=>Partial<Completion> = (stateName:string, from='projectRoot/main.css')=>{return{label:stateName,sortText:'a',detail:'from: '+from}}
 const extendsCompletion:(typeName:string)=>Partial<Completion> = (typeName:string)=>{return{label:typeName,sortText:'a'}}
 describe('completion unit test',function(){
     describe('root level',function(){

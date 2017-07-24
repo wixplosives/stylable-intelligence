@@ -1,5 +1,5 @@
 import {Resolver,Stylesheet} from 'stylable'
-import StylableDotCompletionProvider,{Completion,snippet,ExtendedResolver,ClassDefinition} from '../src/provider';
+import StylableDotCompletionProvider,{Completion,snippet,ExtendedResolver} from '../src/provider';
 import * as _ from 'lodash';
 export class TestResolver extends Resolver implements ExtendedResolver{
     resolveModule(filePath:string){

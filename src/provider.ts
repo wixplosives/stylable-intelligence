@@ -5,6 +5,10 @@ const PostCssNested = require('postcss-nested');
 const PostCssSafe = require('postcss-safe-parser');
 import * as _ from 'lodash';
 const processor = PostCss([PostCssNested]);
+import {getDefinition,isClassDefinition,ClassDefinition} from "./utils/get-definitions";
+
+
+
 export class Completion{
     constructor(public label:string,public detail:string = "", public sortText:string = 'd',public insertText:string | snippet | undefined = undefined){
 
@@ -15,20 +19,6 @@ export class snippet{
     constructor (public source:string){}
 }
 
-export interface SymbolDefinition{
-    export:string;
-}
-
-export interface StateDefinition extends SymbolDefinition{
-    name:string;
-    from:string;
-    export:string;
-}
-
-
-export interface ClassDefinition extends SymbolDefinition{
-    states:StateDefinition[]
-}
 
 const rootClass = new Completion('.root','','b');
 const importsDirective = new Completion(':import','','a',new snippet('import {\n\t-sb-from: "$1";\n}'));
@@ -293,25 +283,13 @@ export default class Provider{
 
                 targets.forEach((target)=>{
                     if(target.charAt(0)==='.'){
-                        const cls = stylesheet!.typedClasses[target.slice(1)];
-                        if(cls){
-                            if(cls["-sb-states"]){
-                                cls["-sb-states"]!.forEach((state)=>{
-                                    completions.push(new Completion(state,'from: local file','a') )
-                                })
-                            }
-                            if(cls["-sb-type"]){
-                                const symbols = resolver.resolveSymbols(stylesheet!);
-                                const importName:string = cls["-sb-type"]!;
-                                const imported:Stylesheet = symbols[importName]
-                                if(imported && imported.typedClasses.root["-sb-states"]){
-                                    imported.typedClasses.root["-sb-states"]!.forEach((state:string)=>{
-                                        completions.push(new Completion(state,'from: '+imported.source,'a') )
-                                    })
-                                }
-                            }
+                        const clsDef = getDefinition(stylesheet,target.slice(1),resolver)
+                        if(isClassDefinition(clsDef)){
+                            clsDef.states.forEach((stateDef)=>{
+                                const from = 'from: '  + (stateDef.from ? stateDef.from : 'local file');
+                                completions.push(new Completion(stateDef.name,from,'a') )
+                            })
                         }
-
                     }
                 })
             }

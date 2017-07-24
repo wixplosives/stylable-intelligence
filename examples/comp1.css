@@ -5,9 +5,12 @@
 
 .gaga{
     -sb-type: Comp;
-
+    -sb-states:hello;
 }
 
+.gaga:shmover{
+
+}
 .gaga:baga{
 
 }
