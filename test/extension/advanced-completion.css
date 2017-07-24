@@ -1,0 +1,11 @@
+:import{
+    -sb-from:"./advanced-dependency.css";
+    -sb-default:Comp;
+}
+
+.gaga{
+    -sb-type:Comp;
+    -sb-states:bover;
+}
+
+.gaga:
