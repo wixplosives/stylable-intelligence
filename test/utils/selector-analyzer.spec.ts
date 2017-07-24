@@ -10,10 +10,10 @@ import {
     isSelectorInternalChunk,
     isSelectorDescendent,
     isSelectorDirectChild
-} from '../src/selector-parser';
+} from '../../src/utils/selector-analyzer';
 
 
-describe('selector-parser', () => {
+describe.only('selector-analyzer', () => {
 
     describe('queries list', () => {
 
@@ -35,7 +35,7 @@ describe('selector-parser', () => {
                 ]
             },
             'descendent target with multiple spaces and tabs': {
-                selector:'.a    /n/t  .b',
+                selector:'.a        .b',
                 expected:[
                     createSelectorChunk({classes:['a']}),
                     createSelectorDescendent(),
@@ -51,7 +51,7 @@ describe('selector-parser', () => {
                 ]
             },
             'direct child target with multiple spaces and tabs': {
-                selector:'.a    /n/t  >    /n/t  .b',
+                selector:'.a        >        .b',
                 expected:[
                     createSelectorChunk({classes:['a']}),
                     createSelectorDirectChild(),
@@ -68,6 +68,36 @@ describe('selector-parser', () => {
                     createSelectorChunk({classes:['a']}),
                     createSelectorInternalChunk({name:'inner'})
                 ]
+            },
+            'CSS type selector': {
+                selector:'div',
+                expected:[
+                    createSelectorChunk({type:'div'})
+                ]
+            },
+            'CSS type selector with class and state': {
+                selector:'div.a:b',
+                expected:[
+                    createSelectorChunk({type:'div', classes:['a'], states:['b']})
+                ]
+            },
+            'CSS type selector after descendent selector': {
+                selector:'span div',
+                expected:[
+                    createSelectorChunk({type:'span'}),
+                    createSelectorDescendent(),
+                    createSelectorChunk({type:'div'})
+                ]
+            },
+            'complex (1)': {
+                selector:'.a button.b:hover .c',
+                expected:[
+                    createSelectorChunk({classes:['a']}),
+                    createSelectorDescendent(),
+                    createSelectorChunk({type:'button', classes:['b'], states:['hover']}),
+                    createSelectorDescendent(),
+                    createSelectorChunk({classes:['c']}),
+                ]
             }
         }
 
@@ -81,7 +111,7 @@ describe('selector-parser', () => {
         });
 
     });
-
+    "  .x".match(/^(\s)/)
     describe('position in query', () => {
 
         const testCases:any = {
@@ -107,6 +137,38 @@ describe('selector-parser', () => {
                     focusChunk:createSelectorChunk({classes:['a', 'b']}),
                     simpleSelector:'.a',
                     index:0
+                }
+            },
+            'descendent operator': {
+                selector:'.a |.b',
+                expected:{
+                    focusChunk:createSelectorDescendent(),
+                    simpleSelector:' ',
+                    index:1
+                }
+            },
+            'descendent operator with multiple spaces and tabs': {
+                selector:'.a     |.b',
+                expected:{
+                    focusChunk:createSelectorDescendent(),
+                    simpleSelector:'     ',
+                    index:1
+                }
+            },
+            'direct-child operator': {
+                selector:'.a>|.b',
+                expected:{
+                    focusChunk:createSelectorDirectChild(),
+                    simpleSelector:'>',
+                    index:1
+                }
+            },
+            'direct-child operator with multiple spaces and tabs': {
+                selector:'.a     >     |.b',
+                expected:{
+                    focusChunk:createSelectorDirectChild(),
+                    simpleSelector:'     >     ',
+                    index:1
                 }
             },
             'internal part': {

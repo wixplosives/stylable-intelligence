@@ -78,6 +78,7 @@
   },
   "dependencies": {
     "@types/lodash": "4.14.71",
+    "css-selector-tokenizer": "^0.7.0",
     "lodash": "4.17.4",
     "postcss": "^6.0.7",
     "postcss-nested": "^2.0.4",
