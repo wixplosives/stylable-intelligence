@@ -18,6 +18,11 @@ export interface ProviderRange{
     start:ProviderPosition;
     end:ProviderPosition;
 }
+import {
+    parseSelector,
+    isSelectorChunk,
+    isSelectorInternalChunk
+} from './utils/selector-analyzer';
 
 export class Completion{
     constructor(public label:string,public detail:string = "", public sortText:string = 'd',public insertText?:string | snippet, public range?:ProviderRange){
@@ -190,7 +195,7 @@ export default class Provider{
         ): Thenable<Completion[]> {
 
 
-
+        let cursorLineIndex:number = position.character;
         let lines = src.split('\n');
         let currentLine = lines[position.line];
         let fixedSrc = src;
@@ -207,6 +212,8 @@ export default class Provider{
                         fixedSrc = lines.join('\n');
                     }
                     break;
+                } else {
+                    cursorLineIndex -= splitLine[i].length + 1
                 }
             }
 
@@ -236,7 +243,7 @@ export default class Provider{
         }
         return resolver.resolveDependencies(stylesheet!)
         .then(()=>{
-            return this.provideCompletionItemsFromAst(src,position,filePath,resolver,ast,stylesheet!,currentLine)
+            return this.provideCompletionItemsFromAst(src,position,filePath,resolver,ast,stylesheet!,currentLine, cursorLineIndex)
         });
 
     }
@@ -247,7 +254,8 @@ export default class Provider{
         resolver:ExtendedResolver,
         ast:PostCss.Root,
         stylesheet:Stylesheet,
-        currentLine:string
+        currentLine:string,
+        cursorLineIndex:number
     ): Thenable<Completion[]>   {
         const completions:Completion[] = [];
         const trimmedLine = currentLine.trim();
@@ -258,7 +266,7 @@ export default class Provider{
         }
         const path = pathFromPosition(ast,position1Based);
 
-        const posInSrc = getPositionInSrc(src,position);
+        const posInSrc = getPositionInSrc(src, position);
         const lastChar = src.charAt(posInSrc);
         const lastPart:PostCss.NodeBase = path[path.length-1];
         const prevPart:PostCss.NodeBase = path[path.length-2];
@@ -304,30 +312,28 @@ export default class Provider{
             }
         }else if(lastChar===':' && stylesheet!==undefined){
 
-            const lastChunk = getLastSelectorChunck(trimmedLine);
-            const targets = getChunkTargets(lastChunk);
-            if(targets.length){
+            const selectorRes = parseSelector(currentLine, cursorLineIndex);//position.character);
 
-                targets.forEach((target)=>{
-                    if(target.charAt(0)==='.'){
-                        const clsDef = getDefinition(stylesheet,target.slice(1),resolver)
-                        if(isClassDefinition(clsDef)){
-                            clsDef.states.forEach((stateDef)=>{
-                                const from = 'from: '  + stateDef.from;
-
-                                completions.push(stateCompletion(stateDef.name,stateDef.from))
-                            })
-                        }
+            const focusChunk = selectorRes.target.focusChunk;
+            if(!Array.isArray(focusChunk) && isSelectorChunk(focusChunk)){// || isSelectorInternalChunk(focusChunk)
+                focusChunk.classes.forEach((className)=>{
+                    const clsDef = getDefinition(stylesheet, className, resolver)
+                    if(isClassDefinition(clsDef)){
+                        clsDef.states.forEach((stateDef)=>{
+                            const from = 'from: '  + stateDef.from;
+                            completions.push(stateCompletion(stateDef.name,stateDef.from))
+                        })
                     }
                 })
             }
         }
 
-
-
-
         return Promise.resolve(completions);
     }
+}
+
+function getSelectorFromPosition(src:string, index:number){
+
 }
 
 function getNewCompletions(completionMap:CompletionMap, ruleset:PostCss.Rule):Completion[]{
