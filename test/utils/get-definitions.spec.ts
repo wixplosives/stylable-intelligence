@@ -49,29 +49,29 @@ describe('getDefinition',function(){
                 "gaga",
                 `
                 :import{
-                    -sb-from: "./comp2.css";
-                    -sb-default: Comp;
+                    -st-from: "./comp2.css";
+                    -st-default: Comp;
                 }
                 .gaga{
-                    -sb-type: Comp;
-                    -sb-states: normalstate;
+                    -st-extends: Comp;
+                    -st-states: normalstate;
                 }
                 .gaga:|
                 `,
                 {
                     'comp1.css':`
                             .root{
-                                -sb-states:recursestate;
+                                -st-states:recursestate;
                             }
                     `,
                     'comp2.css':`
                         :import{
-                            -sb-from: "./comp1.css";
-                            -sb-default: Zag;
+                            -st-from: "./comp1.css";
+                            -st-default: Zag;
                         }
                         .root{
-                            -sb-type:Zag;
-                            -sb-states:importedstate;
+                            -st-extends:Zag;
+                            -st-states:importedstate;
                         }
                     `
                 }).then((actual:ClassDefinition)=>{

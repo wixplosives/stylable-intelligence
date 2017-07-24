@@ -1,3 +1,9 @@
 :import {
-    -sb-from: "./comp.css";
+    -st-from: "./comp2.css";
+    -st-default:Com;
+}
+
+.gaga{
+    -st-extends ;
+
 }

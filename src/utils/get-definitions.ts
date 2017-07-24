@@ -43,8 +43,8 @@ export function getDefinition(stylesheet:Stylesheet,symbolName:string,resolver:R
 
 function getClassDefinition(stylesheet:Stylesheet,symbolName:string,resolver:Resolver):ClassDefinition{
     let states: StateDefinition[] = [];
-    if(stylesheet.typedClasses[symbolName]["-sb-states"]){
-        stylesheet.typedClasses[symbolName]["-sb-states"]!.map((state)=>{
+    if(stylesheet.typedClasses[symbolName]["-st-states"]){
+        stylesheet.typedClasses[symbolName]["-st-states"]!.map((state)=>{
             states.push({
                 name:state,
                 export:symbolName,
@@ -53,7 +53,7 @@ function getClassDefinition(stylesheet:Stylesheet,symbolName:string,resolver:Res
             })
         })
     }
-    const type:string | undefined = stylesheet.typedClasses[symbolName]["-sb-type"]
+    const type:string | undefined = stylesheet.typedClasses[symbolName]["-st-extends"]
     if(type){
         const symbols = resolver.resolveSymbols(stylesheet);
         if(symbols[type]){
