@@ -40,18 +40,19 @@ interface assertable{
 function completions(src:string,extrafiles:{[path:string]:string} = {},checkSingleLine:boolean = false):Thenable<assertable>{
     const singleLineSrc = src.split('\n').join('');
     let normalCompletions:Completion[];
+    let singleLineCompletions:Completion[];
     return completionsIntenal(src,extrafiles)
-    .then((completions)=>{ normalCompletions = completions; })
-    .then(()=>{return completionsIntenal(singleLineSrc,extrafiles)})
-    .then((singleLineCompletions)=>{
+    .then((completions) => { normalCompletions = completions; })
+    .then(() => checkSingleLine ? completionsIntenal(singleLineSrc, extrafiles) : (Promise.resolve() as Thenable<null>))
+    .then(singleLineCompletions => {
         return {
             assertNoCompletions:(expectedNoCompletions:Partial<Completion>[])=>{
-                assertNoCompletions(normalCompletions,expectedNoCompletions);
-                checkSingleLine && assertNoCompletions(singleLineCompletions,expectedNoCompletions,'single line: ');
+                assertNoCompletions(normalCompletions, expectedNoCompletions);
+                singleLineCompletions && assertNoCompletions(singleLineCompletions, expectedNoCompletions,'single line: ');
             },
             assertCompletions:(expectedNoCompletions:Partial<Completion>[])=>{
-                assertCompletions(normalCompletions,expectedNoCompletions);
-                checkSingleLine && assertCompletions(singleLineCompletions,expectedNoCompletions,'single line: ');
+                assertCompletions(normalCompletions, expectedNoCompletions);
+                singleLineCompletions && assertCompletions(singleLineCompletions, expectedNoCompletions,'single line: ');
             }
         }
 
@@ -357,7 +358,7 @@ describe('completion unit test',function(){
                         stateCompletion('goodbye'),
                         stateCompletion('cheerio')
                     ]);
-            });
+                });
         });
         it('should not complete available states after : in complex selectors if existing',function(){
                 return completions(
