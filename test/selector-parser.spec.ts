@@ -13,7 +13,7 @@ import {
 } from '../src/selector-parser';
 
 
-describe.only('selector-parser', () => {
+describe('selector-parser', () => {
 
     describe('queries list', () => {
 

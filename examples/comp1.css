@@ -1,22 +1,10 @@
 :import {
     -sb-from: "./comp2.css";
-    -sb-default:Gaga;
-}
-.root{
-    -sb-states:hello;
-}
-.root:hello{
-    -sb-mixin:baga;
+    -sb-default:Comp;
 }
 
 .gaga{
-    -sb-type: Gaga;
-
-}
-
-
-
-.gaga:baga{
+    -sb-type: Comp;
 
 }
 

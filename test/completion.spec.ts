@@ -3,6 +3,9 @@ import {Resolver,Stylesheet} from 'stylable'
 import * as _ from 'lodash';
 import { workspace, languages, window, commands, ExtensionContext, Disposable, CompletionItemProvider ,TextDocument,Position,CancellationToken,CompletionItem,CompletionItemKind, Range} from 'vscode';
 import { expect } from "chai";
+import {TestResolver} from '../test-kit/test-resolver';
+
+
 function assertCompletions(actualCompletions:Completion[],expectedCompletions:Partial<Completion>[],prefix:string=''){
     expectedCompletions.forEach(expected => {
         const actual = actualCompletions.find((comp)=>comp.label===expected.label);
@@ -55,15 +58,6 @@ function completions(src:string,extrafiles:{[path:string]:string} = {},checkSing
     })
 }
 
-class TestResolver extends Resolver implements ExtendedResolver{
-    resolveModule(filePath:string){
-        return super.resolveModule('projectRoot'+filePath.slice(1));
-    }
-    resolveDependencies(s:Stylesheet){
-        return Promise.resolve(null).then(()=>{});
-    }
-}
-
 function completionsIntenal(src:string,extrafiles:{[path:string]:string} = {}):Thenable<Completion[]>{
     const caretPos = src.indexOf('|');
 
@@ -73,10 +67,7 @@ function completionsIntenal(src:string,extrafiles:{[path:string]:string} = {}):T
     src = src.replace('|',"");
 
     const resolver = new TestResolver({});
-    _.forEach(extrafiles,(file:string,fileName:string)=>{
-        const fullPath:string = 'projectRoot/'+fileName
-        resolver.add(fullPath,Stylesheet.fromCSS(file,undefined,fullPath));
-    })
+    resolver.addExtraFiles(extrafiles);
 
     return provider.provideCompletionItemsFromSrc(src,{
         line:linesTillCaret.length-1,
@@ -486,6 +477,43 @@ describe('completion unit test',function(){
              });
          });
 
+        it('complete states for localy imported component ( recursive )',function(){
+                return completions(
+                `
+                :import{
+                    -sb-from: "./comp2.css";
+                    -sb-default: Comp;
+                }
+                .gaga{
+                    -sb-type: Comp;
+                    -sb-states: normalstate;
+                }
+                .gaga:|
+                `,
+                {
+                    'comp1.css':`
+                            .root{
+                                -sb-states:recursestate;
+                            }
+                    `,
+                    'comp2.css':`
+                        :import{
+                            -sb-from: "./comp1.css";
+                            -sb-default: Zag;
+                        }
+                        .root{
+                            -sb-type:Zag;
+                            -sb-states:importedstate;
+                        }
+                    `
+                },true).then((asserter)=>{
+                    asserter.assertCompletions([
+                        stateCompletion('importedstate','projectRoot/comp2.css'),
+                        stateCompletion('recursestate','projectRoot/comp1.css'),
+                        stateCompletion('normalstate')
+                    ]);
+             });
+         });
          xit('complete states for localy imported variant',function(){
                 return completions(
                 `

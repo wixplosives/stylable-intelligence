@@ -15,6 +15,20 @@ export class snippet{
     constructor (public source:string){}
 }
 
+export interface SymbolDefinition{
+    export:string;
+}
+
+export interface StateDefinition extends SymbolDefinition{
+    name:string;
+    from:string;
+    export:string;
+}
+
+
+export interface ClassDefinition extends SymbolDefinition{
+    states:StateDefinition[]
+}
 
 const rootClass = new Completion('.root','','b');
 const importsDirective = new Completion(':import','','a',new snippet('import {\n\t-sb-from: "$1";\n}'));
@@ -152,7 +166,10 @@ function isSpacy(char:string){
 }
 
 export default class Provider{
+     public getClassDefinition(stylesheet:Stylesheet,symbol:string,resolver:ExtendedResolver){
+        const symbols = resolver.resolveSymbols(stylesheet);
 
+     }
 
      public provideCompletionItemsFromSrc(
         src: string,
