@@ -5,7 +5,7 @@
 
 
 import { workspace, languages, window, commands, ExtensionContext, Disposable, CompletionItemProvider ,TextDocument,Position,CancellationToken,CompletionItem,CompletionItemKind, Range,SnippetString} from 'vscode';
-import Provider, { Completion,snippet ,ExtendedResolver} from './provider';
+import Provider, { Completion,snippet ,ExtendedResolver,ProviderRange} from './provider';
 import {Resolver,Stylesheet} from 'stylable';
 import * as _ from 'lodash';
 import path = require('path');
@@ -48,6 +48,7 @@ export class StylableDotCompletionProvider implements CompletionItemProvider {
             return res.map((com:Completion)=>{
                 let vsCodeCompletion = new CompletionItem(com.label);
                 vsCodeCompletion.detail = com.detail;
+                // vsCodeCompletion.range = getRange(com.range);
                 if(typeof com.insertText==='string'){
                     vsCodeCompletion.insertText = com.insertText;
                 }else if(com.insertText){
@@ -62,6 +63,14 @@ export class StylableDotCompletionProvider implements CompletionItemProvider {
         })
     }
 
+}
+
+function getRange(rng:ProviderRange | undefined):Range | undefined{
+    if(!rng){
+        return;
+    }
+    const r = new Range(new Position(rng.start.line,rng.start.character),new Position(rng.end.line,rng.end.character));
+    return r
 }
 
 export function activate(context: ExtensionContext) {

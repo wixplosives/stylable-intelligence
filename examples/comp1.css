@@ -1,13 +1,9 @@
 :import {
-    -sb-from: "./comp2.css";
-    -sb-default:Comp;
+    -st-from: "./comp2.css";
+    -st-default:Com;
 }
 
 .gaga{
-    -sb-type: Comp;
-
-}
-
-.gaga:baga{
+    -st-extends ;
 
 }

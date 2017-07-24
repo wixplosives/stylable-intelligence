@@ -4228,9 +4228,9 @@ strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
-stylable@1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-1.0.5.tgz#c6131b72d8c52704ada3a232c3417d78d4c97d9b"
+stylable@2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/stylable/-/stylable-2.0.2.tgz#970ebacfcebee642a183aef0c2599247bd09d413"
   dependencies:
     camelcase-css "^1.0.1"
     css-selector-tokenizer "^0.7.0"
@@ -4635,7 +4635,7 @@ void-elements@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/void-elements/-/void-elements-2.0.1.tgz#c066afb582bb1cb4128d60ea92392e94d5e9dbec"
 
-vscode@1.1.4:
+vscode@1.14.2:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/vscode/-/vscode-1.1.4.tgz#1f1d4d662d55c9a28bc467aacb632291f70a686d"
   dependencies:

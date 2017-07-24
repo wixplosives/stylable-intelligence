@@ -1,12 +1,26 @@
 //must remain independant from vscode
+
 import * as PostCss from 'postcss';
 import {Stylesheet,Resolver} from 'stylable';
 const PostCssNested = require('postcss-nested');
 const PostCssSafe = require('postcss-safe-parser');
 import * as _ from 'lodash';
 const processor = PostCss([PostCssNested]);
+import {getDefinition,isClassDefinition,ClassDefinition} from "./utils/get-definitions";
+
+export interface ProviderPosition{
+    line:number;
+    character:number;
+}
+
+
+export interface ProviderRange{
+    start:ProviderPosition;
+    end:ProviderPosition;
+}
+
 export class Completion{
-    constructor(public label:string,public detail:string = "", public sortText:string = 'd',public insertText:string | snippet | undefined = undefined){
+    constructor(public label:string,public detail:string = "", public sortText:string = 'd',public insertText?:string | snippet, public range?:ProviderRange){
 
     }
 }
@@ -15,31 +29,25 @@ export class snippet{
     constructor (public source:string){}
 }
 
-export interface SymbolDefinition{
-    export:string;
-}
-
-export interface StateDefinition extends SymbolDefinition{
-    name:string;
-    from:string;
-    export:string;
-}
-
-
-export interface ClassDefinition extends SymbolDefinition{
-    states:StateDefinition[]
-}
 
 const rootClass = new Completion('.root','','b');
-const importsDirective = new Completion(':import','','a',new snippet('import {\n\t-sb-from: "$1";\n}'));
-const extendsDirective = new Completion('-sb-type:','','a',new snippet('-sb-type:$1;'));
-const statesDirective = new Completion('-sb-states:','','a',new snippet('-sb-states:$1;'));
-const mixinDirective = new Completion('-sb-mixin:','','a',new snippet('-sb-mixin:$1;'));
-const variantDirective = new Completion('-sb-variant:','','a',new snippet('-sb-variant:true;'));
-const fromDirective = new Completion('-sb-from:','','a',new snippet('-sb-from:"$1";'));
-const namedDirective = new Completion('-sb-named:','','a',new snippet('-sb-named:$1;'));
-const defaultDirective = new Completion('-sb-default:','','a',new snippet('-sb-default:$1;'));
-
+const importsDirective = new Completion(':import','','a',new snippet('import {\n\t-st-from: "$1";\n}'));
+const extendsDirective = new Completion('-st-extends:','','a',new snippet('-st-extends:$1;'));
+const statesDirective = new Completion('-st-states:','','a',new snippet('-st-states:$1;'));
+const mixinDirective = new Completion('-st-mixin:','','a',new snippet('-st-mixin:$1;'));
+const variantDirective = new Completion('-st-variant:','','a',new snippet('-st-variant:true;'));
+const fromDirective = new Completion('-st-from:','','a',new snippet('-st-from:"$1";'));
+const namedDirective = new Completion('-st-named:','','a',new snippet('-st-named:$1;'));
+const defaultDirective = new Completion('-st-default:','','a',new snippet('-st-default:$1;'));
+function classCompletion(className:string){
+    return new Completion('.'+className,'mine','b')
+}
+function extendCompletion(symbolName:string,range?:ProviderRange){
+    return new Completion(symbolName,'yours','a',new snippet(' '+symbolName+';\n'),range)
+}
+function stateCompletion(stateName:string,from:string){
+    return new Completion(stateName,'from: '  + from,'a');
+}
 type CompletionMap = {[s:string]:Completion};
 
 
@@ -115,7 +123,8 @@ function addExistingClasses(stylesheet:Stylesheet | undefined,completions:Comple
         if(className==='root'){
             return;
         }
-        completions.push(new Completion('.'+className,'mine','b'));
+
+        completions.push(classCompletion(className));
     });
 }
 
@@ -155,7 +164,9 @@ function getChunkTargets(selectorChunk:string):string[]{
     return targets;
 }
 
-const lineEndsRegexp = /{|}|;/;
+
+
+const lineEndsRegexp = /({|}|;)/;
 
 export interface ExtendedResolver extends Resolver{
     resolveDependencies(stylesheet:Stylesheet):Thenable<void>
@@ -186,18 +197,21 @@ export default class Provider{
         if(currentLine.match(lineEndsRegexp)){
             let currentLocation = 0;
             let splitLine = currentLine.split(lineEndsRegexp);
-            for(var i=0;i<splitLine.length;i++){
+            for(var i=0;i<splitLine.length;i+=2){
                 currentLocation+= splitLine[i].length + 1;
                 if(currentLocation>=position.character){
                     currentLine = splitLine[i];
                     if(isIligealLine(currentLine)){
-                        lines.splice(position.line,1,lines[position.line].substr(currentLocation,currentLine.length));
+                        splitLine[i] = '\n'
+                        lines.splice(position.line,1,splitLine.join(''));
+                        fixedSrc = lines.join('\n');
                     }
                     break;
                 }
             }
 
-        }else if(isIligealLine(currentLine)){
+        }
+        else if(isIligealLine(currentLine)){
             lines.splice(position.line,1, "");
             fixedSrc = lines.join('\n');
         }
@@ -237,11 +251,13 @@ export default class Provider{
     ): Thenable<Completion[]>   {
         const completions:Completion[] = [];
         const trimmedLine = currentLine.trim();
+
         const position1Based:Position = {
             line:position.line+1,
             character:position.character
         }
         const path = pathFromPosition(ast,position1Based);
+
         const posInSrc = getPositionInSrc(src,position);
         const lastChar = src.charAt(posInSrc);
         const lastPart:PostCss.NodeBase = path[path.length-1];
@@ -253,31 +269,32 @@ export default class Provider{
             if( lastChar==='-' ||  isSpacy(lastChar) || lastChar=="{"){
                 if(lastSelector.selector === ':import'){
                     completions.push(...getNewCompletions({
-                        "-sb-from":fromDirective,
-                        "-sb-default":defaultDirective,
-                        "-sb-named":namedDirective
+                        "-st-from":fromDirective,
+                        "-st-default":defaultDirective,
+                        "-st-named":namedDirective
                     }, lastSelector));
                 }else{
 
-                    const declarationBlockDirectived:CompletionMap = {
-                        '-sb-mixin':mixinDirective
+                    const declarationBlockDirectives:CompletionMap = {
+                        '-st-mixin':mixinDirective
                     };
                     if(isSimple(lastSelector.selector)){
-                        declarationBlockDirectived["-sb-type"] = extendsDirective;
-                        declarationBlockDirectived["-sb-variant"] = variantDirective;
-                        declarationBlockDirectived["-sb-states"] = statesDirective;
+                        declarationBlockDirectives["-st-extends"] = extendsDirective;
+                        declarationBlockDirectives["-st-variant"] = variantDirective;
+                        declarationBlockDirectives["-st-states"] = statesDirective;
                     }
-                    completions.push(...getNewCompletions(declarationBlockDirectived, lastSelector));
+                    completions.push(...getNewCompletions(declarationBlockDirectives, lastSelector));
                 }
-            }else if(stylesheet && trimmedLine.indexOf('-sb-type:')===0 && lastChar==":" && trimmedLine.split(':').length===2){
+            }else if(stylesheet && trimmedLine.indexOf('-st-extends:')===0 && lastChar==":" && trimmedLine.split(':').length===2){
+
                 stylesheet.imports.forEach((importJson)=>{
-                if(importJson.from.lastIndexOf('.css')===importJson.from.length-4 && importJson.defaultExport){
-                    completions.push(new Completion(importJson.defaultExport,'yours','a',new snippet(' '+importJson.defaultExport+';\n')));
-                }
-            });
+                    if(importJson.from.lastIndexOf('.css')===importJson.from.length-4 && importJson.defaultExport){
+                        completions.push(extendCompletion(importJson.defaultExport));
+                    }
+                });
             }
         }
-        if(currentLine.trim().length<2){
+        if(trimmedLine.length<2){
             if(lastChar===':'||isSpacy(lastChar)){
                 completions.push(importsDirective);
             }
@@ -293,25 +310,14 @@ export default class Provider{
 
                 targets.forEach((target)=>{
                     if(target.charAt(0)==='.'){
-                        const cls = stylesheet!.typedClasses[target.slice(1)];
-                        if(cls){
-                            if(cls["-sb-states"]){
-                                cls["-sb-states"]!.forEach((state)=>{
-                                    completions.push(new Completion(state,'from: local file','a') )
-                                })
-                            }
-                            if(cls["-sb-type"]){
-                                const symbols = resolver.resolveSymbols(stylesheet!);
-                                const importName:string = cls["-sb-type"]!;
-                                const imported:Stylesheet = symbols[importName]
-                                if(imported && imported.typedClasses.root["-sb-states"]){
-                                    imported.typedClasses.root["-sb-states"]!.forEach((state:string)=>{
-                                        completions.push(new Completion(state,'from: '+imported.source,'a') )
-                                    })
-                                }
-                            }
-                        }
+                        const clsDef = getDefinition(stylesheet,target.slice(1),resolver)
+                        if(isClassDefinition(clsDef)){
+                            clsDef.states.forEach((stateDef)=>{
+                                const from = 'from: '  + stateDef.from;
 
+                                completions.push(stateCompletion(stateDef.name,stateDef.from))
+                            })
+                        }
                     }
                 })
             }
