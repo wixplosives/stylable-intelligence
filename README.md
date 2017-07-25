@@ -1,5 +1,7 @@
 # stylable-intelligence
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/wixplosives/stylable-intelligence.svg)](https://greenkeeper.io/)
+
 Stylable intelligence is the engine behind Stylable's different IDE plugins.
 
 ## Capabilities
