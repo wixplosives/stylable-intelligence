@@ -14,22 +14,13 @@ top level directives are allowed only in the top level of the document.
 
 
 - :import - imports dependencies
-- :vars - define vars for use
-
-
-
 ```css
-
-    :|
-
-    will offer completions:
-
     :import{
         -st-from:"$1"
     }
-
-    and
-
+```
+- :vars - define vars for use
+```css
     :vars{
         $1
     }
@@ -40,14 +31,15 @@ top level directives are allowed only in the top level of the document.
 
 ### class definition directives
 
-class definition directives are used to add metadata to a css class, they are only allowed inside simple selectors*
+class definition directives are used to add metadata to a css class, they are only allowed inside simple selectors*.
+
 multiple use of the same directive in the same class is not allowed
 
 - -st-extends - defines class or variant to extend
 
 ```css
     .gaga{
-        -st-extends:$1;
+        -st-extends:$1
     }
 ```
 
@@ -104,44 +96,195 @@ the mixin directive is allowed inside any selector except the top level directiv
 
 #### class
 
-the names of existing simple selectors should be offered as completions, "root" class is always available
-- in root level
-- as part of a selector
+the names of existing simple selectors should be offered as completions.
 
+ "root" class is always available but only in the start of a selector
+
+ ##### examples
+
+predefined class
 ```css
-    .gaga{
+    .gaga:hover{
 
     }
     .gaga$1
 ```
 
-
+root class is always available
 ```css
     .root$1
+```
+
+completing a class as an extra to a complex selector
+```css
+    .gaga{
+
+    }
+    .root:hover .gaga$1
 ```
 
 #### Tag
 
 the names of imported components should be offered as completions
-- in root level
-- as part of a selector
+
+##### example
+
+completion in root level
+```css
+    :import{
+        -st-from:"./myfile.css";
+        -st-default:Comp;
+    }
+
+    Comp$1
+```
+
+completion as part of complex selector
+```css
+    :import{
+        -st-from:"./myfile.css";
+        -st-default:Comp;
+    }
+
+    .root:hover Comp$1
+```
 
 #### pseudo states
 
 custom states need to be completed for relevant class
 
+##### example
+
+simple
+```css
+    .root{
+        -st-states:hello;
+    }
+
+    .root:hello$
+```
+
+in complex selctor
+```css
+    .gaga{
+        -st-states:hello;
+    }
+
+    .root:hover .gaga:hello$
+```
+
+
+class extended from import
+```css
+    :import{
+        -st-from:"./myfile.css";
+        -st-default:Comp;
+    }
+
+    .gaga{
+        -st-extends:Comp;
+    }
+
+    .gaga:hello$
+```
+
+
 #### pseudo elements
 
 custom pseudo elements need to be completed for relevant class
+
+##### examples
+
+class extended from import
+```css
+    :import{
+        -st-from:"./myfile.css";
+        -st-default:Comp;
+    }
+
+    .gaga{
+        -st-extends:Comp;
+    }
+
+    .gaga::inner-part$
+```
+
+in complex selctor
+```css
+    :import{
+        -st-from:"./myfile.css";
+        -st-default:Comp;
+    }
+
+    .gaga{
+        -st-extends:Comp;
+    }
+
+    .root:hover .gaga::inner-part$
+```
 
 
 ### rule value completions
 
 - value(varName): allowed in any non directive rule
-- -st-from value: allowed as value of -st-from. completes from fs
-- -st-named value: completes from file exports
-- -st-extends: completes from imported stylesheets and variants
+```css
+    .gaga{
+        background:value($1);
+    }
+```
 
+- -st-from value: allowed as value of -st-from. completes from fs
+```css
+    :import{
+        -st-from:"./...$"
+    }
+```
+
+- -st-named value: completes from file exports
+```css
+    :import{
+        -st-from:"./my-other.css";
+        -st-named: import1Name import2Name$1;
+    }
+```
+- -st-extends value: completes from imported stylesheets and variants
+```css
+    :import{
+        -st-from:"./my-other.css";
+        -st-named: button-blue-variant;
+    }
+    .gaga{
+        -st-extends: button-blue-variant$1
+    }
+```
+```css
+    :import{
+        -st-from:"./my-other.css";
+        -st-default: Comp;
+    }
+    .gaga{
+        -st-extends: Comp$1
+    }
+```
+- -st-mixin value: completes from imported variants and mixins
+```css
+    :import{
+        -st-from:"./my-other.css";
+        -st-named: button-blue-variant;
+    }
+    .gaga{
+        -st-mixin: button-blue-variant$1
+    }
+```
+```css
+    :import{
+        -st-from:"./my-mixin";
+        -st-default: Mixin;
+    }
+    .gaga{
+        -st-mixin: Comp$1
+    }
+```
 ### variable completion
 
 completes available variables (from local file and imports) inside value()
@@ -155,4 +298,48 @@ selectors in the top level of the document (not in media query) made up of one c
 .className{
 
 }
+```
+
+
+# completion matching
+
+
+the files and postions:
+```css
+
+    :|
+```
+```css
+    .gaga{
+        color:red;
+    }
+    |
+    .root{
+        color:blue
+    }
+```
+
+```css
+    .gaga{
+        color:red;
+    }
+    :|
+    .root{
+        color:blue
+    }
+```
+
+will offer completions:
+
+```css
+    :import{
+        -st-from:"$1"
+    }
+```
+ and
+
+```css
+    :vars{
+        $1
+    }
 ```
