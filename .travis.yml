@@ -9,7 +9,12 @@ os:
 addons:
   firefox: "latest"
 
-before_install: yarn global add greenkeeper-lockfile@1
+before_install: 
+  - yarn global add greenkeeper-lockfile@1
+
+install:
+  - npm install
+  - npm run vscode:prepublish
 
 before_script:
   - greenkeeper-lockfile-update ;
