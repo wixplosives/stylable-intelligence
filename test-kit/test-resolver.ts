@@ -1,5 +1,5 @@
 import {Resolver,Stylesheet} from 'stylable'
-import StylableDotCompletionProvider,{Completion,snippet,ExtendedResolver} from '../src/provider';
+import StylableDotCompletionProvider,{Completion,snippet,ExtendedResolver,FsEntity} from '../src/provider';
 import * as _ from 'lodash';
 export class TestResolver extends Resolver implements ExtendedResolver{
     resolveModule(filePath:string){
@@ -13,5 +13,8 @@ export class TestResolver extends Resolver implements ExtendedResolver{
             const fullPath:string = 'projectRoot/'+fileName
             this.add(fullPath,Stylesheet.fromCSS(file,undefined,fullPath));
         })
+    }
+    getFolderContents(path:string):Thenable<FsEntity[]>{
+        return Promise.resolve([]);
     }
 }

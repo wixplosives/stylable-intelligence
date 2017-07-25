@@ -79,12 +79,13 @@ function completionsIntenal(src:string,extrafiles:{[path:string]:string} = {}):T
 const importCompletion:Partial<Completion> = {label:':import',sortText:'a',insertText:'import {\n\t-st-from: "$1";\n}'};
 const rootCompletion:Partial<Completion> = {label:'.root',sortText:'b'};
 const statesDirectiveCompletion:Partial<Completion> = {label:'-st-states:',sortText:'a',insertText:'-st-states:$1;'};
-const extendsDirectiveCompletion:Partial<Completion> = {label:'-st-extends:',sortText:'a',insertText:'-st-extends:$1;'};
+const extendsDirectiveCompletion:Partial<Completion> = {label:'-st-extends:',sortText:'a',insertText:'-st-extends:$1',additionalCompletions:true};
 const mixinDirectiveCompletion:Partial<Completion> = {label:'-st-mixin:',sortText:'a',insertText:'-st-mixin:$1;'};
 const variantDirectiveCompletion:Partial<Completion> = {label:'-st-variant:',sortText:'a',insertText:'-st-variant:true;'};
 const importFromDirectiveCompletion:Partial<Completion> = {label:'-st-from:',sortText:'a',insertText:'-st-from:"$1";'};
 const importDefaultDirectiveCompletion:Partial<Completion> = {label:'-st-default:',sortText:'a',insertText:'-st-default:$1;'};
 const importNamedDirectiveCompletion:Partial<Completion> = {label:'-st-named:',sortText:'a',insertText:'-st-named:$1;'};
+const filePathCompletion:(filePath:string)=>Partial<Completion> = (filePath) =>{return {label:filePath,sortText:'a',insertText:'./'+filePath}};
 const classCompletion:(className:string)=>Partial<Completion> = (className)=>{return{label:'.'+className,sortText:'b'}}
 const stateCompletion:(stateName:string, from?:string)=>Partial<Completion> = (stateName, from='projectRoot/main.css')=>{return{label:stateName,sortText:'a',detail:'from: '+from}}
 const extendsCompletion:(typeName:string,range?:ProviderRange)=>Partial<Completion> = (typeName,range)=>{return{label:typeName,sortText:'a',insertText:' '+typeName+';\n',range}};
@@ -294,6 +295,25 @@ describe('completion unit test',function(){
                         variantDirectiveCompletion,
                         mixinDirectiveCompletion
                     ]);
+                });
+            });
+            it('should complete -st-from value from files in dir',function(){
+                return completions(
+                `
+                :import{
+                    -st-from:|
+                }
+
+                `,{
+                    'file1.js':'',
+                    'file2.css':''
+                },true).then((asserter)=>{
+
+                    asserter.assertCompletions([
+                        filePathCompletion('file1'),
+                        filePathCompletion('file2.css')
+                    ]);
+
                 });
             });
 

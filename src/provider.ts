@@ -5,27 +5,31 @@ import {Stylesheet,Resolver} from 'stylable';
 const PostCssNested = require('postcss-nested');
 const PostCssSafe = require('postcss-safe-parser');
 import * as _ from 'lodash';
-const processor = PostCss([PostCssNested]);
-import {getDefinition,isClassDefinition,ClassDefinition} from "./utils/get-definitions";
 
-export interface ProviderPosition{
-    line:number;
-    character:number;
-}
-
-
-export interface ProviderRange{
-    start:ProviderPosition;
-    end:ProviderPosition;
-}
+import {getDefinition,isClassDefinition,ClassDefinition,SymbolDefinition} from "./utils/get-definitions";
+import {getPositionInSrc,isContainer,isDeclaration,isInNode,isSelector,pathFromPosition,Position} from "./utils/postcss-ast-utils";
 import {
     parseSelector,
     isSelectorChunk,
     isSelectorInternalChunk
 } from './utils/selector-analyzer';
 
+
+const processor = PostCss([PostCssNested]);
+
+export interface ProviderPosition{
+    line:number;
+    character:number;
+}
+
+export interface ProviderRange{
+    start:ProviderPosition;
+    end:ProviderPosition;
+}
+
+
 export class Completion{
-    constructor(public label:string,public detail:string = "", public sortText:string = 'd',public insertText?:string | snippet, public range?:ProviderRange){
+    constructor(public label:string,public detail:string = "", public sortText:string = 'd',public insertText?:string | snippet, public range?:ProviderRange,public additionalCompletions:boolean = false){
 
     }
 }
@@ -35,9 +39,24 @@ export class snippet{
 }
 
 
+function singleLineRange(line:number,start:number,end:number):ProviderRange{
+    return {
+        start:{
+            line:line,
+            character:start
+        },
+        end:{
+            line:line,
+            character:end
+        }
+    }
+}
+
+
+// Completions
 const rootClass = new Completion('.root','','b');
 const importsDirective = new Completion(':import','','a',new snippet('import {\n\t-st-from: "$1";\n}'));
-const extendsDirective = new Completion('-st-extends:','','a',new snippet('-st-extends:$1;'));
+const extendsDirective = new Completion('-st-extends:','','a',new snippet('-st-extends:$1'),undefined,true);
 const statesDirective = new Completion('-st-states:','','a',new snippet('-st-states:$1;'));
 const mixinDirective = new Completion('-st-mixin:','','a',new snippet('-st-mixin:$1;'));
 const variantDirective = new Completion('-st-variant:','','a',new snippet('-st-variant:true;'));
@@ -50,76 +69,14 @@ function classCompletion(className:string){
 function extendCompletion(symbolName:string,range?:ProviderRange){
     return new Completion(symbolName,'yours','a',new snippet(' '+symbolName+';\n'),range)
 }
-function stateCompletion(stateName:string,from:string){
-    return new Completion(stateName,'from: '  + from,'a');
+function stateCompletion(stateName:string,from:string,pos:ProviderPosition){
+    return new Completion(':'+stateName,'from: '  + from,'a',new snippet(':'+stateName),singleLineRange(pos.line,pos.character-1,pos.character));
 }
+// end completions
+
+
 type CompletionMap = {[s:string]:Completion};
 
-
-// let a:CompletionItem = {
-//     label:'',
-//     kind:CompletionItemKind.Field,
-//     detail:'',
-//     documentation:'',
-//     sortText:'a',
-//     filterText:'',
-//     insertText:''
-
-// }
-
-export interface Position{
-    line:number
-    character:number
-}
-
-function isInNode(position:Position,node:PostCss.NodeBase):boolean{
-    if(node.source.start!.line > position.line){
-        return false;
-    }
-    if(node.source.start!.line === position.line && node.source.start!.column > position.character){
-        return false;
-    }
-    if(node.source.end!.line < position.line){
-        return false;
-    }
-    if(node.source.end!.line === position.line && node.source.end!.column < position.character){
-        return false;
-    }
-    return true;
-}
-
-function isContainer(node:PostCss.NodeBase):node is PostCss.ContainerBase{
-    return node.hasOwnProperty('nodes')
-}
-
-
-function isSelector(node:PostCss.NodeBase):node is PostCss.Rule{
-    return node.hasOwnProperty('selector')
-}
-
-function isDeclaration(node:PostCss.NodeBase):node is PostCss.Declaration{
-    return node.hasOwnProperty('prop');
-}
-function pathFromPosition(ast:PostCss.NodeBase,postion:Position,res:PostCss.NodeBase[] = []):PostCss.NodeBase[]{
-    let currentNode = ast;
-    res.push(ast);
-    if(isContainer(currentNode) && currentNode.nodes){
-        const inChildNode = currentNode.nodes.find((node:PostCss.NodeBase)=>{
-            return isInNode(postion,node);
-        });
-        if(inChildNode){
-            return pathFromPosition(inChildNode,postion,res);
-        }
-    }
-    return res
-}
-
-
-function getPositionInSrc(src:string,position:Position){
-    const lines = src.split('\n');
-    return lines.slice(0,position.line)
-    .reduce((total:number, line)=>line.length+total+1,-1)+position.character;
-}
 
 function addExistingClasses(stylesheet:Stylesheet | undefined,completions:Completion[]){
     if(stylesheet==undefined)
@@ -150,31 +107,25 @@ function isSimple(selector:string){
     return true;
 }
 
-function getLastSelectorChunck(selector:string){
-    const splitSelector =  selector.split(/[> ]/);
-    return splitSelector[splitSelector.length-1];
-}
-
-function getChunkTargets(selectorChunk:string):string[]{
-    const splitChunk = selectorChunk.split(/(::|:|\.)/);
-    const targets: string[] = [];
-    if(splitChunk[0]){
-        targets.push(splitChunk[0])
-    }
-    for(var i=1;i<splitChunk.length;i+=2){
-        if(splitChunk[i]==='.'){
-            targets.push('.'+splitChunk[i+1]);
-        }
-    }
-    return targets;
-}
-
 
 
 const lineEndsRegexp = /({|}|;)/;
 
+export interface FsEntity extends SymbolDefinition{
+    type:string;
+    globalPath:string;
+}
+
+export interface File extends FsEntity{
+    type:'file';
+}
+export interface Dir extends FsEntity{
+    type:'dir';
+}
+
 export interface ExtendedResolver extends Resolver{
-    resolveDependencies(stylesheet:Stylesheet):Thenable<void>
+    resolveDependencies(stylesheet:Stylesheet):Thenable<void>;
+    getFolderContents(folderPath:string):Thenable<FsEntity[]>;
 }
 
 function isSpacy(char:string){
@@ -293,13 +244,17 @@ export default class Provider{
                     }
                     completions.push(...getNewCompletions(declarationBlockDirectives, lastSelector));
                 }
-            }else if(stylesheet && trimmedLine.indexOf('-st-extends:')===0 && lastChar==":" && trimmedLine.split(':').length===2){
+            }else if(stylesheet  && lastChar==":" && trimmedLine.split(':').length===2){
+                if(trimmedLine.indexOf('-st-extends:')===0){
+                    stylesheet.imports.forEach((importJson)=>{
+                        if(importJson.from.lastIndexOf('.css')===importJson.from.length-4 && importJson.defaultExport){
+                            completions.push(extendCompletion(importJson.defaultExport));
+                        }
+                    });
+                }else if(trimmedLine.indexOf('-st-from:')===0){
+                    debugger;
+                }
 
-                stylesheet.imports.forEach((importJson)=>{
-                    if(importJson.from.lastIndexOf('.css')===importJson.from.length-4 && importJson.defaultExport){
-                        completions.push(extendCompletion(importJson.defaultExport));
-                    }
-                });
             }
         }
         if(trimmedLine.length<2){
@@ -322,7 +277,7 @@ export default class Provider{
                         clsDef.states.forEach((stateDef)=>{
                             if(focusChunk.states.indexOf(stateDef.name) !== -1){ return }
                             const from = 'from: '  + stateDef.from;
-                            completions.push(stateCompletion(stateDef.name,stateDef.from))
+                            completions.push(stateCompletion(stateDef.name,stateDef.from,position))
                         })
                     }
                 })

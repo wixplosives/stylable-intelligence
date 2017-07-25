@@ -4,8 +4,8 @@
 'use strict';
 
 
-import { workspace, languages, window, commands, ExtensionContext, Disposable, CompletionItemProvider ,TextDocument,Position,CancellationToken,CompletionItem,CompletionItemKind, Range,SnippetString} from 'vscode';
-import Provider, { Completion,snippet ,ExtendedResolver,ProviderRange} from './provider';
+import { workspace, languages, window, commands, ExtensionContext, Disposable, CompletionItemProvider ,TextDocument,Position,CancellationToken,CompletionItem,CompletionItemKind, Range,SnippetString, Command} from 'vscode';
+import Provider, { Completion,snippet ,ExtendedResolver,ProviderRange,Dir,File,FsEntity} from './provider';
 import {Resolver,Stylesheet} from 'stylable';
 import * as _ from 'lodash';
 import path = require('path');
@@ -35,6 +35,10 @@ class VsCodeResolver extends Resolver implements ExtendedResolver{
         this.st = s;
         return super.resolveSymbols(s);
     }
+    getFolderContents(path:string){
+        const res:FsEntity[] = [];
+        return Promise.resolve(res);
+    }
 }
 
 const resolver = new VsCodeResolver({});
@@ -48,7 +52,7 @@ export class StylableDotCompletionProvider implements CompletionItemProvider {
             return res.map((com:Completion)=>{
                 let vsCodeCompletion = new CompletionItem(com.label);
                 vsCodeCompletion.detail = com.detail;
-                // vsCodeCompletion.range = getRange(com.range);
+                vsCodeCompletion.range = getRange(com.range);
                 if(typeof com.insertText==='string'){
                     vsCodeCompletion.insertText = com.insertText;
                 }else if(com.insertText){
@@ -58,6 +62,16 @@ export class StylableDotCompletionProvider implements CompletionItemProvider {
 
                 }
                 vsCodeCompletion.sortText = com.sortText;
+                if(com.additionalCompletions){
+                    // commands.getCommands().then((res)=>{
+                    //     debugger;
+                    // })
+                    vsCodeCompletion.command = {
+                        title:"additional",
+                        command:'editorconfig._triggerSuggestAfterDelay',
+                        arguments:[]
+                    }
+                }
                 return vsCodeCompletion;
             })
         })
@@ -74,5 +88,5 @@ function getRange(rng:ProviderRange | undefined):Range | undefined{
 }
 
 export function activate(context: ExtensionContext) {
-	context.subscriptions.push(languages.registerCompletionItemProvider('css',new StylableDotCompletionProvider(),'.','-',':'));
+	context.subscriptions.push(languages.registerCompletionItemProvider('css',new StylableDotCompletionProvider(),'.','-',':','"'));
 }
