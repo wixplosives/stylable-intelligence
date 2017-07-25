@@ -65,13 +65,13 @@
     "mocha-loader": "~1.1.1",
     "rimraf": "~2.6.1",
     "sinon": "~2.3.5",
-    "sinon-chai": "~2.11.0",
+    "sinon-chai": "~2.12.0",
     "source-map-support": "~0.4.15",
     "tslib": "~1.7.1",
     "typescript": "~2.4.1",
     "vscode": "1.1.4",
-    "webpack": "~3.2.0",
-    "webpack-dev-server": "~2.5.0"
+    "webpack": "~3.3.0",
+    "webpack-dev-server": "~2.6.1"
   },
   "peerDependencies": {
     "tslib": "~1.7.1"
@@ -82,6 +82,6 @@
     "lodash": "4.17.4",
     "postcss": "^6.0.7",
     "postcss-nested": "^2.0.4",
-    "stylable": "2.0.2"
+    "stylable": "2.0.4"
   }
 }
