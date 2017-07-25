@@ -70,7 +70,7 @@
     "tslib": "~1.7.1",
     "typescript": "~2.4.1",
     "vscode": "1.1.4",
-    "webpack": "~3.3.0",
+    "webpack": "~3.4.0",
     "webpack-dev-server": "~2.6.1"
   },
   "peerDependencies": {
