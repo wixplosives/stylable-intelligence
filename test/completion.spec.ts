@@ -87,7 +87,7 @@ const importDefaultDirectiveCompletion:Partial<Completion> = {label:'-st-default
 const importNamedDirectiveCompletion:Partial<Completion> = {label:'-st-named:',sortText:'a',insertText:'-st-named:$1;'};
 const filePathCompletion:(filePath:string)=>Partial<Completion> = (filePath) =>{return {label:filePath,sortText:'a',insertText:'./'+filePath}};
 const classCompletion:(className:string)=>Partial<Completion> = (className)=>{return{label:'.'+className,sortText:'b'}}
-const stateCompletion:(stateName:string, from?:string)=>Partial<Completion> = (stateName, from='projectRoot/main.css')=>{return{label:stateName,sortText:'a',detail:'from: '+from}}
+const stateCompletion:(stateName:string, from?:string)=>Partial<Completion> = (stateName, from='projectRoot/main.css')=>{return{label:':'+stateName,sortText:'a',detail:'from: '+from,insertText:':'+stateName}}
 const extendsCompletion:(typeName:string,range?:ProviderRange)=>Partial<Completion> = (typeName,range)=>{return{label:typeName,sortText:'a',insertText:' '+typeName+';\n',range}};
 describe('completion unit test',function(){
     describe('root level',function(){
@@ -297,7 +297,7 @@ describe('completion unit test',function(){
                     ]);
                 });
             });
-            it('should complete -st-from value from files in dir',function(){
+            xit('should complete -st-from value from files in dir',function(){
                 return completions(
                 `
                 :import{
