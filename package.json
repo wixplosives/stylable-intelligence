@@ -1,5 +1,5 @@
 {
-  "name": "stylable-inteligence",
+  "name": "stylable-intelligence",
   "version": "0.0.1",
   "description": "Extension for vscode",
   "author": "Nadav Abraami (nadav@wix.com)",
@@ -7,10 +7,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@github.com:wix/stylable-inteligence.git"
+    "url": "git@github.com:wixplosives/stylable-intelligence.git"
   },
   "bugs": {
-    "url": "https://github.com/wixplosives/stylable-inteligence/issues"
+    "url": "https://github.com/wixplosives/stylable-intelligence/issues"
   },
   "engines": {
     "vscode": "^1.14.2"
@@ -26,7 +26,7 @@
     "dist/src"
   ],
   "testGlob": "./dist/test/**/*.spec.js?(x)",
-  "homepage": "https://github.com/wix/stylable-inteligence#readme",
+  "homepage": "https://github.com/wixplosives/stylable-intelligence#readme",
   "keywords": [
     "typescript",
     "tdd"
