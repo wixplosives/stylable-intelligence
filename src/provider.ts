@@ -54,7 +54,7 @@ function singleLineRange(line:number,start:number,end:number):ProviderRange{
 
 
 // Completions
-const rootClass = new Completion('.root','The root class','b',new snippet('.root {\n\t$1\n}'));
+const rootClass = new Completion('.root','The root class','b');
 const importsDirective = new Completion(':import','Import an external library','a',new snippet(':import {\n\t-st-from: "$1";\n}'));
 const extendsDirective = new Completion('-st-extends:','Extend an external component','a',new snippet('-st-extends: $1;'),undefined,true);
 const statesDirective = new Completion('-st-states:','Define the CSS states available for this class','a',new snippet('-st-states: $1;'));
