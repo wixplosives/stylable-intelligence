@@ -35,7 +35,7 @@
   "browser": "dist/src/index.js",
   "scripts": {
     "vscode:prepublish": "tsc -p ./",
-    "postinstall": "test -e ./node_modules/vscode/bin/install && node ./node_modules/vscode/bin/install",
+    "postinstall": "test -e ./node_modules/vscode/bin/install && node ./node_modules/vscode/bin/install; true",
     "prepublish": "npm run vscode:prepublish && npm run postinstall && cp ./node_modules/vscode/vscode.d.ts ./dist/vscode.d.ts",
     "build": "tsc -d",
     "bundle": "webpack --progress",
