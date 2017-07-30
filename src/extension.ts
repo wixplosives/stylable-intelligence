@@ -6,7 +6,7 @@
 
 import { workspace, languages, window, commands, ExtensionContext, Disposable, CompletionItemProvider ,TextDocument,Position,CancellationToken,CompletionItem,CompletionItemKind, Range,SnippetString, Command} from 'vscode';
 import Provider, { Completion,snippet ,ExtendedResolver,ProviderRange,Dir,File,FsEntity} from './provider';
-import {Resolver,Stylesheet} from 'stylable';
+import {Resolver,Stylesheet, fromCSS} from 'stylable';
 import * as _ from 'lodash';
 import path = require('path');
 
@@ -24,7 +24,7 @@ class VsCodeResolver extends Resolver implements ExtendedResolver{
             return workspace.openTextDocument(globalPath)
             .then((doc)=>{
                 if(_.endsWith(importNode.from,'.css')){
-                    this.add(globalPath,Stylesheet.fromCSS(doc.getText()))
+                    this.add(globalPath,fromCSS(doc.getText()))
                 }
             })
         });

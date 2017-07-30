@@ -1,4 +1,4 @@
-import {Resolver,Stylesheet} from 'stylable'
+import {Resolver,Stylesheet,fromCSS} from 'stylable'
 import StylableDotCompletionProvider,{Completion,snippet,ExtendedResolver,FsEntity} from '../src/provider';
 import * as _ from 'lodash';
 export class TestResolver extends Resolver implements ExtendedResolver{
@@ -11,7 +11,7 @@ export class TestResolver extends Resolver implements ExtendedResolver{
     addExtraFiles(extrafiles:{[path:string]:string}){
         _.forEach(extrafiles,(file:string,fileName:string)=>{
             const fullPath:string = 'projectRoot/'+fileName
-            this.add(fullPath,Stylesheet.fromCSS(file,undefined,fullPath));
+            this.add(fullPath,fromCSS(file,undefined,fullPath));
         })
     }
     getFolderContents(path:string):Thenable<FsEntity[]>{

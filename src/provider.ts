@@ -1,7 +1,7 @@
 //must remain independant from vscode
 
 import * as PostCss from 'postcss';
-import {Stylesheet,Resolver} from 'stylable';
+import {Stylesheet,Resolver,fromCSS} from 'stylable';
 const PostCssNested = require('postcss-nested');
 const PostCssSafe = require('postcss-safe-parser');
 import * as _ from 'lodash';
@@ -188,7 +188,7 @@ export default class Provider{
 
         let stylesheet:Stylesheet|undefined = undefined;
         try{
-             stylesheet = Stylesheet.fromCSS(fixedSrc,undefined,filePath);
+             stylesheet = fromCSS(fixedSrc,undefined,filePath);
         }catch(error){
             console.error('stylable transpiling failed');
         }

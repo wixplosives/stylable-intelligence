@@ -4232,9 +4232,9 @@ strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
-stylable@2.0.4:
-  version "2.0.4"
-  resolved "http://npmreg.wixcore3.com/stylable/-/stylable-2.0.4.tgz#1b718cf99291abe63b62586e36ed271dca865c2c"
+stylable@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/stylable/-/stylable-3.0.0.tgz#e409d7df9595f73d17d9b94ace70ea321a393a64"
   dependencies:
     camelcase-css "^1.0.1"
     css-selector-tokenizer "^0.7.0"

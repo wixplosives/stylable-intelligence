@@ -1,5 +1,5 @@
 import StylableDotCompletionProvider,{Completion,snippet,ExtendedResolver} from '../../src/provider';
-import {Resolver,Stylesheet} from 'stylable'
+import {Resolver,Stylesheet, fromCSS} from 'stylable'
 import * as _ from 'lodash';
 import {ClassDefinition,StateDefinition,getDefinition,isClassDefinition,isStateDefinition,SymbolDefinition} from '../../src/utils/get-definitions';
 import { workspace, languages, window, commands, ExtensionContext, Disposable, CompletionItemProvider ,TextDocument,Position,CancellationToken,CompletionItem,CompletionItemKind, Range} from 'vscode';
@@ -16,7 +16,7 @@ function definitions(symbolName:string,src:string,extrafiles:{[path:string]:stri
     const resolver = new TestResolver({});
     resolver.addExtraFiles(extrafiles);
 
-    const styleSheet:Stylesheet = Stylesheet.fromCSS(src,undefined,'projectRoot/main.css');
+    const styleSheet:Stylesheet = fromCSS(src,undefined,'projectRoot/main.css');
     return Promise.resolve(getDefinition(styleSheet,symbolName,resolver));
 
 }
