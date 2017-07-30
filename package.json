@@ -25,8 +25,7 @@
   "types": "dist/src/index.d.ts",
   "files": [
     "src",
-    "dist/src",
-    "node_modules/vscode/vscode.d.ts"
+    "dist/src"
   ],
   "testGlob": "./dist/test/**/*.spec.js?(x)",
   "homepage": "https://github.com/wixplosives/stylable-intelligence#readme",
@@ -85,7 +84,6 @@
     "lodash": "4.17.4",
     "postcss": "^6.0.7",
     "postcss-nested": "^2.0.4",
-    "stylable": "2.0.4",
-    "vscode": "1.1.4"
+    "stylable": "2.0.4"
   }
 }
