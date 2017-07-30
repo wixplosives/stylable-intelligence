@@ -38,7 +38,7 @@
   "scripts": {
     "vscode:prepublish": "tsc -p ./",
     "prepublish": "npm run build",
-    "build": "tsc -d && && node ./node_modules/vscode/bin/install",
+    "build": "tsc -d && node ./node_modules/vscode/bin/install",
     "bundle": "webpack --progress",
     "compile": "tsc -watch -d",
     "pretest": "rimraf dist && yarn build && yarn bundle",
