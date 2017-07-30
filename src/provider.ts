@@ -6,8 +6,6 @@ const PostCssNested = require('postcss-nested');
 const PostCssSafe = require('postcss-safe-parser');
 import * as _ from 'lodash';
 
-interface Thenable<T> extends PromiseLike<T> {}
-
 import {getDefinition,isClassDefinition,ClassDefinition,SymbolDefinition} from "./utils/get-definitions";
 import {getPositionInSrc,isContainer,isDeclaration,isInNode,isSelector,pathFromPosition,Position} from "./utils/postcss-ast-utils";
 import {
