@@ -54,15 +54,15 @@ function singleLineRange(line:number,start:number,end:number):ProviderRange{
 
 
 // Completions
-const rootClass = new Completion('.root','','b');
-const importsDirective = new Completion(':import','','a',new snippet('import {\n\t-st-from: "$1";\n}'));
-const extendsDirective = new Completion('-st-extends:','','a',new snippet('-st-extends:$1'),undefined,true);
-const statesDirective = new Completion('-st-states:','','a',new snippet('-st-states:$1;'));
-const mixinDirective = new Completion('-st-mixin:','','a',new snippet('-st-mixin:$1;'));
-const variantDirective = new Completion('-st-variant:','','a',new snippet('-st-variant:true;'));
-const fromDirective = new Completion('-st-from:','','a',new snippet('-st-from:"$1";'));
-const namedDirective = new Completion('-st-named:','','a',new snippet('-st-named:$1;'));
-const defaultDirective = new Completion('-st-default:','','a',new snippet('-st-default:$1;'));
+const rootClass = new Completion('.root','The root class','b');
+const importsDirective = new Completion(':import','Import an external library','a',new snippet(':import {\n\t-st-from: "$1";\n}'));
+const extendsDirective = new Completion('-st-extends:','Extend an external component','a',new snippet('-st-extends: $1;'),undefined,true);
+const statesDirective = new Completion('-st-states:','Define the CSS states available for this class','a',new snippet('-st-states: $1;'));
+const mixinDirective = new Completion('-st-mixin:','Apply mixins on the class','a',new snippet('-st-mixin: $1;'));
+const variantDirective = new Completion('-st-variant:','','a',new snippet('-st-variant: true;'));
+const fromDirective = new Completion('-st-from:','Path to library','a',new snippet('-st-from: "$1";'));
+const namedDirective = new Completion('-st-named:','Named object export name','a',new snippet('-st-named: $1;'));
+const defaultDirective = new Completion('-st-default:','Default object export name','a',new snippet('-st-default: $1;'));
 function classCompletion(className:string){
     return new Completion('.'+className,'mine','b')
 }
