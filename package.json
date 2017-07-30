@@ -35,7 +35,7 @@
   "browser": "dist/src/index.js",
   "scripts": {
     "vscode:prepublish": "tsc -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install",
+    "postinstall": "test -e ./node_modules/vscode/bin/install && node ./node_modules/vscode/bin/install",
     "prepublish": "npm run vscode:prepublish && npm run postinstall && cp ./node_modules/vscode/vscode.d.ts ./dist/vscode.d.ts",
     "build": "tsc -d",
     "bundle": "webpack --progress",
@@ -84,6 +84,7 @@
     "lodash": "4.17.4",
     "postcss": "^6.0.7",
     "postcss-nested": "^2.0.4",
-    "stylable": "2.0.4"
+    "stylable": "2.0.4",
+    "vscode": "1.1.4"
   }
 }
