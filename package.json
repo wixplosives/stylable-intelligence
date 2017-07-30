@@ -1,7 +1,7 @@
 {
   "name": "stylable-intelligence",
   "version": "0.0.1",
-  "description": "Extension for vscode",
+  "description": "Stylable Language Services",
   "author": "Nadav Abraami (nadav@wix.com)",
   "publisher": "Nadav Abraami (nadav@wix.com)",
   "license": "MIT",
@@ -12,76 +12,9 @@
   "bugs": {
     "url": "https://github.com/wixplosives/stylable-intelligence/issues"
   },
-  "engines": {
-    "vscode": "^1.14.2"
-  },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "onLanguage:css"
-  ],
-  "main": "dist/src/index.js",
-  "files": [
-    "dist/src"
-  ],
-  "testGlob": "./dist/test/**/*.spec.js?(x)",
   "homepage": "https://github.com/wixplosives/stylable-intelligence#readme",
   "keywords": [
     "typescript",
     "tdd"
-  ],
-  "browser": "dist/src/index.js",
-  "scripts": {
-    "vscode:prepublish": "tsc -p ./",
-    "build": "tsc -d",
-    "bundle": "webpack --progress",
-    "compile": "tsc -watch -d",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "pretest": "rimraf dist && yarn build && yarn bundle",
-    "reset": "rimraf node_modules dist && yarn install && yarn test",
-    "test": "yarn test:node && yarn test:browser",
-    "test:node": "mocha --require dist/test/setup.js --require source-map-support/register --reporter mocha-env-reporter dist/test/*.spec.js",
-    "test:browser": "karma start --single-run",
-    "start": "rimraf dist && yarn build && concurrently --kill-others --success first \"yarn build -- -w\" \"webpack-dev-server --no-info\""
-  },
-  "devDependencies": {
-    "@types/chai": "~4.0.1",
-    "@types/mocha": "~2.2.41",
-    "@types/node": "^8.0.13",
-    "@types/sinon": "~2.3.1",
-    "@types/sinon-chai": "~2.7.28",
-    "chai": "~4.1.0",
-    "chai-subset": "~1.5.0",
-    "concurrently": "~3.5.0",
-    "glob": "~7.1.2",
-    "karma": "~1.7.0",
-    "karma-chrome-launcher": "~2.2.0",
-    "karma-env-reporter": "~1.0.13",
-    "karma-firefox-launcher": "~1.0.1",
-    "karma-mocha": "~1.3.0",
-    "mocha": "~3.4.2",
-    "mocha-env-reporter": "~2.0.4",
-    "mocha-loader": "~1.1.1",
-    "rimraf": "~2.6.1",
-    "sinon": "~2.3.5",
-    "sinon-chai": "~2.12.0",
-    "source-map-support": "~0.4.15",
-    "tslib": "~1.7.1",
-    "typescript": "~2.4.1",
-    "vscode": "1.1.4",
-    "webpack": "~3.3.0",
-    "webpack-dev-server": "~2.6.1"
-  },
-  "peerDependencies": {
-    "tslib": "~1.7.1"
-  },
-  "dependencies": {
-    "@types/lodash": "4.14.71",
-    "css-selector-tokenizer": "^0.7.0",
-    "lodash": "4.17.4",
-    "postcss": "^6.0.7",
-    "postcss-nested": "^2.0.4",
-    "stylable": "^3.0.0"
-  }
+  ]
 }
