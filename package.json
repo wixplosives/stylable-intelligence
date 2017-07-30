@@ -23,6 +23,7 @@
   ],
   "main": "dist/src/index.js",
   "files": [
+    "src",
     "dist/src",
     "dist/vscode.d.ts"
   ],
