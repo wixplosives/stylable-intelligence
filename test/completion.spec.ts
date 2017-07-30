@@ -76,15 +76,15 @@ function completionsIntenal(src:string,extrafiles:{[path:string]:string} = {}):T
     },'projectRoot/main.css',resolver)
 }
 
-const importCompletion:Partial<Completion> = {label:':import',sortText:'a',insertText:':import {\n\t-st-from: "$1";\n}'};
-const rootCompletion:Partial<Completion> = {label:'.root',sortText:'b'};
-const statesDirectiveCompletion:Partial<Completion> = {label:'-st-states:',sortText:'a',insertText:'-st-states: $1;'};
-const extendsDirectiveCompletion:Partial<Completion> = {label:'-st-extends:',sortText:'a',insertText:'-st-extends: $1;',additionalCompletions:true};
-const mixinDirectiveCompletion:Partial<Completion> = {label:'-st-mixin:',sortText:'a',insertText:'-st-mixin: $1;'};
-const variantDirectiveCompletion:Partial<Completion> = {label:'-st-variant:',sortText:'a',insertText:'-st-variant: true;'};
-const importFromDirectiveCompletion:Partial<Completion> = {label:'-st-from:',sortText:'a',insertText:'-st-from: "$1";'};
-const importDefaultDirectiveCompletion:Partial<Completion> = {label:'-st-default:',sortText:'a',insertText:'-st-default: $1;'};
-const importNamedDirectiveCompletion:Partial<Completion> = {label:'-st-named:',sortText:'a',insertText:'-st-named: $1;'};
+const importCompletion:Partial<Completion> = {label:':import',detail:'Import an external library',sortText:'a',insertText:':import {\n\t-st-from: "$1";\n}'};
+const rootCompletion:Partial<Completion> = {label:'.root',detail:'The root class',sortText:'b'};
+const statesDirectiveCompletion:Partial<Completion> = {label:'-st-states:',detail:'Define the CSS states available for this class',sortText:'a',insertText:'-st-states: $1;'};
+const extendsDirectiveCompletion:Partial<Completion> = {label:'-st-extends:',detail:'Extend an external component',sortText:'a',insertText:'-st-extends: $1;',additionalCompletions:true};
+const mixinDirectiveCompletion:Partial<Completion> = {label:'-st-mixin:',detail:'Apply mixins on the class',sortText:'a',insertText:'-st-mixin: $1;'};
+const variantDirectiveCompletion:Partial<Completion> = {label:'-st-variant:',detail:'',sortText:'a',insertText:'-st-variant: true;'};
+const importFromDirectiveCompletion:Partial<Completion> = {label:'-st-from:',detail:'Path to library',sortText:'a',insertText:'-st-from: "$1";'};
+const importDefaultDirectiveCompletion:Partial<Completion> = {label:'-st-default:',detail:'Default object export name',sortText:'a',insertText:'-st-default: $1;'};
+const importNamedDirectiveCompletion:Partial<Completion> = {label:'-st-named:',detail:'Named object export name',sortText:'a',insertText:'-st-named: $1;'};
 const filePathCompletion:(filePath:string)=>Partial<Completion> = (filePath) =>{return {label:filePath,sortText:'a',insertText:'./'+filePath}};
 const classCompletion:(className:string)=>Partial<Completion> = (className)=>{return{label:'.'+className,sortText:'b'}}
 const stateCompletion:(stateName:string, from?:string)=>Partial<Completion> = (stateName, from='projectRoot/main.css')=>{return{label:':'+stateName,sortText:'a',detail:'from: '+from,insertText:':'+stateName}}
