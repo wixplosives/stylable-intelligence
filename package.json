@@ -23,7 +23,8 @@
   ],
   "main": "dist/src/index.js",
   "files": [
-    "dist/src"
+    "dist/src",
+    "dist/vscode.d.ts"
   ],
   "testGlob": "./dist/test/**/*.spec.js?(x)",
   "homepage": "https://github.com/wixplosives/stylable-intelligence#readme",
@@ -34,10 +35,11 @@
   "browser": "dist/src/index.js",
   "scripts": {
     "vscode:prepublish": "tsc -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "prepublish": "npm run vscode:prepublish && npm run postinstall && cp ./node_modules/vscode/vscode.d.ts ./dist/vscode.d.ts",
     "build": "tsc -d",
     "bundle": "webpack --progress",
     "compile": "tsc -watch -d",
-    "postinstall": "node ./node_modules/vscode/bin/install",
     "pretest": "rimraf dist && yarn build && yarn bundle",
     "reset": "rimraf node_modules dist && yarn install && yarn test",
     "test": "yarn test:node && yarn test:browser",
