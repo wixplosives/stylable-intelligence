@@ -22,6 +22,7 @@
     "onLanguage:css"
   ],
   "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "files": [
     "src",
     "dist/src",
@@ -37,8 +38,8 @@
   "scripts": {
     "vscode:prepublish": "tsc -p ./",
     "postinstall": "test -e ./node_modules/vscode/bin/install && node ./node_modules/vscode/bin/install; true",
-    "prepublish": "npm run vscode:prepublish && npm run postinstall && cp ./node_modules/vscode/vscode.d.ts ./dist/vscode.d.ts",
-    "build": "tsc -d",
+    "prepublish": "npm run build",
+    "build": "tsc -d && && npm run postinstall && cp ./node_modules/vscode/vscode.d.ts ./dist/vscode.d.ts",
     "bundle": "webpack --progress",
     "compile": "tsc -watch -d",
     "pretest": "rimraf dist && yarn build && yarn bundle",
