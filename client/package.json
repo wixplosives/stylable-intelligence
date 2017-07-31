@@ -22,7 +22,7 @@
   "activationEvents": [
     "onLanguage:css"
   ],
-  "main": "dist/src/index.js",
+  "main": "dist/extension.js",
   "files": [
     "dist/src"
   ],
