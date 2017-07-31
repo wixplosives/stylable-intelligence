@@ -6,7 +6,8 @@
   "publisher": "Nadav Abraami (nadav@wix.com)",
   "license": "MIT",
   "engines": {
-    "node": "*"
+    "node": "*",
+    "vscode": "^1.14.2"
   },
   "scripts": {
     "vscode:prepublish": "tsc -p ./",
