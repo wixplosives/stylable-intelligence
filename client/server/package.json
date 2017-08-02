@@ -6,7 +6,6 @@
   "publisher": "Nadav Abraami (nadav@wix.com)",
   "license": "MIT",
   "engines": {
-    "node": "*",
     "vscode": "^1.14.2"
   },
   "dependencies": {
@@ -22,6 +21,7 @@
   },
   "scripts": {
     "compile": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc -p .",
-    "watch": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc --watch -p ."
+    "watch": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc --watch -p .",
+    "build": "node installVScode && tsc"
   }
 }
