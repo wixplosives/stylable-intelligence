@@ -1,4 +1,10 @@
 'use strict';
+import { Trace } from 'vscode-jsonrpc/lib/main';
+import { Server } from 'https';
+import { RequestType0 } from 'vscode-jsonrpc/lib/messages';
+import { ServerRequest } from 'http';
+import { Request } from '_debugger';
+import * as server from 'vscode-languageserver';
 
 
 import { workspace, languages, window, commands, ExtensionContext, Disposable, CompletionItemProvider, TextDocument, Position, CancellationToken, CompletionItem, CompletionItemKind, Range, SnippetString, Command } from 'vscode';
@@ -10,7 +16,7 @@ import path = require('path');
 
 
 export function activate(context: ExtensionContext) {
-    let serverModule = context.asAbsolutePath(path.join(__dirname, '..', 'server', 'server.js'));
+    let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));
     let serverOptions: ServerOptions = {
         run: { module: serverModule, transport: TransportKind.ipc },
         debug: { module: serverModule, transport: TransportKind.ipc }
@@ -20,11 +26,13 @@ export function activate(context: ExtensionContext) {
         // synchronize: {
         //     fileEvents: workspace.createFileSystemWatcher('**/.css')
         // }
+
     }
 
-    let disposable = new LanguageClient('stylable', serverOptions, clientOptions);
+    let client = new LanguageClient('stylable', serverOptions, clientOptions);
 
-    context.subscriptions.push(disposable.start());
-    // context.subscriptions.push(languages.registerCompletionItemProvider('css', new StylableDotCompletionProvider(), '.', '-', ':', '"'));
+    client.trace = Trace.Verbose;
+
+    context.subscriptions.push(client.start());
 }
 

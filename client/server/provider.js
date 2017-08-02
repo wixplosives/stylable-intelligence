@@ -1,51 +1,32 @@
+"use strict";
 //must remain independent from vscode
-
-import * as PostCss from 'postcss';
-import { Stylesheet, Resolver, fromCSS } from 'stylable';
+Object.defineProperty(exports, "__esModule", { value: true });
+const PostCss = require("postcss");
+const stylable_1 = require("stylable");
 const PostCssNested = require('postcss-nested');
 const PostCssSafe = require('postcss-safe-parser');
-import * as _ from 'lodash';
-
-import { getDefinition, isClassDefinition, ClassDefinition, SymbolDefinition } from "./utils/get-definitions";
-import { getPositionInSrc, isContainer, isDeclaration, isInNode, isSelector, pathFromPosition, Position } from "./utils/postcss-ast-utils";
-import {
-    parseSelector,
-    isSelectorChunk,
-    isSelectorInternalChunk
-} from './utils/selector-analyzer';
-
-
+const get_definitions_1 = require("./utils/get-definitions");
+const postcss_ast_utils_1 = require("./utils/postcss-ast-utils");
+const selector_analyzer_1 = require("./utils/selector-analyzer");
 const processor = PostCss([PostCssNested]);
-
-export interface ProviderPosition {
-    line: number;
-    character: number;
-}
-
-export interface ProviderRange {
-    start: ProviderPosition;
-    end: ProviderPosition;
-}
-
-
-export class Completion {
-    constructor(
-        public label: string,
-        public detail: string = "",
-        public sortText: string = 'd',
-        public insertText?: string | snippet,
-        public range?: ProviderRange,
-        public additionalCompletions: boolean = false) {
-
+class Completion {
+    constructor(label, detail = "", sortText = 'd', insertText, range, additionalCompletions = false) {
+        this.label = label;
+        this.detail = detail;
+        this.sortText = sortText;
+        this.insertText = insertText;
+        this.range = range;
+        this.additionalCompletions = additionalCompletions;
     }
 }
-
-export class snippet {
-    constructor(public source: string) { }
+exports.Completion = Completion;
+class snippet {
+    constructor(source) {
+        this.source = source;
+    }
 }
-
-
-function singleLineRange(line: number, start: number, end: number): ProviderRange {
+exports.snippet = snippet;
+function singleLineRange(line, start, end) {
     return {
         start: {
             line: line,
@@ -55,10 +36,8 @@ function singleLineRange(line: number, start: number, end: number): ProviderRang
             line: line,
             character: end
         }
-    }
+    };
 }
-
-
 // Completions
 const rootClass = new Completion('.root', 'The root class', 'b');
 const importsDirective = new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}'));
@@ -69,82 +48,51 @@ const variantDirective = new Completion('-st-variant:', '', 'a', new snippet('-s
 const fromDirective = new Completion('-st-from:', 'Path to library', 'a', new snippet('-st-from: "$1";'));
 const namedDirective = new Completion('-st-named:', 'Named object export name', 'a', new snippet('-st-named: $1;'));
 const defaultDirective = new Completion('-st-default:', 'Default object export name', 'a', new snippet('-st-default: $1;'));
-function classCompletion(className: string) {
-    return new Completion('.' + className, 'mine', 'b')
+function classCompletion(className) {
+    return new Completion('.' + className, 'mine', 'b');
 }
-function extendCompletion(symbolName: string, range?: ProviderRange) {
-    return new Completion(symbolName, 'yours', 'a', new snippet(' ' + symbolName + ';\n'), range)
+function extendCompletion(symbolName, range) {
+    return new Completion(symbolName, 'yours', 'a', new snippet(' ' + symbolName + ';\n'), range);
 }
-function stateCompletion(stateName: string, from: string, pos: ProviderPosition) {
+function stateCompletion(stateName, from, pos) {
     return new Completion(':' + stateName, 'from: ' + from, 'a', new snippet(':' + stateName), singleLineRange(pos.line, pos.character - 1, pos.character));
 }
-// end completions
-
-
-type CompletionMap = { [s: string]: Completion };
-
-
-function addExistingClasses(stylesheet: Stylesheet | undefined, completions: Completion[]) {
+function addExistingClasses(stylesheet, completions) {
     if (stylesheet == undefined)
         return;
-    Object.keys(stylesheet.classes).forEach((className: string) => {
+    Object.keys(stylesheet.classes).forEach((className) => {
         if (className === 'root') {
             return;
         }
-
         completions.push(classCompletion(className));
     });
 }
-
-function isIllegalLine(line: string): boolean {
-    return !!/^\s*[-\.:]\s*$/.test(line)
+function isIllegalLine(line) {
+    return !!/^\s*[-\.:]\s*$/.test(line);
 }
-
-function isSimple(selector: string) {
+function isSimple(selector) {
     if (selector.match(/[:> ]/)) {
         return false;
     }
     if (selector.indexOf('.') !== 0) {
-        return false
-    };
+        return false;
+    }
+    ;
     if (selector.lastIndexOf('.') !== 0) {
         return false;
     }
     return true;
 }
-
-
-
 const lineEndsRegexp = /({|}|;)/;
-
-export interface FsEntity extends SymbolDefinition {
-    type: string;
-    globalPath: string;
-}
-
-export interface File extends FsEntity {
-    type: 'file';
-}
-export interface Dir extends FsEntity {
-    type: 'dir';
-}
-
-export interface ExtendedResolver extends Resolver {
-    resolveDependencies(stylesheet: Stylesheet): Thenable<void>;
-    getFolderContents(folderPath: string): Thenable<FsEntity[]>;
-}
-
-function isSpacy(char: string) {
+function isSpacy(char) {
     return char === '' || char === ' ' || char === '\t' || char === '\n';
 }
-
-export default class Provider {
-    public getClassDefinition(stylesheet: Stylesheet, symbol: string, resolver: ExtendedResolver) {
+class Provider {
+    getClassDefinition(stylesheet, symbol, resolver) {
         const symbols = resolver.resolveSymbols(stylesheet);
     }
-
-    public provideCompletionItemsFromSrc(src: string, position: Position, filePath: string, resolver: ExtendedResolver): Thenable<Completion[]> {
-        let cursorLineIndex: number = position.character;
+    provideCompletionItemsFromSrc(src, position, filePath, resolver) {
+        let cursorLineIndex = position.character;
         let lines = src.split('\n');
         let currentLine = lines[position.line];
         let fixedSrc = src;
@@ -156,70 +104,57 @@ export default class Provider {
                 if (currentLocation >= position.character) {
                     currentLine = splitLine[i];
                     if (isIllegalLine(currentLine)) {
-                        splitLine[i] = '\n'
+                        splitLine[i] = '\n';
                         lines.splice(position.line, 1, splitLine.join(''));
                         fixedSrc = lines.join('\n');
                     }
                     break;
-                } else {
-                    cursorLineIndex -= splitLine[i].length + 1
+                }
+                else {
+                    cursorLineIndex -= splitLine[i].length + 1;
                 }
             }
-        } else if (isIllegalLine(currentLine)) {
+        }
+        else if (isIllegalLine(currentLine)) {
             lines.splice(position.line, 1, "");
             fixedSrc = lines.join('\n');
         }
-
-        let ast: PostCss.Root;
+        let ast;
         try {
             const res = processor.process(fixedSrc, {
                 parser: PostCssSafe
             });
             ast = res.root;
-        } catch (error) {
+        }
+        catch (error) {
             return Promise.resolve([]);
         }
-
-        let stylesheet: Stylesheet | undefined = undefined;
+        let stylesheet = undefined;
         try {
-            stylesheet = fromCSS(fixedSrc, undefined, filePath);
-        } catch (error) {
+            stylesheet = stylable_1.fromCSS(fixedSrc, undefined, filePath);
+        }
+        catch (error) {
             console.error('stylable transpiling failed');
         }
-        return resolver.resolveDependencies(stylesheet!)
+        return resolver.resolveDependencies(stylesheet)
             .then(() => {
-                return this.provideCompletionItemsFromAst(src, position, filePath, resolver, ast, stylesheet!, currentLine, cursorLineIndex)
-            });
-
+            return this.provideCompletionItemsFromAst(src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex);
+        });
     }
-
-
-    public provideCompletionItemsFromAst(
-        src: string,
-        position: Position,
-        filePath: string,
-        resolver: ExtendedResolver,
-        ast: PostCss.Root,
-        stylesheet: Stylesheet,
-        currentLine: string,
-        cursorLineIndex: number
-    ): Thenable<Completion[]> {
-        const completions: Completion[] = [];
+    provideCompletionItemsFromAst(src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex) {
+        const completions = [];
         const trimmedLine = currentLine.trim();
-
-        const position1Based: Position = {
+        const position1Based = {
             line: position.line + 1,
             character: position.character
-        }
-        const path = pathFromPosition(ast, position1Based);
-
-        const posInSrc = getPositionInSrc(src, position);
+        };
+        const path = postcss_ast_utils_1.pathFromPosition(ast, position1Based);
+        const posInSrc = postcss_ast_utils_1.getPositionInSrc(src, position);
         const lastChar = src.charAt(posInSrc);
-        const lastPart: PostCss.NodeBase = path[path.length - 1];
-        const prevPart: PostCss.NodeBase = path[path.length - 2];
-
-        const lastSelector = prevPart && isSelector(prevPart) ? prevPart :
-            lastPart && isSelector(lastPart) ? lastPart : null
+        const lastPart = path[path.length - 1];
+        const prevPart = path[path.length - 2];
+        const lastSelector = prevPart && postcss_ast_utils_1.isSelector(prevPart) ? prevPart :
+            lastPart && postcss_ast_utils_1.isSelector(lastPart) ? lastPart : null;
         if (lastSelector) {
             if (lastChar === '-' || isSpacy(lastChar) || lastChar == "{") {
                 if (lastSelector.selector === ':import') {
@@ -228,9 +163,9 @@ export default class Provider {
                         "-st-default": defaultDirective,
                         "-st-named": namedDirective
                     }, lastSelector));
-                } else {
-
-                    const declarationBlockDirectives: CompletionMap = {
+                }
+                else {
+                    const declarationBlockDirectives = {
                         '-st-mixin': mixinDirective
                     };
                     if (isSimple(lastSelector.selector)) {
@@ -240,17 +175,18 @@ export default class Provider {
                     }
                     completions.push(...getNewCompletions(declarationBlockDirectives, lastSelector));
                 }
-            } else if (stylesheet && lastChar == ":" && trimmedLine.split(':').length === 2) {
+            }
+            else if (stylesheet && lastChar == ":" && trimmedLine.split(':').length === 2) {
                 if (trimmedLine.indexOf('-st-extends:') === 0) {
                     stylesheet.imports.forEach((importJson) => {
                         if (importJson.from.lastIndexOf('.css') === importJson.from.length - 4 && importJson.defaultExport) {
                             completions.push(extendCompletion(importJson.defaultExport));
                         }
                     });
-                } else if (trimmedLine.indexOf('-st-from:') === 0) {
+                }
+                else if (trimmedLine.indexOf('-st-from:') === 0) {
                     debugger;
                 }
-
             }
         }
         if (trimmedLine.length < 2) {
@@ -261,39 +197,38 @@ export default class Provider {
                 completions.push(rootClass);
                 addExistingClasses(stylesheet, completions);
             }
-        } else if (lastChar === ':' && stylesheet !== undefined) {
-
-            const selectorRes = parseSelector(currentLine, cursorLineIndex);//position.character);
-
+        }
+        else if (lastChar === ':' && stylesheet !== undefined) {
+            const selectorRes = selector_analyzer_1.parseSelector(currentLine, cursorLineIndex); //position.character);
             const focusChunk = selectorRes.target.focusChunk;
-            if (!Array.isArray(focusChunk) && isSelectorChunk(focusChunk)) {// || isSelectorInternalChunk(focusChunk)
+            if (!Array.isArray(focusChunk) && selector_analyzer_1.isSelectorChunk(focusChunk)) {
                 focusChunk.classes.forEach((className) => {
-                    const clsDef = getDefinition(stylesheet, className, resolver)
-                    if (isClassDefinition(clsDef)) {
+                    const clsDef = get_definitions_1.getDefinition(stylesheet, className, resolver);
+                    if (get_definitions_1.isClassDefinition(clsDef)) {
                         clsDef.states.forEach((stateDef) => {
-                            if (focusChunk.states.indexOf(stateDef.name) !== -1) { return }
+                            if (focusChunk.states.indexOf(stateDef.name) !== -1) {
+                                return;
+                            }
                             const from = 'from: ' + stateDef.from;
-                            completions.push(stateCompletion(stateDef.name, stateDef.from, position))
-                        })
+                            completions.push(stateCompletion(stateDef.name, stateDef.from, position));
+                        });
                     }
-                })
+                });
             }
         }
-
         return Promise.resolve(completions);
     }
 }
-
-function getSelectorFromPosition(src: string, index: number) {
-
+exports.default = Provider;
+function getSelectorFromPosition(src, index) {
 }
-
-function getNewCompletions(completionMap: CompletionMap, ruleset: PostCss.Rule): Completion[] {
-    ruleset.nodes!.forEach(node => {
-        let dec = node as PostCss.Declaration;
+function getNewCompletions(completionMap, ruleset) {
+    ruleset.nodes.forEach(node => {
+        let dec = node;
         if (completionMap[dec.prop]) {
-            delete completionMap[dec.prop]
+            delete completionMap[dec.prop];
         }
     });
     return Object.keys(completionMap).map(name => completionMap[name]);
 }
+//# sourceMappingURL=provider.js.map
