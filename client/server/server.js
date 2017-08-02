@@ -1,7 +1,6 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_languageserver_1 = require("vscode-languageserver");
-const vscode_1 = require("vscode");
 const provider_1 = require("./provider");
 const vscode_resolver_1 = require("./adapters/vscode-resolver");
 let connection = vscode_languageserver_1.createConnection(new vscode_languageserver_1.IPCMessageReader(process), new vscode_languageserver_1.IPCMessageWriter(process));
@@ -13,7 +12,7 @@ function getRange(rng) {
     if (!rng) {
         return;
     }
-    const r = new vscode_1.Range(new vscode_1.Position(rng.start.line, rng.start.character), new vscode_1.Position(rng.end.line, rng.end.character));
+    const r = vscode_languageserver_1.Range.create(vscode_languageserver_1.Position.create(rng.start.line, rng.start.character), vscode_languageserver_1.Position.create(rng.end.line, rng.end.character));
     return r;
 }
 connection.onInitialize((params) => {
@@ -34,8 +33,8 @@ connection.onCompletion((params) => {
     return provider.provideCompletionItemsFromSrc(src, { line: pos.line, character: pos.character }, doc.uri, resolver)
         .then((res) => {
         return res.map((com) => {
-            let vsCodeCompletion = vscode_1.CompletionItem.create(com.label);
-            let ted = vscode_1.TextEdit.replace(getRange(com.range), typeof com.insertText === 'string' ? com.insertText : com.insertText.source);
+            let vsCodeCompletion = vscode_languageserver_1.CompletionItem.create(com.label);
+            let ted = vscode_languageserver_1.TextEdit.replace(getRange(com.range), typeof com.insertText === 'string' ? com.insertText : com.insertText.source);
             vsCodeCompletion.detail = com.detail;
             vsCodeCompletion.textEdit = ted;
             vsCodeCompletion.sortText = com.sortText;

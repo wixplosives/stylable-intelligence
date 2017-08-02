@@ -1,5 +1,5 @@
 {
-  "name": "stylable-intelligence",
+  "name": "stylable-intelligence-client",
   "version": "0.0.1",
   "description": "Stylable Language Services Client",
   "author": "Nadav Abraami (nadav@wix.com)",
@@ -70,7 +70,6 @@
     "source-map-support": "~0.4.15",
     "tslib": "~1.7.1",
     "typescript": "~2.4.1",
-    "vscode": "1.1.4",
     "webpack": "~3.3.0",
     "webpack-dev-server": "~2.6.1"
   },
@@ -78,12 +77,12 @@
     "tslib": "~1.7.1"
   },
   "dependencies": {
+    "vscode": "^1.1.4",
     "@types/lodash": "4.14.71",
     "css-selector-tokenizer": "^0.7.0",
     "lodash": "4.17.4",
     "postcss": "^6.0.7",
     "postcss-nested": "^2.0.4",
-    "stylable": "^3.0.0",
     "vscode-languageclient": "^3.3.0",
     "vscode-languageserver": "^3.3.0"
   }

@@ -488,10 +488,6 @@ callsite@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/callsite/-/callsite-1.0.0.tgz#280398e5d664bd74038b6f0905153e6e8af1bc20"
 
-camelcase-css@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/camelcase-css/-/camelcase-css-1.0.1.tgz#157c4238265f5cf94a1dffde86446552cbf3f705"
-
 camelcase-keys@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/camelcase-keys/-/camelcase-keys-2.1.0.tgz#308beeaffdf28119051efa1d932213c91b8f92e7"
@@ -2418,10 +2414,6 @@ karma@~1.7.0:
     tmp "0.0.31"
     useragent "^2.1.12"
 
-kebab-case@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/kebab-case/-/kebab-case-1.0.0.tgz#3f9e4990adcad0c686c0e701f7645868f75f91eb"
-
 kind-of@^3.0.2:
   version "3.2.2"
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-3.2.2.tgz#31ea21a734bab9bbb0f32466d893aea51e4a3c64"
@@ -3299,13 +3291,6 @@ postcss-filter-plugins@^2.0.0:
     postcss "^5.0.4"
     uniqid "^4.0.0"
 
-postcss-js@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/postcss-js/-/postcss-js-1.0.0.tgz#ccee5aa3b1970dd457008e79438165f66919ba30"
-  dependencies:
-    camelcase-css "^1.0.1"
-    postcss "^6.0.1"
-
 postcss-merge-idents@^2.1.5:
   version "2.1.7"
   resolved "https://registry.yarnpkg.com/postcss-merge-idents/-/postcss-merge-idents-2.1.7.tgz#4c5530313c08e1d5b3bbf3d2bbc747e278eea270"
@@ -3394,7 +3379,7 @@ postcss-modules-values@^1.1.0:
     icss-replace-symbols "^1.1.0"
     postcss "^6.0.1"
 
-postcss-nested@^2.0.2, postcss-nested@^2.0.4:
+postcss-nested@^2.0.4:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/postcss-nested/-/postcss-nested-2.1.0.tgz#72661d79463f5894a8c4b890479baec689d1c693"
   dependencies:
@@ -3444,12 +3429,6 @@ postcss-reduce-transforms@^1.0.3:
     postcss "^5.0.8"
     postcss-value-parser "^3.0.1"
 
-postcss-safe-parser@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/postcss-safe-parser/-/postcss-safe-parser-3.0.1.tgz#b753eff6c7c0aea5e8375fbe4cde8bf9063ff142"
-  dependencies:
-    postcss "^6.0.6"
-
 postcss-selector-parser@^2.0.0, postcss-selector-parser@^2.2.2, postcss-selector-parser@^2.2.3:
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/postcss-selector-parser/-/postcss-selector-parser-2.2.3.tgz#f9437788606c3c9acee16ffe8d8b16297f27bb90"
@@ -3496,7 +3475,7 @@ postcss@^5.0.10, postcss@^5.0.11, postcss@^5.0.12, postcss@^5.0.13, postcss@^5.0
     source-map "^0.5.6"
     supports-color "^3.2.3"
 
-postcss@^6.0.1, postcss@^6.0.3, postcss@^6.0.6, postcss@^6.0.7, postcss@^6.0.8:
+postcss@^6.0.1, postcss@^6.0.7, postcss@^6.0.8:
   version "6.0.8"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-6.0.8.tgz#89067a9ce8b11f8a84cbc5117efc30419a0857b3"
   dependencies:
@@ -4238,28 +4217,11 @@ strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
-stylable@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-3.0.0.tgz#e409d7df9595f73d17d9b94ace70ea321a393a64"
-  dependencies:
-    camelcase-css "^1.0.1"
-    css-selector-tokenizer "^0.7.0"
-    kebab-case "^1.0.0"
-    postcss "^6.0.3"
-    postcss-js "^1.0.0"
-    postcss-nested "^2.0.2"
-    postcss-safe-parser "^3.0.1"
-    stylis "^3.2.3"
-
 style-loader@~0.13.1:
   version "0.13.2"
   resolved "https://registry.yarnpkg.com/style-loader/-/style-loader-0.13.2.tgz#74533384cf698c7104c7951150b49717adc2f3bb"
   dependencies:
     loader-utils "^1.0.2"
-
-stylis@^3.2.3:
-  version "3.2.8"
-  resolved "https://registry.yarnpkg.com/stylis/-/stylis-3.2.8.tgz#9b23a3e06597f7944a3d9ae880d5796248b8784f"
 
 supports-color@3.1.2:
   version "3.1.2"
@@ -4667,7 +4629,7 @@ vscode-languageserver@^3.3.0:
     vscode-jsonrpc "^3.3.0"
     vscode-languageserver-types "^3.3.0"
 
-vscode@1.1.4:
+vscode@^1.1.4:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/vscode/-/vscode-1.1.4.tgz#1f1d4d662d55c9a28bc467aacb632291f70a686d"
   dependencies:

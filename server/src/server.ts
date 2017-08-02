@@ -1,11 +1,10 @@
 'use strict';
 import {
     IPCMessageReader, IPCMessageWriter, createConnection, IConnection, InitializeParams, InitializeResult,
-    TextDocuments, TextDocumentPositionParams
+    TextDocuments, TextDocumentPositionParams, CompletionItem, Position, CancellationToken, CompletionItemKind,
+    Range, Command, TextEdit, TextDocument
 } from 'vscode-languageserver';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
-import { CompletionItemProvider, Position, CancellationToken, CompletionItemKind,
-    Range, SnippetString, Command, TextEdit, TextDocument, CompletionItem } from 'vscode';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind,  } from 'vscode-languageclient';
 
 import Provider, { Completion, snippet, ExtendedResolver, ProviderRange, Dir, File, FsEntity } from './provider';
 import { Resolver, Stylesheet, fromCSS } from 'stylable';
@@ -22,7 +21,7 @@ function getRange(rng: ProviderRange | undefined): Range | undefined {
     if (!rng) {
         return;
     }
-    const r = new Range(new Position(rng.start.line, rng.start.character), new Position(rng.end.line, rng.end.character));
+    const r = Range.create(Position.create(rng.start.line, rng.start.character), Position.create(rng.end.line, rng.end.character));
     return r
 }
 
