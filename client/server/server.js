@@ -25,6 +25,8 @@ connection.onInitialize(function (params) {
 connection.listen();
 connection.onCompletion(function (params) {
     console.log('server tralala');
+    debugger;
+    console.log('server tralala 2');
     return [
         {
             label: 'garrrrr',

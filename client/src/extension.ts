@@ -12,7 +12,7 @@ import path = require('path');
 
 export function activate(context: ExtensionContext) {
     console.log('lalala');
-    debugger;
+    // debugger;
     let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));
     let serverOptions: ServerOptions = {
         run: { module: serverModule, transport: TransportKind.ipc },
@@ -25,9 +25,8 @@ export function activate(context: ExtensionContext) {
         // }
     }
 
-    let disposable = new LanguageClient('stylable', serverOptions, clientOptions);
-    disposable.trace = Trace.Verbose
-    context.subscriptions.push(disposable.start());
-    // context.subscriptions.push(languages.registerCompletionItemProvider('css', new StylableDotCompletionProvider(), '.', '-', ':', '"'));
+    let client = new LanguageClient('stylable', serverOptions, clientOptions);
+    client.trace = Trace.Verbose;
+    context.subscriptions.push(client.start());
 }
 
