@@ -11,8 +11,7 @@ import path = require('path');
 
 
 export function activate(context: ExtensionContext) {
-    console.log('lalala');
-    // debugger;
+    console.log('client lalala');
     let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));
     let serverOptions: ServerOptions = {
         run: { module: serverModule, transport: TransportKind.ipc },
@@ -20,9 +19,6 @@ export function activate(context: ExtensionContext) {
     }
     let clientOptions: LanguageClientOptions = {
         documentSelector: ['css'],
-        // synchronize: {
-        //     fileEvents: workspace.createFileSystemWatcher('**/.css')
-        // }
     }
 
     let client = new LanguageClient('stylable', serverOptions, clientOptions);
