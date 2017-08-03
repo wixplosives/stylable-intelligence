@@ -1,5 +1,6 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+const protocol_1 = require("vscode-languageserver/lib/protocol");
 const vscode_languageserver_1 = require("vscode-languageserver");
 const provider_1 = require("./provider");
 const vscode_resolver_1 = require("./adapters/vscode-resolver");
@@ -19,14 +20,17 @@ connection.onInitialize((params) => {
     workspaceRoot = params.rootUri;
     return {
         capabilities: {
+            textDocumentSync: protocol_1.TextDocumentSyncKind.Full,
             completionProvider: {
                 triggerCharacters: ['.', '-', ':', '"']
             },
         }
     };
 });
+documents.listen(connection);
 connection.listen();
 connection.onCompletion((params) => {
+    // connection.tracer.log('lalalalala', 'vavavva');
     const doc = documents.get(params.textDocument.uri);
     const src = doc.getText();
     const pos = params.position;

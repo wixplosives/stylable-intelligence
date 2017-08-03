@@ -1,11 +1,11 @@
 'use strict';
+import { TextDocumentSyncKind } from 'vscode-languageserver/lib/protocol';
 import {
     IPCMessageReader, IPCMessageWriter, createConnection, IConnection, InitializeParams, InitializeResult,
     TextDocuments, TextDocumentPositionParams, CompletionItem, Position, CancellationToken, CompletionItemKind,
     Range, Command, TextEdit, TextDocument
 } from 'vscode-languageserver';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind,  } from 'vscode-languageclient';
-
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, } from 'vscode-languageclient';
 import Provider, { Completion, snippet, ExtendedResolver, ProviderRange, Dir, File, FsEntity } from './provider';
 import { Resolver, Stylesheet, fromCSS } from 'stylable';
 import { VsCodeResolver } from './adapters/vscode-resolver'
@@ -29,6 +29,7 @@ connection.onInitialize((params): InitializeResult => {
     workspaceRoot = <string>params.rootUri;
     return {
         capabilities: {
+            textDocumentSync: TextDocumentSyncKind.Full,
             completionProvider: {
                 triggerCharacters: ['.', '-', ':', '"']
             },
@@ -36,9 +37,13 @@ connection.onInitialize((params): InitializeResult => {
     }
 });
 
+documents.listen(connection);
 connection.listen();
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
+    // connection.tracer.log('lalalalala', 'vavavva');
+
+
     const doc = documents.get(params.textDocument.uri);
     const src = doc.getText();
     const pos = params.position;

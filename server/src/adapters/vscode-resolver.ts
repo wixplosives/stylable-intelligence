@@ -1,10 +1,10 @@
 'use strict';
 
-import { workspace } from 'vscode';
 import Provider, { ExtendedResolver, FsEntity } from '../provider';
 import { Resolver, Stylesheet, fromCSS } from 'stylable';
 import * as _ from 'lodash';
 import path = require('path');
+import * as fs from 'fs';
 
 const provider = new Provider();
 
@@ -15,17 +15,14 @@ export class VsCodeResolver extends Resolver implements ExtendedResolver {
         return super.resolveModule(globalPath);
     }
     resolveDependencies(stylesheet: Stylesheet): Thenable<void> {
-        const promises: Thenable<any>[] = stylesheet.imports.map((importNode) => {
+        stylesheet.imports.map((importNode) => {
             const globalPath: string = path.resolve(path.parse(stylesheet.source).dir, importNode.from)
-            return workspace.openTextDocument(globalPath)
-                .then((doc) => {
-                    if (_.endsWith(importNode.from, '.css')) {
-                        this.add(globalPath, fromCSS(doc.getText()))
-                    }
-                })
+            const doc = fs.readFileSync(globalPath).toString()
+            if (_.endsWith(importNode.from, '.css')) {
+                this.add(globalPath, fromCSS(doc))
+            }
         });
-        return Promise.all(promises)
-            .then(() => { })
+        return Promise.resolve()
     }
     resolveSymbols(s: Stylesheet) {
         this.st = s;
