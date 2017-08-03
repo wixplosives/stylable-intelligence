@@ -1,72 +1,55 @@
 'use strict';
-import { TextDocumentSyncKind } from 'vscode-languageserver/lib/protocol';
 import {
-    IPCMessageReader, IPCMessageWriter, createConnection, IConnection, InitializeParams, InitializeResult,
-    TextDocuments, TextDocumentPositionParams, CompletionItem, Position, CancellationToken, CompletionItemKind,
-    Range, Command, TextEdit, TextDocument
+    IPCMessageReader, IPCMessageWriter,
+    createConnection, IConnection, TextDocumentSyncKind,
+    TextDocuments, Diagnostic, DiagnosticSeverity,
+    InitializeParams, InitializeResult, TextDocumentPositionParams, CompletionItem,
 } from 'vscode-languageserver';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, } from 'vscode-languageclient';
-import Provider, { Completion, snippet, ExtendedResolver, ProviderRange, Dir, File, FsEntity } from './provider';
+
+
+// import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
+// import Provider, { Completion, snippet, ExtendedResolver, ProviderRange, Dir, File, FsEntity } from '../provider';
 import { Resolver, Stylesheet, fromCSS } from 'stylable';
-import { VsCodeResolver } from './adapters/vscode-resolver'
 import * as _ from 'lodash';
+import path = require('path');
 
 let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
+
+// let documents: TextDocuments = new TextDocuments();
+// // Make the text document manager listen on the connection
+// // for open, change and close text document events
+// documents.listen(connection);
+
+// After the server has started the client sends an initialize request. The server receives
+// in the passed params the rootPath of the workspace plus the client capabilities.
 let workspaceRoot: string;
-let documents: TextDocuments = new TextDocuments();
-const resolver = new VsCodeResolver({});
-const provider = new Provider();
-
-function getRange(rng: ProviderRange | undefined): Range | undefined {
-    if (!rng) {
-        return;
-    }
-    const r = Range.create(Position.create(rng.start.line, rng.start.character), Position.create(rng.end.line, rng.end.character));
-    return r
-}
-
 connection.onInitialize((params): InitializeResult => {
     workspaceRoot = <string>params.rootUri;
     return {
         capabilities: {
-            textDocumentSync: TextDocumentSyncKind.Full,
+            // Tell the client that the server works in FULL text document sync mode
+            // textDocumentSync: documents.syncKind
             completionProvider: {
                 triggerCharacters: ['.', '-', ':', '"']
-            },
+            }
         }
     }
 });
 
-documents.listen(connection);
+// Listen on the connection
 connection.listen();
 
-connection.onCompletion((params): Thenable<CompletionItem[]> => {
-    // connection.tracer.log('lalalalala', 'vavavva');
-
-
-    const doc = documents.get(params.textDocument.uri);
-    const src = doc.getText();
-    const pos = params.position;
-    return provider.provideCompletionItemsFromSrc(src, { line: pos.line, character: pos.character }, doc.uri, resolver)
-        .then((res) => {
-            return res.map((com: Completion) => {
-                let vsCodeCompletion = CompletionItem.create(com.label);
-                let ted: TextEdit = TextEdit.replace(getRange(com.range), typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
-
-                vsCodeCompletion.detail = com.detail;
-                vsCodeCompletion.textEdit = ted;
-                vsCodeCompletion.sortText = com.sortText;
-                if (com.additionalCompletions) {
-                    // commands.getCommands().then((res)=>{debugger;})
-                    vsCodeCompletion.command = {
-                        title: "additional",
-                        command: 'editorconfig._triggerSuggestAfterDelay',
-                        arguments: []
-                    }
-                }
-                return vsCodeCompletion;
-            })
-        })
+connection.onCompletion((params): CompletionItem[] => {
+    console.log('server tralala');
+     return [
+         {
+             label: 'garrrrr',
+             kind: 1,
+             data: 'some data'
+         }
+    ]
 })
+
+
 
 

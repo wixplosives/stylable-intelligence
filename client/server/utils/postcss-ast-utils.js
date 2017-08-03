@@ -28,11 +28,12 @@ function isDeclaration(node) {
     return node.hasOwnProperty('prop');
 }
 exports.isDeclaration = isDeclaration;
-function pathFromPosition(ast, position, res = []) {
-    let currentNode = ast;
+function pathFromPosition(ast, position, res) {
+    if (res === void 0) { res = []; }
+    var currentNode = ast;
     res.push(ast);
     if (isContainer(currentNode) && currentNode.nodes) {
-        const childNode = currentNode.nodes.find((node) => {
+        var childNode = currentNode.nodes.find(function (node) {
             return isInNode(position, node);
         });
         if (childNode) {
@@ -43,9 +44,9 @@ function pathFromPosition(ast, position, res = []) {
 }
 exports.pathFromPosition = pathFromPosition;
 function getPositionInSrc(src, position) {
-    const lines = src.split('\n');
+    var lines = src.split('\n');
     return lines.slice(0, position.line)
-        .reduce((total, line) => line.length + total + 1, -1) + position.character;
+        .reduce(function (total, line) { return line.length + total + 1; }, -1) + position.character;
 }
 exports.getPositionInSrc = getPositionInSrc;
 //# sourceMappingURL=postcss-ast-utils.js.map

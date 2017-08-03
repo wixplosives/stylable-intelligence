@@ -1,12 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const selectorTokenizer = require('css-selector-tokenizer');
+var tslib_1 = require("tslib");
+var selectorTokenizer = require('css-selector-tokenizer');
 function createSelectorChunk(value) {
-    return Object.assign({ type: '*', classes: [], states: [] }, value, { _type: 'chunk' });
+    return tslib_1.__assign({ type: '*', classes: [], states: [] }, value, { _type: 'chunk' });
 }
 exports.createSelectorChunk = createSelectorChunk;
 function createSelectorInternalChunk(value) {
-    return Object.assign({ name: '' }, createSelectorChunk(value), { _type: 'internal-chunk' });
+    return tslib_1.__assign({ name: '' }, createSelectorChunk(value), { _type: 'internal-chunk' });
 }
 exports.createSelectorInternalChunk = createSelectorInternalChunk;
 function createSelectorDescendent() {
@@ -33,22 +34,23 @@ function isSelectorDirectChild(chunk) {
     return chunk && chunk._type === 'direct-child';
 }
 exports.isSelectorDirectChild = isSelectorDirectChild;
-function parseSelector(inputSelector, cursorIndex = 0) {
-    const res = [];
-    let cursorTarget = { focusChunk: {}, simpleSelector: '', index: -1 };
-    const tokenizedSelectors = selectorTokenizer.parse(inputSelector);
+function parseSelector(inputSelector, cursorIndex) {
+    if (cursorIndex === void 0) { cursorIndex = 0; }
+    var res = [];
+    var cursorTarget = { focusChunk: {}, simpleSelector: '', index: -1 };
+    var tokenizedSelectors = selectorTokenizer.parse(inputSelector);
     if (tokenizedSelectors.type !== 'selectors') {
         throw new Error('not handled');
     }
-    const firstSelector = tokenizedSelectors.nodes[0];
-    const spaceBeforeSelector = inputSelector.match(/^(\s)*/);
-    let selector = inputSelector.trim();
-    let currentPosition = spaceBeforeSelector && spaceBeforeSelector[0].length || 0;
-    let currentSourceQuery = '';
+    var firstSelector = tokenizedSelectors.nodes[0];
+    var spaceBeforeSelector = inputSelector.match(/^(\s)*/);
+    var selector = inputSelector.trim();
+    var currentPosition = spaceBeforeSelector && spaceBeforeSelector[0].length || 0;
+    var currentSourceQuery = '';
     res.push(createSelectorChunk());
-    for (let i = 0; i < firstSelector.nodes.length; i++) {
-        const selectorQueryItem = firstSelector.nodes[i];
-        let currentTarget = res[res.length - 1];
+    for (var i = 0; i < firstSelector.nodes.length; i++) {
+        var selectorQueryItem = firstSelector.nodes[i];
+        var currentTarget = res[res.length - 1];
         if (isSelectorChunk(currentTarget) || isSelectorInternalChunk(currentTarget)) {
             switch (selectorQueryItem.type) {
                 case 'class':
@@ -59,7 +61,7 @@ function parseSelector(inputSelector, cursorIndex = 0) {
                 case 'spacing':
                     currentTarget = createSelectorDescendent();
                     res.push(currentTarget, createSelectorChunk());
-                    const startSpaceMatch = selector.match(/^(\s)*/);
+                    var startSpaceMatch = selector.match(/^(\s)*/);
                     currentSourceQuery = startSpaceMatch && startSpaceMatch[0] || ' ';
                     selector = selector.slice(currentSourceQuery.length);
                     break;
@@ -67,7 +69,7 @@ function parseSelector(inputSelector, cursorIndex = 0) {
                     if (selectorQueryItem.operator === '>') {
                         currentTarget = createSelectorDirectChild();
                         res.push(currentTarget, createSelectorChunk());
-                        const startDirectChildMatch = selector.match(/^(\s*>\s*)?/);
+                        var startDirectChildMatch = selector.match(/^(\s*>\s*)?/);
                         currentSourceQuery = startDirectChildMatch && startDirectChildMatch[0] || 'no direct child found! - should not happen';
                         selector = selector.slice(currentSourceQuery.length);
                     }
@@ -95,11 +97,11 @@ function parseSelector(inputSelector, cursorIndex = 0) {
             }
         }
         else {
-            throw new Error(`found operator where it shouldn't be - should not happen`);
+            throw new Error("found operator where it shouldn't be - should not happen");
         }
-        const queryLength = currentSourceQuery.length;
-        const newPosition = currentPosition + queryLength;
-        const isCursorInQuery = cursorIndex > currentPosition && cursorIndex <= newPosition;
+        var queryLength = currentSourceQuery.length;
+        var newPosition = currentPosition + queryLength;
+        var isCursorInQuery = cursorIndex > currentPosition && cursorIndex <= newPosition;
         if (isCursorInQuery) {
             cursorTarget = {
                 focusChunk: currentTarget,
@@ -111,9 +113,9 @@ function parseSelector(inputSelector, cursorIndex = 0) {
     }
     // modify internal chunk to list from scope origin to target
     if (isSelectorInternalChunk(cursorTarget.focusChunk)) {
-        let currentChunk = cursorTarget.focusChunk;
-        let index = cursorTarget.index;
-        const focusList = [];
+        var currentChunk = cursorTarget.focusChunk;
+        var index = cursorTarget.index;
+        var focusList = [];
         while (isSelectorInternalChunk(currentChunk)) {
             focusList.unshift(currentChunk);
             currentChunk = res[--index];

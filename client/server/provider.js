@@ -1,16 +1,19 @@
 "use strict";
 //must remain independent from vscode
 Object.defineProperty(exports, "__esModule", { value: true });
-const PostCss = require("postcss");
-const stylable_1 = require("stylable");
-const PostCssNested = require('postcss-nested');
-const PostCssSafe = require('postcss-safe-parser');
-const get_definitions_1 = require("./utils/get-definitions");
-const postcss_ast_utils_1 = require("./utils/postcss-ast-utils");
-const selector_analyzer_1 = require("./utils/selector-analyzer");
-const processor = PostCss([PostCssNested]);
-class Completion {
-    constructor(label, detail = "", sortText = 'd', insertText, range, additionalCompletions = false) {
+var PostCss = require("postcss");
+var stylable_1 = require("stylable");
+var PostCssNested = require('postcss-nested');
+var PostCssSafe = require('postcss-safe-parser');
+var get_definitions_1 = require("./utils/get-definitions");
+var postcss_ast_utils_1 = require("./utils/postcss-ast-utils");
+var selector_analyzer_1 = require("./utils/selector-analyzer");
+var processor = PostCss([PostCssNested]);
+var Completion = (function () {
+    function Completion(label, detail, sortText, insertText, range, additionalCompletions) {
+        if (detail === void 0) { detail = ""; }
+        if (sortText === void 0) { sortText = 'd'; }
+        if (additionalCompletions === void 0) { additionalCompletions = false; }
         this.label = label;
         this.detail = detail;
         this.sortText = sortText;
@@ -18,13 +21,15 @@ class Completion {
         this.range = range;
         this.additionalCompletions = additionalCompletions;
     }
-}
+    return Completion;
+}());
 exports.Completion = Completion;
-class snippet {
-    constructor(source) {
+var snippet = (function () {
+    function snippet(source) {
         this.source = source;
     }
-}
+    return snippet;
+}());
 exports.snippet = snippet;
 function singleLineRange(line, start, end) {
     return {
@@ -39,15 +44,15 @@ function singleLineRange(line, start, end) {
     };
 }
 // Completions
-const rootClass = new Completion('.root', 'The root class', 'b');
-const importsDirective = new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}'));
-const extendsDirective = new Completion('-st-extends:', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
-const statesDirective = new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'));
-const mixinDirective = new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'));
-const variantDirective = new Completion('-st-variant:', '', 'a', new snippet('-st-variant: true;'));
-const fromDirective = new Completion('-st-from:', 'Path to library', 'a', new snippet('-st-from: "$1";'));
-const namedDirective = new Completion('-st-named:', 'Named object export name', 'a', new snippet('-st-named: $1;'));
-const defaultDirective = new Completion('-st-default:', 'Default object export name', 'a', new snippet('-st-default: $1;'));
+var rootClass = new Completion('.root', 'The root class', 'b');
+var importsDirective = new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}'));
+var extendsDirective = new Completion('-st-extends:', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
+var statesDirective = new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'));
+var mixinDirective = new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'));
+var variantDirective = new Completion('-st-variant:', '', 'a', new snippet('-st-variant: true;'));
+var fromDirective = new Completion('-st-from:', 'Path to library', 'a', new snippet('-st-from: "$1";'));
+var namedDirective = new Completion('-st-named:', 'Named object export name', 'a', new snippet('-st-named: $1;'));
+var defaultDirective = new Completion('-st-default:', 'Default object export name', 'a', new snippet('-st-default: $1;'));
 function classCompletion(className) {
     return new Completion('.' + className, 'mine', 'b');
 }
@@ -60,7 +65,7 @@ function stateCompletion(stateName, from, pos) {
 function addExistingClasses(stylesheet, completions) {
     if (stylesheet == undefined)
         return;
-    Object.keys(stylesheet.classes).forEach((className) => {
+    Object.keys(stylesheet.classes).forEach(function (className) {
         if (className === 'root') {
             return;
         }
@@ -83,22 +88,25 @@ function isSimple(selector) {
     }
     return true;
 }
-const lineEndsRegexp = /({|}|;)/;
+var lineEndsRegexp = /({|}|;)/;
 function isSpacy(char) {
     return char === '' || char === ' ' || char === '\t' || char === '\n';
 }
-class Provider {
-    getClassDefinition(stylesheet, symbol, resolver) {
-        const symbols = resolver.resolveSymbols(stylesheet);
+var Provider = (function () {
+    function Provider() {
     }
-    provideCompletionItemsFromSrc(src, position, filePath, resolver) {
-        let cursorLineIndex = position.character;
-        let lines = src.split('\n');
-        let currentLine = lines[position.line];
-        let fixedSrc = src;
+    Provider.prototype.getClassDefinition = function (stylesheet, symbol, resolver) {
+        var symbols = resolver.resolveSymbols(stylesheet);
+    };
+    Provider.prototype.provideCompletionItemsFromSrc = function (src, position, filePath, resolver) {
+        var _this = this;
+        var cursorLineIndex = position.character;
+        var lines = src.split('\n');
+        var currentLine = lines[position.line];
+        var fixedSrc = src;
         if (currentLine.match(lineEndsRegexp)) {
-            let currentLocation = 0;
-            let splitLine = currentLine.split(lineEndsRegexp);
+            var currentLocation = 0;
+            var splitLine = currentLine.split(lineEndsRegexp);
             for (var i = 0; i < splitLine.length; i += 2) {
                 currentLocation += splitLine[i].length + 1;
                 if (currentLocation >= position.character) {
@@ -119,9 +127,9 @@ class Provider {
             lines.splice(position.line, 1, "");
             fixedSrc = lines.join('\n');
         }
-        let ast;
+        var ast;
         try {
-            const res = processor.process(fixedSrc, {
+            var res = processor.process(fixedSrc, {
                 parser: PostCssSafe
             });
             ast = res.root;
@@ -129,7 +137,7 @@ class Provider {
         catch (error) {
             return Promise.resolve([]);
         }
-        let stylesheet = undefined;
+        var stylesheet = undefined;
         try {
             stylesheet = stylable_1.fromCSS(fixedSrc, undefined, filePath);
         }
@@ -137,35 +145,35 @@ class Provider {
             console.error('stylable transpiling failed');
         }
         return resolver.resolveDependencies(stylesheet)
-            .then(() => {
-            return this.provideCompletionItemsFromAst(src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex);
+            .then(function () {
+            return _this.provideCompletionItemsFromAst(src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex);
         });
-    }
-    provideCompletionItemsFromAst(src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex) {
-        const completions = [];
-        const trimmedLine = currentLine.trim();
-        const position1Based = {
+    };
+    Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex) {
+        var completions = [];
+        var trimmedLine = currentLine.trim();
+        var position1Based = {
             line: position.line + 1,
             character: position.character
         };
-        const path = postcss_ast_utils_1.pathFromPosition(ast, position1Based);
-        const posInSrc = postcss_ast_utils_1.getPositionInSrc(src, position);
-        const lastChar = src.charAt(posInSrc);
-        const lastPart = path[path.length - 1];
-        const prevPart = path[path.length - 2];
-        const lastSelector = prevPart && postcss_ast_utils_1.isSelector(prevPart) ? prevPart :
+        var path = postcss_ast_utils_1.pathFromPosition(ast, position1Based);
+        var posInSrc = postcss_ast_utils_1.getPositionInSrc(src, position);
+        var lastChar = src.charAt(posInSrc);
+        var lastPart = path[path.length - 1];
+        var prevPart = path[path.length - 2];
+        var lastSelector = prevPart && postcss_ast_utils_1.isSelector(prevPart) ? prevPart :
             lastPart && postcss_ast_utils_1.isSelector(lastPart) ? lastPart : null;
         if (lastSelector) {
             if (lastChar === '-' || isSpacy(lastChar) || lastChar == "{") {
                 if (lastSelector.selector === ':import') {
-                    completions.push(...getNewCompletions({
+                    completions.push.apply(completions, getNewCompletions({
                         "-st-from": fromDirective,
                         "-st-default": defaultDirective,
                         "-st-named": namedDirective
                     }, lastSelector));
                 }
                 else {
-                    const declarationBlockDirectives = {
+                    var declarationBlockDirectives = {
                         '-st-mixin': mixinDirective
                     };
                     if (isSimple(lastSelector.selector)) {
@@ -173,12 +181,12 @@ class Provider {
                         declarationBlockDirectives["-st-variant"] = variantDirective;
                         declarationBlockDirectives["-st-states"] = statesDirective;
                     }
-                    completions.push(...getNewCompletions(declarationBlockDirectives, lastSelector));
+                    completions.push.apply(completions, getNewCompletions(declarationBlockDirectives, lastSelector));
                 }
             }
             else if (stylesheet && lastChar == ":" && trimmedLine.split(':').length === 2) {
                 if (trimmedLine.indexOf('-st-extends:') === 0) {
-                    stylesheet.imports.forEach((importJson) => {
+                    stylesheet.imports.forEach(function (importJson) {
                         if (importJson.from.lastIndexOf('.css') === importJson.from.length - 4 && importJson.defaultExport) {
                             completions.push(extendCompletion(importJson.defaultExport));
                         }
@@ -199,17 +207,17 @@ class Provider {
             }
         }
         else if (lastChar === ':' && stylesheet !== undefined) {
-            const selectorRes = selector_analyzer_1.parseSelector(currentLine, cursorLineIndex); //position.character);
-            const focusChunk = selectorRes.target.focusChunk;
-            if (!Array.isArray(focusChunk) && selector_analyzer_1.isSelectorChunk(focusChunk)) {
-                focusChunk.classes.forEach((className) => {
-                    const clsDef = get_definitions_1.getDefinition(stylesheet, className, resolver);
+            var selectorRes = selector_analyzer_1.parseSelector(currentLine, cursorLineIndex); //position.character);
+            var focusChunk_1 = selectorRes.target.focusChunk;
+            if (!Array.isArray(focusChunk_1) && selector_analyzer_1.isSelectorChunk(focusChunk_1)) {
+                focusChunk_1.classes.forEach(function (className) {
+                    var clsDef = get_definitions_1.getDefinition(stylesheet, className, resolver);
                     if (get_definitions_1.isClassDefinition(clsDef)) {
-                        clsDef.states.forEach((stateDef) => {
-                            if (focusChunk.states.indexOf(stateDef.name) !== -1) {
+                        clsDef.states.forEach(function (stateDef) {
+                            if (focusChunk_1.states.indexOf(stateDef.name) !== -1) {
                                 return;
                             }
-                            const from = 'from: ' + stateDef.from;
+                            var from = 'from: ' + stateDef.from;
                             completions.push(stateCompletion(stateDef.name, stateDef.from, position));
                         });
                     }
@@ -217,18 +225,19 @@ class Provider {
             }
         }
         return Promise.resolve(completions);
-    }
-}
+    };
+    return Provider;
+}());
 exports.default = Provider;
 function getSelectorFromPosition(src, index) {
 }
 function getNewCompletions(completionMap, ruleset) {
-    ruleset.nodes.forEach(node => {
-        let dec = node;
+    ruleset.nodes.forEach(function (node) {
+        var dec = node;
         if (completionMap[dec.prop]) {
             delete completionMap[dec.prop];
         }
     });
-    return Object.keys(completionMap).map(name => completionMap[name]);
+    return Object.keys(completionMap).map(function (name) { return completionMap[name]; });
 }
 //# sourceMappingURL=provider.js.map

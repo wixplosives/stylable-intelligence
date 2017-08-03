@@ -20,9 +20,9 @@ function getDefinition(stylesheet, symbolName, resolver) {
 }
 exports.getDefinition = getDefinition;
 function getClassDefinition(stylesheet, symbolName, resolver) {
-    let states = [];
+    var states = [];
     if (stylesheet.typedClasses[symbolName]["-st-states"]) {
-        stylesheet.typedClasses[symbolName]["-st-states"].map((state) => {
+        stylesheet.typedClasses[symbolName]["-st-states"].map(function (state) {
             states.push({
                 name: state,
                 export: symbolName,
@@ -31,18 +31,18 @@ function getClassDefinition(stylesheet, symbolName, resolver) {
             });
         });
     }
-    const type = stylesheet.typedClasses[symbolName]["-st-extends"];
+    var type = stylesheet.typedClasses[symbolName]["-st-extends"];
     if (type) {
-        const symbols = resolver.resolveSymbols(stylesheet);
+        var symbols = resolver.resolveSymbols(stylesheet);
         if (symbols[type]) {
-            const internalClassDef = getClassDefinition(symbols[type], 'root', resolver);
+            var internalClassDef = getClassDefinition(symbols[type], 'root', resolver);
             states = states.concat(internalClassDef.states);
         }
     }
     return {
         export: symbolName,
         type: "class",
-        states
+        states: states
     };
 }
 //# sourceMappingURL=get-definitions.js.map
