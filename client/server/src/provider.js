@@ -73,7 +73,7 @@ function addExistingClasses(stylesheet, completions) {
         completions.push(classCompletion(className));
     });
 }
-function isIligealLine(line) {
+function isIllegalLine(line) {
     return !!/^\s*[-\.:]\s*$/.test(line);
 }
 function isSimple(selector) {
@@ -112,7 +112,7 @@ var Provider = (function () {
                 currentLocation += splitLine[i].length + 1;
                 if (currentLocation >= position.character) {
                     currentLine = splitLine[i];
-                    if (isIligealLine(currentLine)) {
+                    if (isIllegalLine(currentLine)) {
                         splitLine[i] = '\n';
                         lines.splice(position.line, 1, splitLine.join(''));
                         fixedSrc = lines.join('\n');
@@ -124,7 +124,7 @@ var Provider = (function () {
                 }
             }
         }
-        else if (isIligealLine(currentLine)) {
+        else if (isIllegalLine(currentLine)) {
             lines.splice(position.line, 1, "");
             fixedSrc = lines.join('\n');
         }

@@ -28,7 +28,7 @@ function assertNoCompletions(actualCompletions, nonCompletions, prefix) {
         chai_1.expect(actual, prefix + 'unallowed completion found: ' + notAllowed.label + ' ').to.be.equal(undefined);
     });
 }
-function completions(src, extrafiles, checkSingleLine) {
+function getCompletions(src, extrafiles, checkSingleLine) {
     if (extrafiles === void 0) { extrafiles = {}; }
     if (checkSingleLine === void 0) { checkSingleLine = false; }
     var singleLineSrc = src.split('\n').join('');
@@ -38,18 +38,18 @@ function completions(src, extrafiles, checkSingleLine) {
         .then(function () { return checkSingleLine ? completionsIntenal(singleLineSrc, extrafiles) : Promise.resolve(null); })
         .then(function (singleLineCompletions) {
         return {
-            assertNoCompletions: function (expectedNoCompletions) {
-                assertNoCompletions(normalCompletions, expectedNoCompletions);
-                singleLineCompletions && assertNoCompletions(singleLineCompletions, expectedNoCompletions, 'single line: ');
-            },
-            assertCompletions: function (expectedNoCompletions) {
+            suggested: function (expectedNoCompletions) {
                 assertCompletions(normalCompletions, expectedNoCompletions);
                 singleLineCompletions && assertCompletions(singleLineCompletions, expectedNoCompletions, 'single line: ');
+            },
+            notSuggested: function (expectedNoCompletions) {
+                assertNoCompletions(normalCompletions, expectedNoCompletions);
+                singleLineCompletions && assertNoCompletions(singleLineCompletions, expectedNoCompletions, 'single line: ');
             }
         };
     });
 }
-exports.completions = completions;
+exports.getCompletions = getCompletions;
 function completionsIntenal(src, extrafiles) {
     if (extrafiles === void 0) { extrafiles = {}; }
     var caretPos = src.indexOf('|');
@@ -64,7 +64,7 @@ function completionsIntenal(src, extrafiles) {
     }, 'projectRoot/main.css', resolver);
 }
 exports.importCompletion = { label: ':import', detail: 'Import an external library', sortText: 'a', insertText: ':import {\n\t-st-from: "$1";\n}' };
-exports.rootCompletion = { label: '.root', detail: 'The root class', sortText: 'b' };
+exports.rootCompletion = { label: '.root', detail: 'The root class', sortText: 'b', insertText: '.root' };
 exports.statesDirectiveCompletion = { label: '-st-states:', detail: 'Define the CSS states available for this class', sortText: 'a', insertText: '-st-states: $1;' };
 exports.extendsDirectiveCompletion = { label: '-st-extends:', detail: 'Extend an external component', sortText: 'a', insertText: '-st-extends: $1;', additionalCompletions: true };
 exports.mixinDirectiveCompletion = { label: '-st-mixin:', detail: 'Apply mixins on the class', sortText: 'a', insertText: '-st-mixin: $1;' };

@@ -91,7 +91,7 @@ function addExistingClasses(stylesheet: Stylesheet | undefined, completions: Com
     });
 }
 
-function isIligealLine(line: string): boolean {
+function isIllegalLine(line: string): boolean {
     return !!/^\s*[-\.:]\s*$/.test(line)
 }
 
@@ -158,7 +158,7 @@ export default class Provider {
                 currentLocation += splitLine[i].length + 1;
                 if (currentLocation >= position.character) {
                     currentLine = splitLine[i];
-                    if (isIligealLine(currentLine)) {
+                    if (isIllegalLine(currentLine)) {
                         splitLine[i] = '\n'
                         lines.splice(position.line, 1, splitLine.join(''));
                         fixedSrc = lines.join('\n');
@@ -170,7 +170,7 @@ export default class Provider {
             }
 
         }
-        else if (isIligealLine(currentLine)) {
+        else if (isIllegalLine(currentLine)) {
             lines.splice(position.line, 1, "");
             fixedSrc = lines.join('\n');
         }

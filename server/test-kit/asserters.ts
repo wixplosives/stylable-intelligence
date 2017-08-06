@@ -32,12 +32,12 @@ function assertNoCompletions(actualCompletions: Completion[], nonCompletions: Pa
 }
 
 
-interface assertable {
-    assertCompletions: (expectedCompletions: Partial<Completion>[]) => void;
-    assertNoCompletions: (nonCompletions: Partial<Completion>[]) => void
+export interface assertable {
+    suggested: (expectedCompletions: Partial<Completion>[]) => void;
+    notSuggested: (nonCompletions: Partial<Completion>[]) => void
 }
 
-export function completions(src: string, extrafiles: { [path: string]: string } = {}, checkSingleLine: boolean = false): Thenable<assertable> {
+export function getCompletions(src: string, extrafiles: { [path: string]: string } = {}, checkSingleLine: boolean = false): Thenable<assertable> {
     const singleLineSrc = src.split('\n').join('');
     let normalCompletions: Completion[];
     return completionsIntenal(src, extrafiles)
@@ -45,13 +45,13 @@ export function completions(src: string, extrafiles: { [path: string]: string } 
         .then<Completion[] | null>(() => checkSingleLine ? completionsIntenal(singleLineSrc, extrafiles) : Promise.resolve(null))
         .then((singleLineCompletions) => {
             return {
-                assertNoCompletions: (expectedNoCompletions: Partial<Completion>[]) => {
-                    assertNoCompletions(normalCompletions, expectedNoCompletions);
-                    singleLineCompletions && assertNoCompletions(singleLineCompletions, expectedNoCompletions, 'single line: ');
-                },
-                assertCompletions: (expectedNoCompletions: Partial<Completion>[]) => {
+                suggested: (expectedNoCompletions: Partial<Completion>[]) => {
                     assertCompletions(normalCompletions, expectedNoCompletions);
                     singleLineCompletions && assertCompletions(singleLineCompletions, expectedNoCompletions, 'single line: ');
+                },
+                notSuggested: (expectedNoCompletions: Partial<Completion>[]) => {
+                    assertNoCompletions(normalCompletions, expectedNoCompletions);
+                    singleLineCompletions && assertNoCompletions(singleLineCompletions, expectedNoCompletions, 'single line: ');
                 }
             }
 
@@ -60,7 +60,6 @@ export function completions(src: string, extrafiles: { [path: string]: string } 
 
 function completionsIntenal(src: string, extrafiles: { [path: string]: string } = {}): Thenable<Completion[]> {
     const caretPos = src.indexOf('|');
-
     const linesTillCaret = src.substr(0, caretPos).split('\n');
     const character = linesTillCaret[linesTillCaret.length - 1].length;
 
@@ -76,7 +75,7 @@ function completionsIntenal(src: string, extrafiles: { [path: string]: string } 
 }
 
 export const importCompletion: Partial<Completion> = { label: ':import', detail: 'Import an external library', sortText: 'a', insertText: ':import {\n\t-st-from: "$1";\n}' };
-export const rootCompletion: Partial<Completion> = { label: '.root', detail: 'The root class', sortText: 'b' };
+export const rootCompletion: Partial<Completion> = { label: '.root', detail: 'The root class', sortText: 'b', insertText: '.root' };
 export const statesDirectiveCompletion: Partial<Completion> = { label: '-st-states:', detail: 'Define the CSS states available for this class', sortText: 'a', insertText: '-st-states: $1;' };
 export const extendsDirectiveCompletion: Partial<Completion> = { label: '-st-extends:', detail: 'Extend an external component', sortText: 'a', insertText: '-st-extends: $1;', additionalCompletions: true };
 export const mixinDirectiveCompletion: Partial<Completion> = { label: '-st-mixin:', detail: 'Apply mixins on the class', sortText: 'a', insertText: '-st-mixin: $1;' };
