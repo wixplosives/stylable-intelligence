@@ -1,11 +1,7 @@
 'use strict';
-import { disconnect } from 'cluster';
-
-import {Trace} from 'vscode-jsonrpc'
-import { workspace, languages, window, commands, ExtensionContext, Disposable, CompletionItemProvider, TextDocument, Position, CancellationToken, CompletionItem, CompletionItemKind, Range, SnippetString, Command } from 'vscode';
+import { Trace } from 'vscode-jsonrpc'
+import { ExtensionContext } from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
-import { Resolver, Stylesheet, fromCSS } from 'stylable';
-import * as _ from 'lodash';
 import path = require('path');
 
 

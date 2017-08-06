@@ -9,9 +9,20 @@
     "node": "*",
     "vscode": "^1.14.2"
   },
+   "testGlob": "../client/server/test/**/*.spec.js?(x)",
   "scripts": {
     "compile": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc -p .",
-    "watch": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc --watch -p ."
+    "watch": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc --watch -p .",
+    "vscode:prepublish": "tsc -p ./",
+    "build": "tsc -d",
+    "bundle": "webpack --progress",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "pretest": "rimraf ../client/server && yarn build && yarn bundle",
+    "reset": "rimraf node_modules ../client/server/ && yarn install && yarn test",
+    "test": "yarn test:node && yarn test:browser",
+    "test:node": "mocha --require ../client/server/test/setup.js --require source-map-support/register --reporter mocha-env-reporter ../client/server/test/*.spec.js",
+    "test:browser": "karma start --single-run",
+    "start": "rimraf ../client/server && yarn build && concurrently --kill-others --success first \"yarn build -- -w\" \"webpack-dev-server --no-info\""
   },
   "devDependencies": {
     "@types/chai": "~4.0.1",
@@ -20,7 +31,7 @@
     "@types/sinon": "~2.3.1",
     "@types/sinon-chai": "~2.7.28",
     "chai": "~4.1.0",
-    "chai-subset": "~1.5.0",
+    "chai-subset": "^1.5.0",
     "concurrently": "~3.5.0",
     "glob": "~7.1.2",
     "karma": "~1.7.0",
