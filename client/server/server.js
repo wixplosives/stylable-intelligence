@@ -21,6 +21,7 @@ connection.onInitialize(function (params) {
 connection.listen();
 connection.onCompletion(function (params) {
     console.log('Looking for file');
+    debugger;
     var doc = fs.readFileSync(params.textDocument.uri.slice(7)).toString();
     var pos = params.position;
     return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, resolver)
@@ -33,7 +34,6 @@ connection.onCompletion(function (params) {
             vsCodeCompletion.textEdit = ted;
             vsCodeCompletion.sortText = com.sortText;
             if (com.additionalCompletions) {
-                // commands.getCommands().then((res)=>{debugger;})
                 vsCodeCompletion.command = {
                     title: "additional",
                     command: 'editorconfig._triggerSuggestAfterDelay',
