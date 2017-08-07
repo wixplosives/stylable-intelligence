@@ -100,3 +100,12 @@ in some cases the of illigeal source the AST is generated but corrupted:
 
 ```
 generates an AST with one selector `.gaga \n .baga'
+
+
+## Useful Resources
+- https://code.visualstudio.com/docs/extensionAPI/vscode-api
+- https://code.visualstudio.com/docs/extensions/example-language-server
+- https://github.com/Microsoft/vscode-languageserver-node-example/
+- https://github.com/Microsoft/vscode-tslint/ (Working Lang Server)
+- https://github.com/Microsoft/vscode/issues/26096 (Completion sorting)
+
