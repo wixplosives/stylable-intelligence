@@ -3,7 +3,7 @@ import {
     IPCMessageReader, IPCMessageWriter,
     createConnection, IConnection, TextDocumentSyncKind,
     TextDocuments, Diagnostic, DiagnosticSeverity,
-    InitializeParams, InitializeResult, TextDocumentPositionParams, CompletionItem, Range, Position, TextEdit
+    InitializeParams, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind, Range, Position, TextEdit
 } from 'vscode-languageserver';
 import Provider, { Completion, snippet, ExtendedResolver, ProviderRange, Dir, File, FsEntity } from './provider';
 import { Resolver, Stylesheet, fromCSS } from 'stylable';
@@ -41,7 +41,7 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
                 let vsCodeCompletion = CompletionItem.create(com.label);
                 let ted: TextEdit = TextEdit.insert(pos ,typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
                 // replace(getRange(com.range), typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
-
+                vsCodeCompletion.kind = CompletionItemKind.Snippet;
                 vsCodeCompletion.detail = com.detail;
                 vsCodeCompletion.textEdit = ted;
                 vsCodeCompletion.sortText = com.sortText;

@@ -29,6 +29,7 @@ connection.onCompletion(function (params) {
             var vsCodeCompletion = vscode_languageserver_1.CompletionItem.create(com.label);
             var ted = vscode_languageserver_1.TextEdit.insert(pos, typeof com.insertText === 'string' ? com.insertText : com.insertText.source);
             // replace(getRange(com.range), typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
+            vsCodeCompletion.kind = vscode_languageserver_1.CompletionItemKind.Snippet;
             vsCodeCompletion.detail = com.detail;
             vsCodeCompletion.textEdit = ted;
             vsCodeCompletion.sortText = com.sortText;
