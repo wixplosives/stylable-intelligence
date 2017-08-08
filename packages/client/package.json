@@ -41,7 +41,7 @@
     "postinstall": "node ./node_modules/vscode/bin/install",
     "reset": "rimraf node_modules dist && yarn install && yarn test",
     "pretest": "rimraf dist && yarn build",
-    "test": "yarn test:node",
+    "test": "node ./run-test",
     "test:node": "mocha --reporter mocha-env-reporter dist/test/*.test.js"
   },
   "devDependencies": {
