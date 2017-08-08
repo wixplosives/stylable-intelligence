@@ -1,14 +1,21 @@
+git:
+  depth:1
+
+sudo: false
+
 language: node_js
 
 node_js:
   - "7"
   - "6"
 
-sudo: false
-
 os:
   - osx
   - linux
+cache:
+  yarn: true
+  directories:
+  - node_modules
 
 before_install:
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
@@ -16,9 +23,11 @@ before_install:
       sh -e /etc/init.d/xvfb start;
       sleep 3;
     fi
+  - curl -o- -L https://yarnpkg.com/install.sh | bash
+  - export PATH=$HOME/.yarn/bin:$PATH
 
 install:
   - yarn install
 
 script:
-  - npm test --silent
+  - yarn test
