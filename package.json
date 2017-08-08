@@ -21,7 +21,7 @@
     "lerna": "^2.0.0"
   },
   "scripts": {
-    "postinstall": "./node_modules/.bin/lerna exec yarn install",
+    "postinstall": "./node_modules/.bin/lerna exec yarn install --network-concurrency 1",
     "test": "./node_modules/.bin/lerna run test"
   }
 }
