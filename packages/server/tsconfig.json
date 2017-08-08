@@ -10,14 +10,13 @@
     "noImplicitReturns": true,
     "strictNullChecks": true,
     "sourceMap": true,
-    "outDir": "dist",
+    "outDir": "../client/server",
     "typeRoots": [
       "./node_modules/@types",
-      "./custom-typings"
+      "../custom-typings"
     ]
   },
   "exclude": [
-    "node_modules",
-    "dist"
+    "node_modules"
   ]
 }

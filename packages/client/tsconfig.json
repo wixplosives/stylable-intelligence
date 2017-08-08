@@ -13,7 +13,7 @@
     "outDir": "dist",
     "typeRoots": [
       "./node_modules/@types",
-      "./custom-typings"
+      "../custom-typings"
     ]
   },
   "exclude": [
