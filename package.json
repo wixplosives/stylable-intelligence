@@ -16,5 +16,12 @@
   "keywords": [
     "typescript",
     "tdd"
-  ]
+  ],
+  "devDependencies": {
+    "lerna": "^2.0.0"
+  },
+  "scripts": {
+    "postinstall": "./node_modules/.bin/lerna exec yarn install",
+    "test": "./node_modules/.bin/lerna run test"
+  }
 }
