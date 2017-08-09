@@ -3,9 +3,9 @@ import {
     IPCMessageReader, IPCMessageWriter,
     createConnection, IConnection, TextDocumentSyncKind,
     TextDocuments, Diagnostic, DiagnosticSeverity,
-    InitializeParams, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind, Range, Position, TextEdit
+    InitializeParams, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind, Range, Position, TextEdit, InsertTextFormat
 } from 'vscode-languageserver';
-import Provider, { Completion, snippet, ExtendedResolver, ProviderRange, Dir, File, FsEntity } from './provider';
+import Provider, { Completion, snippet, ExtendedResolver, ProviderRange, ProviderPosition, Dir, File, FsEntity } from './provider';
 import { Resolver, Stylesheet, fromCSS } from 'stylable';
 import * as _ from 'lodash';
 import path = require('path');
@@ -37,11 +37,15 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
     const pos = params.position;
     return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, resolver)
         .then((res) => {
+            console.log('Received Completions in server:')
             return res.map((com: Completion) => {
+                console.log(JSON.stringify(com, null, '\t'));
                 let vsCodeCompletion = CompletionItem.create(com.label);
-                let ted: TextEdit = TextEdit.insert(pos ,typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
-                // replace(getRange(com.range), typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
-                vsCodeCompletion.kind = CompletionItemKind.Snippet;
+                // let ted: TextEdit = TextEdit.insert(pos, typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
+                let ted: TextEdit = TextEdit.replace(
+                    com.range ? com.range : new ProviderRange(new ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos),
+                    typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
+                vsCodeCompletion.insertTextFormat = InsertTextFormat.Snippet;
                 vsCodeCompletion.detail = com.detail;
                 vsCodeCompletion.textEdit = ted;
                 vsCodeCompletion.sortText = com.sortText;
@@ -57,7 +61,7 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
         })
 })
 
-function getRange(rng: ProviderRange | undefined): Range | undefined  {
+function getRange(rng: ProviderRange | undefined): Range | undefined {
     if (!rng) {
         return;
     }
