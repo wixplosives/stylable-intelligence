@@ -25,11 +25,13 @@ connection.onCompletion(function (params) {
     var pos = params.position;
     return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, resolver)
         .then(function (res) {
+        console.log('Received Completions in server:');
         return res.map(function (com) {
+            console.log(JSON.stringify(com, null, '\t'));
             var vsCodeCompletion = vscode_languageserver_1.CompletionItem.create(com.label);
-            var ted = vscode_languageserver_1.TextEdit.insert(pos, typeof com.insertText === 'string' ? com.insertText : com.insertText.source);
-            // replace(getRange(com.range), typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
-            vsCodeCompletion.kind = vscode_languageserver_1.CompletionItemKind.Snippet;
+            // let ted: TextEdit = TextEdit.insert(pos, typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
+            var ted = vscode_languageserver_1.TextEdit.replace(com.range ? com.range : new provider_1.ProviderRange(new provider_1.ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos), typeof com.insertText === 'string' ? com.insertText : com.insertText.source);
+            vsCodeCompletion.insertTextFormat = vscode_languageserver_1.InsertTextFormat.Snippet;
             vsCodeCompletion.detail = com.detail;
             vsCodeCompletion.textEdit = ted;
             vsCodeCompletion.sortText = com.sortText;
