@@ -7,7 +7,7 @@ const PostCssSafe = require('postcss-safe-parser');
 import * as _ from 'lodash';
 
 import { getDefinition, isClassDefinition, ClassDefinition, SymbolDefinition } from "./utils/get-definitions";
-import { getPositionInSrc, isContainer, isDeclaration, isInNode, isSelector, pathFromPosition, Position } from "./utils/postcss-ast-utils";
+import { getPositionInSrc, isContainer, isDeclaration, isInNode, isSelector, pathFromPosition } from "./utils/postcss-ast-utils";
 import {
     parseSelector,
     isSelectorChunk,
@@ -154,7 +154,7 @@ export default class Provider {
 
     public provideCompletionItemsFromSrc(
         src: string,
-        position: Position,
+        position: ProviderPosition,
         filePath: string,
         resolver: ExtendedResolver
     ): Thenable<Completion[]> {
@@ -219,7 +219,7 @@ export default class Provider {
     }
     public provideCompletionItemsFromAst(
         src: string,
-        position: Position,
+        position: ProviderPosition,
         filePath: string,
         resolver: ExtendedResolver,
         ast: PostCss.Root,
@@ -230,7 +230,7 @@ export default class Provider {
         const completions: Completion[] = [];
         const trimmedLine = currentLine.trim();
 
-        const position1Based: Position = {
+        const position1Based: ProviderPosition = {
             line: position.line + 1,
             character: position.character
         }

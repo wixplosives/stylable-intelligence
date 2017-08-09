@@ -29,7 +29,6 @@ connection.onCompletion(function (params) {
         return res.map(function (com) {
             console.log(JSON.stringify(com, null, '\t'));
             var vsCodeCompletion = vscode_languageserver_1.CompletionItem.create(com.label);
-            // let ted: TextEdit = TextEdit.insert(pos, typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
             var ted = vscode_languageserver_1.TextEdit.replace(com.range ? com.range : new provider_1.ProviderRange(new provider_1.ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos), typeof com.insertText === 'string' ? com.insertText : com.insertText.source);
             vsCodeCompletion.insertTextFormat = vscode_languageserver_1.InsertTextFormat.Snippet;
             vsCodeCompletion.detail = com.detail;

@@ -1,5 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+// export interface Position {
+//     line: number
+//     character: number
+// }
 function isInNode(position, node) {
     if (node.source.start.line > position.line) {
         return false;

@@ -41,7 +41,6 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
             return res.map((com: Completion) => {
                 console.log(JSON.stringify(com, null, '\t'));
                 let vsCodeCompletion = CompletionItem.create(com.label);
-                // let ted: TextEdit = TextEdit.insert(pos, typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
                 let ted: TextEdit = TextEdit.replace(
                     com.range ? com.range : new ProviderRange(new ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos),
                     typeof com.insertText === 'string' ? com.insertText : com.insertText.source)

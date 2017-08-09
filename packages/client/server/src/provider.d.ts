@@ -1,7 +1,6 @@
 import * as PostCss from 'postcss';
 import { Stylesheet, Resolver } from 'stylable';
 import { SymbolDefinition } from "./utils/get-definitions";
-import { Position } from "./utils/postcss-ast-utils";
 export declare class ProviderPosition {
     line: number;
     character: number;
@@ -41,6 +40,6 @@ export interface ExtendedResolver extends Resolver {
 }
 export default class Provider {
     getClassDefinition(stylesheet: Stylesheet, symbol: string, resolver: ExtendedResolver): void;
-    provideCompletionItemsFromSrc(src: string, position: Position, filePath: string, resolver: ExtendedResolver): Thenable<Completion[]>;
-    provideCompletionItemsFromAst(src: string, position: Position, filePath: string, resolver: ExtendedResolver, ast: PostCss.Root, stylesheet: Stylesheet, currentLine: string, cursorLineIndex: number): Thenable<Completion[]>;
+    provideCompletionItemsFromSrc(src: string, position: ProviderPosition, filePath: string, resolver: ExtendedResolver): Thenable<Completion[]>;
+    provideCompletionItemsFromAst(src: string, position: ProviderPosition, filePath: string, resolver: ExtendedResolver, ast: PostCss.Root, stylesheet: Stylesheet, currentLine: string, cursorLineIndex: number): Thenable<Completion[]>;
 }

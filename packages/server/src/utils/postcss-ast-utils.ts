@@ -1,11 +1,7 @@
 import * as PostCss from 'postcss';
+import {ProviderPosition} from '../provider'
 
-export interface Position {
-    line: number
-    character: number
-}
-
-export function isInNode(position: Position, node: PostCss.NodeBase): boolean {
+export function isInNode(position: ProviderPosition, node: PostCss.NodeBase): boolean {
     if (node.source.start!.line > position.line) {
         return false;
     }
@@ -33,7 +29,7 @@ export function isDeclaration(node: PostCss.NodeBase): node is PostCss.Declarati
     return node.hasOwnProperty('prop');
 }
 
-export function pathFromPosition(ast: PostCss.NodeBase, position: Position, res: PostCss.NodeBase[] = []): PostCss.NodeBase[] {
+export function pathFromPosition(ast: PostCss.NodeBase, position: ProviderPosition, res: PostCss.NodeBase[] = []): PostCss.NodeBase[] {
     let currentNode = ast;
     res.push(ast);
     if (isContainer(currentNode) && currentNode.nodes) {
@@ -47,7 +43,7 @@ export function pathFromPosition(ast: PostCss.NodeBase, position: Position, res:
     return res
 }
 
-export function getPositionInSrc(src: string, position: Position) {
+export function getPositionInSrc(src: string, position: ProviderPosition) {
     const lines = src.split('\n');
     return lines.slice(0, position.line)
         .reduce((total: number, line) => line.length + total + 1, -1) + position.character;
