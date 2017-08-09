@@ -17,14 +17,16 @@ import {
 
 const processor = PostCss([PostCssNested]);
 
-export interface ProviderPosition {
-    line: number;
-    character: number;
+export class ProviderPosition {
+    constructor(public line: number, public character: number) { }
+    // line: number;
+    // character: number;
 }
 
-export interface ProviderRange {
-    start: ProviderPosition;
-    end: ProviderPosition;
+export class ProviderRange {
+    constructor(public start: ProviderPosition, public end: ProviderPosition) { }
+    // start: ProviderPosition;
+    // end: ProviderPosition;
 }
 
 
@@ -55,8 +57,19 @@ function singleLineRange(line: number, start: number, end: number): ProviderRang
 
 
 // Completions
+// CompItemKinds for icons:
+//  .<class> - Class
+// value(<var>) -> Variable
+// -st-named -> (var -> Variable, cls -> Class)
+// :<state> -> Enum
+// :vars -> Keyword
+// :import -> Keyword
+// -st-* directive -> Keyword
+//
 const rootClass = new Completion('.root', 'The root class', 'b');
-const importsDirective = new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}'));
+function importsDirective(rng: ProviderRange) {
+    return new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}'), rng);
+}
 const extendsDirective = new Completion('-st-extends:', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
 const statesDirective = new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'));
 const mixinDirective = new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'));
@@ -196,6 +209,10 @@ export default class Provider {
 
         return resolver.resolveDependencies(stylesheet!)
             .then<Completion[]>(() => {
+                console.log('Calling AST completions with: ')
+                console.log('position: ', JSON.stringify(position, null, '\t'))
+                console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
+                console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n')
                 return this.provideCompletionItemsFromAst(src, position, filePath, resolver, ast, stylesheet!, currentLine, cursorLineIndex)
             });
 
@@ -261,7 +278,7 @@ export default class Provider {
         }
         if (trimmedLine.length < 2) {
             if (lastChar === ':' || isSpacy(lastChar)) {
-                completions.push(importsDirective);
+                completions.push(importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position)));
             }
             if (lastChar === '.' || isSpacy(lastChar)) {
                 completions.push(rootClass);

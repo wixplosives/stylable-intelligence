@@ -16,8 +16,8 @@
     "watch": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc --watch -p .",
     "build": "tsc -d",
     "pretest": "yarn clear && yarn build",
-    "test":  "mocha  --reporter mocha-env-reporter ../client/server/test/**/*.spec.js",
-    "start": "yarn clear && yarn build && concurrently --kill-others --success first \"yarn build -- -w\" \"webpack-dev-server --no-info\""
+    "test": "mocha  --reporter mocha-env-reporter ../client/server/test/**/*.spec.js",
+    "start": "yarn clear && yarn build && yarn compile && concurrently --kill-others --success first \"yarn build -- -w\" \"webpack-dev-server --no-info\""
   },
   "devDependencies": {
     "@types/chai": "~4.0.1",
@@ -47,6 +47,7 @@
   "dependencies": {
     "@types/lodash": "4.14.71",
     "css-selector-tokenizer": "^0.7.0",
+    "ipaddr": "^0.0.9",
     "lodash": "4.17.4",
     "postcss": "^6.0.7",
     "postcss-nested": "^2.0.4",

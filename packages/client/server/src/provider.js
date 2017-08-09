@@ -9,6 +9,22 @@ var get_definitions_1 = require("./utils/get-definitions");
 var postcss_ast_utils_1 = require("./utils/postcss-ast-utils");
 var selector_analyzer_1 = require("./utils/selector-analyzer");
 var processor = PostCss([PostCssNested]);
+var ProviderPosition = (function () {
+    function ProviderPosition(line, character) {
+        this.line = line;
+        this.character = character;
+    }
+    return ProviderPosition;
+}());
+exports.ProviderPosition = ProviderPosition;
+var ProviderRange = (function () {
+    function ProviderRange(start, end) {
+        this.start = start;
+        this.end = end;
+    }
+    return ProviderRange;
+}());
+exports.ProviderRange = ProviderRange;
 var Completion = (function () {
     function Completion(label, detail, sortText, insertText, range, additionalCompletions) {
         if (detail === void 0) { detail = ""; }
@@ -45,8 +61,19 @@ function singleLineRange(line, start, end) {
     };
 }
 // Completions
+// CompItemKinds for icons:
+//  .<class> - Class
+// value(<var>) -> Variable
+// -st-named -> (var -> Variable, cls -> Class)
+// :<state> -> Enum
+// :vars -> Keyword
+// :import -> Keyword
+// -st-* directive -> Keyword
+//
 var rootClass = new Completion('.root', 'The root class', 'b');
-var importsDirective = new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}'));
+function importsDirective(rng) {
+    return new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}'), rng);
+}
 var extendsDirective = new Completion('-st-extends:', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
 var statesDirective = new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'));
 var mixinDirective = new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'));
@@ -147,6 +174,10 @@ var Provider = (function () {
         }
         return resolver.resolveDependencies(stylesheet)
             .then(function () {
+            console.log('Calling AST completions with: ');
+            console.log('position: ', JSON.stringify(position, null, '\t'));
+            console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'));
+            console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n');
             return _this.provideCompletionItemsFromAst(src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex);
         });
     };
@@ -200,7 +231,7 @@ var Provider = (function () {
         }
         if (trimmedLine.length < 2) {
             if (lastChar === ':' || isSpacy(lastChar)) {
-                completions.push(importsDirective);
+                completions.push(importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position)));
             }
             if (lastChar === '.' || isSpacy(lastChar)) {
                 completions.push(rootClass);

@@ -2,13 +2,15 @@ import * as PostCss from 'postcss';
 import { Stylesheet, Resolver } from 'stylable';
 import { SymbolDefinition } from "./utils/get-definitions";
 import { Position } from "./utils/postcss-ast-utils";
-export interface ProviderPosition {
+export declare class ProviderPosition {
     line: number;
     character: number;
+    constructor(line: number, character: number);
 }
-export interface ProviderRange {
+export declare class ProviderRange {
     start: ProviderPosition;
     end: ProviderPosition;
+    constructor(start: ProviderPosition, end: ProviderPosition);
 }
 export declare class Completion {
     label: string;
