@@ -7,6 +7,21 @@ import * as asserters from '../test-kit/asserters';
 
 describe('Imports', function () {
 
+    it('should complete :import at top level', function () {
+        return asserters.getCompletions(
+            `|
+            .gaga{
+                color:red;
+            }
+            `).then((asserter) => {
+                asserter.suggested([
+                    asserters.importCompletion
+                ]);
+                asserter.notSuggested([
+                ]);
+            });
+    });
+
     it('should complete :import at top level after ":"', function () {
         return asserters.getCompletions(
             `:|
@@ -72,6 +87,30 @@ describe('Imports', function () {
                     asserters.extendsDirectiveCompletion,
                     asserters.mixinDirectiveCompletion,
                     asserters.variantDirectiveCompletion
+                ]);
+            });
+    });
+
+    it('should not complete :import inside import statements', function () {
+        return asserters.getCompletions(
+            `
+                :import{
+                    |
+                }
+
+                `, {}, true).then((asserter) => {
+
+                asserter.suggested([
+                    asserters.importFromDirectiveCompletion,
+                    asserters.importDefaultDirectiveCompletion,
+                    asserters.importNamedDirectiveCompletion
+                ]);
+                asserter.notSuggested([
+                    asserters.importCompletion,
+                    asserters.statesDirectiveCompletion,
+                    asserters.extendsDirectiveCompletion,
+                    asserters.variantDirectiveCompletion,
+                    asserters.mixinDirectiveCompletion
                 ]);
             });
     });

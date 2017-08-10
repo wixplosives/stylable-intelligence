@@ -40,7 +40,6 @@ connection.listen();
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
     console.log('Looking for file');
     const doc = documents.get(params.textDocument.uri).getText();
-    // const doc = fs.readFileSync(params.textDocument.uri.slice(7)).toString();
     const pos = params.position;
     return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, resolver)
         .then((res) => {

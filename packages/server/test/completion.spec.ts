@@ -7,7 +7,7 @@ import * as asserters from '../test-kit/asserters'
 
 describe('completion unit test', function () {
     describe('root level', function () {
-        it('should complete import directive, root and existing classes at top level', function () {
+        it('should complete ONLY import directive, root and existing classes at top level', function () {
             return asserters.getCompletions(`
             .gaga{
                 color:red;
