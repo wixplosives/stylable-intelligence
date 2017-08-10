@@ -1,9 +1,9 @@
 'use strict';
+import { connect } from 'tls';
 import {
-    IPCMessageReader, IPCMessageWriter,
-    createConnection, IConnection, TextDocumentSyncKind,
-    TextDocuments, Diagnostic, DiagnosticSeverity,
-    InitializeParams, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind, Range, Position, TextEdit, InsertTextFormat
+    IPCMessageReader, IPCMessageWriter, createConnection, IConnection, InitializeParams, InitializeResult,
+    TextDocumentSyncKind, TextDocuments, TextDocumentPositionParams,
+    CompletionItem, CompletionItemKind, Range, Position, TextEdit, InsertTextFormat
 } from 'vscode-languageserver';
 import Provider, { Completion, snippet, ExtendedResolver, ProviderRange, ProviderPosition, Dir, File, FsEntity } from './provider';
 import { Resolver, Stylesheet, fromCSS } from 'stylable';
@@ -18,10 +18,14 @@ let workspaceRoot: string;
 const provider = new Provider();
 const resolver = new VsCodeResolver({});
 
+let documents: TextDocuments = new TextDocuments();
+documents.listen(connection);
+
 connection.onInitialize((params): InitializeResult => {
     workspaceRoot = <string>params.rootUri;
     return {
         capabilities: {
+            textDocumentSync: documents.syncKind,
             completionProvider: {
                 triggerCharacters: ['.', '-', ':', '"']
             }
@@ -30,6 +34,8 @@ connection.onInitialize((params): InitializeResult => {
 });
 
 connection.listen();
+
+
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
     console.log('Looking for file');

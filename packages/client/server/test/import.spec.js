@@ -32,6 +32,20 @@ describe('Imports', function () {
             ]);
         });
     });
+    it.only('should not complete :import after ::', function () {
+        return asserters.getCompletions(".baga {\n                color: red;\n            }\n\n            ::|\n            ").then(function (asserter) {
+            asserter.suggested([]);
+            asserter.notSuggested([
+                asserters.importCompletion,
+                asserters.rootCompletion,
+                asserters.classCompletion('gaga'),
+                asserters.statesDirectiveCompletion,
+                asserters.extendsDirectiveCompletion,
+                asserters.mixinDirectiveCompletion,
+                asserters.variantDirectiveCompletion
+            ]);
+        });
+    });
     it('should complete -st-from, -st-default, -st-named inside import statements', function () {
         return asserters.getCompletions("\n                :import{\n                    -|\n                }\n\n                ", {}, true).then(function (asserter) {
             asserter.suggested([

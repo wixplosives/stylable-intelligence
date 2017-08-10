@@ -8,29 +8,29 @@ import * as asserters from '../test-kit/asserters';
 describe('Imports', function () {
 
     it('should complete :import at top level after ":"', function () {
-            return asserters.getCompletions(
-                `:|
+        return asserters.getCompletions(
+            `:|
             .gaga{
                 color:red;
             }
             `).then((asserter) => {
-                    asserter.suggested([
-                        asserters.importCompletion
-                    ]);
-                    asserter.notSuggested([
-                        asserters.rootCompletion,
-                        asserters.classCompletion('gaga'),
-                        asserters.statesDirectiveCompletion,
-                        asserters.extendsDirectiveCompletion,
-                        asserters.mixinDirectiveCompletion,
-                        asserters.variantDirectiveCompletion
-                    ]);
-                });
-        });
+                asserter.suggested([
+                    asserters.importCompletion
+                ]);
+                asserter.notSuggested([
+                    asserters.rootCompletion,
+                    asserters.classCompletion('gaga'),
+                    asserters.statesDirectiveCompletion,
+                    asserters.extendsDirectiveCompletion,
+                    asserters.mixinDirectiveCompletion,
+                    asserters.variantDirectiveCompletion
+                ]);
+            });
+    });
 
     it('should complete :import at top level even if exists', function () {
-            return asserters.getCompletions(
-                `:import {
+        return asserters.getCompletions(
+            `:import {
                     -st-from: "./x";
                     -st-default: X;
                     -st-named: a, b;
@@ -40,19 +40,41 @@ describe('Imports', function () {
                 color:red;
             }
             `).then((asserter) => {
-                    asserter.suggested([
-                        asserters.importCompletion,
-                    ]);
-                    asserter.notSuggested([
-                        asserters.rootCompletion,
-                        asserters.classCompletion('gaga'),
-                        asserters.statesDirectiveCompletion,
-                        asserters.extendsDirectiveCompletion,
-                        asserters.mixinDirectiveCompletion,
-                        asserters.variantDirectiveCompletion
-                    ]);
-                });
-        });
+                asserter.suggested([
+                    asserters.importCompletion,
+                ]);
+                asserter.notSuggested([
+                    asserters.rootCompletion,
+                    asserters.classCompletion('gaga'),
+                    asserters.statesDirectiveCompletion,
+                    asserters.extendsDirectiveCompletion,
+                    asserters.mixinDirectiveCompletion,
+                    asserters.variantDirectiveCompletion
+                ]);
+            });
+    });
+
+    it.only('should not complete :import after ::', function () {
+        return asserters.getCompletions(
+            `.baga {
+                color: red;
+            }
+
+            ::|
+            `).then((asserter) => {
+                asserter.suggested([
+                ]);
+                asserter.notSuggested([
+                    asserters.importCompletion,
+                    asserters.rootCompletion,
+                    asserters.classCompletion('gaga'),
+                    asserters.statesDirectiveCompletion,
+                    asserters.extendsDirectiveCompletion,
+                    asserters.mixinDirectiveCompletion,
+                    asserters.variantDirectiveCompletion
+                ]);
+            });
+    });
 
     it('should complete -st-from, -st-default, -st-named inside import statements', function () {
         return asserters.getCompletions(
