@@ -2,16 +2,18 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var vscode_languageserver_1 = require("vscode-languageserver");
 var provider_1 = require("./provider");
-var fs = require("fs");
 var vscode_resolver_1 = require("./adapters/vscode-resolver");
 var connection = vscode_languageserver_1.createConnection(new vscode_languageserver_1.IPCMessageReader(process), new vscode_languageserver_1.IPCMessageWriter(process));
 var workspaceRoot;
 var provider = new provider_1.default();
 var resolver = new vscode_resolver_1.VsCodeResolver({});
+var documents = new vscode_languageserver_1.TextDocuments();
+documents.listen(connection);
 connection.onInitialize(function (params) {
     workspaceRoot = params.rootUri;
     return {
         capabilities: {
+            textDocumentSync: documents.syncKind,
             completionProvider: {
                 triggerCharacters: ['.', '-', ':', '"']
             }
@@ -21,7 +23,8 @@ connection.onInitialize(function (params) {
 connection.listen();
 connection.onCompletion(function (params) {
     console.log('Looking for file');
-    var doc = fs.readFileSync(params.textDocument.uri.slice(7)).toString();
+    var doc = documents.get(params.textDocument.uri).getText();
+    // const doc = fs.readFileSync(params.textDocument.uri.slice(7)).toString();
     var pos = params.position;
     return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, resolver)
         .then(function (res) {
