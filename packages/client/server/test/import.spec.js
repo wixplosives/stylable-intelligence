@@ -32,7 +32,7 @@ describe('Imports', function () {
             ]);
         });
     });
-    it.only('should not complete :import after ::', function () {
+    it('should not complete :import after ::', function () {
         return asserters.getCompletions(".baga {\n                color: red;\n            }\n\n            ::|\n            ").then(function (asserter) {
             asserter.suggested([]);
             asserter.notSuggested([

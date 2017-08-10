@@ -54,7 +54,7 @@ describe('Imports', function () {
             });
     });
 
-    it.only('should not complete :import after ::', function () {
+    it('should not complete :import after ::', function () {
         return asserters.getCompletions(
             `.baga {
                 color: red;
