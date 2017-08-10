@@ -8,15 +8,19 @@ import path = require('path');
 export function activate(context: ExtensionContext) {
     console.log('client lalala');
     let serverModule = context.asAbsolutePath(path.join('server', 'src', 'server.js'));
+
+    let debugOptions:Executable = {command: 'node', args:['--inspect', '--debug-brk', serverModule]}
+    let runOptions:Executable = {command: 'node', args:[serverModule]}
+
     let serverOptions: ServerOptions = {
-        run: { module: serverModule, transport: TransportKind.ipc },
-        debug: { module: serverModule, transport: TransportKind.ipc }
+        run: runOptions,
+        debug: debugOptions
+
     }
     let clientOptions: LanguageClientOptions = {
         documentSelector: ['css'],
     }
 
-    // let serverOptions2:Executable = {command: 'node', args:['--inspect', '--debug-brk', serverModule]}
     let client = new LanguageClient('stylable', serverOptions, clientOptions);
     client.trace = Trace.Verbose;
     context.subscriptions.push(client.start());
