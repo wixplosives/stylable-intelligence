@@ -1,7 +1,7 @@
 'use strict';
 import { Trace } from 'vscode-jsonrpc'
 import { ExtensionContext } from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, Executable } from 'vscode-languageclient';
 import path = require('path');
 
 
@@ -16,6 +16,7 @@ export function activate(context: ExtensionContext) {
         documentSelector: ['css'],
     }
 
+    // let serverOptions2:Executable = {command: 'node', args:['--inspect', '--debug-brk', serverModule]}
     let client = new LanguageClient('stylable', serverOptions, clientOptions);
     client.trace = Trace.Verbose;
     context.subscriptions.push(client.start());
