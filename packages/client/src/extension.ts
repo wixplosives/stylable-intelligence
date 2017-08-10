@@ -8,6 +8,7 @@ import path = require('path');
 export function activate(context: ExtensionContext) {
     console.log('client lalala');
     let serverModule = context.asAbsolutePath(path.join('server', 'src', 'server.js'));
+
     let debugOptions:Executable = {command: 'node', args:['--inspect', '--debug-brk', serverModule]}
     let runOptions:Executable = {command: 'node', args:[serverModule]}
 
