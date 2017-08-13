@@ -16,7 +16,7 @@ let connection: IConnection = createConnection(new IPCMessageReader(process), ne
 let workspaceRoot: string;
 const provider = new Provider();
 let documents: TextDocuments = new TextDocuments();
-const resolver = new VsCodeResolver(connection, documents);
+const resolver = new VsCodeResolver(documents);
 
 
 documents.listen(connection);

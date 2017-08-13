@@ -8,9 +8,8 @@ var path = require("path");
 var provider = new provider_1.default();
 var VsCodeResolver = (function (_super) {
     tslib_1.__extends(VsCodeResolver, _super);
-    function VsCodeResolver(connection, docs) {
+    function VsCodeResolver(docs) {
         var _this = _super.call(this, {}) || this;
-        _this.connection = connection;
         _this.docs = docs;
         return _this;
     }
@@ -27,7 +26,6 @@ var VsCodeResolver = (function (_super) {
             console.log('importNode.from: ', importNode.from);
             console.log('parsedPath: ', JSON.stringify(path.parse(stylesheet.source)));
             var globalPath = path.parse(stylesheet.source).dir + importNode.from.slice(1);
-            // const globalPath: string = path.resolve(path.parse(stylesheet.source).dir, importNode.from)
             console.log('globalPath: ', globalPath);
             console.log('docs:', _this.docs.keys());
             var txt = _this.docs.get(globalPath).getText();

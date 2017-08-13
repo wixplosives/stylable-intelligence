@@ -12,7 +12,7 @@ import * as fs from 'fs';
 const provider = new Provider();
 
 export class VsCodeResolver extends Resolver implements ExtendedResolver {
-    constructor(private connection: IConnection, private docs: TextDocuments) {
+    constructor(private docs: TextDocuments) {
         super({});
     }
 
@@ -29,7 +29,6 @@ export class VsCodeResolver extends Resolver implements ExtendedResolver {
             console.log('importNode.from: ', importNode.from)
             console.log('parsedPath: ', JSON.stringify(path.parse(stylesheet.source)))
             const globalPath: string = path.parse(stylesheet.source).dir + importNode.from.slice(1);
-            // const globalPath: string = path.resolve(path.parse(stylesheet.source).dir, importNode.from)
             console.log('globalPath: ', globalPath);
             console.log('docs:', this.docs.keys());
 

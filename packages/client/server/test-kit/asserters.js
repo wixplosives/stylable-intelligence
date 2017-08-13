@@ -2,8 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var provider_1 = require("../src/provider");
 var chai_1 = require("chai");
-var test_resolver_1 = require("../test-kit/test-resolver");
-// import {VsCodeResolver} from '../src/adapters/vscode-resolver';
+var vscode_resolver_1 = require("../src/adapters/vscode-resolver");
+var vscode_languageserver_1 = require("vscode-languageserver");
+var fs = require("fs");
 var provider = new provider_1.default();
 function assertCompletions(actualCompletions, expectedCompletions, prefix) {
     if (prefix === void 0) { prefix = ''; }
@@ -29,9 +30,11 @@ function assertNoCompletions(actualCompletions, nonCompletions, prefix) {
         chai_1.expect(actual, prefix + 'unallowed completion found: ' + notAllowed.label + ' ').to.be.equal(undefined);
     });
 }
-function getCompletions(src, extrafiles, checkSingleLine) {
+function getCompletions(fileName, extrafiles, checkSingleLine) {
     if (extrafiles === void 0) { extrafiles = {}; }
     if (checkSingleLine === void 0) { checkSingleLine = false; }
+    console.log("Getting completions for File: ", fileName);
+    var src = fs.readFileSync(fileName).toString();
     var singleLineSrc = src.split('\n').join('');
     var normalCompletions;
     return completionsIntenal(src, extrafiles)
@@ -57,8 +60,9 @@ function completionsIntenal(src, extrafiles) {
     var linesTillCaret = src.substr(0, caretPos).split('\n');
     var character = linesTillCaret[linesTillCaret.length - 1].length;
     src = src.replace('|', "");
-    var resolver = new test_resolver_1.TestResolver({});
-    resolver.addExtraFiles(extrafiles);
+    var resolver = new vscode_resolver_1.VsCodeResolver(new vscode_languageserver_1.TextDocuments());
+    // const resolver = new TestResolver({});
+    // resolver.addExtraFiles(extrafiles);
     return provider.provideCompletionItemsFromSrc(src, {
         line: linesTillCaret.length - 1,
         character: character

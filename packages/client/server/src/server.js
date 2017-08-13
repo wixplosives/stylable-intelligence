@@ -7,7 +7,7 @@ var connection = vscode_languageserver_1.createConnection(new vscode_languageser
 var workspaceRoot;
 var provider = new provider_1.default();
 var documents = new vscode_languageserver_1.TextDocuments();
-var resolver = new vscode_resolver_1.VsCodeResolver(connection, documents);
+var resolver = new vscode_resolver_1.VsCodeResolver(documents);
 documents.listen(connection);
 connection.onInitialize(function (params) {
     workspaceRoot = params.rootUri;

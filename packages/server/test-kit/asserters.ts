@@ -2,8 +2,9 @@ import StylableDotCompletionProvider, { Completion, snippet, ExtendedResolver, P
 import { Resolver, Stylesheet } from 'stylable'
 import * as _ from 'lodash';
 import { expect } from "chai";
-import { TestResolver } from '../test-kit/test-resolver';
-// import {VsCodeResolver} from '../src/adapters/vscode-resolver';
+import { VsCodeResolver } from '../src/adapters/vscode-resolver';
+import { TextDocuments } from 'vscode-languageserver';
+import * as fs from 'fs';
 
 const provider = new StylableDotCompletionProvider();
 
@@ -28,7 +29,6 @@ function assertNoCompletions(actualCompletions: Completion[], nonCompletions: Pa
     nonCompletions.forEach(notAllowed => {
         const actual = actualCompletions.find((comp) => comp.label === notAllowed.label);
         expect(actual, prefix + 'unallowed completion found: ' + notAllowed.label + ' ').to.be.equal(undefined);
-
     });
 }
 
@@ -38,7 +38,9 @@ export interface assertable {
     notSuggested: (nonCompletions: Partial<Completion>[]) => void
 }
 
-export function getCompletions(src: string, extrafiles: { [path: string]: string } = {}, checkSingleLine: boolean = false): Thenable<assertable> {
+export function getCompletions(fileName: string, extrafiles: { [path: string]: string } = {}, checkSingleLine: boolean = false): Thenable<assertable> {
+    console.log("Getting completions for File: ", fileName);
+    const src: string = fs.readFileSync(fileName).toString();
     const singleLineSrc = src.split('\n').join('');
     let normalCompletions: Completion[];
     return completionsIntenal(src, extrafiles)
@@ -66,8 +68,9 @@ function completionsIntenal(src: string, extrafiles: { [path: string]: string } 
 
     src = src.replace('|', "");
 
-    const resolver = new TestResolver({});
-    resolver.addExtraFiles(extrafiles);
+    const resolver = new VsCodeResolver(new TextDocuments());
+    // const resolver = new TestResolver({});
+    // resolver.addExtraFiles(extrafiles);
 
     return provider.provideCompletionItemsFromSrc(src, {
         line: linesTillCaret.length - 1,

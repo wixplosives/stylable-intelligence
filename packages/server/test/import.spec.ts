@@ -6,13 +6,9 @@ import * as asserters from '../test-kit/asserters';
 
 describe('Imports', function () {
 
-    it('should complete :import at top level after ""', function () {
-        return asserters.getCompletions(
-            `|
-            .gaga{
-                color:red;
-            }
-            `).then((asserter) => {
+    it.only('should complete :import at top level after ""', function () {
+        // console.log('d/f: ', __dirname, __filename);
+        return asserters.getCompletions(__dirname + '/cases/top-level-1.css').then((asserter) => {
                 asserter.suggested([
                     asserters.importCompletion
                 ]);
