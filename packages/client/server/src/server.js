@@ -9,9 +9,8 @@ var provider = new provider_1.default();
 var documents = new vscode_languageserver_1.TextDocuments();
 var resolver = new vscode_resolver_1.VsCodeResolver(connection, documents);
 documents.listen(connection);
-var workspace;
 connection.onInitialize(function (params) {
-    workspaceRoot = params.rootPath;
+    workspaceRoot = params.rootUri;
     return {
         capabilities: {
             textDocumentSync: documents.syncKind,
