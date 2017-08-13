@@ -6,7 +6,7 @@ import * as asserters from '../test-kit/asserters';
 
 describe('Imports', function () {
 
-    it('should complete :import at top level', function () {
+    it('should complete :import at top level after ""', function () {
         return asserters.getCompletions(
             `|
             .gaga{

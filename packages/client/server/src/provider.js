@@ -128,7 +128,7 @@ var Provider = (function () {
     };
     Provider.prototype.provideCompletionItemsFromSrc = function (src, position, filePath, resolver) {
         var _this = this;
-        debugger;
+        // debugger;
         var cursorLineIndex = position.character;
         var lines = src.split('\n');
         var currentLine = lines[position.line];
@@ -193,7 +193,8 @@ var Provider = (function () {
         });
     };
     Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex) {
-        console.log('Strating provideCompletionItemsFromAst');
+        console.log('Starting provideCompletionItemsFromAst');
+        debugger;
         var completions = [];
         var trimmedLine = currentLine.trim();
         var position1Based = {
@@ -242,7 +243,7 @@ var Provider = (function () {
             }
         }
         if (trimmedLine.length < 2) {
-            if (lastChar === ':' || isSpacy(lastChar)) {
+            if ((lastChar === ':' || isSpacy(lastChar)) && lastPart.type === 'root') {
                 completions.push(importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position)));
             }
             if (lastChar === '.' || isSpacy(lastChar)) {

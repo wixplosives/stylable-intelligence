@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var asserters = require("../test-kit/asserters");
 describe('Imports', function () {
-    it('should complete :import at top level', function () {
+    it('should complete :import at top level after ""', function () {
         return asserters.getCompletions("|\n            .gaga{\n                color:red;\n            }\n            ").then(function (asserter) {
             asserter.suggested([
                 asserters.importCompletion

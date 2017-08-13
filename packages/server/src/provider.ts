@@ -155,7 +155,7 @@ export default class Provider {
         resolver: ExtendedResolver
     ): Thenable<Completion[]> {
 
-        debugger;
+        // debugger;
         let cursorLineIndex: number = position.character;
         let lines = src.split('\n');
         let currentLine = lines[position.line];
@@ -234,7 +234,8 @@ export default class Provider {
         currentLine: string,
         cursorLineIndex: number
     ): Thenable<Completion[]> {
-        console.log('Strating provideCompletionItemsFromAst')
+        console.log('Starting provideCompletionItemsFromAst')
+        debugger;
         const completions: Completion[] = [];
         const trimmedLine = currentLine.trim();
 
@@ -285,7 +286,7 @@ export default class Provider {
             }
         }
         if (trimmedLine.length < 2) {
-            if (lastChar === ':' || isSpacy(lastChar)) {
+            if ((lastChar === ':' || isSpacy(lastChar)) && (<PostCss.Root>lastPart).type === 'root' ) {
                 completions.push(importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position)));
             }
             if (lastChar === '.' || isSpacy(lastChar)) {

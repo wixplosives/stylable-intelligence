@@ -5,10 +5,10 @@
 			"name": "Attach",
       "type": "node",
       "request": "attach",
-			"port": 6009,
-			"sourceMaps": true,
-			"outFiles": [ "${workspaceRoot}/../client/server/**/*.js" ],
-			"protocol": "legacy"
-		}
+      "sourceMaps": true,
+      "outFiles": [ "${workspaceRoot}/../client/server/**/*.js" ],
+      "protocol":"inspector",
+      "port": 9229
+    }
 	]
 }
