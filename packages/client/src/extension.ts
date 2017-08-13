@@ -6,14 +6,17 @@ import path = require('path');
 
 
 export function activate(context: ExtensionContext) {
+
     console.log('client lalala');
     let serverModule = context.asAbsolutePath(path.join('server', 'src', 'server.js'));
+    let debugOptions = { execArgv: ['--inspect'] };
 
     let serverOptions: ServerOptions = {
          run: { module: serverModule, transport: TransportKind.ipc },
-         debug: { module: serverModule, transport: TransportKind.ipc }
+         debug: { module: serverModule, transport: TransportKind.ipc, options:debugOptions, runtime:'node'}
 
     }
+
     let clientOptions: LanguageClientOptions = {
         documentSelector: ['css'],
     }
