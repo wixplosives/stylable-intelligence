@@ -13,13 +13,10 @@ export function activate(context: ExtensionContext) {
 
     let serverOptions: ServerOptions = {
          run: { module: serverModule, transport: TransportKind.ipc },
-         debug: { module: serverModule, transport: TransportKind.ipc, options:debugOptions, runtime:'node', args:['--inspect:6004'] }
+         debug: { module: serverModule, transport: TransportKind.ipc, options:debugOptions, runtime:'node'}
 
     }
-    // let serverOptions: ServerOptions = {
-    //      run:  {command: 'node', args:[serverModule]},
-    //      debug:  {command: 'node', args:[serverModule]}
-    // }
+
     let clientOptions: LanguageClientOptions = {
         documentSelector: ['css'],
     }
