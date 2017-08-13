@@ -213,6 +213,7 @@ export default class Provider {
             console.error('stylable transpiling failed');
         }
 
+        console.log('Calling resolveDependencies');
         return resolver.resolveDependencies(stylesheet!)
             .then<Completion[]>(() => {
                 console.log('Calling AST completions with: ')
@@ -233,6 +234,7 @@ export default class Provider {
         currentLine: string,
         cursorLineIndex: number
     ): Thenable<Completion[]> {
+        console.log('Strating provideCompletionItemsFromAst')
         const completions: Completion[] = [];
         const trimmedLine = currentLine.trim();
 

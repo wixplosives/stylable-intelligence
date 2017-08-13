@@ -182,6 +182,7 @@ var Provider = (function () {
             console.log('Transpiling Stylesheet fail');
             console.error('stylable transpiling failed');
         }
+        console.log('Calling resolveDependencies');
         return resolver.resolveDependencies(stylesheet)
             .then(function () {
             console.log('Calling AST completions with: ');
@@ -192,6 +193,7 @@ var Provider = (function () {
         });
     };
     Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex) {
+        console.log('Strating provideCompletionItemsFromAst');
         var completions = [];
         var trimmedLine = currentLine.trim();
         var position1Based = {

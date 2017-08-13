@@ -2,7 +2,6 @@ import StylableDotCompletionProvider, { Completion, snippet, ExtendedResolver } 
 import { Resolver, Stylesheet } from 'stylable'
 import * as _ from 'lodash';
 import { expect } from "chai";
-import { TestResolver } from '../test-kit/test-resolver';
 import * as asserters from '../test-kit/asserters';
 
 describe('Imports', function () {

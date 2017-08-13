@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var provider_1 = require("../src/provider");
 var chai_1 = require("chai");
 var test_resolver_1 = require("../test-kit/test-resolver");
+// import {VsCodeResolver} from '../src/adapters/vscode-resolver';
 var provider = new provider_1.default();
 function assertCompletions(actualCompletions, expectedCompletions, prefix) {
     if (prefix === void 0) { prefix = ''; }

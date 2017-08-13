@@ -5,22 +5,32 @@ var provider_1 = require("../provider");
 var stylable_1 = require("stylable");
 var _ = require("lodash");
 var path = require("path");
-var fs = require("fs");
 var provider = new provider_1.default();
 var VsCodeResolver = (function (_super) {
     tslib_1.__extends(VsCodeResolver, _super);
-    function VsCodeResolver() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    function VsCodeResolver(connection, docs) {
+        var _this = _super.call(this, {}) || this;
+        _this.connection = connection;
+        _this.docs = docs;
+        return _this;
     }
     VsCodeResolver.prototype.resolveModule = function (filePath) {
         var globalPath = path.resolve(path.parse(this.st.source).dir, filePath);
+        this.add(globalPath, this.docs.get(globalPath).getText());
         return _super.prototype.resolveModule.call(this, globalPath);
     };
     VsCodeResolver.prototype.resolveDependencies = function (stylesheet) {
         var _this = this;
+        console.log('Starting resolveDependencies');
         stylesheet.imports.map(function (importNode) {
-            var globalPath = path.resolve(path.parse(stylesheet.source).dir, importNode.from);
-            var txt = fs.readFileSync(globalPath).toString();
+            console.log('stylesheet.source: ', stylesheet.source);
+            console.log('importNode.from: ', importNode.from);
+            console.log('parsedPath: ', JSON.stringify(path.parse(stylesheet.source)));
+            var globalPath = path.parse(stylesheet.source).dir + importNode.from.slice(1);
+            // const globalPath: string = path.resolve(path.parse(stylesheet.source).dir, importNode.from)
+            console.log('globalPath: ', globalPath);
+            console.log('docs:', _this.docs.keys());
+            var txt = _this.docs.get(globalPath).getText();
             if (_.endsWith(importNode.from, '.css')) {
                 _this.add(globalPath, stylable_1.fromCSS(txt));
             }

@@ -12,17 +12,18 @@ import path = require('path');
 import * as fs from 'fs';
 import { VsCodeResolver } from './adapters/vscode-resolver'
 
-
 let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 let workspaceRoot: string;
 const provider = new Provider();
-const resolver = new VsCodeResolver({});
-
 let documents: TextDocuments = new TextDocuments();
+const resolver = new VsCodeResolver(connection, documents);
+
+
 documents.listen(connection);
 
 connection.onInitialize((params): InitializeResult => {
-    workspaceRoot = <string>params.rootUri;
+    workspaceRoot = params.rootUri!;
+
     return {
         capabilities: {
             textDocumentSync: documents.syncKind,

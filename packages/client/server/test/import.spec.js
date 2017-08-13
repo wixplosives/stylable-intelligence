@@ -63,8 +63,6 @@ describe('Imports', function () {
             ]);
             asserter.notSuggested([
                 asserters.importCompletion,
-                asserters.rootCompletion,
-                asserters.classCompletion('gaga'),
                 asserters.statesDirectiveCompletion,
                 asserters.extendsDirectiveCompletion,
                 asserters.variantDirectiveCompletion,

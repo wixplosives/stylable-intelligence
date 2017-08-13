@@ -3,6 +3,7 @@ import { Resolver, Stylesheet } from 'stylable'
 import * as _ from 'lodash';
 import { expect } from "chai";
 import { TestResolver } from '../test-kit/test-resolver';
+// import {VsCodeResolver} from '../src/adapters/vscode-resolver';
 
 const provider = new StylableDotCompletionProvider();
 

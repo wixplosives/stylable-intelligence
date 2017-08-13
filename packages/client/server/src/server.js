@@ -6,11 +6,12 @@ var vscode_resolver_1 = require("./adapters/vscode-resolver");
 var connection = vscode_languageserver_1.createConnection(new vscode_languageserver_1.IPCMessageReader(process), new vscode_languageserver_1.IPCMessageWriter(process));
 var workspaceRoot;
 var provider = new provider_1.default();
-var resolver = new vscode_resolver_1.VsCodeResolver({});
 var documents = new vscode_languageserver_1.TextDocuments();
+var resolver = new vscode_resolver_1.VsCodeResolver(connection, documents);
 documents.listen(connection);
+var workspace;
 connection.onInitialize(function (params) {
-    workspaceRoot = params.rootUri;
+    workspaceRoot = params.rootPath;
     return {
         capabilities: {
             textDocumentSync: documents.syncKind,
@@ -24,7 +25,6 @@ connection.listen();
 connection.onCompletion(function (params) {
     console.log('Looking for file');
     var doc = documents.get(params.textDocument.uri).getText();
-    // const doc = fs.readFileSync(params.textDocument.uri.slice(7)).toString();
     var pos = params.position;
     return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, resolver)
         .then(function (res) {
