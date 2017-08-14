@@ -16,7 +16,7 @@
     "watch": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc --watch -p .",
     "build": "tsc -d",
     "pretest": "yarn clear && yarn build",
-    "test": "JUNIT_REPORT_PATH=/test_results_client.xml mocha --reporter mocha-jenkins-reporter dist/test/*.test.js",
+    "test": "JUNIT_REPORT_PATH=/test_results_serveer.xml mocha --reporter mocha-jenkins-reporter dist/test/*.test.js",
     "start": "yarn clear && yarn build && yarn compile && concurrently --kill-others --success first \"yarn build -- -w\" \"webpack-dev-server --no-info\""
   },
   "devDependencies": {
