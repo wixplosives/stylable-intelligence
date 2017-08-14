@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var asserters = require("../test-kit/asserters");
 describe('Imports', function () {
     it('should complete :import at top level after ""', function () {
-        return asserters.getCompletions('top-level-no-chars.css').then(function (asserter) {
+        return asserters.getCompletions('imports/top-level-no-chars.css').then(function (asserter) {
             asserter.suggested([
                 asserters.importCompletion
             ]);
@@ -11,7 +11,7 @@ describe('Imports', function () {
         });
     });
     it('should complete :import at top level after ":"', function () {
-        return asserters.getCompletions('top-level-colon.css').then(function (asserter) {
+        return asserters.getCompletions('imports/top-level-colon.css').then(function (asserter) {
             asserter.suggested([
                 asserters.importCompletion
             ]);
@@ -26,7 +26,7 @@ describe('Imports', function () {
         });
     });
     it('should complete :import at top level even if exists', function () {
-        return asserters.getCompletions('top-level-import-exists.css').then(function (asserter) {
+        return asserters.getCompletions('imports/top-level-import-exists.css').then(function (asserter) {
             asserter.suggested([
                 asserters.importCompletion,
             ]);
@@ -41,7 +41,7 @@ describe('Imports', function () {
         });
     });
     it('should not complete :import after ::', function () {
-        return asserters.getCompletions('top-level-colon-colon.css').then(function (asserter) {
+        return asserters.getCompletions('imports/top-level-colon-colon.css').then(function (asserter) {
             asserter.suggested([]);
             asserter.notSuggested([
                 asserters.importCompletion,
@@ -55,7 +55,7 @@ describe('Imports', function () {
         });
     });
     it('should not complete :import inside selectors', function () {
-        return asserters.getCompletions('inside-simple-selector.css').then(function (asserter) {
+        return asserters.getCompletions('imports/inside-simple-selector.css').then(function (asserter) {
             asserter.suggested([]);
             asserter.notSuggested([
                 asserters.importFromDirectiveCompletion,
@@ -66,7 +66,7 @@ describe('Imports', function () {
         });
     });
     it('should complete -st-from, -st-default, -st-named inside import statements', function () {
-        return asserters.getCompletions('inside-import-selector.css').then(function (asserter) {
+        return asserters.getCompletions('imports/inside-import-selector.css').then(function (asserter) {
             asserter.suggested([
                 asserters.importFromDirectiveCompletion,
                 asserters.importDefaultDirectiveCompletion,
@@ -92,7 +92,7 @@ describe('Imports', function () {
         });
     });
     it('should not complete -st-from, -st-default, -st-named inside import statements when exists', function () {
-        return asserters.getCompletions('inside-import-selector-with-fields.css').then(function (asserter) {
+        return asserters.getCompletions('imports/inside-import-selector-with-fields.css').then(function (asserter) {
             asserter.notSuggested([
                 asserters.importFromDirectiveCompletion,
                 asserters.importDefaultDirectiveCompletion,
