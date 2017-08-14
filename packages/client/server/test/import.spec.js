@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var asserters = require("../test-kit/asserters");
-describe.only('Imports', function () {
+describe('Imports', function () {
     it('should complete :import at top level after ""', function () {
         return asserters.getCompletions('top-level-no-chars.css').then(function (asserter) {
             asserter.suggested([

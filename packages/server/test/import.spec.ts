@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import { expect } from "chai";
 import * as asserters from '../test-kit/asserters';
 
-describe.only('Imports', function () {
+describe('Imports', function () {
 
     it('should complete :import at top level after ""', function () {
         return asserters.getCompletions('top-level-no-chars.css').then((asserter) => {
