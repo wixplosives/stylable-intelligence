@@ -42,7 +42,7 @@
     "reset": "rimraf node_modules dist && yarn install && yarn test",
     "pretest": "rimraf dist && yarn build",
     "test": "node ./run-test",
-    "test:node": " JUNIT_REPORT_PATH=/test_results_client.xml mocha --reporter mocha-jenkins-reporter dist/test/*.test.js"
+    "test:node": "JUNIT_REPORT_PATH=/test_results_client.xml mocha --reporter mocha-jenkins-reporter dist/test/*.test.js"
   },
   "devDependencies": {
     "@types/chai": "~4.0.1",
