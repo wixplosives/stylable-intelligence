@@ -5,7 +5,6 @@ import * as path from 'path';
 
 function testCompletion(fileName: string, testCases: [vscode.Position, string[]][]) {
     console.log(path.join(__dirname, '..', '..', 'test', fileName));
-    // vscode.languages.registerCompletionItemProvider('css',{})
     let testDoc:vscode.TextDocument;
 
     return vscode.workspace.openTextDocument(path.join(__dirname, '..', '..', 'test', fileName))

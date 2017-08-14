@@ -7,7 +7,7 @@ const PostCssSafe = require('postcss-safe-parser');
 import * as _ from 'lodash';
 
 import { getDefinition, isClassDefinition, ClassDefinition, SymbolDefinition } from "./utils/get-definitions";
-import { getPositionInSrc, isContainer, isDeclaration, isInNode, isSelector, pathFromPosition, Position } from "./utils/postcss-ast-utils";
+import { getPositionInSrc, isContainer, isDeclaration, isInNode, isSelector, pathFromPosition } from "./utils/postcss-ast-utils";
 import {
     parseSelector,
     isSelectorChunk,
@@ -19,14 +19,10 @@ const processor = PostCss([PostCssNested]);
 
 export class ProviderPosition {
     constructor(public line: number, public character: number) { }
-    // line: number;
-    // character: number;
 }
 
 export class ProviderRange {
     constructor(public start: ProviderPosition, public end: ProviderPosition) { }
-    // start: ProviderPosition;
-    // end: ProviderPosition;
 }
 
 
@@ -105,7 +101,7 @@ function addExistingClasses(stylesheet: Stylesheet | undefined, completions: Com
 }
 
 function isIllegalLine(line: string): boolean {
-    return !!/^\s*[-\.:]\s*$/.test(line)
+    return !!/^\s*[-\.:]*\s*$/.test(line)
 }
 
 function isSimple(selector: string) {
@@ -154,16 +150,17 @@ export default class Provider {
 
     public provideCompletionItemsFromSrc(
         src: string,
-        position: Position,
+        position: ProviderPosition,
         filePath: string,
         resolver: ExtendedResolver
     ): Thenable<Completion[]> {
 
-
+        // debugger;
         let cursorLineIndex: number = position.character;
         let lines = src.split('\n');
         let currentLine = lines[position.line];
         let fixedSrc = src;
+        console.log('Current line I: ', currentLine);
         if (currentLine.match(lineEndsRegexp)) {
             let currentLocation = 0;
             let splitLine = currentLine.split(lineEndsRegexp);
@@ -171,6 +168,7 @@ export default class Provider {
                 currentLocation += splitLine[i].length + 1;
                 if (currentLocation >= position.character) {
                     currentLine = splitLine[i];
+                    console.log('Current line II: ', currentLine);
                     if (isIllegalLine(currentLine)) {
                         splitLine[i] = '\n'
                         lines.splice(position.line, 1, splitLine.join(''));
@@ -189,6 +187,9 @@ export default class Provider {
         }
 
 
+        console.log('Made fixedSrc');
+        console.log(fixedSrc);
+
 
         let ast: PostCss.Root;
         try {
@@ -197,16 +198,22 @@ export default class Provider {
             });
             ast = res.root;
         } catch (error) {
+            console.log(error);
             return Promise.resolve([]);
         }
+        console.log('PostCSS successful');
 
         let stylesheet: Stylesheet | undefined = undefined;
+        console.log('Transpiling Stylesheet');
         try {
             stylesheet = fromCSS(fixedSrc, undefined, filePath);
+            console.log('Transpiling Stylesheet success');
         } catch (error) {
+            console.log('Transpiling Stylesheet fail');
             console.error('stylable transpiling failed');
         }
 
+        console.log('Calling resolveDependencies');
         return resolver.resolveDependencies(stylesheet!)
             .then<Completion[]>(() => {
                 console.log('Calling AST completions with: ')
@@ -219,7 +226,7 @@ export default class Provider {
     }
     public provideCompletionItemsFromAst(
         src: string,
-        position: Position,
+        position: ProviderPosition,
         filePath: string,
         resolver: ExtendedResolver,
         ast: PostCss.Root,
@@ -227,10 +234,12 @@ export default class Provider {
         currentLine: string,
         cursorLineIndex: number
     ): Thenable<Completion[]> {
+        console.log('Starting provideCompletionItemsFromAst')
+        debugger;
         const completions: Completion[] = [];
         const trimmedLine = currentLine.trim();
 
-        const position1Based: Position = {
+        const position1Based: ProviderPosition = {
             line: position.line + 1,
             character: position.character
         }
@@ -277,7 +286,7 @@ export default class Provider {
             }
         }
         if (trimmedLine.length < 2) {
-            if (lastChar === ':' || isSpacy(lastChar)) {
+            if ((lastChar === ':' || isSpacy(lastChar)) && (<PostCss.Root>lastPart).type === 'root' ) {
                 completions.push(importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position)));
             }
             if (lastChar === '.' || isSpacy(lastChar)) {

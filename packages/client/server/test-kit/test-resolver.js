@@ -3,6 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var stylable_1 = require("stylable");
 var _ = require("lodash");
+var vscode_resolver_1 = require("../src/adapters/vscode-resolver");
+var path = require("path");
+var fs = require("fs");
 var TestResolver = (function (_super) {
     tslib_1.__extends(TestResolver, _super);
     function TestResolver() {
@@ -11,20 +14,25 @@ var TestResolver = (function (_super) {
     TestResolver.prototype.resolveModule = function (filePath) {
         return _super.prototype.resolveModule.call(this, 'projectRoot' + filePath.slice(1));
     };
-    TestResolver.prototype.resolveDependencies = function (s) {
-        return Promise.resolve(null).then(function () { });
-    };
-    TestResolver.prototype.addExtraFiles = function (extrafiles) {
+    TestResolver.prototype.resolveDependencies = function (stylesheet) {
         var _this = this;
-        _.forEach(extrafiles, function (file, fileName) {
-            var fullPath = 'projectRoot/' + fileName;
-            _this.add(fullPath, stylable_1.fromCSS(file, undefined, fullPath));
+        console.log('Starting Test resolveDependencies');
+        stylesheet.imports.map(function (importNode) {
+            console.log('stylesheet.source: ', stylesheet.source);
+            console.log('importNode.from: ', importNode.from);
+            console.log('parsedPath: ', JSON.stringify(path.parse(stylesheet.source)));
+            var globalPath = path.parse(stylesheet.source).dir + importNode.from.slice(1);
+            console.log('globalPath: ', globalPath);
+            // console.log('docs:', this.docs.keys());
+            var txt = fs.readFileSync(globalPath).toString();
+            if (_.endsWith(importNode.from, '.css')) {
+                _this.add(globalPath, stylable_1.fromCSS(txt));
+            }
         });
-    };
-    TestResolver.prototype.getFolderContents = function (path) {
-        return Promise.resolve([]);
+        return Promise.resolve();
+        // return Promise.resolve(null).then(()=>{});
     };
     return TestResolver;
-}(stylable_1.Resolver));
+}(vscode_resolver_1.VsCodeResolver));
 exports.TestResolver = TestResolver;
 //# sourceMappingURL=test-resolver.js.map
