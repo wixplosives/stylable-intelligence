@@ -2,67 +2,81 @@ import StylableDotCompletionProvider, { Completion, snippet, ExtendedResolver } 
 import { Resolver, Stylesheet } from 'stylable'
 import * as _ from 'lodash';
 import { expect } from "chai";
-import { TestResolver } from '../test-kit/test-resolver';
 import * as asserters from '../test-kit/asserters';
 
 describe('Imports', function () {
 
+    it('should complete :import at top level after ""', function () {
+        return asserters.getCompletions('top-level-no-chars.css').then((asserter) => {
+                asserter.suggested([
+                    asserters.importCompletion
+                ]);
+                asserter.notSuggested([
+                ]);
+            });
+    });
+
     it('should complete :import at top level after ":"', function () {
-            return asserters.getCompletions(
-                `:|
-            .gaga{
-                color:red;
-            }
-            `).then((asserter) => {
-                    asserter.suggested([
-                        asserters.importCompletion
-                    ]);
-                    asserter.notSuggested([
-                        asserters.rootCompletion,
-                        asserters.classCompletion('gaga'),
-                        asserters.statesDirectiveCompletion,
-                        asserters.extendsDirectiveCompletion,
-                        asserters.mixinDirectiveCompletion,
-                        asserters.variantDirectiveCompletion
-                    ]);
-                });
-        });
+        return asserters.getCompletions('top-level-colon.css').then((asserter) => {
+                asserter.suggested([
+                    asserters.importCompletion
+                ]);
+                asserter.notSuggested([
+                    asserters.rootCompletion,
+                    asserters.classCompletion('gaga'),
+                    asserters.statesDirectiveCompletion,
+                    asserters.extendsDirectiveCompletion,
+                    asserters.mixinDirectiveCompletion,
+                    asserters.variantDirectiveCompletion
+                ]);
+            });
+    });
 
     it('should complete :import at top level even if exists', function () {
-            return asserters.getCompletions(
-                `:import {
-                    -st-from: "./x";
-                    -st-default: X;
-                    -st-named: a, b;
-            }
-            :|
-            .gaga{
-                color:red;
-            }
-            `).then((asserter) => {
-                    asserter.suggested([
-                        asserters.importCompletion,
-                    ]);
-                    asserter.notSuggested([
-                        asserters.rootCompletion,
-                        asserters.classCompletion('gaga'),
-                        asserters.statesDirectiveCompletion,
-                        asserters.extendsDirectiveCompletion,
-                        asserters.mixinDirectiveCompletion,
-                        asserters.variantDirectiveCompletion
-                    ]);
-                });
-        });
+        return asserters.getCompletions('top-level-import-exists.css').then((asserter) => {
+                asserter.suggested([
+                    asserters.importCompletion,
+                ]);
+                asserter.notSuggested([
+                    asserters.rootCompletion,
+                    asserters.classCompletion('gaga'),
+                    asserters.statesDirectiveCompletion,
+                    asserters.extendsDirectiveCompletion,
+                    asserters.mixinDirectiveCompletion,
+                    asserters.variantDirectiveCompletion
+                ]);
+            });
+    });
+
+    it('should not complete :import after ::', function () {
+        return asserters.getCompletions('top-level-colon-colon.css').then((asserter) => {
+                asserter.suggested([]);
+                asserter.notSuggested([
+                    asserters.importCompletion,
+                    asserters.rootCompletion,
+                    asserters.classCompletion('gaga'),
+                    asserters.statesDirectiveCompletion,
+                    asserters.extendsDirectiveCompletion,
+                    asserters.mixinDirectiveCompletion,
+                    asserters.variantDirectiveCompletion
+                ]);
+            });
+    });
+
+    it('should not complete :import inside selectors', function () {
+        return asserters.getCompletions('inside-simple-selector.css').then((asserter) => {
+                asserter.suggested([]);
+                asserter.notSuggested([
+                    asserters.importFromDirectiveCompletion,
+                    asserters.importDefaultDirectiveCompletion,
+                    asserters.importNamedDirectiveCompletion,
+                    asserters.importCompletion
+                ]);
+            });
+    });
 
     it('should complete -st-from, -st-default, -st-named inside import statements', function () {
-        return asserters.getCompletions(
-            `
-                :import{
-                    -|
-                }
-
-                `, {}, true).then((asserter) => {
-
+        return asserters.getCompletions('inside-import-selector.css').then((asserter) => {
                 asserter.suggested([
                     asserters.importFromDirectiveCompletion,
                     asserters.importDefaultDirectiveCompletion,
@@ -98,15 +112,7 @@ describe('Imports', function () {
     });
 
     it('should not complete -st-from, -st-default, -st-named inside import statements when exists', function () {
-        return asserters.getCompletions(
-            `
-                :import{
-                    -st-from: "./x";
-                    -st-default: X;
-                    -st-named: a, b;
-                    -|
-                }
-                `, {}, true).then((asserter) => {
+        return asserters.getCompletions('inside-import-selector-with-fields.css').then((asserter) => {
 
                 asserter.notSuggested([
                     asserters.importFromDirectiveCompletion,

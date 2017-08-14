@@ -101,7 +101,7 @@ function addExistingClasses(stylesheet, completions) {
     });
 }
 function isIllegalLine(line) {
-    return !!/^\s*[-\.:]\s*$/.test(line);
+    return !!/^\s*[-\.:]*\s*$/.test(line);
 }
 function isSimple(selector) {
     if (selector.match(/[:> ]/)) {
@@ -128,10 +128,12 @@ var Provider = (function () {
     };
     Provider.prototype.provideCompletionItemsFromSrc = function (src, position, filePath, resolver) {
         var _this = this;
+        // debugger;
         var cursorLineIndex = position.character;
         var lines = src.split('\n');
         var currentLine = lines[position.line];
         var fixedSrc = src;
+        console.log('Current line I: ', currentLine);
         if (currentLine.match(lineEndsRegexp)) {
             var currentLocation = 0;
             var splitLine = currentLine.split(lineEndsRegexp);
@@ -139,6 +141,7 @@ var Provider = (function () {
                 currentLocation += splitLine[i].length + 1;
                 if (currentLocation >= position.character) {
                     currentLine = splitLine[i];
+                    console.log('Current line II: ', currentLine);
                     if (isIllegalLine(currentLine)) {
                         splitLine[i] = '\n';
                         lines.splice(position.line, 1, splitLine.join(''));
@@ -155,6 +158,8 @@ var Provider = (function () {
             lines.splice(position.line, 1, "");
             fixedSrc = lines.join('\n');
         }
+        console.log('Made fixedSrc');
+        console.log(fixedSrc);
         var ast;
         try {
             var res = processor.process(fixedSrc, {
@@ -163,15 +168,21 @@ var Provider = (function () {
             ast = res.root;
         }
         catch (error) {
+            console.log(error);
             return Promise.resolve([]);
         }
+        console.log('PostCSS successful');
         var stylesheet = undefined;
+        console.log('Transpiling Stylesheet');
         try {
             stylesheet = stylable_1.fromCSS(fixedSrc, undefined, filePath);
+            console.log('Transpiling Stylesheet success');
         }
         catch (error) {
+            console.log('Transpiling Stylesheet fail');
             console.error('stylable transpiling failed');
         }
+        console.log('Calling resolveDependencies');
         return resolver.resolveDependencies(stylesheet)
             .then(function () {
             console.log('Calling AST completions with: ');
@@ -182,6 +193,8 @@ var Provider = (function () {
         });
     };
     Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex) {
+        console.log('Starting provideCompletionItemsFromAst');
+        debugger;
         var completions = [];
         var trimmedLine = currentLine.trim();
         var position1Based = {
@@ -230,7 +243,7 @@ var Provider = (function () {
             }
         }
         if (trimmedLine.length < 2) {
-            if (lastChar === ':' || isSpacy(lastChar)) {
+            if ((lastChar === ':' || isSpacy(lastChar)) && lastPart.type === 'root') {
                 completions.push(importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position)));
             }
             if (lastChar === '.' || isSpacy(lastChar)) {

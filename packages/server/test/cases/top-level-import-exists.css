@@ -1,0 +1,10 @@
+:import {
+    -st-from: "./import-from-here.css";
+    -st-named: shlomo;
+}
+
+:|
+
+.gaga {
+    color: red;
+}
