@@ -6,13 +6,12 @@ import Provider, { ExtendedResolver, FsEntity } from '../provider';
 import { Resolver, Stylesheet, fromCSS } from 'stylable';
 import * as _ from 'lodash';
 import path = require('path');
-import * as fs from 'fs';
 
 
 const provider = new Provider();
 
 export class VsCodeResolver extends Resolver implements ExtendedResolver {
-    constructor(private docs: TextDocuments) {
+    constructor(private docs: TextDocuments, private conn?: IConnection) {
         super({});
     }
 
@@ -22,6 +21,7 @@ export class VsCodeResolver extends Resolver implements ExtendedResolver {
         this.add(globalPath, this.docs.get(globalPath).getText());
         return super.resolveModule(globalPath);
     }
+
     resolveDependencies(stylesheet: Stylesheet): Thenable<void> {
         console.log('Starting resolveDependencies');
         stylesheet.imports.map((importNode) => {

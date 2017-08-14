@@ -8,9 +8,10 @@ var path = require("path");
 var provider = new provider_1.default();
 var VsCodeResolver = (function (_super) {
     tslib_1.__extends(VsCodeResolver, _super);
-    function VsCodeResolver(docs) {
+    function VsCodeResolver(docs, conn) {
         var _this = _super.call(this, {}) || this;
         _this.docs = docs;
+        _this.conn = conn;
         return _this;
     }
     VsCodeResolver.prototype.resolveModule = function (filePath) {

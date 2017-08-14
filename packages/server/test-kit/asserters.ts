@@ -3,8 +3,10 @@ import { Resolver, Stylesheet } from 'stylable'
 import * as _ from 'lodash';
 import { expect } from "chai";
 import { VsCodeResolver } from '../src/adapters/vscode-resolver';
+import { TestResolver } from './test-resolver';
 import { TextDocuments } from 'vscode-languageserver';
 import * as fs from 'fs';
+import * as path from 'path';
 
 const provider = new StylableDotCompletionProvider();
 
@@ -39,13 +41,14 @@ export interface assertable {
 }
 
 export function getCompletions(fileName: string, extrafiles: { [path: string]: string } = {}, checkSingleLine: boolean = false): Thenable<assertable> {
-    console.log("Getting completions for File: ", fileName);
-    const src: string = fs.readFileSync(fileName).toString();
+
+    const fullPath = path.join(__dirname, '/../test/cases/', fileName);
+    const src: string = fs.readFileSync(fullPath).toString();
     const singleLineSrc = src.split('\n').join('');
     let normalCompletions: Completion[];
-    return completionsIntenal(src, extrafiles)
+    return completionsIntenal(fullPath, src, extrafiles)
         .then((completions) => { normalCompletions = completions; })
-        .then<Completion[] | null>(() => checkSingleLine ? completionsIntenal(singleLineSrc, extrafiles) : Promise.resolve(null))
+        .then<Completion[] | null>(() => checkSingleLine ? completionsIntenal(fullPath, singleLineSrc, extrafiles) : Promise.resolve(null))
         .then((singleLineCompletions) => {
             return {
                 suggested: (expectedNoCompletions: Partial<Completion>[]) => {
@@ -61,21 +64,20 @@ export function getCompletions(fileName: string, extrafiles: { [path: string]: s
         })
 }
 
-function completionsIntenal(src: string, extrafiles: { [path: string]: string } = {}): Thenable<Completion[]> {
+function completionsIntenal(fileName: string, src: string, extrafiles: { [path: string]: string } = {}): Thenable<Completion[]> {
     const caretPos = src.indexOf('|');
     const linesTillCaret = src.substr(0, caretPos).split('\n');
     const character = linesTillCaret[linesTillCaret.length - 1].length;
 
     src = src.replace('|', "");
 
-    const resolver = new VsCodeResolver(new TextDocuments());
-    // const resolver = new TestResolver({});
-    // resolver.addExtraFiles(extrafiles);
+    const resolver = new TestResolver(new TextDocuments());
+
 
     return provider.provideCompletionItemsFromSrc(src, {
         line: linesTillCaret.length - 1,
         character
-    }, 'projectRoot/main.css', resolver)
+    }, fileName, resolver)
 }
 
 export const importCompletion: Partial<Completion> = { label: ':import', detail: 'Import an external library', sortText: 'a', insertText: ':import {\n\t-st-from: "$1";\n}' };

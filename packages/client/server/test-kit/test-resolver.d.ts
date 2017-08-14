@@ -1,10 +1,7 @@
-import { Resolver, Stylesheet } from 'stylable';
-import { ExtendedResolver, FsEntity } from '../src/provider';
-export declare class TestResolver extends Resolver implements ExtendedResolver {
+import { Stylesheet } from 'stylable';
+import { ExtendedResolver } from '../src/provider';
+import { VsCodeResolver } from '../src/adapters/vscode-resolver';
+export declare class TestResolver extends VsCodeResolver implements ExtendedResolver {
     resolveModule(filePath: string): any;
-    resolveDependencies(s: Stylesheet): Promise<void>;
-    addExtraFiles(extrafiles: {
-        [path: string]: string;
-    }): void;
-    getFolderContents(path: string): Thenable<FsEntity[]>;
+    resolveDependencies(stylesheet: Stylesheet): Promise<void>;
 }

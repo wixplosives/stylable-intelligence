@@ -2,9 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var provider_1 = require("../src/provider");
 var chai_1 = require("chai");
-var vscode_resolver_1 = require("../src/adapters/vscode-resolver");
+var test_resolver_1 = require("./test-resolver");
 var vscode_languageserver_1 = require("vscode-languageserver");
 var fs = require("fs");
+var path = require("path");
 var provider = new provider_1.default();
 function assertCompletions(actualCompletions, expectedCompletions, prefix) {
     if (prefix === void 0) { prefix = ''; }
@@ -33,13 +34,13 @@ function assertNoCompletions(actualCompletions, nonCompletions, prefix) {
 function getCompletions(fileName, extrafiles, checkSingleLine) {
     if (extrafiles === void 0) { extrafiles = {}; }
     if (checkSingleLine === void 0) { checkSingleLine = false; }
-    console.log("Getting completions for File: ", fileName);
-    var src = fs.readFileSync(fileName).toString();
+    var fullPath = path.join(__dirname, '/../test/cases/', fileName);
+    var src = fs.readFileSync(fullPath).toString();
     var singleLineSrc = src.split('\n').join('');
     var normalCompletions;
-    return completionsIntenal(src, extrafiles)
+    return completionsIntenal(fullPath, src, extrafiles)
         .then(function (completions) { normalCompletions = completions; })
-        .then(function () { return checkSingleLine ? completionsIntenal(singleLineSrc, extrafiles) : Promise.resolve(null); })
+        .then(function () { return checkSingleLine ? completionsIntenal(fullPath, singleLineSrc, extrafiles) : Promise.resolve(null); })
         .then(function (singleLineCompletions) {
         return {
             suggested: function (expectedNoCompletions) {
@@ -54,19 +55,17 @@ function getCompletions(fileName, extrafiles, checkSingleLine) {
     });
 }
 exports.getCompletions = getCompletions;
-function completionsIntenal(src, extrafiles) {
+function completionsIntenal(fileName, src, extrafiles) {
     if (extrafiles === void 0) { extrafiles = {}; }
     var caretPos = src.indexOf('|');
     var linesTillCaret = src.substr(0, caretPos).split('\n');
     var character = linesTillCaret[linesTillCaret.length - 1].length;
     src = src.replace('|', "");
-    var resolver = new vscode_resolver_1.VsCodeResolver(new vscode_languageserver_1.TextDocuments());
-    // const resolver = new TestResolver({});
-    // resolver.addExtraFiles(extrafiles);
+    var resolver = new test_resolver_1.TestResolver(new vscode_languageserver_1.TextDocuments());
     return provider.provideCompletionItemsFromSrc(src, {
         line: linesTillCaret.length - 1,
         character: character
-    }, 'projectRoot/main.css', resolver);
+    }, fileName, resolver);
 }
 exports.importCompletion = { label: ':import', detail: 'Import an external library', sortText: 'a', insertText: ':import {\n\t-st-from: "$1";\n}' };
 exports.rootCompletion = { label: '.root', detail: 'The root class', sortText: 'b', insertText: '.root' };

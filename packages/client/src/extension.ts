@@ -32,8 +32,9 @@ export function activate(context: ExtensionContext) {
     }
 
     let client = new LanguageClient('stylable', serverOptions, clientOptions);
-
     client.trace = Trace.Verbose;
+
+
     context.subscriptions.push(client.start());
 }
 
