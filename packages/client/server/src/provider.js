@@ -124,7 +124,7 @@ var Provider = (function () {
     function Provider() {
     }
     Provider.prototype.getClassDefinition = function (stylesheet, symbol, resolver) {
-        var symbols = resolver.resolveSymbols(stylesheet);
+        // const symbols = resolver.resolveSymbols(stylesheet);
     };
     Provider.prototype.provideCompletionItemsFromSrc = function (src, position, filePath, resolver) {
         var _this = this;
@@ -194,7 +194,6 @@ var Provider = (function () {
     };
     Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex) {
         console.log('Starting provideCompletionItemsFromAst');
-        debugger;
         var completions = [];
         var trimmedLine = currentLine.trim();
         var position1Based = {
@@ -256,6 +255,7 @@ var Provider = (function () {
             var focusChunk_1 = selectorRes.target.focusChunk;
             if (!Array.isArray(focusChunk_1) && selector_analyzer_1.isSelectorChunk(focusChunk_1)) {
                 focusChunk_1.classes.forEach(function (className) {
+                    debugger;
                     console.log('className: ', className);
                     var clsDef = get_definitions_1.getDefinition(stylesheet, className, resolver);
                     if (get_definitions_1.isClassDefinition(clsDef)) {
@@ -263,7 +263,7 @@ var Provider = (function () {
                             if (focusChunk_1.states.indexOf(stateDef.name) !== -1) {
                                 return;
                             }
-                            var from = 'from: ' + stateDef.from;
+                            // const from = 'from: ' + stateDef.from;
                             completions.push(stateCompletion(stateDef.name, stateDef.from, position));
                         });
                     }
@@ -275,8 +275,8 @@ var Provider = (function () {
     return Provider;
 }());
 exports.default = Provider;
-function getSelectorFromPosition(src, index) {
-}
+// function getSelectorFromPosition(src: string, index: number) {
+// }
 function getNewCompletions(completionMap, ruleset) {
     ruleset.nodes.forEach(function (node) {
         var dec = node;

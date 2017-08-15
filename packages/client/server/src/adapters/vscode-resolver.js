@@ -1,17 +1,14 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
-var provider_1 = require("../provider");
 var stylable_1 = require("stylable");
 var _ = require("lodash");
 var path = require("path");
-var provider = new provider_1.default();
 var VsCodeResolver = (function (_super) {
     tslib_1.__extends(VsCodeResolver, _super);
-    function VsCodeResolver(docs, conn) {
+    function VsCodeResolver(docs) {
         var _this = _super.call(this, {}) || this;
         _this.docs = docs;
-        _this.conn = conn;
         return _this;
     }
     VsCodeResolver.prototype.resolveModule = function (filePath) {

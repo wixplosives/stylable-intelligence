@@ -1,8 +1,8 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var vscode_languageserver_1 = require("vscode-languageserver");
-var provider_1 = require("./provider");
 var vscode_resolver_1 = require("./adapters/vscode-resolver");
+var provider_1 = require("./provider");
 var connection = vscode_languageserver_1.createConnection(new vscode_languageserver_1.IPCMessageReader(process), new vscode_languageserver_1.IPCMessageWriter(process));
 var workspaceRoot;
 var provider = new provider_1.default();
@@ -47,11 +47,4 @@ connection.onCompletion(function (params) {
         });
     });
 });
-function getRange(rng) {
-    if (!rng) {
-        return;
-    }
-    var r = vscode_languageserver_1.Range.create(vscode_languageserver_1.Position.create(rng.start.line, rng.start.character), vscode_languageserver_1.Position.create(rng.end.line, rng.end.character));
-    return r;
-}
 //# sourceMappingURL=server.js.map

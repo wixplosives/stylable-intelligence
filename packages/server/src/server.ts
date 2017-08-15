@@ -1,16 +1,20 @@
 'use strict';
-import { connect } from 'tls';
 import {
-    IPCMessageReader, IPCMessageWriter, createConnection, IConnection, InitializeParams, InitializeResult,
-    TextDocumentSyncKind, TextDocuments, TextDocumentPositionParams,
-    CompletionItem, CompletionItemKind, Range, Position, TextEdit, InsertTextFormat
+    CompletionItem,
+    createConnection,
+    IConnection,
+    InitializeResult,
+    InsertTextFormat,
+    IPCMessageReader,
+    IPCMessageWriter,
+    // Position,
+    // Range,
+    TextDocuments,
+    TextEdit,
 } from 'vscode-languageserver';
-import Provider, { Completion, snippet, ExtendedResolver, ProviderRange, ProviderPosition, Dir, File, FsEntity } from './provider';
-import { Resolver, Stylesheet, fromCSS } from 'stylable';
-import * as _ from 'lodash';
-import path = require('path');
-import * as fs from 'fs';
-import { VsCodeResolver } from './adapters/vscode-resolver'
+
+import { VsCodeResolver } from './adapters/vscode-resolver';
+import Provider, { Completion, ProviderPosition, ProviderRange } from './provider';
 
 let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 let workspaceRoot: string;
@@ -67,12 +71,12 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
         })
 })
 
-function getRange(rng: ProviderRange | undefined): Range | undefined {
-    if (!rng) {
-        return;
-    }
-    const r = Range.create(Position.create(rng.start.line, rng.start.character), Position.create(rng.end.line, rng.end.character));
-    return r
-}
+// function getRange(rng: ProviderRange | undefined): Range | undefined {
+//     if (!rng) {
+//         return;
+//     }
+//     const r = Range.create(Position.create(rng.start.line, rng.start.character), Position.create(rng.end.line, rng.end.character));
+//     return r
+// }
 
 

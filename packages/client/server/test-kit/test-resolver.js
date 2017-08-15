@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
-var stylable_1 = require("stylable");
-var _ = require("lodash");
-var vscode_resolver_1 = require("../src/adapters/vscode-resolver");
-var path = require("path");
 var fs = require("fs");
+var _ = require("lodash");
+var path = require("path");
+var stylable_1 = require("stylable");
+var vscode_resolver_1 = require("../src/adapters/vscode-resolver");
 var TestResolver = (function (_super) {
     tslib_1.__extends(TestResolver, _super);
     function TestResolver() {

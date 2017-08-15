@@ -1,12 +1,9 @@
-import StylableDotCompletionProvider, { Completion, snippet, ExtendedResolver } from '../src/provider'
-import { Resolver, Stylesheet } from 'stylable'
-import * as _ from 'lodash';
-import { expect } from "chai";
 import * as asserters from '../test-kit/asserters';
 
 describe('Imports', function () {
 
     it('should complete :import at top level after ""', function () {
+        debugger;
         return asserters.getCompletions('imports/top-level-no-chars.css').then((asserter) => {
                 asserter.suggested([
                     asserters.importCompletion
@@ -138,7 +135,7 @@ describe('Imports', function () {
             });
     });
 
-    it('completes name imported as default when followinng ; exists', function () {
+    it('completes name imported as default when a following ; exists', function () {
         return asserters.getCompletions('imports/st-extends-with-semicolon.css').then((asserter) => {
                 asserter.suggested([
                     asserters.extendsCompletion('Comp')

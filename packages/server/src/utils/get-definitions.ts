@@ -1,6 +1,4 @@
-import { join } from 'path';
-import {Resolver,Stylesheet} from 'stylable';
-import * as _ from 'lodash';
+import { Resolver, Stylesheet } from 'stylable';
 
 export interface SymbolDefinition{
     export:string;
@@ -42,6 +40,7 @@ export function getDefinition(stylesheet:Stylesheet,symbolName:string,resolver:R
 }
 
 function getClassDefinition(stylesheet:Stylesheet,symbolName:string,resolver:Resolver):ClassDefinition{
+    debugger;
     console.log('symbolname', symbolName)
     console.log('stylesheet', JSON.stringify(stylesheet))
     let states: StateDefinition[] = [];

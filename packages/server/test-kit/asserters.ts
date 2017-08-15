@@ -1,14 +1,10 @@
-import { TextDocument } from 'vscode-languageserver-types/lib/main';
-import { string } from 'vscode-languageclient/lib/utils/is';
-import StylableDotCompletionProvider, { Completion, snippet, ExtendedResolver, ProviderPosition, ProviderRange } from '../src/provider'
-import { Resolver, Stylesheet } from 'stylable'
-import * as _ from 'lodash';
-import { expect } from "chai";
-import { VsCodeResolver } from '../src/adapters/vscode-resolver';
-import { TestResolver } from './test-resolver';
-import { TextDocuments } from 'vscode-languageserver';
+import { expect } from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
+import { TextDocument } from 'vscode-languageserver-types/lib/main';
+
+import { VsCodeResolver } from '../src/adapters/vscode-resolver';
+import StylableDotCompletionProvider, { Completion, ProviderRange, snippet } from '../src/provider';
 
 const provider = new StylableDotCompletionProvider();
 
@@ -43,7 +39,6 @@ export interface assertable {
 }
 
 export function getCompletions(fileName: string, extrafiles: { [path: string]: string } = {}, checkSingleLine: boolean = false): Thenable<assertable> {
-
     const fullPath = path.join(__dirname, '/../test/cases/', fileName);
     const src: string = fs.readFileSync(fullPath).toString();
     const singleLineSrc = src.split('\n').join('');

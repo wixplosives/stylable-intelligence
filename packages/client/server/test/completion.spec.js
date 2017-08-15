@@ -132,7 +132,7 @@ describe('completion unit test', function () {
             });
         });
     });
-    describe('multiple files', function () {
+    xdescribe('multiple files', function () {
         it('complete states for localy imported component', function () {
             return asserters.getCompletions('states/locally-imported-component.css')
                 .then(function (asserter) {

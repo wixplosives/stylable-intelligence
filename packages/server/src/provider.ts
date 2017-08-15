@@ -4,14 +4,12 @@ import * as PostCss from 'postcss';
 import { Stylesheet, Resolver, fromCSS } from 'stylable';
 const PostCssNested = require('postcss-nested');
 const PostCssSafe = require('postcss-safe-parser');
-import * as _ from 'lodash';
 
-import { getDefinition, isClassDefinition, ClassDefinition, SymbolDefinition } from "./utils/get-definitions";
-import { getPositionInSrc, isContainer, isDeclaration, isInNode, isSelector, pathFromPosition } from "./utils/postcss-ast-utils";
+import { getDefinition, isClassDefinition, SymbolDefinition } from "./utils/get-definitions";
+import { getPositionInSrc, isSelector, pathFromPosition } from "./utils/postcss-ast-utils";
 import {
     parseSelector,
-    isSelectorChunk,
-    isSelectorInternalChunk
+    isSelectorChunk
 } from './utils/selector-analyzer';
 
 
@@ -144,7 +142,7 @@ function isSpacy(char: string) {
 
 export default class Provider {
     public getClassDefinition(stylesheet: Stylesheet, symbol: string, resolver: ExtendedResolver) {
-        const symbols = resolver.resolveSymbols(stylesheet);
+        // const symbols = resolver.resolveSymbols(stylesheet);
 
     }
 
@@ -302,12 +300,13 @@ export default class Provider {
 
             if (!Array.isArray(focusChunk) && isSelectorChunk(focusChunk)) {// || isSelectorInternalChunk(focusChunk)
                 focusChunk.classes.forEach((className) => {
+                    debugger;
                     console.log('className: ', className)
                     const clsDef = getDefinition(stylesheet, className, resolver)
                     if (isClassDefinition(clsDef)) {
                         clsDef.states.forEach((stateDef) => {
                             if (focusChunk.states.indexOf(stateDef.name) !== -1) { return }
-                            const from = 'from: ' + stateDef.from;
+                            // const from = 'from: ' + stateDef.from;
                             completions.push(stateCompletion(stateDef.name, stateDef.from, position))
                         })
                     }
@@ -319,9 +318,9 @@ export default class Provider {
     }
 }
 
-function getSelectorFromPosition(src: string, index: number) {
+// function getSelectorFromPosition(src: string, index: number) {
 
-}
+// }
 
 function getNewCompletions(completionMap: CompletionMap, ruleset: PostCss.Rule): Completion[] {
     ruleset.nodes!.forEach(node => {

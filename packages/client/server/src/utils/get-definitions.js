@@ -20,6 +20,7 @@ function getDefinition(stylesheet, symbolName, resolver) {
 }
 exports.getDefinition = getDefinition;
 function getClassDefinition(stylesheet, symbolName, resolver) {
+    debugger;
     console.log('symbolname', symbolName);
     console.log('stylesheet', JSON.stringify(stylesheet));
     var states = [];

@@ -1,17 +1,14 @@
 'use strict';
-import { Readable } from 'stream';
-import { TextDocuments, TextDocument, IConnection } from 'vscode-languageserver';
-import {NotificationMessage} from 'vscode-jsonrpc';
-import Provider, { ExtendedResolver, FsEntity } from '../provider';
+import { TextDocument } from 'vscode-languageserver';
+import  { ExtendedResolver, FsEntity } from '../provider';
 import { Resolver, Stylesheet, fromCSS } from 'stylable';
 import * as _ from 'lodash';
 import path = require('path');
 
 
-const provider = new Provider();
 
 export class VsCodeResolver extends Resolver implements ExtendedResolver {
-    constructor(private docs: {get: (uri: string) => TextDocument, keys: () => string[]}, private conn?: IConnection) {
+    constructor(private docs: {get: (uri: string) => TextDocument, keys: () => string[]}) {
         super({});
     }
 

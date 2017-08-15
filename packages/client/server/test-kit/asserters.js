@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var main_1 = require("vscode-languageserver-types/lib/main");
-var provider_1 = require("../src/provider");
 var chai_1 = require("chai");
-var vscode_resolver_1 = require("../src/adapters/vscode-resolver");
 var fs = require("fs");
 var path = require("path");
+var main_1 = require("vscode-languageserver-types/lib/main");
+var vscode_resolver_1 = require("../src/adapters/vscode-resolver");
+var provider_1 = require("../src/provider");
 var provider = new provider_1.default();
 function assertCompletions(actualCompletions, expectedCompletions, prefix) {
     if (prefix === void 0) { prefix = ''; }

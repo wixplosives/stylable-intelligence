@@ -1,9 +1,10 @@
-import { Resolver, Stylesheet, fromCSS } from 'stylable'
-import StylableDotCompletionProvider, { Completion, snippet, ExtendedResolver, FsEntity } from '../src/provider';
-import * as _ from 'lodash';
-import { VsCodeResolver } from '../src/adapters/vscode-resolver'
-import path = require('path');
 import * as fs from 'fs';
+import * as _ from 'lodash';
+import path = require('path');
+import { fromCSS, Stylesheet } from 'stylable';
+
+import { VsCodeResolver } from '../src/adapters/vscode-resolver';
+import { ExtendedResolver } from '../src/provider';
 
 
 export class TestResolver extends VsCodeResolver implements ExtendedResolver {
