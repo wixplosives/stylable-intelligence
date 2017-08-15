@@ -20,6 +20,8 @@ function getDefinition(stylesheet, symbolName, resolver) {
 }
 exports.getDefinition = getDefinition;
 function getClassDefinition(stylesheet, symbolName, resolver) {
+    console.log('symbolname', symbolName);
+    console.log('stylesheet', JSON.stringify(stylesheet));
     var states = [];
     if (stylesheet.typedClasses[symbolName]["-st-states"]) {
         stylesheet.typedClasses[symbolName]["-st-states"].map(function (state) {
@@ -32,9 +34,13 @@ function getClassDefinition(stylesheet, symbolName, resolver) {
         });
     }
     var type = stylesheet.typedClasses[symbolName]["-st-extends"];
+    console.log('type', type);
     if (type) {
+        console.log(JSON.stringify(stylesheet));
         var symbols = resolver.resolveSymbols(stylesheet);
+        console.log('symbols', JSON.stringify(symbols));
         if (symbols[type]) {
+            console.log('calling internal');
             var internalClassDef = getClassDefinition(symbols[type], 'root', resolver);
             states = states.concat(internalClassDef.states);
         }

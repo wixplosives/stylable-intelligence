@@ -12,7 +12,11 @@ var TestResolver = (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     TestResolver.prototype.resolveModule = function (filePath) {
-        return _super.prototype.resolveModule.call(this, 'projectRoot' + filePath.slice(1));
+        console.log('filePath: ', filePath);
+        console.log('st: ', JSON.stringify(this.st));
+        var globalPath = path.resolve(path.parse(this.st.source).dir, filePath);
+        this.add(globalPath, fs.readFileSync(globalPath).toString());
+        return _super.prototype.resolveModule.call(this, filePath);
     };
     TestResolver.prototype.resolveDependencies = function (stylesheet) {
         var _this = this;

@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var asserters = require("../test-kit/asserters");
-xdescribe('completion unit test', function () {
+describe('completion unit test', function () {
     describe('root level', function () {
         it('should complete ONLY import directive, root and existing classes at top level', function () {
-            return asserters.getCompletions("\n            .gaga{\n                color:red;\n            }\n            |\n            .baga{\n\n            }\n            ").then(function (asserter) {
+            return asserters.getCompletions('general/top-level-existing-classes.css').then(function (asserter) {
                 asserter.suggested([
                     asserters.importCompletion,
                     asserters.rootCompletion,
@@ -19,7 +19,7 @@ xdescribe('completion unit test', function () {
             });
         });
         it('should complete root and existing classes at top level after "."', function () {
-            return asserters.getCompletions("\n            .|\n\n            .gaga{\n                color:red;\n            }\n            ").then(function (asserter) {
+            return asserters.getCompletions('general/top-level-dot.css').then(function (asserter) {
                 asserter.suggested([
                     asserters.rootCompletion,
                     asserters.classCompletion('gaga')
@@ -35,8 +35,8 @@ xdescribe('completion unit test', function () {
         });
     });
     describe('directives', function () {
-        it('should complete -st-states, -st-extends, -st-mixin, -st-variant inside simple rules', function () {
-            return asserters.getCompletions("\n            .gaga{\n                |\n            }\n            ", {}, true).then(function (asserter) {
+        it('should complete -st-states, -st-extends, -st-mixin, -st-variant inside simple selector', function () {
+            return asserters.getCompletions('imports/inside-simple-selector.css').then(function (asserter) {
                 asserter.suggested([
                     asserters.statesDirectiveCompletion,
                     asserters.extendsDirectiveCompletion,
@@ -45,8 +45,9 @@ xdescribe('completion unit test', function () {
                 ]);
             });
         });
-        it('should complete -st-states, -st-extends, -st-mixin, -st-variant inside simple rules after dash', function () {
-            return asserters.getCompletions("\n            .gaga{\n                -|\n                color:red;\n            }\n\n            ", {}, true).then(function (asserter) {
+        it('should complete -st-states, -st-extends, -st-mixin, -st-variant inside simple selector after dash', function () {
+            return asserters.getCompletions('general/inside-simple-selector-dash.css')
+                .then(function (asserter) {
                 asserter.suggested([
                     asserters.statesDirectiveCompletion,
                     asserters.extendsDirectiveCompletion,
@@ -55,8 +56,8 @@ xdescribe('completion unit test', function () {
                 ]);
             });
         });
-        it('should not complete -st-states, -st-extends, -st-mixin, -st-variant inside simple rules when exists', function () {
-            return asserters.getCompletions("\n            .gaga{\n                -st-states: a, b;\n                -st-extends: Comp;\n                -st-mixin: MixA;\n                -st-variant: BigButton;\n                -|\n            }\n\n            ", {}, true).then(function (asserter) {
+        it('should not complete -st-states, -st-extends, -st-mixin, -st-variant inside simple selector when they exist', function () {
+            return asserters.getCompletions('general/inside-simple-selector-with-all-st-fields.css').then(function (asserter) {
                 asserter.notSuggested([
                     asserters.statesDirectiveCompletion,
                     asserters.extendsDirectiveCompletion,
@@ -65,7 +66,8 @@ xdescribe('completion unit test', function () {
                 ]);
             });
         });
-        describe('should not complete -st-states, -st-extends, -st-variant inside complex rules', function () {
+        //TODO: Split into small tests, or find way to do this with 1 file.
+        xdescribe('should not complete -st-states, -st-extends, -st-variant inside complex rules', function () {
             [
                 "\n            .gaga:hover{\n                |\n            }\n            ",
                 "\n            .gaga.baga{\n                |\n            }\n            ",
@@ -91,16 +93,17 @@ xdescribe('completion unit test', function () {
     });
     describe('states', function () {
         it('should complete available states after :', function () {
-            return asserters.getCompletions("\n                .gaga{\n                    -st-states:hello;\n                }\n                .gaga:|\n                ", {}, true).then(function (asserter) {
+            return asserters.getCompletions('states/class-with-states.css').then(function (asserter) {
                 asserter.suggested([
-                    asserters.stateCompletion('hello')
+                    asserters.stateCompletion('hello', 'states/class-with-states.css'),
+                    asserters.stateCompletion('goodbye', 'states/class-with-states.css')
                 ]);
                 asserter.notSuggested([
                     asserters.importCompletion
                 ]);
             });
         });
-        it('should not break for untyped classes', function () {
+        xit('should not break for untyped classes', function () {
             return asserters.getCompletions("\n            .gaga{\n            }\n            .gaga:|\n            ", {}, true).then(function (asserter) {
                 asserter.notSuggested([
                     asserters.importCompletion,
@@ -109,19 +112,19 @@ xdescribe('completion unit test', function () {
             });
         });
         it('should complete available states after : in complex selectors', function () {
-            return asserters.getCompletions("\n                .gaga{\n                    -st-states:hello;\n                }\n                .zagzag{\n                    -st-states:goodbye;\n                }\n                .baga{\n                    -st-states:cheerio;\n                }\n                .zagzag button.gaga:hover:| .baga\n                ", {}, true).then(function (asserter) {
+            return asserters.getCompletions('states/complex-selectors-with-states.css').then(function (asserter) {
                 asserter.suggested([
-                    asserters.stateCompletion('hello')
+                    asserters.stateCompletion('hello', 'states/complex-selectors-with-states.css')
                 ]);
                 asserter.notSuggested([
                     asserters.importCompletion,
-                    asserters.stateCompletion('goodbye'),
-                    asserters.stateCompletion('cheerio')
+                    asserters.stateCompletion('goodbye', 'states/complex-selectors-with-states.css'),
+                    asserters.stateCompletion('cheerio', 'states/complex-selectors-with-states.css')
                 ]);
             });
         });
         it('should not complete available states after : in complex selectors if existing', function () {
-            return asserters.getCompletions("\n                .gaga{\n                    -st-states:hello;\n                }\n                .zagzag button.gaga:hello:| .baga\n                ", {}, true).then(function (asserter) {
+            return asserters.getCompletions('states/complex-selectors-with-states-existing.css').then(function (asserter) {
                 asserter.notSuggested([
                     asserters.importCompletion,
                     asserters.stateCompletion('hello')
@@ -130,48 +133,9 @@ xdescribe('completion unit test', function () {
         });
     });
     describe('multiple files', function () {
-        it('allow extending component css file', function () {
-            return asserters.getCompletions("\n                :import{\n                    -st-from:\"./comp.css\";\n                    -st-default:Comp;\n                }\n                .gaga{\n                    -st-extends:|\n                }\n                ", {
-                'comp.css': ""
-            }, true).then(function (asserter) {
-                asserter.suggested([
-                    asserters.extendsCompletion('Comp')
-                ]);
-                asserter.notSuggested([
-                    asserters.importCompletion,
-                    asserters.mixinDirectiveCompletion
-                ]);
-            });
-        });
-        it('allow extending component css file (with existing ;)', function () {
-            return asserters.getCompletions("\n                :import{\n                    -st-from:\"./comp.css\";\n                    -st-default:Comp;\n                }\n                .gaga{\n                    -st-extends:| ;\n                }\n                ", {
-                'comp.css': ""
-            }, true).then(function (asserter) {
-                var range = undefined;
-                /* TODO: add range, see that works in vscode */
-                // {
-                //     start:{
-                //         line:6,
-                //         character:13
-                //     },
-                //     end:{
-                //         line:6,
-                //         character:15
-                //     }
-                // }
-                asserter.suggested([
-                    asserters.extendsCompletion('Comp', range)
-                ]);
-                asserter.notSuggested([
-                    asserters.importCompletion,
-                    asserters.mixinDirectiveCompletion
-                ]);
-            });
-        });
         it('complete states for localy imported component', function () {
-            return asserters.getCompletions("\n                :import{\n                    -st-from: \"./comp.css\";\n                    -st-default: Comp;\n\n                }\n                .gaga{\n                    -st-extends: Comp;\n                }\n                .gaga:|\n                ", {
-                'comp.css': "\n                            .root{\n                                -st-states:shmover;\n                            }\n                        "
-            }, true).then(function (asserter) {
+            return asserters.getCompletions('states/locally-imported-component.css')
+                .then(function (asserter) {
                 asserter.suggested([
                     asserters.stateCompletion('shmover', 'projectRoot/comp.css')
                 ]);

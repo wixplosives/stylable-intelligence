@@ -8,7 +8,11 @@ import * as fs from 'fs';
 
 export class TestResolver extends VsCodeResolver implements ExtendedResolver {
     resolveModule(filePath: string) {
-        return super.resolveModule('projectRoot' + filePath.slice(1));
+        console.log('filePath: ', filePath)
+        console.log('st: ', JSON.stringify(this.st))
+        const globalPath: string = path.resolve(path.parse(this.st.source).dir, filePath);
+        this.add(globalPath, fs.readFileSync(globalPath).toString());
+        return super.resolveModule(filePath);
     }
     resolveDependencies(stylesheet: Stylesheet) {
         console.log('Starting Test resolveDependencies');

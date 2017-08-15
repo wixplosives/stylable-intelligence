@@ -104,5 +104,27 @@ describe('Imports', function () {
             ]);
         });
     });
+    it('completes name imported as default', function () {
+        return asserters.getCompletions('imports/st-extends.css').then(function (asserter) {
+            asserter.suggested([
+                asserters.extendsCompletion('Comp')
+            ]);
+            asserter.notSuggested([
+                asserters.importCompletion,
+                asserters.mixinDirectiveCompletion
+            ]);
+        });
+    });
+    it('completes name imported as default when followinng ; exists', function () {
+        return asserters.getCompletions('imports/st-extends-with-semicolon.css').then(function (asserter) {
+            asserter.suggested([
+                asserters.extendsCompletion('Comp')
+            ]);
+            asserter.notSuggested([
+                asserters.importCompletion,
+                asserters.mixinDirectiveCompletion
+            ]);
+        });
+    });
 });
 //# sourceMappingURL=import.spec.js.map

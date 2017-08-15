@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var main_1 = require("vscode-languageserver-types/lib/main");
 var provider_1 = require("../src/provider");
 var chai_1 = require("chai");
-var test_resolver_1 = require("./test-resolver");
-var vscode_languageserver_1 = require("vscode-languageserver");
+var vscode_resolver_1 = require("../src/adapters/vscode-resolver");
 var fs = require("fs");
 var path = require("path");
 var provider = new provider_1.default();
@@ -61,7 +61,15 @@ function completionsIntenal(fileName, src, extrafiles) {
     var linesTillCaret = src.substr(0, caretPos).split('\n');
     var character = linesTillCaret[linesTillCaret.length - 1].length;
     src = src.replace('|', "");
-    var resolver = new test_resolver_1.TestResolver(new vscode_languageserver_1.TextDocuments());
+    // const resolver = new TestResolver(new TextDocuments());
+    var resolver = new vscode_resolver_1.VsCodeResolver({
+        get: function (uri) {
+            return main_1.TextDocument.create(uri, 'css', 1, fs.readFileSync(uri).toString());
+        },
+        keys: function () {
+            return [];
+        }
+    });
     return provider.provideCompletionItemsFromSrc(src, {
         line: linesTillCaret.length - 1,
         character: character
@@ -80,7 +88,7 @@ exports.filePathCompletion = function (filePath) { return { label: filePath, sor
 exports.classCompletion = function (className) { return { label: '.' + className, sortText: 'b' }; };
 exports.stateCompletion = function (stateName, from) {
     if (from === void 0) { from = 'projectRoot/main.css'; }
-    return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName };
+    return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + path.join(__dirname, '/../test/cases/', from), insertText: ':' + stateName };
 };
 exports.extendsCompletion = function (typeName, range) { return { label: typeName, sortText: 'a', insertText: ' ' + typeName + ';\n', range: range }; };
 //# sourceMappingURL=asserters.js.map

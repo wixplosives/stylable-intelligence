@@ -1,3 +1,4 @@
+import { join } from 'path';
 import {Resolver,Stylesheet} from 'stylable';
 import * as _ from 'lodash';
 
@@ -34,7 +35,6 @@ export function isStateDefinition(definition:any):definition is StateDefinition{
 }
 
 export function getDefinition(stylesheet:Stylesheet,symbolName:string,resolver:Resolver):SymbolDefinition | null{
-
     if(stylesheet.typedClasses[symbolName]){
         return getClassDefinition(stylesheet,symbolName,resolver);
     }
@@ -42,6 +42,8 @@ export function getDefinition(stylesheet:Stylesheet,symbolName:string,resolver:R
 }
 
 function getClassDefinition(stylesheet:Stylesheet,symbolName:string,resolver:Resolver):ClassDefinition{
+    console.log('symbolname', symbolName)
+    console.log('stylesheet', JSON.stringify(stylesheet))
     let states: StateDefinition[] = [];
     if(stylesheet.typedClasses[symbolName]["-st-states"]){
         stylesheet.typedClasses[symbolName]["-st-states"]!.map((state)=>{
@@ -54,9 +56,13 @@ function getClassDefinition(stylesheet:Stylesheet,symbolName:string,resolver:Res
         })
     }
     const type:string | undefined = stylesheet.typedClasses[symbolName]["-st-extends"]
+    console.log('type', type)
     if(type){
+        console.log(JSON.stringify(stylesheet))
         const symbols = resolver.resolveSymbols(stylesheet);
+        console.log('symbols', JSON.stringify(symbols))
         if(symbols[type]){
+            console.log('calling internal')
             const internalClassDef = getClassDefinition(symbols[type],'root',resolver);
             states = states.concat(internalClassDef.states);
         }

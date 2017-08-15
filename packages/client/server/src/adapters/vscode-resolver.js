@@ -15,6 +15,7 @@ var VsCodeResolver = (function (_super) {
         return _this;
     }
     VsCodeResolver.prototype.resolveModule = function (filePath) {
+        console.log('RESOLVEMODULE:', filePath);
         var globalPath = path.resolve(path.parse(this.st.source).dir, filePath);
         this.add(globalPath, this.docs.get(globalPath).getText());
         return _super.prototype.resolveModule.call(this, globalPath);

@@ -1,6 +1,6 @@
 'use strict';
 import { Readable } from 'stream';
-import { TextDocuments, IConnection } from 'vscode-languageserver';
+import { TextDocuments, TextDocument, IConnection } from 'vscode-languageserver';
 import {NotificationMessage} from 'vscode-jsonrpc';
 import Provider, { ExtendedResolver, FsEntity } from '../provider';
 import { Resolver, Stylesheet, fromCSS } from 'stylable';
@@ -11,12 +11,13 @@ import path = require('path');
 const provider = new Provider();
 
 export class VsCodeResolver extends Resolver implements ExtendedResolver {
-    constructor(private docs: TextDocuments, private conn?: IConnection) {
+    constructor(private docs: {get: (uri: string) => TextDocument, keys: () => string[]}, private conn?: IConnection) {
         super({});
     }
 
     st: Stylesheet;
     resolveModule(filePath: string) {
+        console.log('RESOLVEMODULE:',filePath)
         const globalPath: string = path.resolve(path.parse(this.st.source).dir, filePath);
         this.add(globalPath, this.docs.get(globalPath).getText());
         return super.resolveModule(globalPath);

@@ -1,3 +1,5 @@
+import { TextDocument } from 'vscode-languageserver-types/lib/main';
+import { string } from 'vscode-languageclient/lib/utils/is';
 import StylableDotCompletionProvider, { Completion, snippet, ExtendedResolver, ProviderPosition, ProviderRange } from '../src/provider'
 import { Resolver, Stylesheet } from 'stylable'
 import * as _ from 'lodash';
@@ -71,7 +73,15 @@ function completionsIntenal(fileName: string, src: string, extrafiles: { [path: 
 
     src = src.replace('|', "");
 
-    const resolver = new TestResolver(new TextDocuments());
+    // const resolver = new TestResolver(new TextDocuments());
+    const resolver = new VsCodeResolver({
+        get(uri: string): TextDocument {
+            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri).toString())
+        },
+        keys(): string[] {
+            return [];
+        }
+    });
 
 
     return provider.provideCompletionItemsFromSrc(src, {
@@ -91,5 +101,5 @@ export const importDefaultDirectiveCompletion: Partial<Completion> = { label: '-
 export const importNamedDirectiveCompletion: Partial<Completion> = { label: '-st-named:', detail: 'Named object export name', sortText: 'a', insertText: '-st-named: $1;' };
 export const filePathCompletion: (filePath: string) => Partial<Completion> = (filePath) => { return { label: filePath, sortText: 'a', insertText: './' + filePath } };
 export const classCompletion: (className: string) => Partial<Completion> = (className) => { return { label: '.' + className, sortText: 'b' } }
-export const stateCompletion: (stateName: string, from?: string) => Partial<Completion> = (stateName, from = 'projectRoot/main.css') => { return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName } }
+export const stateCompletion: (stateName: string, from?: string) => Partial<Completion> = (stateName, from = 'projectRoot/main.css') => { return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + path.join(__dirname, '/../test/cases/', from), insertText: ':' + stateName } }
 export const extendsCompletion: (typeName: string, range?: ProviderRange) => Partial<Completion> = (typeName, range) => { return { label: typeName, sortText: 'a', insertText: ' ' + typeName + ';\n', range } };

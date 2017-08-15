@@ -1,0 +1,11 @@
+:import{
+    -st-from: "./comp-to-import.css";
+    -st-default: Comp;
+
+}
+
+.gaga{
+    -st-extends: Comp;
+}
+
+.gaga:|

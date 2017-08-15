@@ -256,6 +256,7 @@ var Provider = (function () {
             var focusChunk_1 = selectorRes.target.focusChunk;
             if (!Array.isArray(focusChunk_1) && selector_analyzer_1.isSelectorChunk(focusChunk_1)) {
                 focusChunk_1.classes.forEach(function (className) {
+                    console.log('className: ', className);
                     var clsDef = get_definitions_1.getDefinition(stylesheet, className, resolver);
                     if (get_definitions_1.isClassDefinition(clsDef)) {
                         clsDef.states.forEach(function (stateDef) {

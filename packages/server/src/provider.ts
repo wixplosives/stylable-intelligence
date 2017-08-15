@@ -252,7 +252,9 @@ export default class Provider {
 
         const lastSelector = prevPart && isSelector(prevPart) ? prevPart :
             lastPart && isSelector(lastPart) ? lastPart : null
+
         if (lastSelector) {
+
             if (lastChar === '-' || isSpacy(lastChar) || lastChar == "{") {
                 if (lastSelector.selector === ':import') {
                     completions.push(...getNewCompletions({
@@ -286,7 +288,8 @@ export default class Provider {
             }
         }
         if (trimmedLine.length < 2) {
-            if ((lastChar === ':' || isSpacy(lastChar)) && (<PostCss.Root>lastPart).type === 'root' ) {
+
+            if ((lastChar === ':' || isSpacy(lastChar)) && (<PostCss.Root>lastPart).type === 'root') {
                 completions.push(importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position)));
             }
             if (lastChar === '.' || isSpacy(lastChar)) {
@@ -296,10 +299,11 @@ export default class Provider {
         } else if (lastChar === ':' && stylesheet !== undefined) {
 
             const selectorRes = parseSelector(currentLine, cursorLineIndex);//position.character);
-
             const focusChunk = selectorRes.target.focusChunk;
+
             if (!Array.isArray(focusChunk) && isSelectorChunk(focusChunk)) {// || isSelectorInternalChunk(focusChunk)
                 focusChunk.classes.forEach((className) => {
+                    console.log('className: ', className)
                     const clsDef = getDefinition(stylesheet, className, resolver)
                     if (isClassDefinition(clsDef)) {
                         clsDef.states.forEach((stateDef) => {
