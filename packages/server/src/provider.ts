@@ -235,7 +235,6 @@ export default class Provider {
         cursorLineIndex: number
     ): Thenable<Completion[]> {
         console.log('Starting provideCompletionItemsFromAst')
-        debugger;
         const completions: Completion[] = [];
         const trimmedLine = currentLine.trim();
 

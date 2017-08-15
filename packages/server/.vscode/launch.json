@@ -9,6 +9,17 @@
       "outFiles": [ "${workspaceRoot}/../client/server/**/*.js" ],
       "protocol":"inspector",
       "port": 9229
+    },
+    {
+      "name": "Run Tests",
+      "request": "launch",
+      "type": "node",
+      "program": "${workspaceRoot}/node_modules/.bin/_mocha",
+      "stopOnEntry": false,
+      "args": ["--reporter", "mocha-env-reporter","../client/server/test/**/*.spec.js"],
+      "cwd": "${workspaceRoot}",
+      "protocol": "inspector",
+      "preLaunchTask": "npm"
     }
 	]
 }
