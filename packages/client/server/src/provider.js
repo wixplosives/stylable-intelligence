@@ -74,6 +74,9 @@ var rootClass = new Completion('.root', 'The root class', 'b');
 function importsDirective(rng) {
     return new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}$0'), rng);
 }
+// function varsDirective(rng: ProviderRange) {
+//     return new Completion(':vars', 'Declare variables', 'a', new snippet(':vars {\n\t$1\n}$0'), rng);
+// }
 var extendsDirective = new Completion('-st-extends:', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
 var statesDirective = new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'));
 var mixinDirective = new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'));

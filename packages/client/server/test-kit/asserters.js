@@ -75,7 +75,8 @@ function completionsIntenal(fileName, src, extrafiles) {
         character: character
     }, fileName, resolver);
 }
-exports.importCompletion = { label: ':import', detail: 'Import an external library', sortText: 'a', insertText: ':import {\n\t-st-from: "$1";\n}' };
+exports.importCompletion = { label: ':import', detail: 'Import an external library', sortText: 'a', insertText: ':import {\n\t-st-from: "$1";\n}$0' };
+exports.varsCompletion = { label: ':vars', detail: 'Declare variables', sortText: 'a', insertText: ':vars {\n\t$1\n}$0' };
 exports.rootCompletion = { label: '.root', detail: 'The root class', sortText: 'b', insertText: '.root' };
 exports.statesDirectiveCompletion = { label: '-st-states:', detail: 'Define the CSS states available for this class', sortText: 'a', insertText: '-st-states: $1;' };
 exports.extendsDirectiveCompletion = { label: '-st-extends:', detail: 'Extend an external component', sortText: 'a', insertText: '-st-extends: $1;', additionalCompletions: true };

@@ -7,6 +7,7 @@ export declare function getCompletions(fileName: string, extrafiles?: {
     [path: string]: string;
 }, checkSingleLine?: boolean): Thenable<assertable>;
 export declare const importCompletion: Partial<Completion>;
+export declare const varsCompletion: Partial<Completion>;
 export declare const rootCompletion: Partial<Completion>;
 export declare const statesDirectiveCompletion: Partial<Completion>;
 export declare const extendsDirectiveCompletion: Partial<Completion>;
