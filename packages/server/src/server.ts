@@ -7,7 +7,7 @@ import {
 } from 'vscode-languageserver';
 import Provider, { Completion, snippet, ExtendedResolver, ProviderRange, ProviderPosition, Dir, File, FsEntity } from './provider';
 import { Resolver, Stylesheet, fromCSS } from 'stylable';
-import * as _ from 'lodash';``
+import * as _ from 'lodash';
 import path = require('path');
 import * as fs from 'fs';
 import { VsCodeResolver } from './adapters/vscode-resolver'
