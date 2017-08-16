@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var vscode_languageserver_1 = require("vscode-languageserver");
 var provider_1 = require("./provider");
+"";
 var vscode_resolver_1 = require("./adapters/vscode-resolver");
 var connection = vscode_languageserver_1.createConnection(new vscode_languageserver_1.IPCMessageReader(process), new vscode_languageserver_1.IPCMessageWriter(process));
 var workspaceRoot;
