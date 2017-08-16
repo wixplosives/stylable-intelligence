@@ -1,16 +1,16 @@
-# completions
+# Completions
 
-the provider provides completion suggestion when a user types certain characters or pressees "ctrl+enter"
+The provider provides completion suggestions when a user types a trigger character or manually triggers a completion request.
 
-current trigger charactes:  "." ":" "-" and " "
+Trigger charactes are:  "." ":" "-" and " "
 
-in the current examples. | denotes the users starting caret position and  $1, $2 etc denote the caret position after completion and the tab order
+In the current examples '|' denotes the user's starting caret position. $1, $2, etc. denote tabstops inside the completion, with $0 being the final cursor position after completion. 
 
 ## available completions
 
 ### top level directives
 
-top level directives are allowed only in the top level of the document.
+Top level directives are allowed only in the top level of the document.
 
 
 - :import - imports dependencies
