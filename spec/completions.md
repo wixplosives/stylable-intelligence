@@ -90,27 +90,27 @@ The mixin directive is allowed inside any selector except the top level directiv
     }$0
 ```
 
-### selector completions
+### Selector Completions
 
-#### class
+#### Class
 
-the names of existing simple selectors should be offered as completions.
+The names of existing classes should be offered as completions.
 
- "root" class is always available but only in the start of a selector
+A "root" class is always available. The "root" class can only be used at the start of a selector.
 
- ##### examples
+##### Examples
 
 predefined class
 ```css
     .gaga:hover{
 
     }
-    .gaga$1
+    .gaga$0
 ```
 
 root class is always available
 ```css
-    .root$1
+    .root$0
 ```
 
 completing a class as an extra to a complex selector
@@ -118,12 +118,12 @@ completing a class as an extra to a complex selector
     .gaga{
 
     }
-    .root:hover .gaga$1
+    .root:hover .gaga$0
 ```
 
 #### Tag
 
-the names of imported components should be offered as completions
+The names of imported components should be offered as completions
 
 ##### example
 
@@ -134,7 +134,7 @@ completion in root level
         -st-default:Comp;
     }
 
-    Comp$1
+    Comp$0
 ```
 
 completion as part of complex selector
@@ -144,14 +144,14 @@ completion as part of complex selector
         -st-default:Comp;
     }
 
-    .root:hover Comp$1
+    .root:hover Comp$0
 ```
 
-#### pseudo states
+#### Pseudo-States
 
-custom states need to be completed for relevant class
+Custom states need to be completed for relevant class
 
-##### example
+##### Examples
 
 simple
 ```css
@@ -159,7 +159,7 @@ simple
         -st-states:hello;
     }
 
-    .root:hello$
+    .root:hello$0
 ```
 
 in complex selctor
@@ -168,7 +168,7 @@ in complex selctor
         -st-states:hello;
     }
 
-    .root:hover .gaga:hello$
+    .root:hover .gaga:hello$0
 ```
 
 
@@ -183,15 +183,15 @@ class extended from import
         -st-extends:Comp;
     }
 
-    .gaga:hello$
+    .gaga:hello$0
 ```
 
 
-#### pseudo elements
+#### Pseudo-Elements
 
-custom pseudo elements need to be completed for relevant class
+Custom pseudo elements need to be completed for relevant classes
 
-##### examples
+##### Examples
 
 class extended from import
 ```css
@@ -204,7 +204,7 @@ class extended from import
         -st-extends:Comp;
     }
 
-    .gaga::inner-part$
+    .gaga::inner-part$0
 ```
 
 in complex selctor
@@ -218,11 +218,11 @@ in complex selctor
         -st-extends:Comp;
     }
 
-    .root:hover .gaga::inner-part$
+    .root:hover .gaga::inner-part$0
 ```
 
 
-### rule value completions
+### Rule Value Completions
 
 - value(varName): allowed in any non directive rule
 ```css
