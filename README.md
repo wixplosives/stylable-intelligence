@@ -16,23 +16,12 @@ Stylable intelligence is the engine behind Stylable's different IDE plugins.
  - rename symbols
 
 
-## project structure
+## Project Structure
 
-
-- src
-    - extension.ts - VSCODE extension
-    - provider.ts - completion provider   * must remain separate from VSCODE *
-    - utils/ - utilities for provider   * must remain separate from VSCODE *
-- test
-    - index.ts - setup for E2E
-    - setup.ts - setup for unit tests
-    - extension/ - E2E
-        - completion.test.ts - test file ( VSCODE requires the *.test.ts format )
-        - *.css files - fixures used in completion.test.ts
-    - completion.spec.ts - tests for provider
-    - utils/ - tests for utils
-
-
+Project reflects usual langauage server structure. 
+The client is located in packages/client/. It is a VSCode extension that loads and registers the server. 
+The server is located in packages/server/. It is a language server according to the Laguage Server Protocol.
+The server is structurally independent from VSCode, and while its design is currently ifnluenced by VSCode implementation, it is subject to change.
 
 
 ## inherent problems
