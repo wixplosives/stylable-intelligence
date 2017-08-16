@@ -12,7 +12,6 @@ In the current examples '|' denotes the user's starting caret position. $1, $2, 
 
 Top level directives are allowed only in the top level of the document.
 
-
 - :import - imports dependencies
 ```css
     :import{
@@ -56,39 +55,39 @@ Multiple use of the same directive in the same class is not allowed.
     }$0
 ```
 
-### import info directives
-allowed only in import directive
+### Import Rule Directives
+Import rules are allowed only in import directive. '-st-from' is required, as is at least one of ['-st'default','-st-named'].
 
 - -st-from:"" -  file path to import
 ```css
     :import{
         -st-from: "$1";
-    }
+    }$0
 ```
 - -st-default: - local name of default export
 ```css
     :import{
         -st-default: $1;
-    }
+    }$0
 ```
 - -st-named: - list of imported named imports
 
 ```css
     :import{
         -st-named: $1;
-    }
+    }$0
 ```
 
 
-### mixin directives
-the mixin directive is allowed inside any selector except the top level directives
+### Mixin Directives
+The mixin directive is allowed inside any selector except the top level directives
 
 - -st-mixin - list of mixins to be applied
 
 ```css
     .gaga:hover button{
         -st-mixin: $1;
-    }
+    }$0
 ```
 
 ### selector completions
