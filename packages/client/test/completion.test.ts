@@ -1,36 +1,39 @@
 import * as assert from 'assert';
-import * as vscode from 'vscode';
 import * as path from 'path';
+import * as vscode from 'vscode';
 
+function testCompletion(fileToTest: string, testCases: [vscode.Position, string[]][]) {
+    const casesPath = path.join(__dirname, '..', '..', 'test', 'cases', fileToTest)
+    const ext = vscode.extensions.getExtension('Wix.stylable-intelligence')
+    let testDoc:vscode.TextDocument
 
-function testCompletion(fileName: string, testCases: [vscode.Position, string[]][]) {
-    console.log(path.join(__dirname, '..', '..', 'test', fileName));
-    let testDoc:vscode.TextDocument;
-
-    return vscode.workspace.openTextDocument(path.join(__dirname, '..', '..', 'test', fileName))
-        .then((textDocument) => {
-            testDoc = textDocument;
-            return vscode.window.showTextDocument(textDocument) })
-        .then(editor => {
-            let promises = testCases.map(([position, expected]) => {
+    return vscode.workspace.openTextDocument(casesPath)
+        .then((doc)=> {
+           testDoc = doc;
+           return vscode.window.showTextDocument(testDoc)
+        })
+        .then(() =>  ext!.activate())
+        .then(() => {
+            return Promise.all(testCases.map(([position, expected]) => {
                 return vscode.commands.executeCommand<vscode.CompletionList>('vscode.executeCompletionItemProvider', testDoc.uri, position)
                     .then(list => {
                         let labels = list!.items.map(x => x.label);
                         for (let entry of expected) {
-                            if (labels.indexOf(entry) < 0) {
+                            if (!~labels.indexOf(entry)) {
                                 assert.fail('', entry, 'missing expected item in competion list', '');
                             }
                         }
+                        return Promise.resolve()
                     })
-            });
-            return Promise.all(promises);
+            }))
         });
 }
 
 
 suite("Extension Tests", () => {
 
-    test.skip("simple completion", () => {
+    test("simple completion", function() {
+        this.timeout(5000)
         const testCases: [vscode.Position, string[]][] = [
             [new vscode.Position(0, 0), [':import', '.root']]
         ];

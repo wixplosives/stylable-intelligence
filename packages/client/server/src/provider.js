@@ -194,7 +194,6 @@ var Provider = (function () {
     };
     Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex) {
         console.log('Starting provideCompletionItemsFromAst');
-        debugger;
         var completions = [];
         var trimmedLine = currentLine.trim();
         var position1Based = {
