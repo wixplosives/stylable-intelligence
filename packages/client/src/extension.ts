@@ -36,5 +36,13 @@ export function activate(context: ExtensionContext) {
 
 
     context.subscriptions.push(client.start());
+
+    return workspace.findFiles('**/*.css')
+            .then((files) => {
+                return files ? files.map((file) => {
+                    console.log(file)
+                    workspace.openTextDocument(file.fsPath)
+                }) : []
+            })
 }
 

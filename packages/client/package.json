@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Stylable Language Services Client",
   "author": "Nadav Abraami (nadav@wix.com)",
-  "publisher": "Nadav Abraami (nadav@wix.com)",
+  "publisher": "Wix",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -69,8 +69,10 @@
     "tslib": "~1.7.1"
   },
   "dependencies": {
+    "@types/bluebird": "^3.5.8",
     "@types/glob": "^5.0.30",
     "@types/lodash": "4.14.71",
+    "bluebird": "^3.5.0",
     "css-selector-tokenizer": "^0.7.0",
     "lodash": "4.17.4",
     "postcss": "^6.0.7",
