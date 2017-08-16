@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
-import { TextDocument } from 'vscode-languageserver-types/lib/main';
+import { TextDocument } from 'vscode-languageserver-types';
 
 import { VsCodeResolver } from '../src/adapters/vscode-resolver';
 import StylableDotCompletionProvider, { Completion, ProviderRange, snippet } from '../src/provider';
@@ -38,14 +38,14 @@ export interface assertable {
     notSuggested: (nonCompletions: Partial<Completion>[]) => void
 }
 
-export function getCompletions(fileName: string, extrafiles: { [path: string]: string } = {}, checkSingleLine: boolean = false): Thenable<assertable> {
+export function getCompletions(fileName: string, checkSingleLine: boolean = false): Thenable<assertable> {
     const fullPath = path.join(__dirname, '/../test/cases/', fileName);
     const src: string = fs.readFileSync(fullPath).toString();
     const singleLineSrc = src.split('\n').join('');
     let normalCompletions: Completion[];
-    return completionsIntenal(fullPath, src, extrafiles)
+    return completionsIntenal(fullPath, src)
         .then((completions) => { normalCompletions = completions; })
-        .then<Completion[] | null>(() => checkSingleLine ? completionsIntenal(fullPath, singleLineSrc, extrafiles) : Promise.resolve(null))
+        .then<Completion[] | null>(() => checkSingleLine ? completionsIntenal(fullPath, singleLineSrc) : Promise.resolve(null))
         .then((singleLineCompletions) => {
             return {
                 suggested: (expectedNoCompletions: Partial<Completion>[]) => {
@@ -61,7 +61,7 @@ export function getCompletions(fileName: string, extrafiles: { [path: string]: s
         })
 }
 
-function completionsIntenal(fileName: string, src: string, extrafiles: { [path: string]: string } = {}): Thenable<Completion[]> {
+function completionsIntenal(fileName: string, src: string): Thenable<Completion[]> {
     const caretPos = src.indexOf('|');
     const linesTillCaret = src.substr(0, caretPos).split('\n');
     const character = linesTillCaret[linesTillCaret.length - 1].length;

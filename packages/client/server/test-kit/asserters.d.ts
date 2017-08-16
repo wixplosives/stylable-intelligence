@@ -3,9 +3,7 @@ export interface assertable {
     suggested: (expectedCompletions: Partial<Completion>[]) => void;
     notSuggested: (nonCompletions: Partial<Completion>[]) => void;
 }
-export declare function getCompletions(fileName: string, extrafiles?: {
-    [path: string]: string;
-}, checkSingleLine?: boolean): Thenable<assertable>;
+export declare function getCompletions(fileName: string, checkSingleLine?: boolean): Thenable<assertable>;
 export declare const importCompletion: Partial<Completion>;
 export declare const varsCompletion: Partial<Completion>;
 export declare const rootCompletion: Partial<Completion>;

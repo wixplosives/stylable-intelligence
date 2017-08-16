@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var chai_1 = require("chai");
 var fs = require("fs");
 var path = require("path");
-var main_1 = require("vscode-languageserver-types/lib/main");
+var vscode_languageserver_types_1 = require("vscode-languageserver-types");
 var vscode_resolver_1 = require("../src/adapters/vscode-resolver");
 var provider_1 = require("../src/provider");
 var provider = new provider_1.default();
@@ -31,16 +31,15 @@ function assertNoCompletions(actualCompletions, nonCompletions, prefix) {
         chai_1.expect(actual, prefix + 'unallowed completion found: ' + notAllowed.label + ' ').to.be.equal(undefined);
     });
 }
-function getCompletions(fileName, extrafiles, checkSingleLine) {
-    if (extrafiles === void 0) { extrafiles = {}; }
+function getCompletions(fileName, checkSingleLine) {
     if (checkSingleLine === void 0) { checkSingleLine = false; }
     var fullPath = path.join(__dirname, '/../test/cases/', fileName);
     var src = fs.readFileSync(fullPath).toString();
     var singleLineSrc = src.split('\n').join('');
     var normalCompletions;
-    return completionsIntenal(fullPath, src, extrafiles)
+    return completionsIntenal(fullPath, src)
         .then(function (completions) { normalCompletions = completions; })
-        .then(function () { return checkSingleLine ? completionsIntenal(fullPath, singleLineSrc, extrafiles) : Promise.resolve(null); })
+        .then(function () { return checkSingleLine ? completionsIntenal(fullPath, singleLineSrc) : Promise.resolve(null); })
         .then(function (singleLineCompletions) {
         return {
             suggested: function (expectedNoCompletions) {
@@ -55,8 +54,7 @@ function getCompletions(fileName, extrafiles, checkSingleLine) {
     });
 }
 exports.getCompletions = getCompletions;
-function completionsIntenal(fileName, src, extrafiles) {
-    if (extrafiles === void 0) { extrafiles = {}; }
+function completionsIntenal(fileName, src) {
     var caretPos = src.indexOf('|');
     var linesTillCaret = src.substr(0, caretPos).split('\n');
     var character = linesTillCaret[linesTillCaret.length - 1].length;
@@ -64,7 +62,7 @@ function completionsIntenal(fileName, src, extrafiles) {
     // const resolver = new TestResolver(new TextDocuments());
     var resolver = new vscode_resolver_1.VsCodeResolver({
         get: function (uri) {
-            return main_1.TextDocument.create(uri, 'css', 1, fs.readFileSync(uri).toString());
+            return vscode_languageserver_types_1.TextDocument.create(uri, 'css', 1, fs.readFileSync(uri).toString());
         },
         keys: function () {
             return [];
