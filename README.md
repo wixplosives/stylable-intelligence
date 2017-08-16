@@ -18,9 +18,12 @@ Stylable intelligence is the engine behind Stylable's different IDE plugins.
 
 ## Project Structure
 
-Project reflects usual langauage server structure. 
+This project reflects usual langauage server-based extensions structure.
+
 The client is located in packages/client/. It is a VSCode extension that loads and registers the server. 
+
 The server is located in packages/server/. It is a language server according to the Laguage Server Protocol.
+
 The server is structurally independent from VSCode, and while its design is currently ifnluenced by VSCode implementation, it is subject to change.
 
 
