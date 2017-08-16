@@ -14,7 +14,7 @@ function testCompletion(fileToTest: string, testCases: [vscode.Position, string[
         })
         .then(() =>  ext!.activate())
         .then(() => {
-            let promises = testCases.map(([position, expected]) => {
+            return Promise.all(testCases.map(([position, expected]) => {
                 return vscode.commands.executeCommand<vscode.CompletionList>('vscode.executeCompletionItemProvider', testDoc.uri, position)
                     .then(list => {
                         let labels = list!.items.map(x => x.label);
@@ -25,8 +25,7 @@ function testCompletion(fileToTest: string, testCases: [vscode.Position, string[
                         }
                         return Promise.resolve()
                     })
-            })
-            return Promise.all(promises);
+            }))
         });
 }
 
