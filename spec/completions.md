@@ -6,9 +6,9 @@ Trigger charactes are:  "." ":" "-" and " "
 
 In the current examples '|' denotes the user's starting caret position. $1, $2, etc. denote tabstops inside the completion, with $0 being the final cursor position after completion. 
 
-## available completions
+## Available Completions
 
-### top level directives
+### Top Level Directives
 
 Top level directives are allowed only in the top level of the document.
 
@@ -17,44 +17,43 @@ Top level directives are allowed only in the top level of the document.
 ```css
     :import{
         -st-from:"$1"
-    }
+    }$0
 ```
 - :vars - define vars for use
 ```css
     :vars{
         $1
-    }
+    }$0
 ```
 
 
 
+### Class Definition Directives
 
-### class definition directives
+Class definition directives are used to add metadata to a CSS class. They are only allowed inside simple selectors*.
 
-class definition directives are used to add metadata to a css class, they are only allowed inside simple selectors*.
-
-multiple use of the same directive in the same class is not allowed
+Multiple use of the same directive in the same class is not allowed.
 
 - -st-extends - defines class or variant to extend
 
 ```css
     .gaga{
         -st-extends:$1
-    }
+    }$0
 ```
 
 - -st-states - defines list of states available for css class
 ```css
     .gaga{
         -st-states:$1;
-    }
+    }$0
 ```
 - -st-variant - defines the css class as a variant to be used as a mixin
 ```css
     .gaga{
         -st-variant:true;
         $1
-    }
+    }$0
 ```
 
 ### import info directives
