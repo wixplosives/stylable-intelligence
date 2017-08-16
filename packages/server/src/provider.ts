@@ -62,7 +62,7 @@ function singleLineRange(line: number, start: number, end: number): ProviderRang
 //
 const rootClass = new Completion('.root', 'The root class', 'b');
 function importsDirective(rng: ProviderRange) {
-    return new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}'), rng);
+    return new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}$0'), rng);
 }
 const extendsDirective = new Completion('-st-extends:', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
 const statesDirective = new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'));
@@ -233,6 +233,7 @@ export default class Provider {
         cursorLineIndex: number
     ): Thenable<Completion[]> {
         console.log('Starting provideCompletionItemsFromAst')
+        debugger;
         const completions: Completion[] = [];
         const trimmedLine = currentLine.trim();
 
@@ -300,7 +301,6 @@ export default class Provider {
 
             if (!Array.isArray(focusChunk) && isSelectorChunk(focusChunk)) {// || isSelectorInternalChunk(focusChunk)
                 focusChunk.classes.forEach((className) => {
-                    debugger;
                     console.log('className: ', className)
                     const clsDef = getDefinition(stylesheet, className, resolver)
                     if (isClassDefinition(clsDef)) {
@@ -318,9 +318,7 @@ export default class Provider {
     }
 }
 
-// function getSelectorFromPosition(src: string, index: number) {
-
-// }
+// function getSelectorFromPosition(src: string, index: number) {}
 
 function getNewCompletions(completionMap: CompletionMap, ruleset: PostCss.Rule): Completion[] {
     ruleset.nodes!.forEach(node => {

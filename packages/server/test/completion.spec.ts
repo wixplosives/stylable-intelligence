@@ -35,7 +35,6 @@ describe('completion unit test', function () {
                 ])
             });
         });
-
     });
 
     describe('directives', function () {
@@ -48,7 +47,6 @@ describe('completion unit test', function () {
                     asserters.mixinDirectiveCompletion,
                     asserters.variantDirectiveCompletion
                 ]);
-
             });
         });
 
@@ -61,7 +59,6 @@ describe('completion unit test', function () {
                         asserters.mixinDirectiveCompletion,
                         asserters.variantDirectiveCompletion
                     ]);
-
                 });
         });
 
@@ -73,45 +70,18 @@ describe('completion unit test', function () {
                     asserters.mixinDirectiveCompletion,
                     asserters.variantDirectiveCompletion
                 ]);
-
             });
         });
 
         //TODO: Split into small tests, or find way to do this with 1 file.
-        xdescribe('should not complete -st-states, -st-extends, -st-variant inside complex rules', function () {
+        describe('should not complete -st-states, -st-extends, -st-variant inside complex rules', function () {
             [
-                `
-            .gaga:hover{
-                |
-            }
-            `,
-                `
-            .gaga.baga{
-                |
-            }
-            `,
-                `
-            .gaga div{
-                |
-            }
-            `,
-                `
-            .gaga > div{
-                |
-            }
-            `,
-                `
-            div.baga{
-                |
-            }
-            `,
-                `
-            @media(max-width:200){
-                div.baga{
-                    |
-                }
-            }
-            `
+                'complex-selectors/class-and-class.css',
+                'complex-selectors/class-and-descendant.css',
+                'complex-selectors/class-and-tag.css',
+                'complex-selectors/tag-and-class.css',
+                'complex-selectors/class-and-state.css',
+                'complex-selectors/media-query.css',
             ].map((src) => {
 
                 it('complex rule ' + src.slice(0, src.indexOf('{')), function () {
@@ -134,7 +104,7 @@ describe('completion unit test', function () {
     });
 
     describe('states', function () {
-        it('should complete available states after :', function () {
+        it('should complete available states from same file after :', function () {
             return asserters.getCompletions('states/class-with-states.css').then((asserter) => {
                 asserter.suggested([
                     asserters.stateCompletion('hello', 'states/class-with-states.css'),

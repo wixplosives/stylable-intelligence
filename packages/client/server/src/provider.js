@@ -72,7 +72,7 @@ function singleLineRange(line, start, end) {
 //
 var rootClass = new Completion('.root', 'The root class', 'b');
 function importsDirective(rng) {
-    return new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}'), rng);
+    return new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}$0'), rng);
 }
 var extendsDirective = new Completion('-st-extends:', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
 var statesDirective = new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'));
@@ -194,6 +194,7 @@ var Provider = (function () {
     };
     Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex) {
         console.log('Starting provideCompletionItemsFromAst');
+        debugger;
         var completions = [];
         var trimmedLine = currentLine.trim();
         var position1Based = {
@@ -255,7 +256,6 @@ var Provider = (function () {
             var focusChunk_1 = selectorRes.target.focusChunk;
             if (!Array.isArray(focusChunk_1) && selector_analyzer_1.isSelectorChunk(focusChunk_1)) {
                 focusChunk_1.classes.forEach(function (className) {
-                    debugger;
                     console.log('className: ', className);
                     var clsDef = get_definitions_1.getDefinition(stylesheet, className, resolver);
                     if (get_definitions_1.isClassDefinition(clsDef)) {
@@ -275,8 +275,7 @@ var Provider = (function () {
     return Provider;
 }());
 exports.default = Provider;
-// function getSelectorFromPosition(src: string, index: number) {
-// }
+// function getSelectorFromPosition(src: string, index: number) {}
 function getNewCompletions(completionMap, ruleset) {
     ruleset.nodes.forEach(function (node) {
         var dec = node;

@@ -67,14 +67,14 @@ describe('completion unit test', function () {
             });
         });
         //TODO: Split into small tests, or find way to do this with 1 file.
-        xdescribe('should not complete -st-states, -st-extends, -st-variant inside complex rules', function () {
+        describe('should not complete -st-states, -st-extends, -st-variant inside complex rules', function () {
             [
-                "\n            .gaga:hover{\n                |\n            }\n            ",
-                "\n            .gaga.baga{\n                |\n            }\n            ",
-                "\n            .gaga div{\n                |\n            }\n            ",
-                "\n            .gaga > div{\n                |\n            }\n            ",
-                "\n            div.baga{\n                |\n            }\n            ",
-                "\n            @media(max-width:200){\n                div.baga{\n                    |\n                }\n            }\n            "
+                'complex-selectors/class-and-class.css',
+                'complex-selectors/class-and-descendant.css',
+                'complex-selectors/class-and-tag.css',
+                'complex-selectors/tag-and-class.css',
+                'complex-selectors/class-and-state.css',
+                'complex-selectors/media-query.css',
             ].map(function (src) {
                 it('complex rule ' + src.slice(0, src.indexOf('{')), function () {
                     return asserters.getCompletions(src, {}, true).then(function (asserter) {
@@ -92,7 +92,7 @@ describe('completion unit test', function () {
         });
     });
     describe('states', function () {
-        it('should complete available states after :', function () {
+        it('should complete available states from same file after :', function () {
             return asserters.getCompletions('states/class-with-states.css').then(function (asserter) {
                 asserter.suggested([
                     asserters.stateCompletion('hello', 'states/class-with-states.css'),
