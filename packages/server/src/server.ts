@@ -7,10 +7,9 @@ import {
     InsertTextFormat,
     IPCMessageReader,
     IPCMessageWriter,
-    // Position,
-    // Range,
     TextDocuments,
     TextEdit,
+    NotificationType
 } from 'vscode-languageserver';
 
 import { VsCodeResolver } from './adapters/vscode-resolver';
@@ -21,6 +20,10 @@ let workspaceRoot: string;
 const provider = new Provider();
 let documents: TextDocuments = new TextDocuments();
 const resolver = new VsCodeResolver(documents);
+
+namespace OpenDocNotification {
+	export const type = new NotificationType<string, void>('stylable/openDocument');
+}
 
 
 documents.listen(connection);
@@ -40,7 +43,7 @@ connection.onInitialize((params): InitializeResult => {
 
 connection.listen();
 
-
+connection.sendNotification(OpenDocNotification.type, '/home/wix/projects/demo/test.css');
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
     console.log('Looking for file');
