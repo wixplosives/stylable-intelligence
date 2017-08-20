@@ -10,8 +10,6 @@ export declare class VsCodeResolver extends Resolver implements ExtendedResolver
     st: Stylesheet;
     resolveModule(filePath: string): any;
     resolveDependencies(stylesheet: Stylesheet): Thenable<void>;
-    resolveSymbols(s: Stylesheet): {
-        [key: string]: any;
-    } & object;
+    resolveSymbols(s: Stylesheet): any;
     getFolderContents(path: string): Promise<FsEntity[]>;
 }

@@ -102,7 +102,18 @@ describe('Imports', function () {
             ]);
         });
     });
-    it('completes name imported as default', function () {
+    it('completes name imported as -st-default', function () {
+        return asserters.getCompletions('imports/st-extends.css', true).then(function (asserter) {
+            asserter.suggested([
+                asserters.extendsCompletion('Comp')
+            ]);
+            asserter.notSuggested([
+                asserters.importCompletion,
+                asserters.mixinDirectiveCompletion
+            ]);
+        });
+    });
+    it('completes name imported as -st-named', function () {
         return asserters.getCompletions('imports/st-extends.css', true).then(function (asserter) {
             asserter.suggested([
                 asserters.extendsCompletion('Comp')

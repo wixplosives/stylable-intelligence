@@ -43,9 +43,9 @@ connection.onInitialize((params): InitializeResult => {
 
 connection.listen();
 
-connection.sendNotification(OpenDocNotification.type, '/home/wix/projects/demo/test.css');
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
+    // connection.sendNotification(OpenDocNotification.type, '/home/wix/projects/demo/test.css');
     console.log('Looking for file');
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
