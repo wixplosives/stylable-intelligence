@@ -49,6 +49,8 @@ connection.listen();
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
     // connection.sendNotification(OpenDocNotification.type, '/home/wix/projects/demo/test.css');
     console.log('Looking for file');
+    debugger;
+
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
     return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)

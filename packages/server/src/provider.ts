@@ -177,7 +177,7 @@ export default class Provider {
         // }
 
         console.log('Calling resolveDependencies');
-
+        // debugger;
         console.log('Calling AST completions with: ')
         console.log('position: ', JSON.stringify(position, null, '\t'))
         console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
@@ -204,7 +204,6 @@ export default class Provider {
         cursorLineIndex: number
     ): Thenable<Completion[]> {
         console.log('Starting provideCompletionItemsFromAst')
-        debugger;
         const completions: Completion[] = [];
         const trimmedLine = currentLine.trim();
 
@@ -212,6 +211,7 @@ export default class Provider {
             line: position.line + 1,
             character: position.character
         }
+
         const path = pathFromPosition(meta.ast, position1Based);
 
         const posInSrc = getPositionInSrc(src, position);
@@ -220,10 +220,10 @@ export default class Provider {
         const prevPart: PostCss.NodeBase = path[path.length - 2];
 
         const lastSelector = prevPart && isSelector(prevPart) ? prevPart : lastPart && isSelector(lastPart) ? lastPart : null
-
+        debugger;
         if (lastSelector) {
             var lastRule = <SRule>lastSelector;
-            
+
             if (lastChar === '-' || isSpacy(lastChar) || lastChar == "{") {
                 if (lastRule.selector === ':import') {
                     completions.push(...getNewCompletions({
@@ -251,7 +251,7 @@ export default class Provider {
                         }
                     });
                 } else if (trimmedLine.indexOf('-st-from:') === 0) {
-                    debugger;
+                    // debugger;
                 }
 
             }
@@ -289,7 +289,7 @@ export default class Provider {
                     const states: any[] = [];
                     extendResolution.forEach((s) => {
                         if (s.symbol._kind === 'class') {
-                            states.push(...s.symbol[valueMapping.states].map((name: string) => ({ name, from: s.meta.source })));                            
+                            states.push(...s.symbol[valueMapping.states].map((name: string) => ({ name, from: s.meta.source })));
                         }
                     });
 

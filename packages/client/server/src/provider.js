@@ -163,6 +163,7 @@ var Provider = (function () {
         //     console.error('stylable transpiling failed');
         // }
         console.log('Calling resolveDependencies');
+        // debugger;
         console.log('Calling AST completions with: ');
         console.log('position: ', JSON.stringify(position, null, '\t'));
         console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'));
@@ -180,7 +181,6 @@ var Provider = (function () {
     Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, meta, currentLine, cursorLineIndex) {
         var _this = this;
         console.log('Starting provideCompletionItemsFromAst');
-        debugger;
         var completions = [];
         var trimmedLine = currentLine.trim();
         var position1Based = {
@@ -193,6 +193,7 @@ var Provider = (function () {
         var lastPart = path[path.length - 1];
         var prevPart = path[path.length - 2];
         var lastSelector = prevPart && postcss_ast_utils_1.isSelector(prevPart) ? prevPart : lastPart && postcss_ast_utils_1.isSelector(lastPart) ? lastPart : null;
+        debugger;
         if (lastSelector) {
             var lastRule = lastSelector;
             if (lastChar === '-' || isSpacy(lastChar) || lastChar == "{") {
@@ -224,7 +225,7 @@ var Provider = (function () {
                     });
                 }
                 else if (trimmedLine.indexOf('-st-from:') === 0) {
-                    debugger;
+                    // debugger;
                 }
             }
         }
