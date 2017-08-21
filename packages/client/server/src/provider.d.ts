@@ -1,6 +1,5 @@
-import * as PostCss from 'postcss';
-import { Stylesheet, Resolver } from 'stylable';
-import { SymbolDefinition } from "./utils/get-definitions";
+import { StylableMeta } from 'stylable';
+import { VsCodeResolver } from './adapters/vscode-resolver';
 export declare class ProviderPosition {
     line: number;
     character: number;
@@ -24,22 +23,10 @@ export declare class snippet {
     source: string;
     constructor(source: string);
 }
-export interface FsEntity extends SymbolDefinition {
-    type: string;
-    globalPath: string;
-}
-export interface File extends FsEntity {
-    type: 'file';
-}
-export interface Dir extends FsEntity {
-    type: 'dir';
-}
-export interface ExtendedResolver extends Resolver {
-    resolveDependencies(stylesheet: Stylesheet): Thenable<void>;
-    getFolderContents(folderPath: string): Thenable<FsEntity[]>;
-}
 export default class Provider {
-    getClassDefinition(stylesheet: Stylesheet, symbol: string, resolver: ExtendedResolver): void;
-    provideCompletionItemsFromSrc(src: string, position: ProviderPosition, filePath: string, resolver: ExtendedResolver): Thenable<Completion[]>;
-    provideCompletionItemsFromAst(src: string, position: ProviderPosition, filePath: string, resolver: ExtendedResolver, ast: PostCss.Root, stylesheet: Stylesheet, currentLine: string, cursorLineIndex: number): Thenable<Completion[]>;
+    private resolver;
+    constructor(resolver: VsCodeResolver);
+    getClassDefinition(meta: StylableMeta, symbol: string): void;
+    provideCompletionItemsFromSrc(src: string, position: ProviderPosition, filePath: string): Thenable<Completion[]>;
+    provideCompletionItemsFromAst(src: string, position: ProviderPosition, filePath: string, meta: StylableMeta, currentLine: string, cursorLineIndex: number): Thenable<Completion[]>;
 }

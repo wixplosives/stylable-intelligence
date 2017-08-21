@@ -1,14 +1,9 @@
 "use strict";
 //must remain independent from vscode
 Object.defineProperty(exports, "__esModule", { value: true });
-var PostCss = require("postcss");
 var stylable_1 = require("stylable");
-var PostCssNested = require('postcss-nested');
-var PostCssSafe = require('postcss-safe-parser');
-var get_definitions_1 = require("./utils/get-definitions");
 var postcss_ast_utils_1 = require("./utils/postcss-ast-utils");
 var selector_analyzer_1 = require("./utils/selector-analyzer");
-var processor = PostCss([PostCssNested]);
 var ProviderPosition = (function () {
     function ProviderPosition(line, character) {
         this.line = line;
@@ -72,9 +67,12 @@ function singleLineRange(line, start, end) {
 //
 var rootClass = new Completion('.root', 'The root class', 'b');
 function importsDirective(rng) {
-    return new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}'), rng);
+    return new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}$0'), rng);
 }
-var extendsDirective = new Completion('-st-extends:', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
+// function varsDirective(rng: ProviderRange) {
+//     return new Completion(':vars', 'Declare variables', 'a', new snippet(':vars {\n\t$1\n}$0'), rng);
+// }
+var extendsDirective = new Completion(stylable_1.valueMapping.extends + ':', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
 var statesDirective = new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'));
 var mixinDirective = new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'));
 var variantDirective = new Completion('-st-variant:', '', 'a', new snippet('-st-variant: true;'));
@@ -90,10 +88,10 @@ function extendCompletion(symbolName, range) {
 function stateCompletion(stateName, from, pos) {
     return new Completion(':' + stateName, 'from: ' + from, 'a', new snippet(':' + stateName), singleLineRange(pos.line, pos.character - 1, pos.character));
 }
-function addExistingClasses(stylesheet, completions) {
-    if (stylesheet == undefined)
+function addExistingClasses(meta, completions) {
+    if (meta == undefined)
         return;
-    Object.keys(stylesheet.classes).forEach(function (className) {
+    Object.keys(meta.classes).forEach(function (className) {
         if (className === 'root') {
             return;
         }
@@ -103,31 +101,18 @@ function addExistingClasses(stylesheet, completions) {
 function isIllegalLine(line) {
     return !!/^\s*[-\.:]*\s*$/.test(line);
 }
-function isSimple(selector) {
-    if (selector.match(/[:> ]/)) {
-        return false;
-    }
-    if (selector.indexOf('.') !== 0) {
-        return false;
-    }
-    ;
-    if (selector.lastIndexOf('.') !== 0) {
-        return false;
-    }
-    return true;
-}
 var lineEndsRegexp = /({|}|;)/;
 function isSpacy(char) {
     return char === '' || char === ' ' || char === '\t' || char === '\n';
 }
 var Provider = (function () {
-    function Provider() {
+    function Provider(resolver) {
+        this.resolver = resolver;
     }
-    Provider.prototype.getClassDefinition = function (stylesheet, symbol, resolver) {
-        var symbols = resolver.resolveSymbols(stylesheet);
+    Provider.prototype.getClassDefinition = function (meta, symbol) {
+        // const symbols = resolver.resolveSymbols(stylesheet);
     };
-    Provider.prototype.provideCompletionItemsFromSrc = function (src, position, filePath, resolver) {
-        var _this = this;
+    Provider.prototype.provideCompletionItemsFromSrc = function (src, position, filePath) {
         // debugger;
         var cursorLineIndex = position.character;
         var lines = src.split('\n');
@@ -160,39 +145,41 @@ var Provider = (function () {
         }
         console.log('Made fixedSrc');
         console.log(fixedSrc);
-        var ast;
+        var meta;
         try {
-            var res = processor.process(fixedSrc, {
-                parser: PostCssSafe
-            });
-            ast = res.root;
+            meta = stylable_1.process(stylable_1.safeParse(fixedSrc));
         }
         catch (error) {
             console.log(error);
             return Promise.resolve([]);
         }
         console.log('PostCSS successful');
-        var stylesheet = undefined;
-        console.log('Transpiling Stylesheet');
-        try {
-            stylesheet = stylable_1.fromCSS(fixedSrc, undefined, filePath);
-            console.log('Transpiling Stylesheet success');
-        }
-        catch (error) {
-            console.log('Transpiling Stylesheet fail');
-            console.error('stylable transpiling failed');
-        }
+        // console.log('Transpiling Stylesheet');
+        // try {
+        //     stylesheet = fromCSS(fixedSrc, undefined, filePath);
+        //     console.log('Transpiling Stylesheet success');
+        // } catch (error) {
+        //     console.log('Transpiling Stylesheet fail');
+        //     console.error('stylable transpiling failed');
+        // }
         console.log('Calling resolveDependencies');
-        return resolver.resolveDependencies(stylesheet)
-            .then(function () {
-            console.log('Calling AST completions with: ');
-            console.log('position: ', JSON.stringify(position, null, '\t'));
-            console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'));
-            console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n');
-            return _this.provideCompletionItemsFromAst(src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex);
-        });
+        // debugger;
+        console.log('Calling AST completions with: ');
+        console.log('position: ', JSON.stringify(position, null, '\t'));
+        console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'));
+        console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n');
+        return this.provideCompletionItemsFromAst(src, position, filePath, meta, currentLine, cursorLineIndex);
+        // return resolver.resolveDependencies(meta)
+        //     .then<Completion[]>(() => {
+        //         console.log('Calling AST completions with: ')
+        //         console.log('position: ', JSON.stringify(position, null, '\t'))
+        //         console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
+        //         console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n')
+        //         return this.provideCompletionItemsFromAst(src, position, filePath, resolver, meta, currentLine, cursorLineIndex)
+        //     });
     };
-    Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex) {
+    Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, meta, currentLine, cursorLineIndex) {
+        var _this = this;
         console.log('Starting provideCompletionItemsFromAst');
         var completions = [];
         var trimmedLine = currentLine.trim();
@@ -200,44 +187,45 @@ var Provider = (function () {
             line: position.line + 1,
             character: position.character
         };
-        var path = postcss_ast_utils_1.pathFromPosition(ast, position1Based);
+        var path = postcss_ast_utils_1.pathFromPosition(meta.ast, position1Based);
         var posInSrc = postcss_ast_utils_1.getPositionInSrc(src, position);
         var lastChar = src.charAt(posInSrc);
         var lastPart = path[path.length - 1];
         var prevPart = path[path.length - 2];
-        var lastSelector = prevPart && postcss_ast_utils_1.isSelector(prevPart) ? prevPart :
-            lastPart && postcss_ast_utils_1.isSelector(lastPart) ? lastPart : null;
+        var lastSelector = prevPart && postcss_ast_utils_1.isSelector(prevPart) ? prevPart : lastPart && postcss_ast_utils_1.isSelector(lastPart) ? lastPart : null;
+        debugger;
         if (lastSelector) {
+            var lastRule = lastSelector;
             if (lastChar === '-' || isSpacy(lastChar) || lastChar == "{") {
-                if (lastSelector.selector === ':import') {
+                if (lastRule.selector === ':import') {
                     completions.push.apply(completions, getNewCompletions({
                         "-st-from": fromDirective,
                         "-st-default": defaultDirective,
                         "-st-named": namedDirective
-                    }, lastSelector));
+                    }, lastRule));
                 }
                 else {
                     var declarationBlockDirectives = {
                         '-st-mixin': mixinDirective
                     };
-                    if (isSimple(lastSelector.selector)) {
+                    if (lastRule.isSimpleSelector) {
                         declarationBlockDirectives["-st-extends"] = extendsDirective;
                         declarationBlockDirectives["-st-variant"] = variantDirective;
                         declarationBlockDirectives["-st-states"] = statesDirective;
                     }
-                    completions.push.apply(completions, getNewCompletions(declarationBlockDirectives, lastSelector));
+                    completions.push.apply(completions, getNewCompletions(declarationBlockDirectives, lastRule));
                 }
             }
-            else if (stylesheet && lastChar == ":" && trimmedLine.split(':').length === 2) {
+            else if (meta && lastChar == ":" && trimmedLine.split(':').length === 2) {
                 if (trimmedLine.indexOf('-st-extends:') === 0) {
-                    stylesheet.imports.forEach(function (importJson) {
+                    meta.imports.forEach(function (importJson) {
                         if (importJson.from.lastIndexOf('.css') === importJson.from.length - 4 && importJson.defaultExport) {
                             completions.push(extendCompletion(importJson.defaultExport));
                         }
                     });
                 }
                 else if (trimmedLine.indexOf('-st-from:') === 0) {
-                    debugger;
+                    // debugger;
                 }
             }
         }
@@ -247,24 +235,36 @@ var Provider = (function () {
             }
             if (lastChar === '.' || isSpacy(lastChar)) {
                 completions.push(rootClass);
-                addExistingClasses(stylesheet, completions);
+                addExistingClasses(meta, completions);
             }
         }
-        else if (lastChar === ':' && stylesheet !== undefined) {
+        else if (lastChar === ':' && meta !== undefined) {
             var selectorRes = selector_analyzer_1.parseSelector(currentLine, cursorLineIndex); //position.character);
             var focusChunk_1 = selectorRes.target.focusChunk;
             if (!Array.isArray(focusChunk_1) && selector_analyzer_1.isSelectorChunk(focusChunk_1)) {
                 focusChunk_1.classes.forEach(function (className) {
-                    var clsDef = get_definitions_1.getDefinition(stylesheet, className, resolver);
-                    if (get_definitions_1.isClassDefinition(clsDef)) {
-                        clsDef.states.forEach(function (stateDef) {
-                            if (focusChunk_1.states.indexOf(stateDef.name) !== -1) {
-                                return;
-                            }
-                            var from = 'from: ' + stateDef.from;
-                            completions.push(stateCompletion(stateDef.name, stateDef.from, position));
-                        });
-                    }
+                    console.log('className: ', className);
+                    // const clsDef = getDefinition(meta, className, this.resolver)
+                    // if (isClassDefinition(clsDef)) {
+                    //     clsDef.states.forEach((stateDef) => {
+                    //         if (focusChunk.states.indexOf(stateDef.name) !== -1) { return }
+                    //         // const from = 'from: ' + stateDef.from;
+                    //         completions.push(stateCompletion(stateDef.name, stateDef.from, position))
+                    //     })
+                    // }
+                    var extendResolution = _this.resolver.resolveExtends(meta, className);
+                    var states = [];
+                    extendResolution.forEach(function (s) {
+                        if (s.symbol._kind === 'class') {
+                            states.push.apply(states, s.symbol[stylable_1.valueMapping.states].map(function (name) { return ({ name: name, from: s.meta.source }); }));
+                        }
+                    });
+                    states.forEach(function (stateDef) {
+                        if (focusChunk_1.states.indexOf(stateDef.name) !== -1) {
+                            return;
+                        }
+                        completions.push(stateCompletion(stateDef.name, stateDef.from, position));
+                    });
                 });
             }
         }
@@ -273,8 +273,7 @@ var Provider = (function () {
     return Provider;
 }());
 exports.default = Provider;
-function getSelectorFromPosition(src, index) {
-}
+// function getSelectorFromPosition(src: string, index: number) {}
 function getNewCompletions(completionMap, ruleset) {
     ruleset.nodes.forEach(function (node) {
         var dec = node;

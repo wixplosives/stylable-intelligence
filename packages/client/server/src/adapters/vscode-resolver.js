@@ -1,51 +1,48 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
-var provider_1 = require("../provider");
 var stylable_1 = require("stylable");
-var _ = require("lodash");
-var path = require("path");
-var provider = new provider_1.default();
+// import * as _ from 'lodash';
+// import path = require('path');
 var VsCodeResolver = (function (_super) {
     tslib_1.__extends(VsCodeResolver, _super);
-    function VsCodeResolver(docs, conn) {
-        var _this = _super.call(this, {}) || this;
-        _this.docs = docs;
-        _this.conn = conn;
-        return _this;
-    }
-    VsCodeResolver.prototype.resolveModule = function (filePath) {
-        var globalPath = path.resolve(path.parse(this.st.source).dir, filePath);
-        this.add(globalPath, this.docs.get(globalPath).getText());
-        return _super.prototype.resolveModule.call(this, globalPath);
-    };
-    VsCodeResolver.prototype.resolveDependencies = function (stylesheet) {
-        var _this = this;
-        console.log('Starting resolveDependencies');
-        stylesheet.imports.map(function (importNode) {
-            console.log('stylesheet.source: ', stylesheet.source);
-            console.log('importNode.from: ', importNode.from);
-            console.log('parsedPath: ', JSON.stringify(path.parse(stylesheet.source)));
-            var globalPath = path.parse(stylesheet.source).dir + importNode.from.slice(1);
-            console.log('globalPath: ', globalPath);
-            console.log('docs:', _this.docs.keys());
-            var txt = _this.docs.get(globalPath).getText();
-            if (_.endsWith(importNode.from, '.css')) {
-                _this.add(globalPath, stylable_1.fromCSS(txt));
+    function VsCodeResolver(docs) {
+        return _super.call(this, stylable_1.cachedProcessFile(function (fullpath, content) {
+            return stylable_1.process(stylable_1.safeParse(content, { from: fullpath }));
+        }, {
+            readFileSync: function (path) {
+                var doc = docs.get(path);
+                return doc.getText();
+            },
+            statSync: function (path) {
+                var doc = docs.get(path);
+                return {
+                    mtime: new Date(doc.version)
+                };
             }
-        });
-        return Promise.resolve();
-    };
-    ;
-    VsCodeResolver.prototype.resolveSymbols = function (s) {
-        this.st = s;
-        return _super.prototype.resolveSymbols.call(this, s);
-    };
-    VsCodeResolver.prototype.getFolderContents = function (path) {
-        var res = [];
-        return Promise.resolve(res);
+        }), function () { }) || this;
+    }
+    VsCodeResolver.prototype.resolveExtends = function (meta, className) {
+        var extendPath = [];
+        var resolvedClass = this.resolveClass(meta, meta.classes[className]);
+        if (resolvedClass && resolvedClass._kind === 'css' && resolvedClass.symbol._kind === 'class') {
+            var current = resolvedClass;
+            var extend = resolvedClass.symbol[stylable_1.valueMapping.extends];
+            while (current && extend) {
+                extendPath.push(current);
+                var res = this.resolve(extend);
+                if (res && res._kind === 'css' && res.symbol._kind === 'class') {
+                    current = res;
+                    extend = resolvedClass.symbol[stylable_1.valueMapping.extends];
+                }
+                else {
+                    break;
+                }
+            }
+        }
+        return extendPath;
     };
     return VsCodeResolver;
-}(stylable_1.Resolver));
+}(stylable_1.StylableResolver));
 exports.VsCodeResolver = VsCodeResolver;
 //# sourceMappingURL=vscode-resolver.js.map

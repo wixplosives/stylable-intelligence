@@ -1,12 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var provider_1 = require("../src/provider");
 var chai_1 = require("chai");
-var test_resolver_1 = require("./test-resolver");
-var vscode_languageserver_1 = require("vscode-languageserver");
 var fs = require("fs");
 var path = require("path");
-var provider = new provider_1.default();
+var vscode_languageserver_types_1 = require("vscode-languageserver-types");
+var vscode_resolver_1 = require("../src/adapters/vscode-resolver");
+var provider_1 = require("../src/provider");
 function assertCompletions(actualCompletions, expectedCompletions, prefix) {
     if (prefix === void 0) { prefix = ''; }
     expectedCompletions.forEach(function (expected) {
@@ -31,16 +30,15 @@ function assertNoCompletions(actualCompletions, nonCompletions, prefix) {
         chai_1.expect(actual, prefix + 'unallowed completion found: ' + notAllowed.label + ' ').to.be.equal(undefined);
     });
 }
-function getCompletions(fileName, extrafiles, checkSingleLine) {
-    if (extrafiles === void 0) { extrafiles = {}; }
+function getCompletions(fileName, checkSingleLine) {
     if (checkSingleLine === void 0) { checkSingleLine = false; }
     var fullPath = path.join(__dirname, '/../test/cases/', fileName);
     var src = fs.readFileSync(fullPath).toString();
     var singleLineSrc = src.split('\n').join('');
     var normalCompletions;
-    return completionsIntenal(fullPath, src, extrafiles)
+    return completionsIntenal(fullPath, src)
         .then(function (completions) { normalCompletions = completions; })
-        .then(function () { return checkSingleLine ? completionsIntenal(fullPath, singleLineSrc, extrafiles) : Promise.resolve(null); })
+        .then(function () { return checkSingleLine ? completionsIntenal(fullPath, singleLineSrc) : Promise.resolve(null); })
         .then(function (singleLineCompletions) {
         return {
             suggested: function (expectedNoCompletions) {
@@ -55,19 +53,28 @@ function getCompletions(fileName, extrafiles, checkSingleLine) {
     });
 }
 exports.getCompletions = getCompletions;
-function completionsIntenal(fileName, src, extrafiles) {
-    if (extrafiles === void 0) { extrafiles = {}; }
+function completionsIntenal(fileName, src) {
     var caretPos = src.indexOf('|');
     var linesTillCaret = src.substr(0, caretPos).split('\n');
     var character = linesTillCaret[linesTillCaret.length - 1].length;
     src = src.replace('|', "");
-    var resolver = new test_resolver_1.TestResolver(new vscode_languageserver_1.TextDocuments());
+    // const resolver = new TestResolver(new TextDocuments());
+    var resolver = new vscode_resolver_1.VsCodeResolver({
+        get: function (uri) {
+            return vscode_languageserver_types_1.TextDocument.create(uri, 'css', 1, fs.readFileSync(uri).toString());
+        },
+        keys: function () {
+            return [];
+        }
+    });
+    var provider = new provider_1.default(resolver);
     return provider.provideCompletionItemsFromSrc(src, {
         line: linesTillCaret.length - 1,
         character: character
-    }, fileName, resolver);
+    }, fileName);
 }
-exports.importCompletion = { label: ':import', detail: 'Import an external library', sortText: 'a', insertText: ':import {\n\t-st-from: "$1";\n}' };
+exports.importCompletion = { label: ':import', detail: 'Import an external library', sortText: 'a', insertText: ':import {\n\t-st-from: "$1";\n}$0' };
+exports.varsCompletion = { label: ':vars', detail: 'Declare variables', sortText: 'a', insertText: ':vars {\n\t$1\n}$0' };
 exports.rootCompletion = { label: '.root', detail: 'The root class', sortText: 'b', insertText: '.root' };
 exports.statesDirectiveCompletion = { label: '-st-states:', detail: 'Define the CSS states available for this class', sortText: 'a', insertText: '-st-states: $1;' };
 exports.extendsDirectiveCompletion = { label: '-st-extends:', detail: 'Extend an external component', sortText: 'a', insertText: '-st-extends: $1;', additionalCompletions: true };
@@ -80,7 +87,7 @@ exports.filePathCompletion = function (filePath) { return { label: filePath, sor
 exports.classCompletion = function (className) { return { label: '.' + className, sortText: 'b' }; };
 exports.stateCompletion = function (stateName, from) {
     if (from === void 0) { from = 'projectRoot/main.css'; }
-    return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName };
+    return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + path.join(__dirname, '/../test/cases/', from), insertText: ':' + stateName };
 };
 exports.extendsCompletion = function (typeName, range) { return { label: typeName, sortText: 'a', insertText: ' ' + typeName + ';\n', range: range }; };
 //# sourceMappingURL=asserters.js.map

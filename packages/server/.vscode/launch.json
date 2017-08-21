@@ -18,8 +18,7 @@
       "stopOnEntry": false,
       "args": ["--reporter", "mocha-env-reporter","../client/server/test/**/*.spec.js"],
       "cwd": "${workspaceRoot}",
-      "protocol": "inspector",
-      "preLaunchTask": "npm"
+      "protocol": "inspector"
     }
 	]
 }

@@ -2,12 +2,16 @@
 import { connect } from 'tls';
 import { Trace } from 'vscode-jsonrpc'
 import { ExtensionContext, workspace, TextDocument } from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, Executable } from 'vscode-languageclient';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, Executable, NotificationType } from 'vscode-languageclient';
 import path = require('path');
 
 import * as glob from 'glob';
 
-export function activate(context: ExtensionContext){
+namespace OpenDocNotification {
+    export const type = new NotificationType<string, void>('stylable/openDocument');
+}
+
+export function activate(context: ExtensionContext) {
 
     console.log('client lalala');
 
@@ -30,10 +34,17 @@ export function activate(context: ExtensionContext){
 
     context.subscriptions.push(client.start());
 
+
     return client
-            .onReady()
-            .then(() => workspace.findFiles('**/*.css'))
-            .then((files) => Promise.all(files.map((file) => workspace.openTextDocument(file.fsPath))))
+        .onReady()
+        .then(() => workspace.findFiles('**/*.css'))
+        .then((files) => Promise.all(files.map((file) => workspace.openTextDocument(file.fsPath))))
+        .then(() => {
+            client.onNotification(OpenDocNotification.type, (uri: string) => {
+                // debugger;
+                console.log(uri);
+            })
+        })
 
 }
 

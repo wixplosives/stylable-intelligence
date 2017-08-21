@@ -10,6 +10,7 @@
     "noImplicitReturns": true,
     "strictNullChecks": true,
     "sourceMap": true,
+    "noUnusedLocals": true,
     "outDir": "../client/server",
     "typeRoots": [
       "./node_modules/@types",
