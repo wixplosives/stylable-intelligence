@@ -6,7 +6,6 @@ var path = require("path");
 var vscode_languageserver_types_1 = require("vscode-languageserver-types");
 var vscode_resolver_1 = require("../src/adapters/vscode-resolver");
 var provider_1 = require("../src/provider");
-var provider = new provider_1.default();
 function assertCompletions(actualCompletions, expectedCompletions, prefix) {
     if (prefix === void 0) { prefix = ''; }
     expectedCompletions.forEach(function (expected) {
@@ -68,10 +67,11 @@ function completionsIntenal(fileName, src) {
             return [];
         }
     });
+    var provider = new provider_1.default(resolver);
     return provider.provideCompletionItemsFromSrc(src, {
         line: linesTillCaret.length - 1,
         character: character
-    }, fileName, resolver);
+    }, fileName);
 }
 exports.importCompletion = { label: ':import', detail: 'Import an external library', sortText: 'a', insertText: ':import {\n\t-st-from: "$1";\n}$0' };
 exports.varsCompletion = { label: ':vars', detail: 'Declare variables', sortText: 'a', insertText: ':vars {\n\t$1\n}$0' };

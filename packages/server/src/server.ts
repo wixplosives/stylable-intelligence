@@ -15,13 +15,13 @@ import {
 import { VsCodeResolver } from './adapters/vscode-resolver';
 import Provider, { Completion, ProviderPosition, ProviderRange } from './provider';
 
-let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 let workspaceRoot: string;
-const provider = new Provider();
-let documents: TextDocuments = new TextDocuments();
-
+const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
+const documents: TextDocuments = new TextDocuments();
 
 const resolver = new VsCodeResolver(documents);
+
+const provider = new Provider(resolver);
 
 // namespace OpenDocNotification {
 // 	export const type = new NotificationType<string, void>('stylable/openDocument');
@@ -51,7 +51,7 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
     console.log('Looking for file');
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
-    return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, resolver)
+    return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
         .then((res) => {
             console.log('Received Completions in server:')
             return res.map((com: Completion) => {

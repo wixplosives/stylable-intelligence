@@ -4,9 +4,7 @@ import * as path from 'path';
 import { TextDocument } from 'vscode-languageserver-types';
 
 import { VsCodeResolver } from '../src/adapters/vscode-resolver';
-import StylableDotCompletionProvider, { Completion, ProviderRange, snippet } from '../src/provider';
-
-const provider = new StylableDotCompletionProvider();
+import Provider, { Completion, ProviderRange, snippet } from '../src/provider';
 
 function assertCompletions(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {
@@ -78,11 +76,12 @@ function completionsIntenal(fileName: string, src: string): Thenable<Completion[
         }
     });
 
+    const provider = new Provider(resolver);
 
     return provider.provideCompletionItemsFromSrc(src, {
         line: linesTillCaret.length - 1,
         character
-    }, fileName, resolver)
+    }, fileName)
 }
 
 export const importCompletion: Partial<Completion> = { label: ':import', detail: 'Import an external library', sortText: 'a', insertText: ':import {\n\t-st-from: "$1";\n}$0' };

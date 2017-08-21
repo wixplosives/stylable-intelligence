@@ -1,14 +1,13 @@
 //must remain independent from vscode
 
 import * as PostCss from 'postcss';
-import { StylableMeta, process, safeParse } from 'stylable';
-import { getDefinition, isClassDefinition, SymbolDefinition } from "./utils/get-definitions";
+import { StylableMeta, process, safeParse, valueMapping, SRule } from 'stylable';
+import { VsCodeResolver } from './adapters/vscode-resolver';
 import { getPositionInSrc, isSelector, pathFromPosition } from "./utils/postcss-ast-utils";
 import {
     parseSelector,
     isSelectorChunk
 } from './utils/selector-analyzer';
-
 
 
 export class ProviderPosition {
@@ -18,7 +17,6 @@ export class ProviderPosition {
 export class ProviderRange {
     constructor(public start: ProviderPosition, public end: ProviderPosition) { }
 }
-
 
 export class Completion {
     constructor(public label: string, public detail: string = "", public sortText: string = 'd', public insertText: string | snippet = label,
@@ -63,7 +61,7 @@ function importsDirective(rng: ProviderRange) {
 // function varsDirective(rng: ProviderRange) {
 //     return new Completion(':vars', 'Declare variables', 'a', new snippet(':vars {\n\t$1\n}$0'), rng);
 // }
-const extendsDirective = new Completion('-st-extends:', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
+const extendsDirective = new Completion(valueMapping.extends + ':', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
 const statesDirective = new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'));
 const mixinDirective = new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'));
 const variantDirective = new Completion('-st-variant:', '', 'a', new snippet('-st-variant: true;'));
@@ -101,46 +99,19 @@ function isIllegalLine(line: string): boolean {
     return !!/^\s*[-\.:]*\s*$/.test(line)
 }
 
-function isSimple(selector: string) {
-    if (selector.match(/[:> ]/)) {
-        return false;
-    }
-    if (selector.indexOf('.') !== 0) {
-        return false
-    };
-    if (selector.lastIndexOf('.') !== 0) {
-        return false;
-    }
-    return true;
-}
-
-
 
 const lineEndsRegexp = /({|}|;)/;
 
-export interface FsEntity extends SymbolDefinition {
-    type: string;
-    globalPath: string;
-}
-
-export interface File extends FsEntity {
-    type: 'file';
-}
-export interface Dir extends FsEntity {
-    type: 'dir';
-}
-
-export interface ExtendedResolver extends Resolver {
-    resolveDependencies(meta: StylableMeta): Thenable<void>;
-    getFolderContents(folderPath: string): Thenable<FsEntity[]>;
-}
 
 function isSpacy(char: string) {
     return char === '' || char === ' ' || char === '\t' || char === '\n';
 }
 
 export default class Provider {
-    public getClassDefinition(meta: StylableMeta, symbol: string, resolver: ExtendedResolver) {
+    constructor(private resolver: VsCodeResolver) {
+
+    }
+    public getClassDefinition(meta: StylableMeta, symbol: string) {
         // const symbols = resolver.resolveSymbols(stylesheet);
 
     }
@@ -149,7 +120,6 @@ export default class Provider {
         src: string,
         position: ProviderPosition,
         filePath: string,
-        resolver: ExtendedResolver
     ): Thenable<Completion[]> {
 
         // debugger;
@@ -207,21 +177,28 @@ export default class Provider {
         // }
 
         console.log('Calling resolveDependencies');
-        return resolver.resolveDependencies(meta)
-            .then<Completion[]>(() => {
-                console.log('Calling AST completions with: ')
-                console.log('position: ', JSON.stringify(position, null, '\t'))
-                console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
-                console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n')
-                return this.provideCompletionItemsFromAst(src, position, filePath, resolver, meta, currentLine, cursorLineIndex)
-            });
+
+        console.log('Calling AST completions with: ')
+        console.log('position: ', JSON.stringify(position, null, '\t'))
+        console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
+        console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n')
+        return this.provideCompletionItemsFromAst(src, position, filePath, meta, currentLine, cursorLineIndex);
+
+
+        // return resolver.resolveDependencies(meta)
+        //     .then<Completion[]>(() => {
+        //         console.log('Calling AST completions with: ')
+        //         console.log('position: ', JSON.stringify(position, null, '\t'))
+        //         console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
+        //         console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n')
+        //         return this.provideCompletionItemsFromAst(src, position, filePath, resolver, meta, currentLine, cursorLineIndex)
+        //     });
 
     }
     public provideCompletionItemsFromAst(
         src: string,
         position: ProviderPosition,
         filePath: string,
-        resolver: ExtendedResolver,
         meta: StylableMeta,
         currentLine: string,
         cursorLineIndex: number
@@ -242,29 +219,29 @@ export default class Provider {
         const lastPart: PostCss.NodeBase = path[path.length - 1];
         const prevPart: PostCss.NodeBase = path[path.length - 2];
 
-        const lastSelector = prevPart && isSelector(prevPart) ? prevPart :
-            lastPart && isSelector(lastPart) ? lastPart : null
+        const lastSelector = prevPart && isSelector(prevPart) ? prevPart : lastPart && isSelector(lastPart) ? lastPart : null
 
         if (lastSelector) {
-
+            var lastRule = <SRule>lastSelector;
+            
             if (lastChar === '-' || isSpacy(lastChar) || lastChar == "{") {
-                if (lastSelector.selector === ':import') {
+                if (lastRule.selector === ':import') {
                     completions.push(...getNewCompletions({
                         "-st-from": fromDirective,
                         "-st-default": defaultDirective,
                         "-st-named": namedDirective
-                    }, lastSelector));
+                    }, lastRule));
                 } else {
 
                     const declarationBlockDirectives: CompletionMap = {
                         '-st-mixin': mixinDirective
                     };
-                    if (isSimple(lastSelector.selector)) {
+                    if (lastRule.isSimpleSelector) {
                         declarationBlockDirectives["-st-extends"] = extendsDirective;
                         declarationBlockDirectives["-st-variant"] = variantDirective;
                         declarationBlockDirectives["-st-states"] = statesDirective;
                     }
-                    completions.push(...getNewCompletions(declarationBlockDirectives, lastSelector));
+                    completions.push(...getNewCompletions(declarationBlockDirectives, lastRule));
                 }
             } else if (meta && lastChar == ":" && trimmedLine.split(':').length === 2) {
                 if (trimmedLine.indexOf('-st-extends:') === 0) {
@@ -296,14 +273,31 @@ export default class Provider {
             if (!Array.isArray(focusChunk) && isSelectorChunk(focusChunk)) {// || isSelectorInternalChunk(focusChunk)
                 focusChunk.classes.forEach((className) => {
                     console.log('className: ', className)
-                    const clsDef = getDefinition(meta, className, resolver)
-                    if (isClassDefinition(clsDef)) {
-                        clsDef.states.forEach((stateDef) => {
-                            if (focusChunk.states.indexOf(stateDef.name) !== -1) { return }
-                            // const from = 'from: ' + stateDef.from;
-                            completions.push(stateCompletion(stateDef.name, stateDef.from, position))
-                        })
-                    }
+
+                    // const clsDef = getDefinition(meta, className, this.resolver)
+                    // if (isClassDefinition(clsDef)) {
+                    //     clsDef.states.forEach((stateDef) => {
+                    //         if (focusChunk.states.indexOf(stateDef.name) !== -1) { return }
+                    //         // const from = 'from: ' + stateDef.from;
+                    //         completions.push(stateCompletion(stateDef.name, stateDef.from, position))
+                    //     })
+                    // }
+
+                    const extendResolution = this.resolver.resolveExtends(meta, className);
+
+
+                    const states: any[] = [];
+                    extendResolution.forEach((s) => {
+                        if (s.symbol._kind === 'class') {
+                            states.push(...s.symbol[valueMapping.states].map((name: string) => ({ name, from: s.meta.source })));                            
+                        }
+                    });
+
+                    states.forEach((stateDef) => {
+                        if (focusChunk.states.indexOf(stateDef.name) !== -1) { return }
+                        completions.push(stateCompletion(stateDef.name, stateDef.from, position))
+                    });
+
                 })
             }
         }

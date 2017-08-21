@@ -1,44 +1,54 @@
 'use strict';
 import { TextDocument } from 'vscode-languageserver';
-import  { ExtendedResolver, FsEntity } from '../provider';
-import { StylableMeta, createGenerator, createMinimalFS } from 'stylable';
-import * as _ from 'lodash';
-import path = require('path');
+import { StylableMeta, cachedProcessFile, StylableResolver, safeParse, process, valueMapping, CSSResolve } from 'stylable';
+// import * as _ from 'lodash';
+// import path = require('path');
 
 
+export class VsCodeResolver extends StylableResolver {
+    constructor(docs: { get: (uri: string) => TextDocument, keys: () => string[] }) {
 
-export class VsCodeResolver extends Resolver implements ExtendedResolver {
-    constructor(private docs: {get: (uri: string) => TextDocument, keys: () => string[]}) {
-        super({});
-        const gen = createGenerator(createMinimalFS({files: {}}).fs)
+        super(cachedProcessFile<StylableMeta>((fullpath, content) => {
+            return process(safeParse(content, { from: fullpath }))
+        }, {
+                readFileSync(path: string) {
+                    const doc = docs.get(path);
+                    return doc.getText()
+                },
+                statSync(path: string) {
+                    const doc = docs.get(path);
+                    return {
+                        mtime: new Date(doc.version)
+                    }
+                }
+            }), () => {/* handle js imports */ });
+
     }
 
-    st: Stylesheet;
-    resolveModule(filePath: string) {
-        console.log('RESOLVEMODULE:',filePath)
-        const globalPath: string = path.resolve(path.parse(this.st.source).dir, filePath);
-        this.add(globalPath, this.docs.get(globalPath).getText());
-        return super.resolveModule(globalPath);
-    }
+    resolveExtends(meta: StylableMeta, className: string): CSSResolve[] {
 
-    resolveDependencies(meta: StylableMeta): Thenable<void> {
-        meta.imports.map((importNode) => {
-            const globalPath: string = path.parse(meta.source).dir + importNode.from.slice(1);
+        let extendPath = [];
+        const resolvedClass = this.resolveClass(meta, meta.classes[className])
 
-            const txt = this.docs.get(globalPath).getText();
+        if (resolvedClass && resolvedClass._kind === 'css' && resolvedClass.symbol._kind === 'class') {
+            let current = resolvedClass;
+            let extend = resolvedClass.symbol[valueMapping.extends];
 
-            if (_.endsWith(importNode.from, '.css')) {
-                this.add(globalPath, fromCSS(txt))
+            while (current && extend) {
+                extendPath.push(current);
+                let res = this.resolve(extend);
+                if (res && res._kind === 'css' && res.symbol._kind === 'class') {
+                    current = res;
+                    extend = resolvedClass.symbol[valueMapping.extends];
+                } else {
+                    break;
+                }
             }
-        });
-        return Promise.resolve()
-    };
-    resolveSymbols(s: Stylesheet) {
-        this.st = s;
-        return super.resolveSymbols(s);
+
+        }
+
+        return extendPath
     }
-    getFolderContents(path: string) {
-        const res: FsEntity[] = [];
-        return Promise.resolve(res);
-    }
+
+
 }

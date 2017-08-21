@@ -2,7 +2,6 @@
 //must remain independent from vscode
 Object.defineProperty(exports, "__esModule", { value: true });
 var stylable_1 = require("stylable");
-var get_definitions_1 = require("./utils/get-definitions");
 var postcss_ast_utils_1 = require("./utils/postcss-ast-utils");
 var selector_analyzer_1 = require("./utils/selector-analyzer");
 var ProviderPosition = (function () {
@@ -73,7 +72,7 @@ function importsDirective(rng) {
 // function varsDirective(rng: ProviderRange) {
 //     return new Completion(':vars', 'Declare variables', 'a', new snippet(':vars {\n\t$1\n}$0'), rng);
 // }
-var extendsDirective = new Completion('-st-extends:', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
+var extendsDirective = new Completion(stylable_1.valueMapping.extends + ':', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
 var statesDirective = new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'));
 var mixinDirective = new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'));
 var variantDirective = new Completion('-st-variant:', '', 'a', new snippet('-st-variant: true;'));
@@ -102,31 +101,18 @@ function addExistingClasses(meta, completions) {
 function isIllegalLine(line) {
     return !!/^\s*[-\.:]*\s*$/.test(line);
 }
-function isSimple(selector) {
-    if (selector.match(/[:> ]/)) {
-        return false;
-    }
-    if (selector.indexOf('.') !== 0) {
-        return false;
-    }
-    ;
-    if (selector.lastIndexOf('.') !== 0) {
-        return false;
-    }
-    return true;
-}
 var lineEndsRegexp = /({|}|;)/;
 function isSpacy(char) {
     return char === '' || char === ' ' || char === '\t' || char === '\n';
 }
 var Provider = (function () {
-    function Provider() {
+    function Provider(resolver) {
+        this.resolver = resolver;
     }
-    Provider.prototype.getClassDefinition = function (meta, symbol, resolver) {
+    Provider.prototype.getClassDefinition = function (meta, symbol) {
         // const symbols = resolver.resolveSymbols(stylesheet);
     };
-    Provider.prototype.provideCompletionItemsFromSrc = function (src, position, filePath, resolver) {
-        var _this = this;
+    Provider.prototype.provideCompletionItemsFromSrc = function (src, position, filePath) {
         // debugger;
         var cursorLineIndex = position.character;
         var lines = src.split('\n');
@@ -177,16 +163,22 @@ var Provider = (function () {
         //     console.error('stylable transpiling failed');
         // }
         console.log('Calling resolveDependencies');
-        return resolver.resolveDependencies(meta)
-            .then(function () {
-            console.log('Calling AST completions with: ');
-            console.log('position: ', JSON.stringify(position, null, '\t'));
-            console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'));
-            console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n');
-            return _this.provideCompletionItemsFromAst(src, position, filePath, resolver, meta, currentLine, cursorLineIndex);
-        });
+        console.log('Calling AST completions with: ');
+        console.log('position: ', JSON.stringify(position, null, '\t'));
+        console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'));
+        console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n');
+        return this.provideCompletionItemsFromAst(src, position, filePath, meta, currentLine, cursorLineIndex);
+        // return resolver.resolveDependencies(meta)
+        //     .then<Completion[]>(() => {
+        //         console.log('Calling AST completions with: ')
+        //         console.log('position: ', JSON.stringify(position, null, '\t'))
+        //         console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
+        //         console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n')
+        //         return this.provideCompletionItemsFromAst(src, position, filePath, resolver, meta, currentLine, cursorLineIndex)
+        //     });
     };
-    Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, resolver, meta, currentLine, cursorLineIndex) {
+    Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, meta, currentLine, cursorLineIndex) {
+        var _this = this;
         console.log('Starting provideCompletionItemsFromAst');
         debugger;
         var completions = [];
@@ -200,27 +192,27 @@ var Provider = (function () {
         var lastChar = src.charAt(posInSrc);
         var lastPart = path[path.length - 1];
         var prevPart = path[path.length - 2];
-        var lastSelector = prevPart && postcss_ast_utils_1.isSelector(prevPart) ? prevPart :
-            lastPart && postcss_ast_utils_1.isSelector(lastPart) ? lastPart : null;
+        var lastSelector = prevPart && postcss_ast_utils_1.isSelector(prevPart) ? prevPart : lastPart && postcss_ast_utils_1.isSelector(lastPart) ? lastPart : null;
         if (lastSelector) {
+            var lastRule = lastSelector;
             if (lastChar === '-' || isSpacy(lastChar) || lastChar == "{") {
-                if (lastSelector.selector === ':import') {
+                if (lastRule.selector === ':import') {
                     completions.push.apply(completions, getNewCompletions({
                         "-st-from": fromDirective,
                         "-st-default": defaultDirective,
                         "-st-named": namedDirective
-                    }, lastSelector));
+                    }, lastRule));
                 }
                 else {
                     var declarationBlockDirectives = {
                         '-st-mixin': mixinDirective
                     };
-                    if (isSimple(lastSelector.selector)) {
+                    if (lastRule.isSimpleSelector) {
                         declarationBlockDirectives["-st-extends"] = extendsDirective;
                         declarationBlockDirectives["-st-variant"] = variantDirective;
                         declarationBlockDirectives["-st-states"] = statesDirective;
                     }
-                    completions.push.apply(completions, getNewCompletions(declarationBlockDirectives, lastSelector));
+                    completions.push.apply(completions, getNewCompletions(declarationBlockDirectives, lastRule));
                 }
             }
             else if (meta && lastChar == ":" && trimmedLine.split(':').length === 2) {
@@ -251,16 +243,27 @@ var Provider = (function () {
             if (!Array.isArray(focusChunk_1) && selector_analyzer_1.isSelectorChunk(focusChunk_1)) {
                 focusChunk_1.classes.forEach(function (className) {
                     console.log('className: ', className);
-                    var clsDef = get_definitions_1.getDefinition(meta, className, resolver);
-                    if (get_definitions_1.isClassDefinition(clsDef)) {
-                        clsDef.states.forEach(function (stateDef) {
-                            if (focusChunk_1.states.indexOf(stateDef.name) !== -1) {
-                                return;
-                            }
-                            // const from = 'from: ' + stateDef.from;
-                            completions.push(stateCompletion(stateDef.name, stateDef.from, position));
-                        });
-                    }
+                    // const clsDef = getDefinition(meta, className, this.resolver)
+                    // if (isClassDefinition(clsDef)) {
+                    //     clsDef.states.forEach((stateDef) => {
+                    //         if (focusChunk.states.indexOf(stateDef.name) !== -1) { return }
+                    //         // const from = 'from: ' + stateDef.from;
+                    //         completions.push(stateCompletion(stateDef.name, stateDef.from, position))
+                    //     })
+                    // }
+                    var extendResolution = _this.resolver.resolveExtends(meta, className);
+                    var states = [];
+                    extendResolution.forEach(function (s) {
+                        if (s.symbol._kind === 'class') {
+                            states.push.apply(states, s.symbol[stylable_1.valueMapping.states].map(function (name) { return ({ name: name, from: s.meta.source }); }));
+                        }
+                    });
+                    states.forEach(function (stateDef) {
+                        if (focusChunk_1.states.indexOf(stateDef.name) !== -1) {
+                            return;
+                        }
+                        completions.push(stateCompletion(stateDef.name, stateDef.from, position));
+                    });
                 });
             }
         }

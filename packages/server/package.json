@@ -15,7 +15,7 @@
     "compile": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc -p .",
     "watch": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc --watch -p .",
     "build": "tsc -d",
-    "copy:cases": "cp -r test/cases/ ../client/server/test/cases/",
+    "copy:cases": "ncp test/cases/ ../client/server/test/cases/",
     "pretest": "yarn clear && yarn build && yarn copy:cases",
     "test": "mocha  --reporter mocha-env-reporter ../client/server/test/**/*.spec.js",
     "start": "yarn clear && yarn build && yarn copy:cases && yarn compile"
@@ -33,6 +33,7 @@
     "mocha": "~3.4.2",
     "mocha-env-reporter": "~2.0.4",
     "mocha-loader": "~1.1.1",
+    "ncp": "^2.0.0",
     "rimraf": "~2.6.1",
     "sinon": "~2.3.5",
     "sinon-chai": "~2.12.0",

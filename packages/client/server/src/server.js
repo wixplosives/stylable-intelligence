@@ -3,11 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var vscode_languageserver_1 = require("vscode-languageserver");
 var vscode_resolver_1 = require("./adapters/vscode-resolver");
 var provider_1 = require("./provider");
-var connection = vscode_languageserver_1.createConnection(new vscode_languageserver_1.IPCMessageReader(process), new vscode_languageserver_1.IPCMessageWriter(process));
 var workspaceRoot;
-var provider = new provider_1.default();
+var connection = vscode_languageserver_1.createConnection(new vscode_languageserver_1.IPCMessageReader(process), new vscode_languageserver_1.IPCMessageWriter(process));
 var documents = new vscode_languageserver_1.TextDocuments();
 var resolver = new vscode_resolver_1.VsCodeResolver(documents);
+var provider = new provider_1.default(resolver);
 // namespace OpenDocNotification {
 // 	export const type = new NotificationType<string, void>('stylable/openDocument');
 // }
@@ -29,7 +29,7 @@ connection.onCompletion(function (params) {
     console.log('Looking for file');
     var doc = documents.get(params.textDocument.uri).getText();
     var pos = params.position;
-    return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, resolver)
+    return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
         .then(function (res) {
         console.log('Received Completions in server:');
         return res.map(function (com) {
