@@ -1,14 +1,10 @@
 "use strict";
 //must remain independent from vscode
 Object.defineProperty(exports, "__esModule", { value: true });
-var PostCss = require("postcss");
 var stylable_1 = require("stylable");
-var PostCssNested = require('postcss-nested');
-var PostCssSafe = require('postcss-safe-parser');
 var get_definitions_1 = require("./utils/get-definitions");
 var postcss_ast_utils_1 = require("./utils/postcss-ast-utils");
 var selector_analyzer_1 = require("./utils/selector-analyzer");
-var processor = PostCss([PostCssNested]);
 var ProviderPosition = (function () {
     function ProviderPosition(line, character) {
         this.line = line;
@@ -93,10 +89,10 @@ function extendCompletion(symbolName, range) {
 function stateCompletion(stateName, from, pos) {
     return new Completion(':' + stateName, 'from: ' + from, 'a', new snippet(':' + stateName), singleLineRange(pos.line, pos.character - 1, pos.character));
 }
-function addExistingClasses(stylesheet, completions) {
-    if (stylesheet == undefined)
+function addExistingClasses(meta, completions) {
+    if (meta == undefined)
         return;
-    Object.keys(stylesheet.classes).forEach(function (className) {
+    Object.keys(meta.classes).forEach(function (className) {
         if (className === 'root') {
             return;
         }
@@ -126,7 +122,7 @@ function isSpacy(char) {
 var Provider = (function () {
     function Provider() {
     }
-    Provider.prototype.getClassDefinition = function (stylesheet, symbol, resolver) {
+    Provider.prototype.getClassDefinition = function (meta, symbol, resolver) {
         // const symbols = resolver.resolveSymbols(stylesheet);
     };
     Provider.prototype.provideCompletionItemsFromSrc = function (src, position, filePath, resolver) {
@@ -163,39 +159,34 @@ var Provider = (function () {
         }
         console.log('Made fixedSrc');
         console.log(fixedSrc);
-        var ast;
+        var meta;
         try {
-            var res = processor.process(fixedSrc, {
-                parser: PostCssSafe
-            });
-            ast = res.root;
+            meta = stylable_1.process(stylable_1.safeParse(fixedSrc));
         }
         catch (error) {
             console.log(error);
             return Promise.resolve([]);
         }
         console.log('PostCSS successful');
-        var stylesheet = undefined;
-        console.log('Transpiling Stylesheet');
-        try {
-            stylesheet = stylable_1.fromCSS(fixedSrc, undefined, filePath);
-            console.log('Transpiling Stylesheet success');
-        }
-        catch (error) {
-            console.log('Transpiling Stylesheet fail');
-            console.error('stylable transpiling failed');
-        }
+        // console.log('Transpiling Stylesheet');
+        // try {
+        //     stylesheet = fromCSS(fixedSrc, undefined, filePath);
+        //     console.log('Transpiling Stylesheet success');
+        // } catch (error) {
+        //     console.log('Transpiling Stylesheet fail');
+        //     console.error('stylable transpiling failed');
+        // }
         console.log('Calling resolveDependencies');
-        return resolver.resolveDependencies(stylesheet)
+        return resolver.resolveDependencies(meta)
             .then(function () {
             console.log('Calling AST completions with: ');
             console.log('position: ', JSON.stringify(position, null, '\t'));
             console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'));
             console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n');
-            return _this.provideCompletionItemsFromAst(src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex);
+            return _this.provideCompletionItemsFromAst(src, position, filePath, resolver, meta, currentLine, cursorLineIndex);
         });
     };
-    Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, resolver, ast, stylesheet, currentLine, cursorLineIndex) {
+    Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, resolver, meta, currentLine, cursorLineIndex) {
         console.log('Starting provideCompletionItemsFromAst');
         debugger;
         var completions = [];
@@ -204,7 +195,7 @@ var Provider = (function () {
             line: position.line + 1,
             character: position.character
         };
-        var path = postcss_ast_utils_1.pathFromPosition(ast, position1Based);
+        var path = postcss_ast_utils_1.pathFromPosition(meta.ast, position1Based);
         var posInSrc = postcss_ast_utils_1.getPositionInSrc(src, position);
         var lastChar = src.charAt(posInSrc);
         var lastPart = path[path.length - 1];
@@ -232,9 +223,9 @@ var Provider = (function () {
                     completions.push.apply(completions, getNewCompletions(declarationBlockDirectives, lastSelector));
                 }
             }
-            else if (stylesheet && lastChar == ":" && trimmedLine.split(':').length === 2) {
+            else if (meta && lastChar == ":" && trimmedLine.split(':').length === 2) {
                 if (trimmedLine.indexOf('-st-extends:') === 0) {
-                    stylesheet.imports.forEach(function (importJson) {
+                    meta.imports.forEach(function (importJson) {
                         if (importJson.from.lastIndexOf('.css') === importJson.from.length - 4 && importJson.defaultExport) {
                             completions.push(extendCompletion(importJson.defaultExport));
                         }
@@ -251,16 +242,16 @@ var Provider = (function () {
             }
             if (lastChar === '.' || isSpacy(lastChar)) {
                 completions.push(rootClass);
-                addExistingClasses(stylesheet, completions);
+                addExistingClasses(meta, completions);
             }
         }
-        else if (lastChar === ':' && stylesheet !== undefined) {
+        else if (lastChar === ':' && meta !== undefined) {
             var selectorRes = selector_analyzer_1.parseSelector(currentLine, cursorLineIndex); //position.character);
             var focusChunk_1 = selectorRes.target.focusChunk;
             if (!Array.isArray(focusChunk_1) && selector_analyzer_1.isSelectorChunk(focusChunk_1)) {
                 focusChunk_1.classes.forEach(function (className) {
                     console.log('className: ', className);
-                    var clsDef = get_definitions_1.getDefinition(stylesheet, className, resolver);
+                    var clsDef = get_definitions_1.getDefinition(meta, className, resolver);
                     if (get_definitions_1.isClassDefinition(clsDef)) {
                         clsDef.states.forEach(function (stateDef) {
                             if (focusChunk_1.states.indexOf(stateDef.name) !== -1) {

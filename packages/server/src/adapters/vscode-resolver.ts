@@ -1,7 +1,7 @@
 'use strict';
 import { TextDocument } from 'vscode-languageserver';
 import  { ExtendedResolver, FsEntity } from '../provider';
-import { Resolver, Stylesheet, fromCSS } from 'stylable';
+import { StylableMeta, createGenerator, createMinimalFS } from 'stylable';
 import * as _ from 'lodash';
 import path = require('path');
 
@@ -10,6 +10,7 @@ import path = require('path');
 export class VsCodeResolver extends Resolver implements ExtendedResolver {
     constructor(private docs: {get: (uri: string) => TextDocument, keys: () => string[]}) {
         super({});
+        const gen = createGenerator(createMinimalFS({files: {}}).fs)
     }
 
     st: Stylesheet;
@@ -20,15 +21,9 @@ export class VsCodeResolver extends Resolver implements ExtendedResolver {
         return super.resolveModule(globalPath);
     }
 
-    resolveDependencies(stylesheet: Stylesheet): Thenable<void> {
-        console.log('Starting resolveDependencies');
-        stylesheet.imports.map((importNode) => {
-            console.log('stylesheet.source: ', stylesheet.source)
-            console.log('importNode.from: ', importNode.from)
-            console.log('parsedPath: ', JSON.stringify(path.parse(stylesheet.source)))
-            const globalPath: string = path.parse(stylesheet.source).dir + importNode.from.slice(1);
-            console.log('globalPath: ', globalPath);
-            console.log('docs:', this.docs.keys());
+    resolveDependencies(meta: StylableMeta): Thenable<void> {
+        meta.imports.map((importNode) => {
+            const globalPath: string = path.parse(meta.source).dir + importNode.from.slice(1);
 
             const txt = this.docs.get(globalPath).getText();
 

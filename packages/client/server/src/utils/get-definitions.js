@@ -12,33 +12,33 @@ function isStateDefinition(definition) {
     return definition && definition.type === 'state';
 }
 exports.isStateDefinition = isStateDefinition;
-function getDefinition(stylesheet, symbolName, resolver) {
-    if (stylesheet.typedClasses[symbolName]) {
-        return getClassDefinition(stylesheet, symbolName, resolver);
+function getDefinition(meta, symbolName, resolver) {
+    if (meta.classes[symbolName]) {
+        return getClassDefinition(meta, symbolName, resolver);
     }
     return null;
 }
 exports.getDefinition = getDefinition;
-function getClassDefinition(stylesheet, symbolName, resolver) {
+function getClassDefinition(meta, symbolName, resolver) {
     debugger;
     console.log('symbolname', symbolName);
-    console.log('stylesheet', JSON.stringify(stylesheet));
+    console.log('stylesheet', JSON.stringify(meta));
     var states = [];
-    if (stylesheet.typedClasses[symbolName]["-st-states"]) {
-        stylesheet.typedClasses[symbolName]["-st-states"].map(function (state) {
+    if (meta.classes[symbolName]["-st-states"]) {
+        meta.classes[symbolName]["-st-states"].map(function (state) {
             states.push({
                 name: state,
                 export: symbolName,
-                from: stylesheet.source,
+                from: meta.source,
                 type: 'state'
             });
         });
     }
-    var type = stylesheet.typedClasses[symbolName]["-st-extends"];
+    var type = meta.classes[symbolName]["-st-extends"] ? meta.classes[symbolName]["-st-extends"].name : undefined;
     console.log('type', type);
     if (type) {
-        console.log(JSON.stringify(stylesheet));
-        var symbols = resolver.resolveSymbols(stylesheet);
+        console.log(JSON.stringify(meta));
+        var symbols = resolver.resolveSymbols(meta);
         console.log('symbols', JSON.stringify(symbols));
         if (symbols[type]) {
             console.log('calling internal');

@@ -9,7 +9,7 @@ import {
     IPCMessageWriter,
     TextDocuments,
     TextEdit,
-    NotificationType
+    // NotificationType
 } from 'vscode-languageserver';
 
 import { VsCodeResolver } from './adapters/vscode-resolver';
@@ -19,11 +19,13 @@ let connection: IConnection = createConnection(new IPCMessageReader(process), ne
 let workspaceRoot: string;
 const provider = new Provider();
 let documents: TextDocuments = new TextDocuments();
+
+
 const resolver = new VsCodeResolver(documents);
 
-namespace OpenDocNotification {
-	export const type = new NotificationType<string, void>('stylable/openDocument');
-}
+// namespace OpenDocNotification {
+// 	export const type = new NotificationType<string, void>('stylable/openDocument');
+// }
 
 
 documents.listen(connection);

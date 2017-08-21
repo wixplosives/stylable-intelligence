@@ -1,10 +1,7 @@
 //must remain independent from vscode
 
 import * as PostCss from 'postcss';
-import { Stylesheet, Resolver, fromCSS } from 'stylable';
-const PostCssNested = require('postcss-nested');
-const PostCssSafe = require('postcss-safe-parser');
-
+import { StylableMeta, process, safeParse } from 'stylable';
 import { getDefinition, isClassDefinition, SymbolDefinition } from "./utils/get-definitions";
 import { getPositionInSrc, isSelector, pathFromPosition } from "./utils/postcss-ast-utils";
 import {
@@ -13,7 +10,6 @@ import {
 } from './utils/selector-analyzer';
 
 
-const processor = PostCss([PostCssNested]);
 
 export class ProviderPosition {
     constructor(public line: number, public character: number) { }
@@ -89,10 +85,10 @@ function stateCompletion(stateName: string, from: string, pos: ProviderPosition)
 type CompletionMap = { [s: string]: Completion };
 
 
-function addExistingClasses(stylesheet: Stylesheet | undefined, completions: Completion[]) {
-    if (stylesheet == undefined)
+function addExistingClasses(meta: StylableMeta | undefined, completions: Completion[]) {
+    if (meta == undefined)
         return;
-    Object.keys(stylesheet.classes).forEach((className: string) => {
+    Object.keys(meta.classes).forEach((className: string) => {
         if (className === 'root') {
             return;
         }
@@ -135,7 +131,7 @@ export interface Dir extends FsEntity {
 }
 
 export interface ExtendedResolver extends Resolver {
-    resolveDependencies(stylesheet: Stylesheet): Thenable<void>;
+    resolveDependencies(meta: StylableMeta): Thenable<void>;
     getFolderContents(folderPath: string): Thenable<FsEntity[]>;
 }
 
@@ -144,7 +140,7 @@ function isSpacy(char: string) {
 }
 
 export default class Provider {
-    public getClassDefinition(stylesheet: Stylesheet, symbol: string, resolver: ExtendedResolver) {
+    public getClassDefinition(meta: StylableMeta, symbol: string, resolver: ExtendedResolver) {
         // const symbols = resolver.resolveSymbols(stylesheet);
 
     }
@@ -192,36 +188,32 @@ export default class Provider {
         console.log(fixedSrc);
 
 
-        let ast: PostCss.Root;
+        let meta: StylableMeta;
         try {
-            const res = processor.process(fixedSrc, {
-                parser: PostCssSafe
-            });
-            ast = res.root;
+            meta = process(safeParse(fixedSrc));
         } catch (error) {
             console.log(error);
             return Promise.resolve([]);
         }
         console.log('PostCSS successful');
 
-        let stylesheet: Stylesheet | undefined = undefined;
-        console.log('Transpiling Stylesheet');
-        try {
-            stylesheet = fromCSS(fixedSrc, undefined, filePath);
-            console.log('Transpiling Stylesheet success');
-        } catch (error) {
-            console.log('Transpiling Stylesheet fail');
-            console.error('stylable transpiling failed');
-        }
+        // console.log('Transpiling Stylesheet');
+        // try {
+        //     stylesheet = fromCSS(fixedSrc, undefined, filePath);
+        //     console.log('Transpiling Stylesheet success');
+        // } catch (error) {
+        //     console.log('Transpiling Stylesheet fail');
+        //     console.error('stylable transpiling failed');
+        // }
 
         console.log('Calling resolveDependencies');
-        return resolver.resolveDependencies(stylesheet!)
+        return resolver.resolveDependencies(meta)
             .then<Completion[]>(() => {
                 console.log('Calling AST completions with: ')
                 console.log('position: ', JSON.stringify(position, null, '\t'))
                 console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
                 console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n')
-                return this.provideCompletionItemsFromAst(src, position, filePath, resolver, ast, stylesheet!, currentLine, cursorLineIndex)
+                return this.provideCompletionItemsFromAst(src, position, filePath, resolver, meta, currentLine, cursorLineIndex)
             });
 
     }
@@ -230,8 +222,7 @@ export default class Provider {
         position: ProviderPosition,
         filePath: string,
         resolver: ExtendedResolver,
-        ast: PostCss.Root,
-        stylesheet: Stylesheet,
+        meta: StylableMeta,
         currentLine: string,
         cursorLineIndex: number
     ): Thenable<Completion[]> {
@@ -244,7 +235,7 @@ export default class Provider {
             line: position.line + 1,
             character: position.character
         }
-        const path = pathFromPosition(ast, position1Based);
+        const path = pathFromPosition(meta.ast, position1Based);
 
         const posInSrc = getPositionInSrc(src, position);
         const lastChar = src.charAt(posInSrc);
@@ -275,9 +266,9 @@ export default class Provider {
                     }
                     completions.push(...getNewCompletions(declarationBlockDirectives, lastSelector));
                 }
-            } else if (stylesheet && lastChar == ":" && trimmedLine.split(':').length === 2) {
+            } else if (meta && lastChar == ":" && trimmedLine.split(':').length === 2) {
                 if (trimmedLine.indexOf('-st-extends:') === 0) {
-                    stylesheet.imports.forEach((importJson) => {
+                    meta.imports.forEach((importJson) => {
                         if (importJson.from.lastIndexOf('.css') === importJson.from.length - 4 && importJson.defaultExport) {
                             completions.push(extendCompletion(importJson.defaultExport));
                         }
@@ -295,9 +286,9 @@ export default class Provider {
             }
             if (lastChar === '.' || isSpacy(lastChar)) {
                 completions.push(rootClass);
-                addExistingClasses(stylesheet, completions);
+                addExistingClasses(meta, completions);
             }
-        } else if (lastChar === ':' && stylesheet !== undefined) {
+        } else if (lastChar === ':' && meta !== undefined) {
 
             const selectorRes = parseSelector(currentLine, cursorLineIndex);//position.character);
             const focusChunk = selectorRes.target.focusChunk;
@@ -305,7 +296,7 @@ export default class Provider {
             if (!Array.isArray(focusChunk) && isSelectorChunk(focusChunk)) {// || isSelectorInternalChunk(focusChunk)
                 focusChunk.classes.forEach((className) => {
                     console.log('className: ', className)
-                    const clsDef = getDefinition(stylesheet, className, resolver)
+                    const clsDef = getDefinition(meta, className, resolver)
                     if (isClassDefinition(clsDef)) {
                         clsDef.states.forEach((stateDef) => {
                             if (focusChunk.states.indexOf(stateDef.name) !== -1) { return }

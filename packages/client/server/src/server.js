@@ -8,10 +8,9 @@ var workspaceRoot;
 var provider = new provider_1.default();
 var documents = new vscode_languageserver_1.TextDocuments();
 var resolver = new vscode_resolver_1.VsCodeResolver(documents);
-var OpenDocNotification;
-(function (OpenDocNotification) {
-    OpenDocNotification.type = new vscode_languageserver_1.NotificationType('stylable/openDocument');
-})(OpenDocNotification || (OpenDocNotification = {}));
+// namespace OpenDocNotification {
+// 	export const type = new NotificationType<string, void>('stylable/openDocument');
+// }
 documents.listen(connection);
 connection.onInitialize(function (params) {
     workspaceRoot = params.rootUri;
@@ -26,7 +25,7 @@ connection.onInitialize(function (params) {
 });
 connection.listen();
 connection.onCompletion(function (params) {
-    connection.sendNotification(OpenDocNotification.type, '/home/wix/projects/demo/test.css');
+    // connection.sendNotification(OpenDocNotification.type, '/home/wix/projects/demo/test.css');
     console.log('Looking for file');
     var doc = documents.get(params.textDocument.uri).getText();
     var pos = params.position;

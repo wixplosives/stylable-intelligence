@@ -9,6 +9,7 @@ var VsCodeResolver = (function (_super) {
     function VsCodeResolver(docs) {
         var _this = _super.call(this, {}) || this;
         _this.docs = docs;
+        stylable_1.createGenerator();
         return _this;
     }
     VsCodeResolver.prototype.resolveModule = function (filePath) {
@@ -17,19 +18,13 @@ var VsCodeResolver = (function (_super) {
         this.add(globalPath, this.docs.get(globalPath).getText());
         return _super.prototype.resolveModule.call(this, globalPath);
     };
-    VsCodeResolver.prototype.resolveDependencies = function (stylesheet) {
+    VsCodeResolver.prototype.resolveDependencies = function (meta) {
         var _this = this;
-        console.log('Starting resolveDependencies');
-        stylesheet.imports.map(function (importNode) {
-            console.log('stylesheet.source: ', stylesheet.source);
-            console.log('importNode.from: ', importNode.from);
-            console.log('parsedPath: ', JSON.stringify(path.parse(stylesheet.source)));
-            var globalPath = path.parse(stylesheet.source).dir + importNode.from.slice(1);
-            console.log('globalPath: ', globalPath);
-            console.log('docs:', _this.docs.keys());
+        meta.imports.map(function (importNode) {
+            var globalPath = path.parse(meta.source).dir + importNode.from.slice(1);
             var txt = _this.docs.get(globalPath).getText();
             if (_.endsWith(importNode.from, '.css')) {
-                _this.add(globalPath, stylable_1.fromCSS(txt));
+                _this.add(globalPath, fromCSS(txt));
             }
         });
         return Promise.resolve();
@@ -44,6 +39,6 @@ var VsCodeResolver = (function (_super) {
         return Promise.resolve(res);
     };
     return VsCodeResolver;
-}(stylable_1.Resolver));
+}(Resolver));
 exports.VsCodeResolver = VsCodeResolver;
 //# sourceMappingURL=vscode-resolver.js.map
