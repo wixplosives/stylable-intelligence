@@ -85,7 +85,6 @@ function fileNameCompletion(name: string) {
 
 type CompletionMap = { [s: string]: Completion };
 
-
 function addExistingClasses(meta: StylableMeta | undefined, completions: Completion[]) {
     if (meta == undefined)
         return;
@@ -156,10 +155,9 @@ export default class Provider {
             fixedSrc = lines.join('\n');
         }
 
-        console.log('Made fixedSrc');
-        console.log(fixedSrc);
+        // console.log('Made fixedSrc');
+        // console.log(fixedSrc);
 
-        debugger;
         let meta: StylableMeta;
         try {
             meta = process(safeParse(fixedSrc, { from: filePath.slice(7) }));
@@ -167,23 +165,11 @@ export default class Provider {
             console.log(error);
             return Promise.resolve([]);
         }
-        console.log('PostCSS successful');
-
-        // console.log('Transpiling Stylesheet');
-        // try {
-        //     stylesheet = fromCSS(fixedSrc, undefined, filePath);
-        //     console.log('Transpiling Stylesheet success');
-        // } catch (error) {
-        //     console.log('Transpiling Stylesheet fail');
-        //     console.error('stylable transpiling failed');
-        // }
-
-        console.log('Calling resolveDependencies');
-        // debugger;
-        console.log('Calling AST completions with: ')
-        console.log('position: ', JSON.stringify(position, null, '\t'))
-        console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
-        console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n')
+        // console.log('Calling resolveDependencies');
+        // console.log('Calling AST completions with: ')
+        // console.log('position: ', JSON.stringify(position, null, '\t'))
+        // console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
+        // console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n')
         return this.provideCompletionItemsFromAst(src, position, filePath, meta, currentLine, cursorLineIndex);
 
 
@@ -276,15 +262,6 @@ export default class Provider {
             if (!Array.isArray(focusChunk) && isSelectorChunk(focusChunk)) {// || isSelectorInternalChunk(focusChunk)
                 focusChunk.classes.forEach((className) => {
                     console.log('className: ', className)
-
-                    // const clsDef = getDefinition(meta, className, this.resolver)
-                    // if (isClassDefinition(clsDef)) {
-                    //     clsDef.states.forEach((stateDef) => {
-                    //         if (focusChunk.states.indexOf(stateDef.name) !== -1) { return }
-                    //         // const from = 'from: ' + stateDef.from;
-                    //         completions.push(stateCompletion(stateDef.name, stateDef.from, position))
-                    //     })
-                    // }
 
                     const extendResolution = this.resolver.resolveExtends(meta, className);
 

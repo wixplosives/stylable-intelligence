@@ -112,7 +112,7 @@ describe.only('Imports', function () {
         });
     });
 
-    it('completes name imported as -st-default', function () {
+    it('completes default import in -st-extends', function () {
         return asserters.getCompletions('imports/st-extends.css', true).then((asserter) => {
             asserter.suggested([
                 asserters.extendsCompletion('Comp')
@@ -124,10 +124,10 @@ describe.only('Imports', function () {
         });
     });
 
-    it('completes name imported as -st-named', function () {
-        return asserters.getCompletions('imports/st-extends.css').then((asserter) => {
+    it.only('completes named import in -st-extends', function () {
+        return asserters.getCompletions('imports/st-extends.css', true).then((asserter) => {
             asserter.suggested([
-                asserters.extendsCompletion('Comp')
+                asserters.extendsCompletion('shlomo')
             ]);
             asserter.notSuggested([
                 asserters.importCompletion,
