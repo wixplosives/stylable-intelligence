@@ -193,7 +193,6 @@ var Provider = (function () {
         var lastPart = path[path.length - 1];
         var prevPart = path[path.length - 2];
         var lastSelector = prevPart && postcss_ast_utils_1.isSelector(prevPart) ? prevPart : lastPart && postcss_ast_utils_1.isSelector(lastPart) ? lastPart : null;
-        debugger;
         if (lastSelector) {
             var lastRule = lastSelector;
             if (lastChar === '-' || isSpacy(lastChar) || lastChar == "{") {

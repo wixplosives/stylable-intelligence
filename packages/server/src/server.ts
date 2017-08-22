@@ -83,6 +83,7 @@ documents.onDidChangeContent(function(change){
     connection.sendDiagnostics({uri: change.document.uri, diagnostics: diagnostics})
 })
 
+
 // function getRange(rng: ProviderRange | undefined): Range | undefined {
 //     if (!rng) {
 //         return;

@@ -220,7 +220,6 @@ export default class Provider {
         const prevPart: PostCss.NodeBase = path[path.length - 2];
 
         const lastSelector = prevPart && isSelector(prevPart) ? prevPart : lastPart && isSelector(lastPart) ? lastPart : null
-        debugger;
         if (lastSelector) {
             var lastRule = <SRule>lastSelector;
 
