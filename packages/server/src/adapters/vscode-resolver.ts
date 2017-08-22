@@ -4,7 +4,7 @@ import { StylableMeta, cachedProcessFile, StylableResolver, safeParse, process, 
 
 
 export class VsCodeResolver extends StylableResolver {
-    constructor(docs: { get: (uri: string) => TextDocument, keys: () => string[] }) {
+    constructor(public docs: { get: (uri: string) => TextDocument, keys: () => string[] }) {
 
         super(cachedProcessFile<StylableMeta>((fullpath, content) => {
             return process(safeParse(content, { from: fullpath }))

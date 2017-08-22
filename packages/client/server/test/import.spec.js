@@ -65,7 +65,7 @@ describe.only('Imports', function () {
             ]);
         });
     });
-    xit('should complete -st-from, -st-default, -st-named inside import statements', function () {
+    it('should complete -st-from, -st-default, -st-named inside import statements', function () {
         return asserters.getCompletions('imports/inside-import-selector.css').then(function (asserter) {
             asserter.suggested([
                 asserters.importFromDirectiveCompletion,
@@ -80,11 +80,10 @@ describe.only('Imports', function () {
             ]);
         });
     });
-    xit('should complete -st-from value from files in dir', function () {
-        return asserters.getCompletions("\n                :import{\n                    -st-from:|\n                }\n\n                ").then(function (asserter) {
+    it('should complete -st-from value from files in dir', function () {
+        return asserters.getCompletions('imports/st-from.css').then(function (asserter) {
             asserter.suggested([
-                asserters.filePathCompletion('file1'),
-                asserters.filePathCompletion('file2.css')
+                asserters.filePathCompletion('import-from-here.css')
             ]);
         });
     });

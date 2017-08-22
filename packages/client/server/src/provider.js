@@ -88,6 +88,9 @@ function extendCompletion(symbolName, range) {
 function stateCompletion(stateName, from, pos) {
     return new Completion(':' + stateName, 'from: ' + from, 'a', new snippet(':' + stateName), singleLineRange(pos.line, pos.character - 1, pos.character));
 }
+function fileNameCompletion(name) {
+    return new Completion(name, '', 'a', './' + name);
+}
 function addExistingClasses(meta, completions) {
     if (meta == undefined)
         return;
@@ -113,7 +116,7 @@ var Provider = (function () {
         // const symbols = resolver.resolveSymbols(stylesheet);
     };
     Provider.prototype.provideCompletionItemsFromSrc = function (src, position, filePath) {
-        // debugger;
+        debugger;
         var cursorLineIndex = position.character;
         var lines = src.split('\n');
         var currentLine = lines[position.line];
@@ -147,7 +150,7 @@ var Provider = (function () {
         console.log(fixedSrc);
         var meta;
         try {
-            meta = stylable_1.process(stylable_1.safeParse(fixedSrc));
+            meta = stylable_1.process(stylable_1.safeParse(fixedSrc, { from: filePath }));
         }
         catch (error) {
             console.log(error);
@@ -187,13 +190,13 @@ var Provider = (function () {
             line: position.line + 1,
             character: position.character
         };
-        var path = postcss_ast_utils_1.pathFromPosition(meta.ast, position1Based);
+        debugger;
+        var path = postcss_ast_utils_1.pathFromPosition(meta.rawAst, position1Based);
         var posInSrc = postcss_ast_utils_1.getPositionInSrc(src, position);
         var lastChar = src.charAt(posInSrc);
         var lastPart = path[path.length - 1];
         var prevPart = path[path.length - 2];
         var lastSelector = prevPart && postcss_ast_utils_1.isSelector(prevPart) ? prevPart : lastPart && postcss_ast_utils_1.isSelector(lastPart) ? lastPart : null;
-        debugger;
         if (lastSelector) {
             var lastRule = lastSelector;
             if (lastChar === '-' || isSpacy(lastChar) || lastChar == "{") {
@@ -225,7 +228,7 @@ var Provider = (function () {
                     });
                 }
                 else if (trimmedLine.indexOf('-st-from:') === 0) {
-                    // debugger;
+                    this.resolver.docs.keys().forEach(function (k) { return completions.push(fileNameCompletion(k)); });
                 }
             }
         }

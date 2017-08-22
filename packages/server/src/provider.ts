@@ -77,6 +77,9 @@ function extendCompletion(symbolName: string, range?: ProviderRange) {
 function stateCompletion(stateName: string, from: string, pos: ProviderPosition) {
     return new Completion(':' + stateName, 'from: ' + from, 'a', new snippet(':' + stateName), singleLineRange(pos.line, pos.character - 1, pos.character));
 }
+function fileNameCompletion(name: string) {
+    return new Completion(name, '', 'a', './' + name);
+}
 // end completions
 
 
@@ -122,7 +125,7 @@ export default class Provider {
         filePath: string,
     ): Thenable<Completion[]> {
 
-        // debugger;
+        debugger;
         let cursorLineIndex: number = position.character;
         let lines = src.split('\n');
         let currentLine = lines[position.line];
@@ -148,7 +151,7 @@ export default class Provider {
             }
 
         }
-        else if (isIllegalLine(currentLine)) {
+        else if (isIllegalLine(currentLine)) {  // isIllegalLine("") = true.
             lines.splice(position.line, 1, "");
             fixedSrc = lines.join('\n');
         }
@@ -158,9 +161,10 @@ export default class Provider {
         console.log(fixedSrc);
 
 
+
         let meta: StylableMeta;
         try {
-            meta = process(safeParse(fixedSrc));
+            meta = process(safeParse(fixedSrc, { from: filePath }));
         } catch (error) {
             console.log(error);
             return Promise.resolve([]);
@@ -204,6 +208,7 @@ export default class Provider {
         cursorLineIndex: number
     ): Thenable<Completion[]> {
         console.log('Starting provideCompletionItemsFromAst')
+
         const completions: Completion[] = [];
         const trimmedLine = currentLine.trim();
 
@@ -212,7 +217,8 @@ export default class Provider {
             character: position.character
         }
 
-        const path = pathFromPosition(meta.ast, position1Based);
+        debugger;
+        const path = pathFromPosition(meta.rawAst, position1Based);
 
         const posInSrc = getPositionInSrc(src, position);
         const lastChar = src.charAt(posInSrc);
@@ -220,7 +226,6 @@ export default class Provider {
         const prevPart: PostCss.NodeBase = path[path.length - 2];
 
         const lastSelector = prevPart && isSelector(prevPart) ? prevPart : lastPart && isSelector(lastPart) ? lastPart : null
-        debugger;
         if (lastSelector) {
             var lastRule = <SRule>lastSelector;
 
@@ -251,7 +256,7 @@ export default class Provider {
                         }
                     });
                 } else if (trimmedLine.indexOf('-st-from:') === 0) {
-                    // debugger;
+                    this.resolver.docs.keys().forEach(k => completions.push(fileNameCompletion(k)))
                 }
 
             }
