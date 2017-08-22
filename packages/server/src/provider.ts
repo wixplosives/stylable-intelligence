@@ -77,6 +77,9 @@ function extendCompletion(symbolName: string, range?: ProviderRange) {
 function stateCompletion(stateName: string, from: string, pos: ProviderPosition) {
     return new Completion(':' + stateName, 'from: ' + from, 'a', new snippet(':' + stateName), singleLineRange(pos.line, pos.character - 1, pos.character));
 }
+function fileNameCompletion(name: string) {
+    return new Completion(name, '', 'a', './' + name);
+}
 // end completions
 
 
@@ -153,14 +156,13 @@ export default class Provider {
             fixedSrc = lines.join('\n');
         }
 
-
         console.log('Made fixedSrc');
         console.log(fixedSrc);
 
-
+        debugger;
         let meta: StylableMeta;
         try {
-            meta = process(safeParse(fixedSrc));
+            meta = process(safeParse(fixedSrc, { from: filePath.slice(7) }));
         } catch (error) {
             console.log(error);
             return Promise.resolve([]);
@@ -204,6 +206,7 @@ export default class Provider {
         cursorLineIndex: number
     ): Thenable<Completion[]> {
         console.log('Starting provideCompletionItemsFromAst')
+
         const completions: Completion[] = [];
         const trimmedLine = currentLine.trim();
 
@@ -212,7 +215,8 @@ export default class Provider {
             character: position.character
         }
 
-        const path = pathFromPosition(meta.ast, position1Based);
+        debugger;
+        const path = pathFromPosition(meta.rawAst, position1Based);
 
         const posInSrc = getPositionInSrc(src, position);
         const lastChar = src.charAt(posInSrc);
@@ -250,7 +254,7 @@ export default class Provider {
                         }
                     });
                 } else if (trimmedLine.indexOf('-st-from:') === 0) {
-                    // debugger;
+                    this.resolver.docs.keys().forEach(k => completions.push(fileNameCompletion(k)))
                 }
 
             }

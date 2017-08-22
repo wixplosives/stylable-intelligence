@@ -2,12 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var stylable_1 = require("stylable");
-// import * as _ from 'lodash';
-// import path = require('path');
 var VsCodeResolver = (function (_super) {
     tslib_1.__extends(VsCodeResolver, _super);
     function VsCodeResolver(docs) {
-        return _super.call(this, stylable_1.cachedProcessFile(function (fullpath, content) {
+        var _this = _super.call(this, stylable_1.cachedProcessFile(function (fullpath, content) {
             return stylable_1.process(stylable_1.safeParse(content, { from: fullpath }));
         }, {
             readFileSync: function (path) {
@@ -21,6 +19,8 @@ var VsCodeResolver = (function (_super) {
                 };
             }
         }), function () { }) || this;
+        _this.docs = docs;
+        return _this;
     }
     VsCodeResolver.prototype.resolveExtends = function (meta, className) {
         var extendPath = [];

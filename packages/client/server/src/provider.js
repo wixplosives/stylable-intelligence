@@ -88,6 +88,9 @@ function extendCompletion(symbolName, range) {
 function stateCompletion(stateName, from, pos) {
     return new Completion(':' + stateName, 'from: ' + from, 'a', new snippet(':' + stateName), singleLineRange(pos.line, pos.character - 1, pos.character));
 }
+function fileNameCompletion(name) {
+    return new Completion(name, '', 'a', './' + name);
+}
 function addExistingClasses(meta, completions) {
     if (meta == undefined)
         return;
@@ -145,9 +148,10 @@ var Provider = (function () {
         }
         console.log('Made fixedSrc');
         console.log(fixedSrc);
+        debugger;
         var meta;
         try {
-            meta = stylable_1.process(stylable_1.safeParse(fixedSrc));
+            meta = stylable_1.process(stylable_1.safeParse(fixedSrc, { from: filePath.slice(7) }));
         }
         catch (error) {
             console.log(error);
@@ -187,7 +191,8 @@ var Provider = (function () {
             line: position.line + 1,
             character: position.character
         };
-        var path = postcss_ast_utils_1.pathFromPosition(meta.ast, position1Based);
+        debugger;
+        var path = postcss_ast_utils_1.pathFromPosition(meta.rawAst, position1Based);
         var posInSrc = postcss_ast_utils_1.getPositionInSrc(src, position);
         var lastChar = src.charAt(posInSrc);
         var lastPart = path[path.length - 1];
@@ -224,7 +229,7 @@ var Provider = (function () {
                     });
                 }
                 else if (trimmedLine.indexOf('-st-from:') === 0) {
-                    // debugger;
+                    this.resolver.docs.keys().forEach(function (k) { return completions.push(fileNameCompletion(k)); });
                 }
             }
         }
