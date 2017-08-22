@@ -148,9 +148,10 @@ var Provider = (function () {
         }
         // console.log('Made fixedSrc');
         // console.log(fixedSrc);
+        debugger;
         var meta;
         try {
-            meta = stylable_1.process(stylable_1.safeParse(fixedSrc, { from: filePath.slice(7) }));
+            meta = stylable_1.process(stylable_1.safeParse(fixedSrc, { from: filePath.indexOf('file://') === 0 ? filePath.slice(7) : filePath }));
         }
         catch (error) {
             console.log(error);
@@ -180,7 +181,6 @@ var Provider = (function () {
             line: position.line + 1,
             character: position.character
         };
-        debugger;
         var path = postcss_ast_utils_1.pathFromPosition(meta.rawAst, position1Based);
         var posInSrc = postcss_ast_utils_1.getPositionInSrc(src, position);
         var lastChar = src.charAt(posInSrc);
@@ -211,16 +211,9 @@ var Provider = (function () {
             }
             else if (meta && lastChar == ":" && trimmedLine.split(':').length === 2) {
                 if (trimmedLine.indexOf('-st-extends:') === 0) {
-                    meta.imports.forEach(function (importJson) {
-                        if (importJson.from.lastIndexOf('.css') === importJson.from.length - 4) {
-                            if (importJson.defaultExport) {
-                                completions.push(extendCompletion(importJson.defaultExport));
-                            }
-                            if (importJson.named) {
-                                Object.keys(importJson.named).forEach(function (name) { return completions.push(extendCompletion(name)); });
-                            }
-                        }
-                    });
+                    Object.keys(meta.mappedSymbols)
+                        .filter(function (k) { return meta.mappedSymbols[k]._kind === 'import'; })
+                        .forEach(function (name) { return completions.push(extendCompletion(name)); });
                 }
                 else if (trimmedLine.indexOf('-st-from:') === 0) {
                     this.resolver.docs.keys().forEach(function (k) { return completions.push(fileNameCompletion(k)); });
@@ -229,6 +222,7 @@ var Provider = (function () {
         }
         if (trimmedLine.length < 2) {
             if ((lastChar === ':' || isSpacy(lastChar)) && lastPart.type === 'root') {
+                this.resolver.deepResolve(meta.mappedSymbols.Comp);
                 completions.push(importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position)));
             }
             if (lastChar === '.' || isSpacy(lastChar)) {

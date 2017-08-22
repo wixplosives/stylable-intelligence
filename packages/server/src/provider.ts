@@ -157,10 +157,10 @@ export default class Provider {
 
         // console.log('Made fixedSrc');
         // console.log(fixedSrc);
-
+        //debugger;
         let meta: StylableMeta;
         try {
-            meta = process(safeParse(fixedSrc, { from: filePath.slice(7) }));
+            meta = process(safeParse(fixedSrc, { from: filePath.indexOf('file://') === 0 ? filePath.slice(7) : filePath }));
         } catch (error) {
             console.log(error);
             return Promise.resolve([]);
@@ -201,7 +201,6 @@ export default class Provider {
             character: position.character
         }
 
-        debugger;
         const path = pathFromPosition(meta.rawAst, position1Based);
 
         const posInSrc = getPositionInSrc(src, position);
@@ -234,16 +233,10 @@ export default class Provider {
                 }
             } else if (meta && lastChar == ":" && trimmedLine.split(':').length === 2) {
                 if (trimmedLine.indexOf('-st-extends:') === 0) {
-                    meta.imports.forEach((importJson) => {
-                        if (importJson.from.lastIndexOf('.css') === importJson.from.length - 4) {
-                            if (importJson.defaultExport) {
-                                completions.push(extendCompletion(importJson.defaultExport));
-                            }
-                            if (importJson.named) {
-                                Object.keys(importJson.named).forEach(name => completions.push(extendCompletion(name)))
-                            }
-                        }
-                    });
+                    Object.keys(meta.mappedSymbols)
+                        .filter(k => meta.mappedSymbols[k]._kind === 'import')
+                        .forEach(name => completions.push(extendCompletion(name)))
+
                 } else if (trimmedLine.indexOf('-st-from:') === 0) {
                     this.resolver.docs.keys().forEach(k => completions.push(fileNameCompletion(k)))
                 }
@@ -253,6 +246,7 @@ export default class Provider {
         if (trimmedLine.length < 2) {
 
             if ((lastChar === ':' || isSpacy(lastChar)) && (<PostCss.Root>lastPart).type === 'root') {
+                this.resolver.deepResolve(meta.mappedSymbols.Comp);
                 completions.push(importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position)));
             }
             if (lastChar === '.' || isSpacy(lastChar)) {

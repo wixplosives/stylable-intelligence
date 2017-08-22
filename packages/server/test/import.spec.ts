@@ -99,7 +99,6 @@ describe.only('Imports', function () {
 
     it('should not complete -st-from, -st-default, -st-named inside import statements when exists', function () {
         return asserters.getCompletions('imports/inside-import-selector-with-fields.css').then((asserter) => {
-
             asserter.notSuggested([
                 asserters.importFromDirectiveCompletion,
                 asserters.importDefaultDirectiveCompletion,
@@ -112,21 +111,10 @@ describe.only('Imports', function () {
         });
     });
 
-    it('completes default import in -st-extends', function () {
+    it('completes default and named imports in -st-extends', function () {
         return asserters.getCompletions('imports/st-extends.css', true).then((asserter) => {
             asserter.suggested([
-                asserters.extendsCompletion('Comp')
-            ]);
-            asserter.notSuggested([
-                asserters.importCompletion,
-                asserters.mixinDirectiveCompletion
-            ]);
-        });
-    });
-
-    it('completes named import in -st-extends', function () {
-        return asserters.getCompletions('imports/st-extends.css', true).then((asserter) => {
-            asserter.suggested([
+                asserters.extendsCompletion('Comp'),
                 asserters.extendsCompletion('shlomo')
             ]);
             asserter.notSuggested([
@@ -136,10 +124,24 @@ describe.only('Imports', function () {
         });
     });
 
-    it('completes name imported as default when a following ; exists', function () {
+    it('completes named and default imports when a following ; exists', function () {
         return asserters.getCompletions('imports/st-extends-with-semicolon.css').then((asserter) => {
             asserter.suggested([
-                asserters.extendsCompletion('Comp')
+                asserters.extendsCompletion('Comp'),
+                asserters.extendsCompletion('shlomo')
+            ]);
+            asserter.notSuggested([
+                asserters.importCompletion,
+                asserters.mixinDirectiveCompletion
+            ]);
+        });
+    });
+
+    it.only('completes default import as selector', function () {
+        return asserters.getCompletions('imports/st-extends-selectors.css', true).then((asserter) => {
+            asserter.suggested([
+                asserters.extendsCompletion('Comp'),
+                asserters.extendsCompletion('shlomo')
             ]);
             asserter.notSuggested([
                 asserters.importCompletion,

@@ -68,6 +68,7 @@ function completionsIntenal(fileName: string, src: string): Thenable<Completion[
 
     const resolver = new VsCodeResolver({
         get(uri: string): TextDocument {
+            debugger;
             return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri).toString())
         },
         keys(): string[] {

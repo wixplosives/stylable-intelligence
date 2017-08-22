@@ -60,6 +60,7 @@ function completionsIntenal(fileName, src) {
     src = src.replace('|', "");
     var resolver = new vscode_resolver_1.VsCodeResolver({
         get: function (uri) {
+            debugger;
             return vscode_languageserver_types_1.TextDocument.create(uri, 'css', 1, fs.readFileSync(uri).toString());
         },
         keys: function () {

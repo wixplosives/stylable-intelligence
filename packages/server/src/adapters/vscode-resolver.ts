@@ -10,11 +10,11 @@ export class VsCodeResolver extends StylableResolver {
             return process(safeParse(content, { from: fullpath }))
         }, {
                 readFileSync(path: string) {
-                    const doc = docs.get(path);
+                    const doc = docs.get('file://' + path);
                     return doc.getText()
                 },
                 statSync(path: string) {
-                    const doc = docs.get(path);
+                    const doc = docs.get('file://' + path);
                     return {
                         mtime: new Date(doc.version)
                     }

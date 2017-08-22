@@ -9,11 +9,11 @@ var VsCodeResolver = (function (_super) {
             return stylable_1.process(stylable_1.safeParse(content, { from: fullpath }));
         }, {
             readFileSync: function (path) {
-                var doc = docs.get(path);
+                var doc = docs.get('file://' + path);
                 return doc.getText();
             },
             statSync: function (path) {
-                var doc = docs.get(path);
+                var doc = docs.get('file://' + path);
                 return {
                     mtime: new Date(doc.version)
                 };
