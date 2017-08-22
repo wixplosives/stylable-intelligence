@@ -1,8 +1,6 @@
 'use strict';
 import { TextDocument } from 'vscode-languageserver';
 import { StylableMeta, cachedProcessFile, StylableResolver, safeParse, process, valueMapping, CSSResolve } from 'stylable';
-// import * as _ from 'lodash';
-// import path = require('path');
 
 
 export class VsCodeResolver extends StylableResolver {
@@ -21,7 +19,7 @@ export class VsCodeResolver extends StylableResolver {
                         mtime: new Date(doc.version)
                     }
                 }
-            }), () => {/* handle js imports */ });
+            }), () => {/* requireModule - handle js imports */ });
 
     }
 
