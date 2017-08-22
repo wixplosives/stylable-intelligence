@@ -73,6 +73,7 @@ describe.only('Imports', function () {
                 asserters.importNamedDirectiveCompletion
             ]);
             asserter.notSuggested([
+                asserters.importCompletion,
                 asserters.statesDirectiveCompletion,
                 asserters.extendsDirectiveCompletion,
                 asserters.variantDirectiveCompletion,
