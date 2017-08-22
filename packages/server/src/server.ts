@@ -11,10 +11,9 @@ import {
     TextEdit,
     // NotificationType
 } from 'vscode-languageserver';
-
 import { VsCodeResolver } from './adapters/vscode-resolver';
 import Provider, { Completion, ProviderPosition, ProviderRange } from './provider';
-
+import {createDiagnosis} from './diagnosis'
 let workspaceRoot: string;
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const documents: TextDocuments = new TextDocuments();
@@ -38,7 +37,8 @@ connection.onInitialize((params): InitializeResult => {
             textDocumentSync: documents.syncKind,
             completionProvider: {
                 triggerCharacters: ['.', '-', ':', '"']
-            }
+            },
+            codeActionProvider: true,
         }
     }
 });
@@ -76,6 +76,11 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
                 return vsCodeCompletion;
             })
         })
+})
+
+documents.onDidChangeContent(function(change){
+    let diagnostics = createDiagnosis(change.document);
+    connection.sendDiagnostics({uri: change.document.uri, diagnostics: diagnostics})
 })
 
 // function getRange(rng: ProviderRange | undefined): Range | undefined {

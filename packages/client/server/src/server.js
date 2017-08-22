@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var vscode_languageserver_1 = require("vscode-languageserver");
 var vscode_resolver_1 = require("./adapters/vscode-resolver");
 var provider_1 = require("./provider");
+var diagnosis_1 = require("./diagnosis");
 var workspaceRoot;
 var connection = vscode_languageserver_1.createConnection(new vscode_languageserver_1.IPCMessageReader(process), new vscode_languageserver_1.IPCMessageWriter(process));
 var documents = new vscode_languageserver_1.TextDocuments();
@@ -19,7 +20,8 @@ connection.onInitialize(function (params) {
             textDocumentSync: documents.syncKind,
             completionProvider: {
                 triggerCharacters: ['.', '-', ':', '"']
-            }
+            },
+            codeActionProvider: true,
         }
     };
 });
@@ -51,5 +53,9 @@ connection.onCompletion(function (params) {
             return vsCodeCompletion;
         });
     });
+});
+documents.onDidChangeContent(function (change) {
+    var diagnostics = diagnosis_1.createDiagnosis(change.document);
+    connection.sendDiagnostics({ uri: change.document.uri, diagnostics: diagnostics });
 });
 //# sourceMappingURL=server.js.map
