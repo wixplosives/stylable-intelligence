@@ -159,7 +159,6 @@ export default class Provider {
         console.log('Made fixedSrc');
         console.log(fixedSrc);
 
-        debugger;
         let meta: StylableMeta;
         try {
             meta = process(safeParse(fixedSrc, { from: filePath.slice(7) }));
@@ -215,7 +214,6 @@ export default class Provider {
             character: position.character
         }
 
-        debugger;
         const path = pathFromPosition(meta.rawAst, position1Based);
 
         const posInSrc = getPositionInSrc(src, position);
