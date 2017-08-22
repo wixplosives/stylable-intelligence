@@ -66,13 +66,12 @@ function completionsIntenal(fileName: string, src: string): Thenable<Completion[
 
     src = src.replace('|', "");
 
-    // const resolver = new TestResolver(new TextDocuments());
     const resolver = new VsCodeResolver({
         get(uri: string): TextDocument {
             return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri).toString())
         },
         keys(): string[] {
-            return [];
+            return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'))
         }
     });
 
@@ -94,7 +93,7 @@ export const variantDirectiveCompletion: Partial<Completion> = { label: '-st-var
 export const importFromDirectiveCompletion: Partial<Completion> = { label: '-st-from:', detail: 'Path to library', sortText: 'a', insertText: '-st-from: "$1";' };
 export const importDefaultDirectiveCompletion: Partial<Completion> = { label: '-st-default:', detail: 'Default object export name', sortText: 'a', insertText: '-st-default: $1;' };
 export const importNamedDirectiveCompletion: Partial<Completion> = { label: '-st-named:', detail: 'Named object export name', sortText: 'a', insertText: '-st-named: $1;' };
-export const filePathCompletion: (filePath: string) => Partial<Completion> = (filePath) => { return { label: filePath, sortText: 'a', insertText: './' + filePath } };
+export const filePathCompletion: (filePath: string) => Partial<Completion> = (filePath) => { return { label: filePath, insertText: './' + filePath } };
 export const classCompletion: (className: string) => Partial<Completion> = (className) => { return { label: '.' + className, sortText: 'b' } }
 export const stateCompletion: (stateName: string, from?: string) => Partial<Completion> = (stateName, from = 'projectRoot/main.css') => { return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + path.join(__dirname, '/../test/cases/', from), insertText: ':' + stateName } }
 export const extendsCompletion: (typeName: string, range?: ProviderRange) => Partial<Completion> = (typeName, range) => { return { label: typeName, sortText: 'a', insertText: ' ' + typeName + ';\n', range } };

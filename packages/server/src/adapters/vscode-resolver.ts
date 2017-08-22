@@ -1,12 +1,10 @@
 'use strict';
 import { TextDocument } from 'vscode-languageserver';
 import { StylableMeta, cachedProcessFile, StylableResolver, safeParse, process, valueMapping, CSSResolve } from 'stylable';
-// import * as _ from 'lodash';
-// import path = require('path');
 
 
 export class VsCodeResolver extends StylableResolver {
-    constructor(docs: { get: (uri: string) => TextDocument, keys: () => string[] }) {
+    constructor(public docs: { get: (uri: string) => TextDocument, keys: () => string[] }) {
 
         super(cachedProcessFile<StylableMeta>((fullpath, content) => {
             return process(safeParse(content, { from: fullpath }))
@@ -21,7 +19,7 @@ export class VsCodeResolver extends StylableResolver {
                         mtime: new Date(doc.version)
                     }
                 }
-            }), () => {/* handle js imports */ });
+            }), () => {/* requireModule - handle js imports */ });
 
     }
 

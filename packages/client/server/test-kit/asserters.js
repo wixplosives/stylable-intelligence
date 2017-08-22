@@ -58,13 +58,12 @@ function completionsIntenal(fileName, src) {
     var linesTillCaret = src.substr(0, caretPos).split('\n');
     var character = linesTillCaret[linesTillCaret.length - 1].length;
     src = src.replace('|', "");
-    // const resolver = new TestResolver(new TextDocuments());
     var resolver = new vscode_resolver_1.VsCodeResolver({
         get: function (uri) {
             return vscode_languageserver_types_1.TextDocument.create(uri, 'css', 1, fs.readFileSync(uri).toString());
         },
         keys: function () {
-            return [];
+            return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'));
         }
     });
     var provider = new provider_1.default(resolver);
@@ -83,7 +82,7 @@ exports.variantDirectiveCompletion = { label: '-st-variant:', detail: '', sortTe
 exports.importFromDirectiveCompletion = { label: '-st-from:', detail: 'Path to library', sortText: 'a', insertText: '-st-from: "$1";' };
 exports.importDefaultDirectiveCompletion = { label: '-st-default:', detail: 'Default object export name', sortText: 'a', insertText: '-st-default: $1;' };
 exports.importNamedDirectiveCompletion = { label: '-st-named:', detail: 'Named object export name', sortText: 'a', insertText: '-st-named: $1;' };
-exports.filePathCompletion = function (filePath) { return { label: filePath, sortText: 'a', insertText: './' + filePath }; };
+exports.filePathCompletion = function (filePath) { return { label: filePath, insertText: './' + filePath }; };
 exports.classCompletion = function (className) { return { label: '.' + className, sortText: 'b' }; };
 exports.stateCompletion = function (stateName, from) {
     if (from === void 0) { from = 'projectRoot/main.css'; }

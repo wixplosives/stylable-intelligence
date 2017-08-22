@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var asserters = require("../test-kit/asserters");
-describe('Imports', function () {
+describe.only('Imports', function () {
     it('should complete :import at top level after ""', function () {
         return asserters.getCompletions('imports/top-level-no-chars.css').then(function (asserter) {
             asserter.suggested([
@@ -65,7 +65,7 @@ describe('Imports', function () {
             ]);
         });
     });
-    xit('should complete -st-from, -st-default, -st-named inside import statements', function () {
+    it('should complete -st-from, -st-default, -st-named inside import statements', function () {
         return asserters.getCompletions('imports/inside-import-selector.css').then(function (asserter) {
             asserter.suggested([
                 asserters.importFromDirectiveCompletion,
@@ -73,6 +73,7 @@ describe('Imports', function () {
                 asserters.importNamedDirectiveCompletion
             ]);
             asserter.notSuggested([
+                asserters.importCompletion,
                 asserters.statesDirectiveCompletion,
                 asserters.extendsDirectiveCompletion,
                 asserters.variantDirectiveCompletion,
@@ -80,11 +81,10 @@ describe('Imports', function () {
             ]);
         });
     });
-    xit('should complete -st-from value from files in dir', function () {
-        return asserters.getCompletions("\n                :import{\n                    -st-from:|\n                }\n\n                ").then(function (asserter) {
+    it('should complete -st-from value from files in dir', function () {
+        return asserters.getCompletions('imports/st-from.css').then(function (asserter) {
             asserter.suggested([
-                asserters.filePathCompletion('file1'),
-                asserters.filePathCompletion('file2.css')
+                asserters.filePathCompletion('import-from-here.css')
             ]);
         });
     });
