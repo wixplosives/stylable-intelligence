@@ -27,7 +27,6 @@ const provider = new Provider(resolver);
 // 	export const type = new NotificationType<string, void>('stylable/openDocument');
 // }
 
-
 documents.listen(connection);
 
 connection.onInitialize((params): InitializeResult => {
@@ -39,6 +38,7 @@ connection.onInitialize((params): InitializeResult => {
             completionProvider: {
                 triggerCharacters: ['.', '-', ':', '"']
             }
+
         }
     }
 });
@@ -77,13 +77,3 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
             })
         })
 })
-
-// function getRange(rng: ProviderRange | undefined): Range | undefined {
-//     if (!rng) {
-//         return;
-//     }
-//     const r = Range.create(Position.create(rng.start.line, rng.start.character), Position.create(rng.end.line, rng.end.character));
-//     return r
-// }
-
-
