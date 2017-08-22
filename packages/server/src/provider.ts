@@ -125,7 +125,7 @@ export default class Provider {
         filePath: string,
     ): Thenable<Completion[]> {
 
-        debugger;
+        // debugger;
         let cursorLineIndex: number = position.character;
         let lines = src.split('\n');
         let currentLine = lines[position.line];
@@ -151,20 +151,18 @@ export default class Provider {
             }
 
         }
-        else if (isIllegalLine(currentLine)) {  // isIllegalLine("") = true.
+        else if (isIllegalLine(currentLine)) {
             lines.splice(position.line, 1, "");
             fixedSrc = lines.join('\n');
         }
 
-
         console.log('Made fixedSrc');
         console.log(fixedSrc);
 
-
-
+        debugger;
         let meta: StylableMeta;
         try {
-            meta = process(safeParse(fixedSrc, { from: filePath }));
+            meta = process(safeParse(fixedSrc, { from: filePath.slice(7) }));
         } catch (error) {
             console.log(error);
             return Promise.resolve([]);

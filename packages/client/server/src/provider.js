@@ -116,7 +116,7 @@ var Provider = (function () {
         // const symbols = resolver.resolveSymbols(stylesheet);
     };
     Provider.prototype.provideCompletionItemsFromSrc = function (src, position, filePath) {
-        debugger;
+        // debugger;
         var cursorLineIndex = position.character;
         var lines = src.split('\n');
         var currentLine = lines[position.line];
@@ -148,9 +148,10 @@ var Provider = (function () {
         }
         console.log('Made fixedSrc');
         console.log(fixedSrc);
+        debugger;
         var meta;
         try {
-            meta = stylable_1.process(stylable_1.safeParse(fixedSrc, { from: filePath }));
+            meta = stylable_1.process(stylable_1.safeParse(fixedSrc, { from: filePath.slice(7) }));
         }
         catch (error) {
             console.log(error);
