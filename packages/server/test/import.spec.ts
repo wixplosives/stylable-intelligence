@@ -124,7 +124,7 @@ describe.only('Imports', function () {
         });
     });
 
-    it.only('completes named import in -st-extends', function () {
+    it('completes named import in -st-extends', function () {
         return asserters.getCompletions('imports/st-extends.css', true).then((asserter) => {
             asserter.suggested([
                 asserters.extendsCompletion('shlomo')

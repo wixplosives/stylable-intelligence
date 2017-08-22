@@ -212,8 +212,13 @@ var Provider = (function () {
             else if (meta && lastChar == ":" && trimmedLine.split(':').length === 2) {
                 if (trimmedLine.indexOf('-st-extends:') === 0) {
                     meta.imports.forEach(function (importJson) {
-                        if (importJson.from.lastIndexOf('.css') === importJson.from.length - 4 && importJson.defaultExport) {
-                            completions.push(extendCompletion(importJson.defaultExport));
+                        if (importJson.from.lastIndexOf('.css') === importJson.from.length - 4) {
+                            if (importJson.defaultExport) {
+                                completions.push(extendCompletion(importJson.defaultExport));
+                            }
+                            if (importJson.named) {
+                                Object.keys(importJson.named).forEach(function (name) { return completions.push(extendCompletion(name)); });
+                            }
                         }
                     });
                 }
