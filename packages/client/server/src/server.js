@@ -29,7 +29,6 @@ connection.listen();
 connection.onCompletion(function (params) {
     // connection.sendNotification(OpenDocNotification.type, '/home/wix/projects/demo/test.css');
     console.log('Looking for file');
-    debugger;
     var doc = documents.get(params.textDocument.uri).getText();
     var pos = params.position;
     return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
