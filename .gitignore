@@ -35,6 +35,6 @@ node_modules
 # TypeScript target
 dist
 
-packages/client/server/**
+packages/client/server
 .idea
 .vscode-test
