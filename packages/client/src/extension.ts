@@ -26,6 +26,7 @@ export function activate(context: ExtensionContext) {
 
     let clientOptions: LanguageClientOptions = {
         documentSelector: ['css'],
+        diagnosticCollectionName: 'stylable'
     }
 
     let client = new LanguageClient('stylable', serverOptions, clientOptions);
@@ -44,6 +45,8 @@ export function activate(context: ExtensionContext) {
                 // debugger;
                 console.log(uri);
             })
+
+            return client
         })
 
 }
