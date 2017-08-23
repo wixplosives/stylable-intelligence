@@ -9,9 +9,6 @@ var connection = vscode_languageserver_1.createConnection(new vscode_languageser
 var documents = new vscode_languageserver_1.TextDocuments();
 var resolver = new vscode_resolver_1.VsCodeResolver(documents);
 var provider = new provider_1.default(resolver);
-// namespace OpenDocNotification {
-// 	export const type = new NotificationType<string, void>('stylable/openDocument');
-// }
 documents.listen(connection);
 connection.onInitialize(function (params) {
     workspaceRoot = params.rootUri;
@@ -20,8 +17,7 @@ connection.onInitialize(function (params) {
             textDocumentSync: documents.syncKind,
             completionProvider: {
                 triggerCharacters: ['.', '-', ':', '"']
-            },
-            codeActionProvider: true,
+            }
         }
     };
 });

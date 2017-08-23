@@ -12,8 +12,9 @@ function createDiagnosis(doc) {
 exports.createDiagnosis = createDiagnosis;
 //stylable diagnostic to vscode diagnostic
 function reportToDiagnostic(report) {
+    var severity = report.type === 'error' ? main_1.DiagnosticSeverity.Error : main_1.DiagnosticSeverity.Warning;
     var range = createRange(report.node.source);
-    return main_1.Diagnostic.create(range, report.message);
+    return main_1.Diagnostic.create(range, report.message, severity);
 }
 function createRange(source) {
     return main_1.Range.create({

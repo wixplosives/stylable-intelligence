@@ -6,12 +6,14 @@ describe('diagnostics', function () {
     it('should create basic diagnostics', function(){
         let textDoc = TextDocument.create('file://' , 'css', 0, '.gaga .root{}')
         let diagnostics = createDiagnosis(textDoc)
-        expect(diagnostics).to.deep.include({
+
+        return expect(diagnostics).to.deep.include({
             "range":{
                 "start":{"line":1, "character":1},
                 "end": {"line":1, "character":13}
             },
-            "message":".root class cannot be used after spacing"
+            "message":".root class cannot be used after spacing",
+            "severity":2
         })
     })
 })

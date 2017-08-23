@@ -19,9 +19,7 @@ suite('test diagnostics', function() {
                     extClient = client
                     return vscode.workspace.openTextDocument(casePath)
                 })
-                .then(function(doc) {
-                    return vscode.window.showTextDocument(doc)
-                })
+                .then((doc) => vscode.window.showTextDocument(doc))
                 .then(function(editor){
                     return assertDiagnosticExist(extClient, casePath, {
                         range:{

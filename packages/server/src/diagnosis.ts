@@ -1,4 +1,4 @@
-import { Diagnostic, Range } from 'vscode-languageserver-types/lib/main';
+import { Diagnostic, Range,DiagnosticSeverity } from 'vscode-languageserver-types/lib/main';
 import { TextDocument } from 'vscode-languageserver-types/lib/main';
 import {NodeSource} from 'postcss'
 import * as path from 'path';
@@ -14,8 +14,9 @@ export function createDiagnosis(doc:TextDocument):Diagnostic[] {
 
 //stylable diagnostic to vscode diagnostic
 function reportToDiagnostic(report:Report) {
+    let severity = report.type === 'error' ? DiagnosticSeverity.Error: DiagnosticSeverity.Warning
     let range = createRange(report.node.source)
-    return Diagnostic.create(range, report.message)
+    return Diagnostic.create(range, report.message, severity )
 }
 
 function createRange(source:NodeSource) {

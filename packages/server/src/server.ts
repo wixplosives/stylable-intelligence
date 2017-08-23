@@ -22,10 +22,6 @@ const resolver = new VsCodeResolver(documents);
 
 const provider = new Provider(resolver);
 
-// namespace OpenDocNotification {
-// 	export const type = new NotificationType<string, void>('stylable/openDocument');
-// }
-
 documents.listen(connection);
 
 connection.onInitialize((params): InitializeResult => {
@@ -36,8 +32,7 @@ connection.onInitialize((params): InitializeResult => {
             textDocumentSync: documents.syncKind,
             completionProvider: {
                 triggerCharacters: ['.', '-', ':', '"']
-            },
-            codeActionProvider: true,
+            }
         }
     }
 });
