@@ -130,7 +130,7 @@ export default class Provider {
         let lines = src.split('\n');
         let currentLine = lines[position.line];
         let fixedSrc = src;
-        console.log('Current line I: ', currentLine);
+        // console.log('Current line I: ', currentLine);
         if (currentLine.match(lineEndsRegexp)) {
             let currentLocation = 0;
             let splitLine = currentLine.split(lineEndsRegexp);
@@ -138,7 +138,7 @@ export default class Provider {
                 currentLocation += splitLine[i].length + 1;
                 if (currentLocation >= position.character) {
                     currentLine = splitLine[i];
-                    console.log('Current line II: ', currentLine);
+                    // console.log('Current line II: ', currentLine);
                     if (isIllegalLine(currentLine)) {
                         splitLine[i] = '\n'
                         lines.splice(position.line, 1, splitLine.join(''));
@@ -156,10 +156,9 @@ export default class Provider {
             fixedSrc = lines.join('\n');
         }
 
-        console.log('Made fixedSrc');
-        console.log(fixedSrc);
+        // console.log('Made fixedSrc');
+        // console.log(fixedSrc);
 
-        debugger;
         let meta: StylableMeta;
         try {
             meta = process(safeParse(fixedSrc, { from: filePath.slice(7) }));
@@ -167,7 +166,7 @@ export default class Provider {
             console.log(error);
             return Promise.resolve([]);
         }
-        console.log('PostCSS successful');
+        // console.log('PostCSS successful');
 
         // console.log('Transpiling Stylesheet');
         // try {
@@ -178,12 +177,12 @@ export default class Provider {
         //     console.error('stylable transpiling failed');
         // }
 
-        console.log('Calling resolveDependencies');
+        // console.log('Calling resolveDependencies');
         // debugger;
-        console.log('Calling AST completions with: ')
-        console.log('position: ', JSON.stringify(position, null, '\t'))
-        console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
-        console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n')
+        // console.log('Calling AST completions with: ')
+        // console.log('position: ', JSON.stringify(position, null, '\t'))
+        // console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
+        // console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n')
         return this.provideCompletionItemsFromAst(src, position, filePath, meta, currentLine, cursorLineIndex);
 
 
@@ -215,7 +214,6 @@ export default class Provider {
             character: position.character
         }
 
-        debugger;
         const path = pathFromPosition(meta.rawAst, position1Based);
 
         const posInSrc = getPositionInSrc(src, position);
