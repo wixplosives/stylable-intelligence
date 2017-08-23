@@ -47,15 +47,15 @@ connection.listen();
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
     // connection.sendNotification(OpenDocNotification.type, '/home/wix/projects/demo/test.css');
-    console.log('Looking for file');
+    // console.log('Looking for file');
 
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
     return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
         .then((res) => {
-            console.log('Received Completions in server:')
+            // console.log('Received Completions in server:')
             return res.map((com: Completion) => {
-                console.log(JSON.stringify(com, null, '\t'));
+                // console.log(JSON.stringify(com, null, '\t'));
                 let vsCodeCompletion = CompletionItem.create(com.label);
                 let ted: TextEdit = TextEdit.replace(
                     com.range ? com.range : new ProviderRange(new ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos),

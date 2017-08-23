@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var asserters = require("../test-kit/asserters");
 xdescribe('Variables', function () {
     it('should complete :vars at top level after ""', function () {
-        debugger;
         return asserters.getCompletions('imports/top-level-no-chars.css').then(function (asserter) {
             asserter.suggested([
                 asserters.varsCompletion

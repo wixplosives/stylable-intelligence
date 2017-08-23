@@ -38,7 +38,7 @@ describe('completion unit test', function () {
     });
 
     describe('directives', function () {
-        it('should complete -st-states, -st-extends, -st-mixin, -st-variant inside simple selector', function () {
+        xit('should complete -st-states, -st-extends, -st-mixin, -st-variant inside simple selector', function () {
             return asserters.getCompletions('imports/inside-simple-selector.css').then((asserter) => {
 
                 asserter.suggested([
@@ -50,7 +50,7 @@ describe('completion unit test', function () {
             });
         });
 
-        it('should complete -st-states, -st-extends, -st-mixin, -st-variant inside simple selector after dash', function () {
+        xit('should complete -st-states, -st-extends, -st-mixin, -st-variant inside simple selector after dash', function () {
             return asserters.getCompletions('general/inside-simple-selector-dash.css')
                 .then((asserter) => {
                     asserter.suggested([
@@ -104,7 +104,7 @@ describe('completion unit test', function () {
     });
 
     describe('states', function () {
-        it('should complete available states from same file after :', function () {
+        xit('should complete available states from same file after :', function () {
             return asserters.getCompletions('states/class-with-states.css').then((asserter) => {
                 asserter.suggested([
                     asserters.stateCompletion('hello', 'states/class-with-states.css'),
@@ -131,7 +131,7 @@ describe('completion unit test', function () {
                 });
         });
 
-        it('should complete available states after : in complex selectors', function () {
+        xit('should complete available states after : in complex selectors', function () {
             return asserters.getCompletions('states/complex-selectors-with-states.css').then((asserter) => {
                 asserter.suggested([
                     asserters.stateCompletion('hello', 'states/complex-selectors-with-states.css')
