@@ -16,7 +16,7 @@ export function activate(context: ExtensionContext) {
     console.log('client lalala');
 
     let serverModule = context.asAbsolutePath(path.join('server', 'src', 'server.js'));
-    let debugOptions = { execArgv: ['--inspect'] };
+    let debugOptions = { execArgv: ['--inspect=9229'] };
 
 
     let serverOptions: ServerOptions = {
@@ -26,6 +26,7 @@ export function activate(context: ExtensionContext) {
 
     let clientOptions: LanguageClientOptions = {
         documentSelector: ['css'],
+        diagnosticCollectionName: 'stylable'
     }
 
     let client = new LanguageClient('stylable', serverOptions, clientOptions);
@@ -44,6 +45,8 @@ export function activate(context: ExtensionContext) {
                 // debugger;
                 console.log(uri);
             })
+
+            return client
         })
 
 }
