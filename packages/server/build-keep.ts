@@ -1,0 +1,4 @@
+/*
+This is a place holder so while publush tsconfig will not flatten the src folder.
+It does it when it is the only one included. We accepet PRs.
+*/
