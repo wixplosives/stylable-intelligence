@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var asserters = require("../test-kit/asserters");
-describe.only('Imports', function () {
+describe('Imports', function () {
     it('should complete :import at top level after ""', function () {
         return asserters.getCompletions('imports/top-level-no-chars.css').then(function (asserter) {
             asserter.suggested([
@@ -125,15 +125,27 @@ describe.only('Imports', function () {
             ]);
         });
     });
-    it.only('completes default import as selector', function () {
-        return asserters.getCompletions('imports/st-extends-selectors.css', true).then(function (asserter) {
+    it('completes named and default imports as initial selectors', function () {
+        return asserters.getCompletions('imports/st-extends-selectors.css').then(function (asserter) {
             asserter.suggested([
-                asserters.extendsCompletion('Comp'),
-                asserters.extendsCompletion('shlomo')
+                asserters.classCompletion('Comp', true),
+                asserters.classCompletion('shlomo'),
+                asserters.importCompletion
+            ]);
+            asserter.notSuggested([
+                asserters.mixinDirectiveCompletion
+            ]);
+        });
+    });
+    it('completes named and default imports as non-initial selectors', function () {
+        return asserters.getCompletions('imports/st-extends-complex-selectors.css').then(function (asserter) {
+            asserter.suggested([
+                asserters.classCompletion('shlomo'),
+                asserters.classCompletion('Comp', true),
             ]);
             asserter.notSuggested([
                 asserters.importCompletion,
-                asserters.mixinDirectiveCompletion
+                asserters.mixinDirectiveCompletion,
             ]);
         });
     });

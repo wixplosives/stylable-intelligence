@@ -29,4 +29,5 @@ export default class Provider {
     getClassDefinition(meta: StylableMeta, symbol: string): void;
     provideCompletionItemsFromSrc(src: string, position: ProviderPosition, filePath: string): Thenable<Completion[]>;
     provideCompletionItemsFromAst(src: string, position: ProviderPosition, filePath: string, meta: StylableMeta, currentLine: string, cursorLineIndex: number): Thenable<Completion[]>;
+    addExistingClasses(meta: StylableMeta | undefined, completions: Completion[], addDefaultImport?: boolean): void;
 }

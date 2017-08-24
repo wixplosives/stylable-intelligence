@@ -15,6 +15,6 @@ export declare const importFromDirectiveCompletion: Partial<Completion>;
 export declare const importDefaultDirectiveCompletion: Partial<Completion>;
 export declare const importNamedDirectiveCompletion: Partial<Completion>;
 export declare const filePathCompletion: (filePath: string) => Partial<Completion>;
-export declare const classCompletion: (className: string) => Partial<Completion>;
+export declare const classCompletion: (className: string, isDefaultImport?: boolean) => Partial<Completion>;
 export declare const stateCompletion: (stateName: string, from?: string) => Partial<Completion>;
 export declare const extendsCompletion: (typeName: string, range?: ProviderRange) => Partial<Completion>;

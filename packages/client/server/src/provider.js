@@ -79,8 +79,8 @@ var variantDirective = new Completion('-st-variant:', '', 'a', new snippet('-st-
 var fromDirective = new Completion('-st-from:', 'Path to library', 'a', new snippet('-st-from: "$1";'));
 var namedDirective = new Completion('-st-named:', 'Named object export name', 'a', new snippet('-st-named: $1;'));
 var defaultDirective = new Completion('-st-default:', 'Default object export name', 'a', new snippet('-st-default: $1;'));
-function classCompletion(className) {
-    return new Completion('.' + className, 'mine', 'b');
+function classCompletion(className, isDefaultImport) {
+    return new Completion((isDefaultImport ? '' : '.') + className, 'mine', 'b');
 }
 function extendCompletion(symbolName, range) {
     return new Completion(symbolName, 'yours', 'a', new snippet(' ' + symbolName + ';\n'), range);
@@ -90,16 +90,6 @@ function stateCompletion(stateName, from, pos) {
 }
 function fileNameCompletion(name) {
     return new Completion(name, '', 'a', './' + name);
-}
-function addExistingClasses(meta, completions) {
-    if (meta == undefined)
-        return;
-    Object.keys(meta.classes).forEach(function (className) {
-        if (className === 'root') {
-            return;
-        }
-        completions.push(classCompletion(className));
-    });
 }
 function isIllegalLine(line) {
     return !!/^\s*[-\.:]*\s*$/.test(line);
@@ -116,7 +106,6 @@ var Provider = (function () {
         // const symbols = resolver.resolveSymbols(stylesheet);
     };
     Provider.prototype.provideCompletionItemsFromSrc = function (src, position, filePath) {
-        // debugger;
         var cursorLineIndex = position.character;
         var lines = src.split('\n');
         var currentLine = lines[position.line];
@@ -148,7 +137,7 @@ var Provider = (function () {
         }
         // console.log('Made fixedSrc');
         // console.log(fixedSrc);
-        debugger;
+        //debugger;
         var meta;
         try {
             meta = stylable_1.process(stylable_1.safeParse(fixedSrc, { from: filePath.indexOf('file://') === 0 ? filePath.slice(7) : filePath }));
@@ -175,6 +164,7 @@ var Provider = (function () {
     Provider.prototype.provideCompletionItemsFromAst = function (src, position, filePath, meta, currentLine, cursorLineIndex) {
         var _this = this;
         console.log('Starting provideCompletionItemsFromAst');
+        // debugger;
         var completions = [];
         var trimmedLine = currentLine.trim();
         var position1Based = {
@@ -201,7 +191,7 @@ var Provider = (function () {
                     var declarationBlockDirectives = {
                         '-st-mixin': mixinDirective
                     };
-                    if (lastRule.isSimpleSelector) {
+                    if (!!/^\s*\.?\w*$/.test(lastRule.selector)) {
                         declarationBlockDirectives["-st-extends"] = extendsDirective;
                         declarationBlockDirectives["-st-variant"] = variantDirective;
                         declarationBlockDirectives["-st-states"] = statesDirective;
@@ -222,12 +212,11 @@ var Provider = (function () {
         }
         if (trimmedLine.length < 2) {
             if ((lastChar === ':' || isSpacy(lastChar)) && lastPart.type === 'root') {
-                this.resolver.deepResolve(meta.mappedSymbols.Comp);
                 completions.push(importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position)));
             }
             if (lastChar === '.' || isSpacy(lastChar)) {
                 completions.push(rootClass);
-                addExistingClasses(meta, completions);
+                this.addExistingClasses(meta, completions, true);
             }
         }
         else if (lastChar === ':' && meta !== undefined) {
@@ -237,10 +226,14 @@ var Provider = (function () {
                 focusChunk_1.classes.forEach(function (className) {
                     console.log('className: ', className);
                     var extendResolution = _this.resolver.resolveExtends(meta, className);
+                    var classResolution = _this.resolver.resolveClass(meta, meta.mappedSymbols[className]);
                     var states = [];
+                    Object.keys(classResolution.symbol["-st-states"]).forEach(function (name) {
+                        states.push({ name: name, from: classResolution.meta.source });
+                    });
                     extendResolution.forEach(function (s) {
                         if (s.symbol._kind === 'class') {
-                            states.push.apply(states, s.symbol[stylable_1.valueMapping.states].map(function (name) { return ({ name: name, from: s.meta.source }); }));
+                            states.push.apply(states, s.symbol["-st-states"].map(function (name) { return ({ name: name, from: s.meta.source }); }));
                         }
                     });
                     states.forEach(function (stateDef) {
@@ -252,7 +245,36 @@ var Provider = (function () {
                 });
             }
         }
+        else {
+            completions.push(rootClass);
+            this.addExistingClasses(meta, completions, true);
+        }
         return Promise.resolve(completions);
+    };
+    Provider.prototype.addExistingClasses = function (meta, completions, addDefaultImport) {
+        var _this = this;
+        if (addDefaultImport === void 0) { addDefaultImport = false; }
+        if (meta == undefined)
+            return;
+        Object.keys(meta.mappedSymbols) // Add imported classes.
+            .filter(function (s) { return meta.mappedSymbols[s]._kind === "import"; })
+            .filter(function (s) {
+            return _this.resolver.deepResolve(meta.mappedSymbols[s])
+                && _this.resolver.deepResolve(meta.mappedSymbols[s]).symbol._kind === "class";
+        }).forEach(function (className) {
+            if (addDefaultImport && meta.mappedSymbols[className].type === "default") {
+                completions.push(classCompletion(className, true));
+            }
+            if (meta.mappedSymbols[className].type === "named") {
+                completions.push(classCompletion(className));
+            }
+        });
+        Object.keys(meta.mappedSymbols) // Add local classes.
+            .filter(function (s) { return meta.mappedSymbols[s]._kind === "class"; })
+            .filter(function (s) { return s !== "root"; })
+            .forEach(function (className) {
+            completions.push(classCompletion(className));
+        });
     };
     return Provider;
 }());

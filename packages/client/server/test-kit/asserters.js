@@ -37,7 +37,9 @@ function getCompletions(fileName, checkSingleLine) {
     var singleLineSrc = src.split('\n').join('');
     var normalCompletions;
     return completionsIntenal(fullPath, src)
-        .then(function (completions) { normalCompletions = completions; })
+        .then(function (completions) {
+        normalCompletions = completions;
+    })
         .then(function () { return checkSingleLine ? completionsIntenal(fullPath, singleLineSrc) : Promise.resolve(null); })
         .then(function (singleLineCompletions) {
         return {
@@ -60,8 +62,8 @@ function completionsIntenal(fileName, src) {
     src = src.replace('|', "");
     var resolver = new vscode_resolver_1.VsCodeResolver({
         get: function (uri) {
-            debugger;
-            return vscode_languageserver_types_1.TextDocument.create(uri, 'css', 1, fs.readFileSync(uri).toString());
+            console.log(uri);
+            return vscode_languageserver_types_1.TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(7)).toString());
         },
         keys: function () {
             return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'));
@@ -84,7 +86,7 @@ exports.importFromDirectiveCompletion = { label: '-st-from:', detail: 'Path to l
 exports.importDefaultDirectiveCompletion = { label: '-st-default:', detail: 'Default object export name', sortText: 'a', insertText: '-st-default: $1;' };
 exports.importNamedDirectiveCompletion = { label: '-st-named:', detail: 'Named object export name', sortText: 'a', insertText: '-st-named: $1;' };
 exports.filePathCompletion = function (filePath) { return { label: filePath, insertText: './' + filePath }; };
-exports.classCompletion = function (className) { return { label: '.' + className, sortText: 'b' }; };
+exports.classCompletion = function (className, isDefaultImport) { return { label: (isDefaultImport ? '' : '.') + className, sortText: 'b' }; };
 exports.stateCompletion = function (stateName, from) {
     if (from === void 0) { from = 'projectRoot/main.css'; }
     return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + path.join(__dirname, '/../test/cases/', from), insertText: ':' + stateName };

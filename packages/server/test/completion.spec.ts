@@ -8,7 +8,8 @@ describe('completion unit test', function () {
                     [
                         asserters.importCompletion,
                         asserters.rootCompletion,
-                        asserters.classCompletion('gaga')
+                        asserters.classCompletion('gaga'),
+                        asserters.classCompletion('baga'),
                     ]
                 );
                 asserter.notSuggested([
@@ -24,7 +25,7 @@ describe('completion unit test', function () {
             return asserters.getCompletions('general/top-level-dot.css').then((asserter) => {
                 asserter.suggested([
                     asserters.rootCompletion,
-                    asserters.classCompletion('gaga')
+                    asserters.classCompletion('gaga'),
                 ]);
                 asserter.notSuggested([
                     asserters.importCompletion,
@@ -40,7 +41,6 @@ describe('completion unit test', function () {
     describe('directives', function () {
         it('should complete -st-states, -st-extends, -st-mixin, -st-variant inside simple selector', function () {
             return asserters.getCompletions('imports/inside-simple-selector.css').then((asserter) => {
-
                 asserter.suggested([
                     asserters.statesDirectiveCompletion,
                     asserters.extendsDirectiveCompletion,
@@ -73,7 +73,6 @@ describe('completion unit test', function () {
             });
         });
 
-        //TODO: Split into small tests, or find way to do this with 1 file.
         describe('should not complete -st-states, -st-extends, -st-variant inside complex rules', function () {
             [
                 'complex-selectors/class-and-class.css',

@@ -42,7 +42,9 @@ export function getCompletions(fileName: string, checkSingleLine: boolean = fals
     const singleLineSrc = src.split('\n').join('');
     let normalCompletions: Completion[];
     return completionsIntenal(fullPath, src)
-        .then((completions) => { normalCompletions = completions; })
+        .then((completions) => {
+            normalCompletions = completions;
+        })
         .then<Completion[] | null>(() => checkSingleLine ? completionsIntenal(fullPath, singleLineSrc) : Promise.resolve(null))
         .then((singleLineCompletions) => {
             return {
@@ -68,8 +70,8 @@ function completionsIntenal(fileName: string, src: string): Thenable<Completion[
 
     const resolver = new VsCodeResolver({
         get(uri: string): TextDocument {
-            debugger;
-            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri).toString())
+            console.log(uri)
+            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(7)).toString())
         },
         keys(): string[] {
             return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'))
@@ -85,7 +87,7 @@ function completionsIntenal(fileName: string, src: string): Thenable<Completion[
 }
 
 export const importCompletion: Partial<Completion> = { label: ':import', detail: 'Import an external library', sortText: 'a', insertText: ':import {\n\t-st-from: "$1";\n}$0' };
-export const varsCompletion: Partial<Completion> = {label: ':vars', detail: 'Declare variables', sortText: 'a', insertText: ':vars {\n\t$1\n}$0'};
+export const varsCompletion: Partial<Completion> = { label: ':vars', detail: 'Declare variables', sortText: 'a', insertText: ':vars {\n\t$1\n}$0' };
 export const rootCompletion: Partial<Completion> = { label: '.root', detail: 'The root class', sortText: 'b', insertText: '.root' };
 export const statesDirectiveCompletion: Partial<Completion> = { label: '-st-states:', detail: 'Define the CSS states available for this class', sortText: 'a', insertText: '-st-states: $1;' };
 export const extendsDirectiveCompletion: Partial<Completion> = { label: '-st-extends:', detail: 'Extend an external component', sortText: 'a', insertText: '-st-extends: $1;', additionalCompletions: true };
@@ -95,6 +97,6 @@ export const importFromDirectiveCompletion: Partial<Completion> = { label: '-st-
 export const importDefaultDirectiveCompletion: Partial<Completion> = { label: '-st-default:', detail: 'Default object export name', sortText: 'a', insertText: '-st-default: $1;' };
 export const importNamedDirectiveCompletion: Partial<Completion> = { label: '-st-named:', detail: 'Named object export name', sortText: 'a', insertText: '-st-named: $1;' };
 export const filePathCompletion: (filePath: string) => Partial<Completion> = (filePath) => { return { label: filePath, insertText: './' + filePath } };
-export const classCompletion: (className: string) => Partial<Completion> = (className) => { return { label: '.' + className, sortText: 'b' } }
+export const classCompletion: (className: string, isDefaultImport?: boolean) => Partial<Completion> = (className, isDefaultImport?) => { return { label: (isDefaultImport ? '' : '.') + className, sortText: 'b' } }
 export const stateCompletion: (stateName: string, from?: string) => Partial<Completion> = (stateName, from = 'projectRoot/main.css') => { return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + path.join(__dirname, '/../test/cases/', from), insertText: ':' + stateName } }
 export const extendsCompletion: (typeName: string, range?: ProviderRange) => Partial<Completion> = (typeName, range) => { return { label: typeName, sortText: 'a', insertText: ' ' + typeName + ';\n', range } };
