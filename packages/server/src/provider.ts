@@ -117,7 +117,7 @@ export default class Provider {
         let lines = src.split('\n');
         let currentLine = lines[position.line];
         let fixedSrc = src;
-        console.log('Current line I: ', currentLine);
+        // console.log('Current line I: ', currentLine);
         if (currentLine.match(lineEndsRegexp)) {
             let currentLocation = 0;
             let splitLine = currentLine.split(lineEndsRegexp);
@@ -125,7 +125,7 @@ export default class Provider {
                 currentLocation += splitLine[i].length + 1;
                 if (currentLocation >= position.character) {
                     currentLine = splitLine[i];
-                    console.log('Current line II: ', currentLine);
+                    // console.log('Current line II: ', currentLine);
                     if (isIllegalLine(currentLine)) {
                         splitLine[i] = '\n'
                         lines.splice(position.line, 1, splitLine.join(''));
@@ -145,7 +145,6 @@ export default class Provider {
 
         // console.log('Made fixedSrc');
         // console.log(fixedSrc);
-        //debugger;
         let meta: StylableMeta;
         try {
             meta = process(safeParse(fixedSrc, { from: filePath.indexOf('file://') === 0 ? filePath.slice(7) : filePath }));

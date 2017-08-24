@@ -3,7 +3,6 @@ import * as asserters from '../test-kit/asserters';
 xdescribe('Variables', function () {
 
     it('should complete :vars at top level after ""', function () {
-        debugger;
         return asserters.getCompletions('imports/top-level-no-chars.css').then((asserter) => {
                 asserter.suggested([
                     asserters.varsCompletion
