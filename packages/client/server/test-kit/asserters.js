@@ -6,7 +6,7 @@ var path = require("path");
 var vscode_languageserver_types_1 = require("vscode-languageserver-types");
 var vscode_resolver_1 = require("../src/adapters/vscode-resolver");
 var provider_1 = require("../src/provider");
-function assertCompletions(actualCompletions, expectedCompletions, prefix) {
+function assertPresent(actualCompletions, expectedCompletions, prefix) {
     if (prefix === void 0) { prefix = ''; }
     expectedCompletions.forEach(function (expected) {
         var actual = actualCompletions.find(function (comp) { return comp.label === expected.label; });
@@ -23,7 +23,7 @@ function assertCompletions(actualCompletions, expectedCompletions, prefix) {
         }
     });
 }
-function assertNoCompletions(actualCompletions, nonCompletions, prefix) {
+function assertNotPresent(actualCompletions, nonCompletions, prefix) {
     if (prefix === void 0) { prefix = ''; }
     nonCompletions.forEach(function (notAllowed) {
         var actual = actualCompletions.find(function (comp) { return comp.label === notAllowed.label; });
@@ -43,13 +43,13 @@ function getCompletions(fileName, checkSingleLine) {
         .then(function () { return checkSingleLine ? completionsIntenal(fullPath, singleLineSrc) : Promise.resolve(null); })
         .then(function (singleLineCompletions) {
         return {
-            suggested: function (expectedNoCompletions) {
-                assertCompletions(normalCompletions, expectedNoCompletions);
-                singleLineCompletions && assertCompletions(singleLineCompletions, expectedNoCompletions, 'single line: ');
+            suggested: function (expectedCompletions) {
+                assertPresent(normalCompletions, expectedCompletions);
+                singleLineCompletions && assertPresent(singleLineCompletions, expectedCompletions, 'single line: ');
             },
             notSuggested: function (expectedNoCompletions) {
-                assertNoCompletions(normalCompletions, expectedNoCompletions);
-                singleLineCompletions && assertNoCompletions(singleLineCompletions, expectedNoCompletions, 'single line: ');
+                assertNotPresent(normalCompletions, expectedNoCompletions);
+                singleLineCompletions && assertNotPresent(singleLineCompletions, expectedNoCompletions, 'single line: ');
             }
         };
     });

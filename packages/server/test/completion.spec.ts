@@ -39,6 +39,16 @@ describe('completion unit test', function () {
     });
 
     describe('directives', function () {
+        it('should not break when no completions to provide', function () {
+            return asserters.getCompletions('general/no-completions.css').then((asserter) => {
+                //todo: write 'no completions' asserter
+                asserter.notSuggested([
+                    asserters.importCompletion,
+                    asserters.stateCompletion('hello')
+                ]);
+            });
+        });
+
         it('should complete -st-states, -st-extends, -st-mixin, -st-variant inside simple selector', function () {
             return asserters.getCompletions('imports/inside-simple-selector.css').then((asserter) => {
                 asserter.suggested([
@@ -115,20 +125,6 @@ describe('completion unit test', function () {
             });
         });
 
-        xit('should not break for untyped classes', function () { //What is tested here?
-            return asserters.getCompletions(
-                `
-            .gaga{
-            }
-            .gaga:|
-            `).then((asserter) => {
-
-                    asserter.notSuggested([
-                        asserters.importCompletion,
-                        asserters.stateCompletion('hello')
-                    ]);
-                });
-        });
 
         it('should complete available states after : in complex selectors', function () {
             return asserters.getCompletions('states/complex-selectors-with-states.css').then((asserter) => {
@@ -178,14 +174,15 @@ describe('completion unit test', function () {
 
         it('complete states for localy imported component ( recursive )', function () {
             return asserters.getCompletions('states/locally-imported-component-recursive.css')
-            .then((asserter) => {
-                asserter.suggested([
-                    asserters.stateCompletion('shmover', 'states/comp-to-import.css'),
-                    asserters.stateCompletion('hoover', 'states/mid-level-import.css'),
-                    asserters.stateCompletion('clover', 'states/locally-imported-component-recursive.css'),
-                ]);
-            });
-    });
+                .then((asserter) => {
+                    asserter.suggested([
+                        asserters.stateCompletion('shmover', 'states/comp-to-import.css'),
+                        asserters.stateCompletion('hoover', 'states/mid-level-import.css'),
+                        asserters.stateCompletion('clover', 'states/locally-imported-component-recursive.css'),
+                    ]);
+                });
+        });
+
         xit('complete states for localy imported variant', function () {
             return asserters.getCompletions(
                 `
@@ -205,32 +202,14 @@ describe('completion unit test', function () {
                 });
         });
 
-
-        xit('should not break while typing', function () { //???
-            return asserters.getCompletions(
-                `
-                .|
-                .gaga{
-                    -st-states:hello;
-                }
-                .gaga:hello{
-
-                }
-                `).then((asserter) => {
-                    asserter.suggested([
-                        asserters.classCompletion('gaga')
-                    ]);
-                });
-        });
-
         it('should not complete directive value after :: ', function () {
             return asserters.getCompletions('states/class-with-states-double-colon.css').then((asserter) => {
-                    asserter.notSuggested([
-                        asserters.extendsCompletion('Comp'),
-                        asserters.importCompletion,
-                        asserters.mixinDirectiveCompletion
-                    ]);
-                });
+                asserter.notSuggested([
+                    asserters.extendsCompletion('Comp'),
+                    asserters.importCompletion,
+                    asserters.mixinDirectiveCompletion
+                ]);
+            });
         });
     });
 })

@@ -36,6 +36,15 @@ describe('completion unit test', function () {
         });
     });
     describe('directives', function () {
+        it('should not break when no completions to provide', function () {
+            return asserters.getCompletions('general/no-completions.css').then(function (asserter) {
+                //todo: write 'no completions' asserter
+                asserter.notSuggested([
+                    asserters.importCompletion,
+                    asserters.stateCompletion('hello')
+                ]);
+            });
+        });
         it('should complete -st-states, -st-extends, -st-mixin, -st-variant inside simple selector', function () {
             return asserters.getCompletions('imports/inside-simple-selector.css').then(function (asserter) {
                 asserter.suggested([
@@ -103,14 +112,6 @@ describe('completion unit test', function () {
                 ]);
             });
         });
-        xit('should not break for untyped classes', function () {
-            return asserters.getCompletions("\n            .gaga{\n            }\n            .gaga:|\n            ").then(function (asserter) {
-                asserter.notSuggested([
-                    asserters.importCompletion,
-                    asserters.stateCompletion('hello')
-                ]);
-            });
-        });
         it('should complete available states after : in complex selectors', function () {
             return asserters.getCompletions('states/complex-selectors-with-states.css').then(function (asserter) {
                 asserter.suggested([
@@ -164,13 +165,6 @@ describe('completion unit test', function () {
             return asserters.getCompletions("\n                :import{\n                    -st-from: \"./comp.css\";\n                    -st-named: zagzag;\n\n                }\n                .gaga{\n                    -st-extends: zagzag;\n                }\n                .gaga:|\n                ").then(function (asserter) {
                 asserter.suggested([
                     asserters.stateCompletion('shmover', 'projectRoot/comp.css')
-                ]);
-            });
-        });
-        xit('should not break while typing', function () {
-            return asserters.getCompletions("\n                .|\n                .gaga{\n                    -st-states:hello;\n                }\n                .gaga:hello{\n\n                }\n                ").then(function (asserter) {
-                asserter.suggested([
-                    asserters.classCompletion('gaga')
                 ]);
             });
         });

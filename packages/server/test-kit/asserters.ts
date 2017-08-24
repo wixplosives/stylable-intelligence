@@ -6,7 +6,7 @@ import { TextDocument } from 'vscode-languageserver-types';
 import { VsCodeResolver } from '../src/adapters/vscode-resolver';
 import Provider, { Completion, ProviderRange, snippet } from '../src/provider';
 
-function assertCompletions(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
+function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {
         const actual = actualCompletions.find((comp) => comp.label === expected.label);
         expect(actual, prefix + 'completion not found: ' + expected.label + ' ').to.not.be.equal(undefined);
@@ -23,7 +23,7 @@ function assertCompletions(actualCompletions: Completion[], expectedCompletions:
     });
 }
 
-function assertNoCompletions(actualCompletions: Completion[], nonCompletions: Partial<Completion>[], prefix: string = '') {
+function assertNotPresent(actualCompletions: Completion[], nonCompletions: Partial<Completion>[], prefix: string = '') {
     nonCompletions.forEach(notAllowed => {
         const actual = actualCompletions.find((comp) => comp.label === notAllowed.label);
         expect(actual, prefix + 'unallowed completion found: ' + notAllowed.label + ' ').to.be.equal(undefined);
@@ -31,12 +31,12 @@ function assertNoCompletions(actualCompletions: Completion[], nonCompletions: Pa
 }
 
 
-export interface assertable {
+export interface Assertable {
     suggested: (expectedCompletions: Partial<Completion>[]) => void;
     notSuggested: (nonCompletions: Partial<Completion>[]) => void
 }
 
-export function getCompletions(fileName: string, checkSingleLine: boolean = false): Thenable<assertable> {
+export function getCompletions(fileName: string, checkSingleLine: boolean = false): Thenable<Assertable> {
     const fullPath = path.join(__dirname, '/../test/cases/', fileName);
     const src: string = fs.readFileSync(fullPath).toString();
     const singleLineSrc = src.split('\n').join('');
@@ -48,13 +48,13 @@ export function getCompletions(fileName: string, checkSingleLine: boolean = fals
         .then<Completion[] | null>(() => checkSingleLine ? completionsIntenal(fullPath, singleLineSrc) : Promise.resolve(null))
         .then((singleLineCompletions) => {
             return {
-                suggested: (expectedNoCompletions: Partial<Completion>[]) => {
-                    assertCompletions(normalCompletions, expectedNoCompletions);
-                    singleLineCompletions && assertCompletions(singleLineCompletions, expectedNoCompletions, 'single line: ');
+                suggested: (expectedCompletions: Partial<Completion>[]) => {
+                    assertPresent(normalCompletions, expectedCompletions);
+                    singleLineCompletions && assertPresent(singleLineCompletions, expectedCompletions, 'single line: ');
                 },
                 notSuggested: (expectedNoCompletions: Partial<Completion>[]) => {
-                    assertNoCompletions(normalCompletions, expectedNoCompletions);
-                    singleLineCompletions && assertNoCompletions(singleLineCompletions, expectedNoCompletions, 'single line: ');
+                    assertNotPresent(normalCompletions, expectedNoCompletions);
+                    singleLineCompletions && assertNotPresent(singleLineCompletions, expectedNoCompletions, 'single line: ');
                 }
             }
 

@@ -1,9 +1,9 @@
 import { Completion, ProviderRange } from '../src/provider';
-export interface assertable {
+export interface Assertable {
     suggested: (expectedCompletions: Partial<Completion>[]) => void;
     notSuggested: (nonCompletions: Partial<Completion>[]) => void;
 }
-export declare function getCompletions(fileName: string, checkSingleLine?: boolean): Thenable<assertable>;
+export declare function getCompletions(fileName: string, checkSingleLine?: boolean): Thenable<Assertable>;
 export declare const importCompletion: Partial<Completion>;
 export declare const varsCompletion: Partial<Completion>;
 export declare const rootCompletion: Partial<Completion>;
