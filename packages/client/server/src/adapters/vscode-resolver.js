@@ -28,12 +28,15 @@ var VsCodeResolver = (function (_super) {
         if (resolvedClass && resolvedClass._kind === 'css' && resolvedClass.symbol._kind === 'class') {
             var current = resolvedClass;
             var extend = resolvedClass.symbol[stylable_1.valueMapping.extends];
-            while (current && extend) {
+            while (current) {
                 extendPath.push(current);
+                if (!extend) {
+                    break;
+                }
                 var res = this.resolve(extend);
                 if (res && res._kind === 'css' && res.symbol._kind === 'class') {
                     current = res;
-                    extend = resolvedClass.symbol[stylable_1.valueMapping.extends];
+                    extend = res.symbol[stylable_1.valueMapping.extends];
                 }
                 else {
                     break;

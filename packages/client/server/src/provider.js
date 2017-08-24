@@ -226,14 +226,16 @@ var Provider = (function () {
                 focusChunk_1.classes.forEach(function (className) {
                     console.log('className: ', className);
                     var extendResolution = _this.resolver.resolveExtends(meta, className);
-                    var classResolution = _this.resolver.resolveClass(meta, meta.mappedSymbols[className]);
+                    // const classResolution = this.resolver.resolveClass(meta, meta.mappedSymbols[className]);
                     var states = [];
-                    Object.keys(classResolution.symbol["-st-states"]).forEach(function (name) {
-                        states.push({ name: name, from: classResolution.meta.source });
-                    });
+                    // if ((classResolution!.symbol as ClassSymbol)["-st-states"]) {
+                    //     Object.keys((classResolution!.symbol as ClassSymbol)["-st-states"]).forEach((name: string) => {
+                    //         states.push({ name, from: classResolution!.meta.source })
+                    //     });
+                    // }
                     extendResolution.forEach(function (s) {
-                        if (s.symbol._kind === 'class') {
-                            states.push.apply(states, s.symbol["-st-states"].map(function (name) { return ({ name: name, from: s.meta.source }); }));
+                        if (s.symbol._kind === 'class' && s.symbol[stylable_1.valueMapping.states]) {
+                            Object.keys(s.symbol[stylable_1.valueMapping.states]).forEach(function (name) { return states.push({ name: name, from: s.meta.source }); });
                         }
                     });
                     states.forEach(function (stateDef) {

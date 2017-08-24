@@ -154,59 +154,38 @@ describe('completion unit test', function () {
         });
     });
 
-    xdescribe('multiple files', function () {
+    describe('multiple files', function () {
 
         it('complete states for localy imported component', function () {
             return asserters.getCompletions('states/locally-imported-component.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.stateCompletion('shmover', 'projectRoot/comp.css')
+                        asserters.stateCompletion('shmover', 'states/comp-to-import.css')
                     ]);
                 });
         });
 
         it('complete states for localy imported component (including local states)', function () {
-            return asserters.getCompletions(
-                `
-                :import{
-                    -st-from: "./comp.css";
-                    -st-default: Comp;
-
-                }
-                .gaga{
-                    -st-extends: Comp;
-                    -st-states: hello;
-                }
-                .gaga:|
-                `).then((asserter) => {
+            return asserters.getCompletions('states/locally-imported-component-with-states.css')
+                .then((asserter) => {
                     asserter.suggested([
-                        asserters.stateCompletion('shmover', 'projectRoot/comp.css'),
-                        asserters.stateCompletion('hello')
+                        asserters.stateCompletion('shmover', 'states/comp-to-import.css'),
+                        asserters.stateCompletion('clover', 'states/locally-imported-component-with-states.css'),
                     ]);
                 });
         });
 
 
         it('complete states for localy imported component ( recursive )', function () {
-            return asserters.getCompletions(
-                `
-                :import{
-                    -st-from: "./comp2.css";
-                    -st-default: Comp;
-                }
-                .gaga{
-                    -st-extends: Comp;
-                    -st-states: normalstate;
-                }
-                .gaga:|
-                `).then((asserter) => {
-                    asserter.suggested([
-                        asserters.stateCompletion('importedstate', 'projectRoot/comp2.css'),
-                        asserters.stateCompletion('recursestate', 'projectRoot/comp1.css'),
-                        asserters.stateCompletion('normalstate')
-                    ]);
-                });
-        });
+            return asserters.getCompletions('states/locally-imported-component-recursive.css')
+            .then((asserter) => {
+                asserter.suggested([
+                    asserters.stateCompletion('shmover', 'states/comp-to-import.css'),
+                    asserters.stateCompletion('hoover', 'states/mid-level-import.css'),
+                    asserters.stateCompletion('clover', 'states/locally-imported-component-recursive.css'),
+                ]);
+            });
+    });
         xit('complete states for localy imported variant', function () {
             return asserters.getCompletions(
                 `
@@ -227,7 +206,7 @@ describe('completion unit test', function () {
         });
 
 
-        it('should not break while typing', function () {
+        xit('should not break while typing', function () { //???
             return asserters.getCompletions(
                 `
                 .|
@@ -244,17 +223,8 @@ describe('completion unit test', function () {
                 });
         });
 
-        it('should not complete when broken', function () {
-            return asserters.getCompletions(
-                `
-                :import{
-                    -st-from:"./comp.css";
-                    -st-default:Comp;
-                }
-                .gaga{
-                    -st-extends::| ;
-                }
-                `).then((asserter) => {
+        it('should not complete directive value after :: ', function () {
+            return asserters.getCompletions('states/class-with-states-double-colon.css').then((asserter) => {
                     asserter.notSuggested([
                         asserters.extendsCompletion('Comp'),
                         asserters.importCompletion,

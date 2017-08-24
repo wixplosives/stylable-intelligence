@@ -32,12 +32,15 @@ export class VsCodeResolver extends StylableResolver {
             let current = resolvedClass;
             let extend = resolvedClass.symbol[valueMapping.extends];
 
-            while (current && extend) {
+            while (current) {
                 extendPath.push(current);
+                if (!extend) {
+                    break;
+                }
                 let res = this.resolve(extend);
                 if (res && res._kind === 'css' && res.symbol._kind === 'class') {
                     current = res;
-                    extend = resolvedClass.symbol[valueMapping.extends];
+                    extend = res.symbol[valueMapping.extends];
                 } else {
                     break;
                 }
