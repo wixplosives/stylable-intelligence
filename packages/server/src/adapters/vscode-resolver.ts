@@ -10,11 +10,11 @@ export class VsCodeResolver extends StylableResolver {
             return process(safeParse(content, { from: fullpath }))
         }, {
                 readFileSync(path: string) {
-                    const doc = docs.get(path);
+                    const doc = docs.get('file://' + path);
                     return doc.getText()
                 },
                 statSync(path: string) {
-                    const doc = docs.get(path);
+                    const doc = docs.get('file://' + path);
                     return {
                         mtime: new Date(doc.version)
                     }
@@ -32,12 +32,15 @@ export class VsCodeResolver extends StylableResolver {
             let current = resolvedClass;
             let extend = resolvedClass.symbol[valueMapping.extends];
 
-            while (current && extend) {
+            while (current) {
                 extendPath.push(current);
+                if (!extend) {
+                    break;
+                }
                 let res = this.resolve(extend);
                 if (res && res._kind === 'css' && res.symbol._kind === 'class') {
                     current = res;
-                    extend = resolvedClass.symbol[valueMapping.extends];
+                    extend = res.symbol[valueMapping.extends];
                 } else {
                     break;
                 }
