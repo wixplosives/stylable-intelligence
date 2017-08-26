@@ -20,7 +20,7 @@ function testCompletion(fileToTest: string, testCases: [vscode.Position, string[
                         let labels = list!.items.map(x => x.label);
                         for (let entry of expected) {
                             if (!~labels.indexOf(entry)) {
-                                assert.fail('', entry, 'missing expected item in competion list', '');
+                                assert.fail('', entry, 'missing expected item in completion list', '');
                             }
                         }
                         return Promise.resolve()

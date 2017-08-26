@@ -1100,8 +1100,8 @@ is-glob@^3.1.0:
     is-extglob "^2.1.0"
 
 is-my-json-valid@^2.12.4:
-  version "2.16.0"
-  resolved "https://registry.yarnpkg.com/is-my-json-valid/-/is-my-json-valid-2.16.0.tgz#f079dd9bfdae65ee2038aae8acbc86ab109e3693"
+  version "2.16.1"
+  resolved "https://registry.yarnpkg.com/is-my-json-valid/-/is-my-json-valid-2.16.1.tgz#5a846777e2c2620d1e69104e5d3a03b1f6088f11"
   dependencies:
     generate-function "^2.0.0"
     generate-object-property "^1.1.0"
@@ -2363,8 +2363,8 @@ style-loader@~0.13.1:
     loader-utils "^1.0.2"
 
 stylis@^3.2.3:
-  version "3.2.9"
-  resolved "https://registry.yarnpkg.com/stylis/-/stylis-3.2.9.tgz#95c23da02d4389a2c5bab544a84abb3c13cc5d71"
+  version "3.2.10"
+  resolved "https://registry.yarnpkg.com/stylis/-/stylis-3.2.10.tgz#564614acfbc5460f899b7e1b58fc6a947e49fdb1"
 
 supports-color@3.1.2:
   version "3.1.2"

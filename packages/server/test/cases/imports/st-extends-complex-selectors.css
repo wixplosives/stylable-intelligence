@@ -1,9 +1,7 @@
 :import{
     -st-from:"./import-from-here.css";
     -st-default:Comp;
-    -st-named:shlomo;
+    -st-named: shlomo
 }
 
-.gaga{
-    -st-extends:|   ;
-}
+.gaga |

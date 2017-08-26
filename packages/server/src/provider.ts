@@ -68,8 +68,8 @@ const variantDirective = new Completion('-st-variant:', '', 'a', new snippet('-s
 const fromDirective = new Completion('-st-from:', 'Path to library', 'a', new snippet('-st-from: "$1";'));
 const namedDirective = new Completion('-st-named:', 'Named object export name', 'a', new snippet('-st-named: $1;'));
 const defaultDirective = new Completion('-st-default:', 'Default object export name', 'a', new snippet('-st-default: $1;'));
-function classCompletion(className: string) {
-    return new Completion('.' + className, 'mine', 'b')
+function classCompletion(className: string, isDefaultImport?: boolean) {
+    return new Completion((isDefaultImport ? '' : '.') + className, 'mine', 'b')
 }
 function extendCompletion(symbolName: string, range?: ProviderRange) {
     return new Completion(symbolName, 'yours', 'a', new snippet(' ' + symbolName + ';\n'), range)
@@ -85,18 +85,6 @@ function fileNameCompletion(name: string) {
 
 type CompletionMap = { [s: string]: Completion };
 
-
-function addExistingClasses(meta: StylableMeta | undefined, completions: Completion[]) {
-    if (meta == undefined)
-        return;
-    Object.keys(meta.classes).forEach((className: string) => {
-        if (className === 'root') {
-            return;
-        }
-
-        completions.push(classCompletion(className));
-    });
-}
 
 function isIllegalLine(line: string): boolean {
     return !!/^\s*[-\.:]*\s*$/.test(line)
@@ -125,7 +113,6 @@ export default class Provider {
         filePath: string,
     ): Thenable<Completion[]> {
 
-        // debugger;
         let cursorLineIndex: number = position.character;
         let lines = src.split('\n');
         let currentLine = lines[position.line];
@@ -158,27 +145,14 @@ export default class Provider {
 
         // console.log('Made fixedSrc');
         // console.log(fixedSrc);
-
         let meta: StylableMeta;
         try {
-            meta = process(safeParse(fixedSrc, { from: filePath.slice(7) }));
+            meta = process(safeParse(fixedSrc, { from: filePath.indexOf('file://') === 0 ? filePath.slice(7) : filePath }));
         } catch (error) {
             console.log(error);
             return Promise.resolve([]);
         }
-        // console.log('PostCSS successful');
-
-        // console.log('Transpiling Stylesheet');
-        // try {
-        //     stylesheet = fromCSS(fixedSrc, undefined, filePath);
-        //     console.log('Transpiling Stylesheet success');
-        // } catch (error) {
-        //     console.log('Transpiling Stylesheet fail');
-        //     console.error('stylable transpiling failed');
-        // }
-
         // console.log('Calling resolveDependencies');
-        // debugger;
         // console.log('Calling AST completions with: ')
         // console.log('position: ', JSON.stringify(position, null, '\t'))
         // console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
@@ -205,7 +179,7 @@ export default class Provider {
         cursorLineIndex: number
     ): Thenable<Completion[]> {
         console.log('Starting provideCompletionItemsFromAst')
-
+        // debugger;
         const completions: Completion[] = [];
         const trimmedLine = currentLine.trim();
 
@@ -237,7 +211,7 @@ export default class Provider {
                     const declarationBlockDirectives: CompletionMap = {
                         '-st-mixin': mixinDirective
                     };
-                    if (lastRule.isSimpleSelector) {
+                    if (!!/^\s*\.?\w*$/.test(lastRule.selector)) {  //Simple selector. Need better way.
                         declarationBlockDirectives["-st-extends"] = extendsDirective;
                         declarationBlockDirectives["-st-variant"] = variantDirective;
                         declarationBlockDirectives["-st-states"] = statesDirective;
@@ -246,25 +220,21 @@ export default class Provider {
                 }
             } else if (meta && lastChar == ":" && trimmedLine.split(':').length === 2) {
                 if (trimmedLine.indexOf('-st-extends:') === 0) {
-                    meta.imports.forEach((importJson) => {
-                        if (importJson.from.lastIndexOf('.css') === importJson.from.length - 4 && importJson.defaultExport) {
-                            completions.push(extendCompletion(importJson.defaultExport));
-                        }
-                    });
+                    Object.keys(meta.mappedSymbols)
+                        .filter(k => meta.mappedSymbols[k]._kind === 'import')
+                        .forEach(name => completions.push(extendCompletion(name)))
                 } else if (trimmedLine.indexOf('-st-from:') === 0) {
                     this.resolver.docs.keys().forEach(k => completions.push(fileNameCompletion(k)))
                 }
-
             }
         }
         if (trimmedLine.length < 2) {
-
             if ((lastChar === ':' || isSpacy(lastChar)) && (<PostCss.Root>lastPart).type === 'root') {
                 completions.push(importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position)));
             }
             if (lastChar === '.' || isSpacy(lastChar)) {
                 completions.push(rootClass);
-                addExistingClasses(meta, completions);
+                this.addExistingClasses(meta, completions, true);
             }
         } else if (lastChar === ':' && meta !== undefined) {
 
@@ -275,22 +245,18 @@ export default class Provider {
                 focusChunk.classes.forEach((className) => {
                     console.log('className: ', className)
 
-                    // const clsDef = getDefinition(meta, className, this.resolver)
-                    // if (isClassDefinition(clsDef)) {
-                    //     clsDef.states.forEach((stateDef) => {
-                    //         if (focusChunk.states.indexOf(stateDef.name) !== -1) { return }
-                    //         // const from = 'from: ' + stateDef.from;
-                    //         completions.push(stateCompletion(stateDef.name, stateDef.from, position))
-                    //     })
+                    const extendResolution = this.resolver.resolveExtends(meta, className);
+                    // const classResolution = this.resolver.resolveClass(meta, meta.mappedSymbols[className]);
+                    const states: any[] = [];
+                    // if ((classResolution!.symbol as ClassSymbol)["-st-states"]) {
+                    //     Object.keys((classResolution!.symbol as ClassSymbol)["-st-states"]).forEach((name: string) => {
+                    //         states.push({ name, from: classResolution!.meta.source })
+                    //     });
                     // }
 
-                    const extendResolution = this.resolver.resolveExtends(meta, className);
-
-
-                    const states: any[] = [];
                     extendResolution.forEach((s) => {
-                        if (s.symbol._kind === 'class') {
-                            states.push(...s.symbol[valueMapping.states].map((name: string) => ({ name, from: s.meta.source })));
+                        if (s.symbol._kind === 'class' && s.symbol[valueMapping.states]) {
+                            Object.keys(s.symbol[valueMapping.states]).forEach((name: string) => states.push({ name, from: s.meta.source }));
                         }
                     });
 
@@ -301,10 +267,40 @@ export default class Provider {
 
                 })
             }
+        } else {
+            completions.push(rootClass);
+            this.addExistingClasses(meta, completions, true);
         }
 
         return Promise.resolve(completions);
     }
+
+
+    addExistingClasses(meta: StylableMeta | undefined, completions: Completion[], addDefaultImport: boolean = false) {
+        if (meta == undefined)
+            return;
+        Object.keys(meta.mappedSymbols) // Add imported classes.
+            .filter((s) => { return meta.mappedSymbols[s]._kind === "import" })
+            .filter((s) => {
+                return this.resolver.deepResolve(meta.mappedSymbols[s])
+                    && this.resolver.deepResolve(meta.mappedSymbols[s])!.symbol._kind === "class"
+            }).forEach((className: string) => {
+                if (addDefaultImport && (meta.mappedSymbols[className] as any).type === "default") {
+                    completions.push(classCompletion(className, true));
+                }
+                if ((meta.mappedSymbols[className] as any).type === "named") {
+                    completions.push(classCompletion(className));
+                }
+            });
+
+        Object.keys(meta.mappedSymbols) // Add local classes.
+            .filter((s) => { return meta.mappedSymbols[s]._kind === "class" })
+            .filter(s => s !== "root")
+            .forEach((className: string) => {
+                completions.push(classCompletion(className));
+            });
+    }
+
 }
 
 // function getSelectorFromPosition(src: string, index: number) {}
