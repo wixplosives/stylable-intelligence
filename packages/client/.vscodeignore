@@ -1,2 +1,9 @@
-.vscode-test
-.vscode
+**/*.ts
+.vscode/**/*
+.vscode-test/**/*
+test/**/*
+run-test.js
+tsconfig.json
+tsconfig.publish.json
+yarn.lock
+

@@ -36,11 +36,11 @@
   "browser": "dist/src/index.js",
   "scripts": {
     "clear":"rimraf node_modules dist",
-    "vscode:prepublish": "rm -rf dist && npm install && tsc -d -p ./tsconfig.publish.json",
+    "vscode:prepublish": "rm -rf dist && yarn install && tsc -d -p ./tsconfig.publish.json && yarn install --prod",
     "build": "tsc -d",
     "compile": "tsc -watch -d",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "reset": "yarn clear && npm install && yarn test",
+    "reset": "yarn clear && yarn install && yarn test",
     "pretest": "rimraf dist && yarn build",
     "test": "node ./run-test",
     "test:node": "mocha --reporter mocha-env-reporter dist/test/*.test.js"
