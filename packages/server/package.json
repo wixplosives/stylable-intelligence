@@ -12,7 +12,7 @@
   "testGlob": "../client/server/test/**/*.spec.js?(x)",
   "scripts": {
     "clear": "rimraf  -r ../client/server/**",
-    "vscode:prepublish": "rimraf node_modules && yarn install --production && yarn packer",
+    "vscode:prepublish": "rimraf node_modules ../client/server && yarn install --production && yarn packer",
     "packer": "installServerIntoExtension ../client ./package.json ./tsconfig.publish.json && tsc -d -p ./tsconfig.publish.json",
     "compile": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc -p .",
     "watch": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc --watch -p .",
