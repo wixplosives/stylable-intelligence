@@ -6,17 +6,13 @@
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.0.4.tgz#fe86315d9a66827feeb16f73bc954688ec950e18"
 
-"@types/lodash@4.14.71":
-  version "4.14.71"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.71.tgz#0dc383f78981216ac76e2f2c3afd998e0450e4c1"
-
 "@types/mocha@~2.2.41":
   version "2.2.42"
   resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-2.2.42.tgz#ab769f51d37646b6fe8d4a086a98c285b1fab3f5"
 
 "@types/node@^8.0.13":
-  version "8.0.24"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-8.0.24.tgz#06c580084d9add1fb40c1510ef0b448961246fb1"
+  version "8.0.25"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-8.0.25.tgz#66ecaf4df93f5281b48427ee96fbcdfc4f0cdce1"
 
 "@types/sinon-chai@~2.7.28":
   version "2.7.29"
@@ -444,8 +440,8 @@ caniuse-api@^1.5.2:
     lodash.uniq "^4.5.0"
 
 caniuse-db@^1.0.30000529, caniuse-db@^1.0.30000634, caniuse-db@^1.0.30000639:
-  version "1.0.30000717"
-  resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000717.tgz#27ddf5feccdd338c99a62c9788c2694f99f67ed7"
+  version "1.0.30000718"
+  resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000718.tgz#86cdd97987302554934c61e106f4e470f16f993c"
 
 caseless@~0.12.0:
   version "0.12.0"
@@ -1018,8 +1014,8 @@ error-ex@^1.2.0:
     is-arrayish "^0.2.1"
 
 es5-ext@^0.10.14, es5-ext@^0.10.9, es5-ext@~0.10.14:
-  version "0.10.29"
-  resolved "https://registry.yarnpkg.com/es5-ext/-/es5-ext-0.10.29.tgz#768eb2dfc4957bcf35fa0568f193ab71ede53fd8"
+  version "0.10.30"
+  resolved "https://registry.yarnpkg.com/es5-ext/-/es5-ext-0.10.30.tgz#7141a16836697dbabfaaaeee41495ce29f52c939"
   dependencies:
     es6-iterator "2"
     es6-symbol "~3.1"
@@ -1971,7 +1967,7 @@ lodash.words@^3.0.0:
   dependencies:
     lodash._root "^3.0.0"
 
-lodash@4.17.4, lodash@^4.14.0, lodash@^4.17.2, lodash@^4.5.1:
+lodash@^4.14.0, lodash@^4.17.2, lodash@^4.5.1:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
@@ -3337,13 +3333,8 @@ strip-json-comments@~2.0.1:
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
 stylable@^4.0.0:
-<<<<<<< HEAD
-  version "4.0.7"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-4.0.7.tgz#2fa5cba011a83b9b3e859280a44c4ddbeb835118"
-=======
-  version "4.0.6"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-4.0.6.tgz#1eb2928d0154c829c6ef560f08ee7a6597b2f58a"
->>>>>>> master
+  version "4.0.8"
+  resolved "https://registry.yarnpkg.com/stylable/-/stylable-4.0.8.tgz#64ddc1e888144463ad2ce2f18ae074d6caf66e92"
   dependencies:
     camelcase-css "^1.0.1"
     css-selector-tokenizer "^0.7.0"
@@ -3365,10 +3356,10 @@ style-loader@~0.13.1:
     loader-utils "^1.0.2"
 
 stylis@^3.2.3:
-  version "3.2.10"
-  resolved "https://registry.yarnpkg.com/stylis/-/stylis-3.2.10.tgz#564614acfbc5460f899b7e1b58fc6a947e49fdb1"
+  version "3.2.11"
+  resolved "https://registry.yarnpkg.com/stylis/-/stylis-3.2.11.tgz#8e9b99ed5e3b9b1b959c455f004c6effb7cf7331"
 
-supports-color@3.1.2, supports-color@^3.1.0, supports-color@^3.1.1:
+supports-color@3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-3.1.2.tgz#72a262894d9d408b956ca05ff37b2ed8a6e2a2d5"
   dependencies:
@@ -3382,7 +3373,7 @@ supports-color@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-2.0.0.tgz#535d045ce6b6363fa40117084629995e9df324c7"
 
-supports-color@^3.2.3:
+supports-color@^3.1.0, supports-color@^3.1.1, supports-color@^3.2.3:
   version "3.2.3"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-3.2.3.tgz#65ac0504b3954171d8a64946b2ae3cbb8a5f54f6"
   dependencies:

@@ -35,16 +35,19 @@
   ],
   "browser": "dist/src/index.js",
   "scripts": {
-    "vscode:prepublish": "tsc -p ./",
+    "clear":"rimraf node_modules dist",
+    "vscode:prepublish": "rm -rf dist && yarn install && tsc -d -p ./tsconfig.publish.json && yarn install --prod",
     "build": "tsc -d",
     "compile": "tsc -watch -d",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "reset": "rimraf node_modules dist && yarn install && yarn test",
+    "reset": "yarn clear && yarn install && yarn test",
     "pretest": "rimraf dist && yarn build",
     "test": "node ./run-test",
     "test:node": "mocha --reporter mocha-env-reporter dist/test/*.test.js"
   },
   "devDependencies": {
+    "@types/glob": "^5.0.30",
+    "@types/lodash": "4.14.71",
     "@types/chai": "~4.0.1",
     "@types/mocha": "~2.2.41",
     "@types/node": "^8.0.13",
@@ -53,7 +56,6 @@
     "chai": "~4.1.0",
     "chai-subset": "~1.5.0",
     "concurrently": "~3.5.0",
-    "glob": "^7.1.2",
     "mocha": "~3.4.2",
     "mocha-env-reporter": "~2.0.4",
     "mocha-loader": "~1.1.1",
@@ -62,15 +64,12 @@
     "sinon-chai": "~2.12.0",
     "source-map-support": "~0.4.15",
     "tslib": "~1.7.1",
-    "typescript": "~2.4.1",
-    "vscode": "1.1.4"
-  },
-  "peerDependencies": {
-    "tslib": "~1.7.1"
+    "typescript": "~2.4.1"
   },
   "dependencies": {
-    "@types/glob": "^5.0.30",
-    "@types/lodash": "4.14.71",
+    "glob": "^7.1.2",
+    "vscode": "1.1.4",
+    "tslib": "~1.7.1",
     "css-selector-tokenizer": "^0.7.0",
     "lodash": "4.17.4",
     "postcss": "^6.0.7",
