@@ -58,9 +58,9 @@ const rootClass = new Completion('.root', 'The root class', 'b');
 function importsDirective(rng: ProviderRange) {
     return new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}$0'), rng);
 }
-// function varsDirective(rng: ProviderRange) {
-//     return new Completion(':vars', 'Declare variables', 'a', new snippet(':vars {\n\t$1\n}$0'), rng);
-// }
+function varsDirective(rng: ProviderRange) {
+    return new Completion(':vars', 'Declare variables', 'a', new snippet(':vars {\n\t$1\n}$0'), rng);
+}
 const extendsDirective = new Completion(valueMapping.extends + ':', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
 const statesDirective = new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'));
 const mixinDirective = new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'));
@@ -82,8 +82,169 @@ function fileNameCompletion(name: string) {
 }
 // end completions
 
-
 type CompletionMap = { [s: string]: Completion };
+
+
+export interface CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[]
+    text: string[];
+}
+//TODO: add isVars to signature.
+
+
+export class RootClassProvider implements CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[] {
+        if (isTopLevel && isLineStart) {
+            return [rootClass];
+        } else {
+            return [];
+        }
+    }
+    text: string[] = ['.root']
+}
+
+export class ImportDirectiveProvider implements CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[] {
+        if (isTopLevel && isLineStart) {
+            return [importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position))];
+        } else {
+            return [];
+        }
+    }
+    text: string[] = [':import']
+}
+
+// Only one?
+export class VarsDirectiveProvider implements CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[] {
+        if (isTopLevel && isLineStart) {
+            return [varsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position))];
+        } else {
+            return [];
+        }
+    }
+    text: string[] = [':vars']
+}
+
+// Only one
+export class ExtendsDirectiveProvider implements CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[] {
+        if (isSimpleSelector && isLineStart) {
+            return [extendsDirective];
+        } else {
+            return [];
+        }
+    }
+    text: string[] = [valueMapping.extends]
+}
+
+// Only one
+export class StatesDirectiveProvider implements CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[] {
+        if (isSimpleSelector && isLineStart) {
+            return [statesDirective];
+        } else {
+            return [];
+        }
+    }
+    text: string[] = [valueMapping.states]
+}
+
+// Only one
+export class MixinDirectiveProvider implements CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[] {
+        if (isLineStart && !isImport) {
+            return [mixinDirective];
+        } else {
+            return [];
+        }
+    }
+    text: string[] = [valueMapping.mixin]
+}
+
+// Only one
+export class VariantDirectiveProvider implements CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[] {
+        if (isSimpleSelector && isLineStart) {
+            return [variantDirective];
+        } else {
+            return [];
+        }
+    }
+    text: string[] = [valueMapping.variant]
+}
+
+// Only one
+export class FromDirectiveProvider implements CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[] {
+        if (isImport && isLineStart) {
+            return [fromDirective];
+        } else {
+            return [];
+        }
+    }
+    text: string[] = [valueMapping.from]
+}
+
+// Only one
+export class NamedDirectiveProvider implements CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[] {
+        if (isImport && isLineStart) {
+            return [namedDirective];
+        } else {
+            return [];
+        }
+    }
+    text: string[] = [valueMapping.named]
+}
+
+// Only one
+export class DefaultDirectiveProvider implements CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[] {
+        if (isImport && isLineStart) {
+            return [defaultDirective];
+        } else {
+            return [];
+        }
+    }
+    text: string[] = [valueMapping.default]
+}
+
+// Top level
+// Extra files
+export class ClassCompletionProvider implements CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[] {
+        return [];
+    }
+    text: string[] = [''];
+}
+
+// In -st-extends
+// Extra files
+export class ExtendCompletionProvider implements CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[] {
+        return [];
+    }
+    text: string[] = [''];
+}
+
+// In -st-states
+// Extra files
+export class StateCompletionProvider implements CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[] {
+        return [];
+    }
+    text: string[] = [''];
+}
+
+// In -st-from
+// File list
+export class FilenameCompletionProvider implements CompletionProvider {
+    provide(meta: StylableMeta, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, isSimpleSelector: boolean): Completion[] {
+        return [];
+    }
+    text: string[] = [''];
+}
 
 
 function isIllegalLine(line: string): boolean {
@@ -102,22 +263,34 @@ export default class Provider {
     constructor(private resolver: VsCodeResolver) {
 
     }
-    public getClassDefinition(meta: StylableMeta, symbol: string) {
-        // const symbols = resolver.resolveSymbols(stylesheet);
 
-    }
+    providers = [
+        new RootClassProvider(),
+        new ImportDirectiveProvider(),
+        new VarsDirectiveProvider(),
+        new ExtendsDirectiveProvider(),
+        new StatesDirectiveProvider(),
+        new MixinDirectiveProvider(),
+        new VariantDirectiveProvider(),
+        new FromDirectiveProvider(),
+        new NamedDirectiveProvider(),
+        new DefaultDirectiveProvider(),
+        new ClassCompletionProvider(),
+        new ExtendCompletionProvider(),
+        new StateCompletionProvider(),
+        new FilenameCompletionProvider(),
+    ]
 
     public provideCompletionItemsFromSrc(
         src: string,
         position: ProviderPosition,
         filePath: string,
     ): Thenable<Completion[]> {
-
+        // debugger;
         let cursorLineIndex: number = position.character;
         let lines = src.split('\n');
         let currentLine = lines[position.line];
         let fixedSrc = src;
-        // console.log('Current line I: ', currentLine);
         if (currentLine.match(lineEndsRegexp)) {
             let currentLocation = 0;
             let splitLine = currentLine.split(lineEndsRegexp);
@@ -125,12 +298,11 @@ export default class Provider {
                 currentLocation += splitLine[i].length + 1;
                 if (currentLocation >= position.character) {
                     currentLine = splitLine[i];
-                    // console.log('Current line II: ', currentLine);
                     if (isIllegalLine(currentLine)) {
                         splitLine[i] = '\n'
                         lines.splice(position.line, 1, splitLine.join(''));
                         fixedSrc = lines.join('\n');
-                    }
+                    } //Bug here when working in single line mode - current line is wrong when between selectors
                     break;
                 } else {
                     cursorLineIndex -= splitLine[i].length + 1
@@ -143,8 +315,6 @@ export default class Provider {
             fixedSrc = lines.join('\n');
         }
 
-        // console.log('Made fixedSrc');
-        // console.log(fixedSrc);
         let meta: StylableMeta;
         try {
             meta = process(safeParse(fixedSrc, { from: filePath.indexOf('file://') === 0 ? filePath.slice(7) : filePath }));
@@ -152,22 +322,7 @@ export default class Provider {
             console.log(error);
             return Promise.resolve([]);
         }
-        // console.log('Calling resolveDependencies');
-        // console.log('Calling AST completions with: ')
-        // console.log('position: ', JSON.stringify(position, null, '\t'))
-        // console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
-        // console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n')
         return this.provideCompletionItemsFromAst(src, position, filePath, meta, currentLine, cursorLineIndex);
-
-
-        // return resolver.resolveDependencies(meta)
-        //     .then<Completion[]>(() => {
-        //         console.log('Calling AST completions with: ')
-        //         console.log('position: ', JSON.stringify(position, null, '\t'))
-        //         console.log('currentLine: ', JSON.stringify(currentLine, null, '\t'))
-        //         console.log('cursorLineIndex: ', JSON.stringify(cursorLineIndex, null, '\t'), '\n')
-        //         return this.provideCompletionItemsFromAst(src, position, filePath, resolver, meta, currentLine, cursorLineIndex)
-        //     });
 
     }
     public provideCompletionItemsFromAst(
@@ -178,8 +333,6 @@ export default class Provider {
         currentLine: string,
         cursorLineIndex: number
     ): Thenable<Completion[]> {
-        console.log('Starting provideCompletionItemsFromAst')
-        // debugger;
         const completions: Completion[] = [];
         const trimmedLine = currentLine.trim();
 
@@ -195,10 +348,23 @@ export default class Provider {
         const lastPart: PostCss.NodeBase = path[path.length - 1];
         const prevPart: PostCss.NodeBase = path[path.length - 2];
 
-        const lastSelector = prevPart && isSelector(prevPart) ? prevPart : lastPart && isSelector(lastPart) ? lastPart : null
-        if (lastSelector) {
-            var lastRule = <SRule>lastSelector;
+        const lastRule: SRule | null = prevPart && isSelector(prevPart) ? <SRule>prevPart : lastPart && isSelector(lastPart) ? <SRule>lastPart : null
 
+        let newCompletions: Completion[] = [];
+
+        this.providers.forEach(p => newCompletions.push(
+            ...p.provide(
+                meta,
+                position,
+                !lastRule,
+                p.text.some(s => s.indexOf(trimmedLine) === 0),
+                !!lastRule && lastRule.selector === ':import',
+                !!lastRule && !!/^\s*\.?\w*$/.test(lastRule.selector)
+            ))
+        );
+
+
+        if (lastRule) {
             if (lastChar === '-' || isSpacy(lastChar) || lastChar == "{") {
                 if (lastRule.selector === ':import') {
                     completions.push(...getNewCompletions({
@@ -243,16 +409,9 @@ export default class Provider {
 
             if (!Array.isArray(focusChunk) && isSelectorChunk(focusChunk)) {// || isSelectorInternalChunk(focusChunk)
                 focusChunk.classes.forEach((className) => {
-                    console.log('className: ', className)
 
                     const extendResolution = this.resolver.resolveExtends(meta, className);
-                    // const classResolution = this.resolver.resolveClass(meta, meta.mappedSymbols[className]);
                     const states: any[] = [];
-                    // if ((classResolution!.symbol as ClassSymbol)["-st-states"]) {
-                    //     Object.keys((classResolution!.symbol as ClassSymbol)["-st-states"]).forEach((name: string) => {
-                    //         states.push({ name, from: classResolution!.meta.source })
-                    //     });
-                    // }
 
                     extendResolution.forEach((s) => {
                         if (s.symbol._kind === 'class' && s.symbol[valueMapping.states]) {
@@ -272,7 +431,7 @@ export default class Provider {
             this.addExistingClasses(meta, completions, true);
         }
 
-        return Promise.resolve(completions);
+        return Promise.resolve(newCompletions);
     }
 
 

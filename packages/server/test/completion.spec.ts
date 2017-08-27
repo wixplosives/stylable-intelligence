@@ -192,10 +192,19 @@ describe('completion unit test', function () {
 
                 }
                 .gaga{
-                    -st-extends: zagzag;
-                }
-                .gaga:|
-                `).then((asserter) => {
+            //         -st-extends: zagzag;
+            //     }
+            //     .gaga:|
+            //     `
+            //     'comp.css':`
+            //     .root{
+            //         -st-states:shmover;
+            //     }
+            //     .zagzag{
+            //         -st-variant:true;
+            //     }
+            // `
+            ).then((asserter) => {
                     asserter.suggested([
                         asserters.stateCompletion('shmover', 'projectRoot/comp.css')
                     ]);
