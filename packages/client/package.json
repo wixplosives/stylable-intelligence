@@ -4,7 +4,6 @@
   "description": "Stylable Language Services Client",
   "author": "Nadav Abraami (nadav@wix.com)",
   "publisher": "Wix",
-  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git@github.com:wixplosives/stylable-intelligence.git"

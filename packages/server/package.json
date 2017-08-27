@@ -4,7 +4,6 @@
   "description": "Stylable Language Server",
   "author": "Nadav Abraami (nadav@wix.com)",
   "publisher": "Nadav Abraami (nadav@wix.com)",
-  "license": "MIT",
   "engines": {
     "node": "*",
     "vscode": "^1.14.2"
