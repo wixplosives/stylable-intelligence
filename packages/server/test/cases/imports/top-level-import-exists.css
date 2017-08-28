@@ -3,6 +3,10 @@
     -st-named: shlomo;
 }
 
+:vars {
+    color1: red;
+}
+
 :|
 
 .gaga {
