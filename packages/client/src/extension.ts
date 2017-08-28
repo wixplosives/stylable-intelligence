@@ -16,7 +16,7 @@ export function activate(context: ExtensionContext) {
     console.log('client lalala');
 
     let serverModule = context.asAbsolutePath(path.join('server', 'src', 'server.js'));
-    let debugOptions = { execArgv: ['--inspect=9229'] };
+    let debugOptions = { execArgv: ['--inspect'] };
 
 
     let serverOptions: ServerOptions = {

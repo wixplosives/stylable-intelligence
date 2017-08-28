@@ -4,14 +4,15 @@
   "description": "Stylable Language Server",
   "author": "Nadav Abraami (nadav@wix.com)",
   "publisher": "Nadav Abraami (nadav@wix.com)",
-  "license": "MIT",
   "engines": {
     "node": "*",
     "vscode": "^1.14.2"
   },
   "testGlob": "../client/server/test/**/*.spec.js?(x)",
   "scripts": {
-    "clear": "rimraf ../client/server",
+    "clear": "rimraf  -r ../client/server/**",
+    "vscode:prepublish": "rimraf node_modules ../client/server && yarn install --production && yarn packer",
+    "packer": "installServerIntoExtension ../client ./package.json ./tsconfig.publish.json && tsc -d -p ./tsconfig.publish.json",
     "compile": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc -p .",
     "watch": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc --watch -p .",
     "build": "tsc -d",
@@ -38,19 +39,14 @@
     "sinon": "~2.3.5",
     "sinon-chai": "~2.12.0",
     "source-map-support": "~0.4.15",
-    "tslib": "~1.7.1",
     "typescript": "~2.4.1",
     "webpack": "~3.3.0",
     "webpack-dev-server": "~2.6.1"
   },
-  "peerDependencies": {
-    "tslib": "~1.7.1"
-  },
   "dependencies": {
-    "@types/lodash": "4.14.71",
+    "tslib": "~1.7.1",
     "css-selector-tokenizer": "^0.7.0",
     "ipaddr": "^0.0.9",
-    "lodash": "4.17.4",
     "postcss": "^6.0.7",
     "postcss-nested": "^2.0.4",
     "stylable": "^4.0.0",
