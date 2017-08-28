@@ -1,14 +1,14 @@
 import * as asserters from '../test-kit/asserters';
 
-xdescribe('Variables', function () {
+describe('Variables', function () {
 
     it('should complete :vars at top level after ""', function () {
         return asserters.getCompletions('imports/top-level-no-chars.css').then((asserter) => {
                 asserter.suggested([
-                    asserters.varsCompletion
+                    asserters.varsCompletion,
+                    asserters.rootCompletion,
                 ]);
                 asserter.notSuggested([
-                    asserters.rootCompletion,
                     asserters.classCompletion('gaga'),
                     asserters.statesDirectiveCompletion,
                     asserters.extendsDirectiveCompletion,
@@ -34,12 +34,13 @@ xdescribe('Variables', function () {
             });
     });
 
-    it('should not complete :vars at top level if exists', function () {
-        return asserters.getCompletions('???.css').then((asserter) => {
+    it('should  complete :vars at top level even if exists', function () {
+        return asserters.getCompletions('imports/top-level-import-exists.css').then((asserter) => {
                 asserter.suggested([
+                    asserters.importCompletion,
+                    asserters.varsCompletion,
                 ]);
                 asserter.notSuggested([
-                    asserters.importCompletion,
                     asserters.rootCompletion,
                     asserters.classCompletion('gaga'),
                     asserters.statesDirectiveCompletion,
