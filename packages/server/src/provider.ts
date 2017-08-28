@@ -6,7 +6,8 @@ import { VsCodeResolver } from './adapters/vscode-resolver';
 import { getPositionInSrc, isContainer, isDeclaration, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
 import {
     parseSelector,
-    isSelectorChunk
+    isSelectorChunk,
+    SelectorChunk
 } from './utils/selector-analyzer';
 
 
@@ -349,7 +350,10 @@ export default class Provider {
 
         const lastRule: SRule | null = prevPart && isSelector(prevPart) ? <SRule>prevPart : lastPart && isSelector(lastPart) ? <SRule>lastPart : null
 
-        let ps = parseSelector(trimmedLine); ps;
+        let ps = parseSelector(trimmedLine).selector; ps;
+        let currentSelector = (ps[ps.length-1] as SelectorChunk).classes[0]
+        let tr = this.resolver.resolveExtends(meta, currentSelector);
+        let states = tr.reduce((acc,t) => acc.concat(Object.keys(t.symbol['-st-states'])),[]); states;
         let newCompletions: Completion[] = [];
 
         this.providers.forEach(p => newCompletions.push(
