@@ -1,6 +1,6 @@
 'use strict';
 import { TextDocument } from 'vscode-languageserver';
-import { StylableMeta, cachedProcessFile, StylableResolver, safeParse, process, valueMapping, CSSResolve } from 'stylable';
+import { StylableMeta, cachedProcessFile, StylableResolver, safeParse, process,  } from 'stylable';
 
 
 export class VsCodeResolver extends StylableResolver {
@@ -22,34 +22,4 @@ export class VsCodeResolver extends StylableResolver {
             }), () => {/* requireModule - handle js imports */ });
 
     }
-
-    resolveExtends(meta: StylableMeta, className: string): CSSResolve[] {
-
-        let extendPath = [];
-        const resolvedClass = this.resolveClass(meta, meta.classes[className])
-
-        if (resolvedClass && resolvedClass._kind === 'css' && resolvedClass.symbol._kind === 'class') {
-            let current = resolvedClass;
-            let extend = resolvedClass.symbol[valueMapping.extends];
-
-            while (current) {
-                extendPath.push(current);
-                if (!extend) {
-                    break;
-                }
-                let res = this.resolve(extend);
-                if (res && res._kind === 'css' && res.symbol._kind === 'class') {
-                    current = res;
-                    extend = res.symbol[valueMapping.extends];
-                } else {
-                    break;
-                }
-            }
-
-        }
-
-        return extendPath
-    }
-
-
 }

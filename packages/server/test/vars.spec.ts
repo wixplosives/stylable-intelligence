@@ -7,9 +7,9 @@ describe('Variables', function () {
                 asserter.suggested([
                     asserters.varsCompletion,
                     asserters.rootCompletion,
+                    asserters.classCompletion('gaga'),
                 ]);
                 asserter.notSuggested([
-                    asserters.classCompletion('gaga'),
                     asserters.statesDirectiveCompletion,
                     asserters.extendsDirectiveCompletion,
                     asserters.mixinDirectiveCompletion,
