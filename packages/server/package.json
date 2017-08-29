@@ -1,6 +1,6 @@
 {
   "name": "stylable-intelligence-server",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Stylable Language Server",
   "author": "Nadav Abraami (nadav@wix.com)",
   "publisher": "Nadav Abraami (nadav@wix.com)",
@@ -15,6 +15,7 @@
   "testGlob": "../client/server/test/**/*.spec.js?(x)",
   "scripts": {
     "clear": "rimraf  -r ../client/server/**",
+    "prepublish": "tsc -d -p ./tsconfig.publish-npm.json",
     "vscode:prepublish": "rimraf node_modules ../client/server && yarn install --production && yarn packer",
     "packer": "installServerIntoExtension ../client ./package.json ./tsconfig.publish.json && tsc -d -p ./tsconfig.publish.json",
     "compile": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc -p .",
