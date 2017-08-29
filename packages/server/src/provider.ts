@@ -92,19 +92,18 @@ export default class Provider {
             console.log(error);
             return Promise.resolve([]);
         }
-        return this.provideCompletionItemsFromAst(src, position, filePath, meta, currentLine, cursorLineIndex);
+        return this.provideCompletionItemsFromAst(src, position, meta, currentLine, cursorLineIndex);
 
     }
     public provideCompletionItemsFromAst(
         src: string,
         position: ProviderPosition,
-        filePath: string,
         meta: StylableMeta,
         currentLine: string,
         cursorLineIndex: number
     ): Thenable<Completion[]> {
         const completions: Completion[] = [];
-        let options = this.createProviderOptions(src, position, filePath, meta, currentLine, cursorLineIndex)
+        let options = this.createProviderOptions(src, position, meta, currentLine, cursorLineIndex)
 
         this.providers.forEach(p => {
             options.isLineStart = p.text.some((s:string)=> s.indexOf(currentLine.trim()) === 0)
@@ -117,7 +116,6 @@ export default class Provider {
     private createProviderOptions(
         src: string,
         position: ProviderPosition,
-        filePath: string,
         meta: StylableMeta,
         currentLine: string,
         cursorLineIndex: number) {
@@ -129,8 +127,7 @@ export default class Provider {
 
         const path = pathFromPosition(meta.rawAst, position1Based);
 
-        const posInSrc = getPositionInSrc(src, position);
-        const lastChar = src.charAt(posInSrc);
+        const lastChar = src.charAt(getPositionInSrc(src, position));
         const lastPart: PostCss.NodeBase = path[path.length - 1];
         const prevPart: PostCss.NodeBase = path[path.length - 2];
 
