@@ -1,8 +1,16 @@
 import { StylableMeta, SRule } from 'stylable';
 import { CSSResolve } from 'stylable/dist/src';
 
+
 export interface CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[]
+    provide(meta: StylableMeta,
+        lastRule: SRule | null,
+        lastChar: string, position: ProviderPosition,
+        isTopLevel: boolean,
+        isLineStart: boolean,
+        isImport: boolean,
+        insideSimpleSelector: boolean,
+        currentSelector: CSSResolve[]): Completion[]
     text: string[];
 }
 
