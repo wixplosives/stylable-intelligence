@@ -1,12 +1,16 @@
 {
   "name": "stylable-intelligence-server",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Stylable Language Server",
   "author": "Nadav Abraami (nadav@wix.com)",
   "publisher": "Nadav Abraami (nadav@wix.com)",
   "engines": {
     "node": "*",
     "vscode": "^1.14.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wixplosives/stylable-intelligence/"
   },
   "testGlob": "../client/server/test/**/*.spec.js?(x)",
   "scripts": {
