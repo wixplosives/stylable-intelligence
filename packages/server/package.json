@@ -1,10 +1,11 @@
 {
   "name": "stylable-intelligence-server",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Stylable Language Server",
   "author": "Nadav Abraami (nadav@wix.com)",
   "publisher": "Nadav Abraami (nadav@wix.com)",
   "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "engines": {
     "node": "*",
     "vscode": "^1.14.2"
