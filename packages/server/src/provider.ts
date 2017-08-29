@@ -3,7 +3,6 @@
 import * as PostCss from 'postcss';
 import { StylableMeta, process, safeParse, SRule, StylableResolver} from 'stylable';
 import { getPositionInSrc, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
-import {MinimalDocs} from './minimal-docs'
 import {ProviderPosition,
         Completion,
         RootClassProvider,
@@ -33,7 +32,7 @@ function isIllegalLine(line: string): boolean {
 const lineEndsRegexp = /({|}|;)/;
 
 export default class Provider {
-    constructor(private resolver: StylableResolver, private docs:MinimalDocs) {}
+    constructor(private resolver: StylableResolver) {}
 
     providers = [
         new RootClassProvider(),
@@ -110,7 +109,6 @@ export default class Provider {
             completions.push(...p.provide(options))
         }
         );
-        this.docs;
         return Promise.resolve(completions);
     }
     private createProviderOptions(
