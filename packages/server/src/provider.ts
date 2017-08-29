@@ -1,9 +1,10 @@
 //must remain independent from vscode
 
 import * as PostCss from 'postcss';
-import { StylableMeta, process, safeParse, valueMapping, SRule } from 'stylable';
-import { VsCodeResolver } from './adapters/vscode-resolver';
+import { StylableMeta, process, safeParse, valueMapping, SRule, StylableResolver} from 'stylable';
 import { getPositionInSrc, isContainer, isDeclaration, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
+import {MinimalDocs} from './minimal-docs'
+
 import {
     parseSelector,
     isSelectorChunk
@@ -258,10 +259,9 @@ function isSpacy(char: string) {
     return char === '' || char === ' ' || char === '\t' || char === '\n';
 }
 
-export default class Provider {
-    constructor(private resolver: VsCodeResolver) {
 
-    }
+export default class Provider {
+    constructor(private resolver: StylableResolver, private docs:MinimalDocs) {}
 
     providers = [
         new RootClassProvider(),
@@ -391,7 +391,7 @@ export default class Provider {
                         .filter(k => meta.mappedSymbols[k]._kind === 'import')
                         .forEach(name => completions.push(extendCompletion(name)))
                 } else if (trimmedLine.indexOf('-st-from:') === 0) {
-                    this.resolver.docs.keys().forEach(k => completions.push(fileNameCompletion(k)))
+                    this.docs.keys().forEach(k => completions.push(fileNameCompletion(k)))
                 }
             }
         }
@@ -414,7 +414,7 @@ export default class Provider {
                     const extendResolution = this.resolver.resolveExtends(meta, className);
                     const states: any[] = [];
 
-                    extendResolution.forEach((s) => {
+                    extendResolution.forEach((s:any) => {
                         if (s.symbol._kind === 'class' && s.symbol[valueMapping.states]) {
                             Object.keys(s.symbol[valueMapping.states]).forEach((name: string) => states.push({ name, from: s.meta.source }));
                         }
