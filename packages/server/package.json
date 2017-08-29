@@ -1,9 +1,10 @@
 {
   "name": "stylable-intelligence-server",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "Stylable Language Server",
   "author": "Nadav Abraami (nadav@wix.com)",
   "publisher": "Nadav Abraami (nadav@wix.com)",
+  "main": "./dist/src/index.js",
   "engines": {
     "node": "*",
     "vscode": "^1.14.2"
@@ -57,5 +58,10 @@
     "stylable": "^4.0.0",
     "vscode-languageclient": "^3.3.0",
     "vscode-languageserver": "^3.3.0"
-  }
+  },
+  "files": [
+    "dist",
+    "src",
+    "test-kit"
+  ]
 }
