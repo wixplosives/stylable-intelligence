@@ -1,9 +1,7 @@
-import { StylableMeta, SRule } from 'stylable';
-import { CSSResolve } from 'stylable';
-import { Completion, CompletionProvider, ProviderPosition} from "./completion-provider";
+import { Completion, CompletionProvider, ProviderOptions } from "./completion-provider";
 
 export class ExtendCompletionProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
+    provide(options: ProviderOptions): Completion[] {
         return [];
     }
     text: string[] = [''];

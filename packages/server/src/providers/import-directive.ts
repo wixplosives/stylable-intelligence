@@ -1,15 +1,14 @@
-import { StylableMeta, SRule } from 'stylable';
-import { CSSResolve } from 'stylable';
-import { Completion, CompletionProvider, ProviderPosition, ProviderRange, snippet} from "./completion-provider";
+import { Completion, CompletionProvider, ProviderPosition, ProviderRange, snippet, ProviderOptions } from "./completion-provider";
 
 function importsDirective(rng: ProviderRange) {
     return new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}$0'), rng);
 }
 
 export class ImportDirectiveProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
-        if (isTopLevel && isLineStart) {
-            return [importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position))];
+    provide(options: ProviderOptions): Completion[] {
+        let position = options.position
+        if (options.isTopLevel && options.isLineStart) {
+            return [importsDirective(new ProviderRange(new ProviderPosition(options.position.line, Math.max(0, position.character - 1)), position))];
         } else {
             return [];
         }

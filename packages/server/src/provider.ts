@@ -17,53 +17,14 @@ import {ProviderPosition,
         NamedDirectiveProvider,
         DefaultDirectiveProvider,
         ClassCompletionProvider,
-        classCompletion,
         ExtendCompletionProvider,
-        StateCompletionProvider,
-        FilenameCompletionProvider
+        StateCompletionProvider
     } from './providers'
 
 import {
     parseSelector,
     SelectorChunk
 } from './utils/selector-analyzer';
-
-// Completions
-// CompItemKinds for icons:
-//  .<class> - Class
-// value(<var>) -> Variable
-// -st-named -> (var -> Variable, cls -> Class)
-// :<state> -> Enum
-// :vars -> Keyword
-// :import -> Keyword
-// -st-* directive -> Keyword
-//
-
-// function extendCompletion(symbolName: string, range?: ProviderRange) {
-//     return new Completion(symbolName, 'yours', 'a', new snippet(' ' + symbolName + ';\n'), range)
-// }
-
-// function fileNameCompletion(name: string) {
-//     return new Completion(name, '', 'a', './' + name);
-// }
-// end completions
-
-
-
-//TODO: add isVars to signature.
-
-
-
-
-
-// In -st-extends
-// Extra files
-
-
-// In -st-from
-// File list
-
-
 
 function isIllegalLine(line: string): boolean {
     return !!/^\s*[-\.:]*\s*$/.test(line)
@@ -87,8 +48,7 @@ export default class Provider {
         new DefaultDirectiveProvider(),
         new ClassCompletionProvider(),
         new ExtendCompletionProvider(),
-        new StateCompletionProvider(),
-        new FilenameCompletionProvider(),
+        new StateCompletionProvider()
     ]
 
     public provideCompletionItemsFromSrc(
@@ -144,7 +104,23 @@ export default class Provider {
         cursorLineIndex: number
     ): Thenable<Completion[]> {
         const completions: Completion[] = [];
-        const trimmedLine = currentLine.trim();
+        let options = this.createProviderOptions(src, position, filePath, meta, currentLine, cursorLineIndex)
+
+        this.providers.forEach(p => {
+            options.isLineStart = p.text.some((s:string)=> s.indexOf(currentLine.trim()) === 0)
+            completions.push(...p.provide(options))
+        }
+        );
+        this.docs;
+        return Promise.resolve(completions);
+    }
+    private createProviderOptions(
+        src: string,
+        position: ProviderPosition,
+        filePath: string,
+        meta: StylableMeta,
+        currentLine: string,
+        cursorLineIndex: number) {
 
         const position1Based: ProviderPosition = {
             line: position.line + 1,
@@ -160,52 +136,21 @@ export default class Provider {
 
         const lastRule: SRule | null = prevPart && isSelector(prevPart) ? <SRule>prevPart : lastPart && isSelector(lastPart) ? <SRule>lastPart : null
 
-        let ps = parseSelector(trimmedLine, cursorLineIndex);
-        // let currentSelector = ps.target.focusChunk;
+        let ps = parseSelector( currentLine.trim(), cursorLineIndex);
         let currentSelector = (ps.selector[ps.selector.length - 1] as SelectorChunk).classes[0]  //Gives last. Replace with one at cursor position.
         let tr = currentSelector ? this.resolver.resolveExtends(meta, currentSelector) : [];
 
-        this.providers.forEach(p => completions.push(
-            ...p.provide(
-                meta,
-                lastRule,
-                lastChar,
-                position,
-                !lastRule,
-                p.text.some(s => s.indexOf(trimmedLine) === 0),
-                !!lastRule && lastRule.selector === ':import',
-                !!lastRule && !!/^\s*\.?\w*$/.test(lastRule.selector),
-                tr
-            ))
-        );
-        this.docs;
-        return Promise.resolve(completions);
-    }
-
-
-    addExistingClasses(meta: StylableMeta | undefined, completions: Completion[], addDefaultImport: boolean = false) {
-        if (meta == undefined)
-            return;
-        Object.keys(meta.mappedSymbols) // Add imported classes.
-            .filter((s) => { return meta.mappedSymbols[s]._kind === "import" })
-            .filter((s) => {
-                return this.resolver.deepResolve(meta.mappedSymbols[s])
-                    && this.resolver.deepResolve(meta.mappedSymbols[s])!.symbol._kind === "class"
-            }).forEach((className: string) => {
-                if (addDefaultImport && (meta.mappedSymbols[className] as any).type === "default") {
-                    completions.push(classCompletion(className, true));
-                }
-                if ((meta.mappedSymbols[className] as any).type === "named") {
-                    completions.push(classCompletion(className));
-                }
-            });
-
-        Object.keys(meta.mappedSymbols) // Add local classes.
-            .filter((s) => { return meta.mappedSymbols[s]._kind === "class" })
-            .filter(s => s !== "root")
-            .forEach((className: string) => {
-                completions.push(classCompletion(className));
-            });
+        return {
+            meta: meta,
+            lastRule: lastRule,
+            lastChar: lastChar,
+            position: position,
+            isTopLevel: !lastRule,
+            isLineStart:  false,
+            isImport: !!lastRule && lastRule.selector === ':import',
+            insideSimpleSelector: !!lastRule && !!/^\s*\.?\w*$/.test(lastRule.selector),
+            currentSelector: tr
+        }
     }
 
 }

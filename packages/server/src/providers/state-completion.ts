@@ -1,12 +1,10 @@
-import { StylableMeta, SRule } from 'stylable';
-import { CSSResolve } from 'stylable';
-import { Completion, CompletionProvider, ProviderPosition, snippet, ProviderRange} from "./completion-provider";
+import { Completion, CompletionProvider, ProviderPosition, snippet, ProviderRange, ProviderOptions} from "./completion-provider";
 
 export class StateCompletionProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
-        if (isTopLevel && !!currentSelector) {
-            let states = currentSelector.reduce((acc: string[][], t) => acc.concat(Object.keys((t.symbol as any)['-st-states'] || []).map(s => [s, t.meta.source])), []);
-            return states.reduce((acc: Completion[], st) => { acc.push(stateCompletion(st[0], st[1], position)); return acc; }, [])
+    provide(options: ProviderOptions): Completion[] {
+        if (options.isTopLevel && !!options.currentSelector) {
+            let states = options.currentSelector.reduce((acc: string[][], t) => acc.concat(Object.keys((t.symbol as any)['-st-states'] || []).map(s => [s, t.meta.source])), []);
+            return states.reduce((acc: Completion[], st) => { acc.push(stateCompletion(st[0], st[1], options.position)); return acc; }, [])
         } else {
             return [];
         }
