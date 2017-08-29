@@ -11,16 +11,14 @@ import {
     TextEdit,
     // NotificationType
 } from 'vscode-languageserver';
-import { VsCodeResolver } from './adapters/vscode-resolver';
-import Provider, { Completion, ProviderPosition, ProviderRange } from './provider';
+import { createProvider} from './provider-factory';
+import { Completion, ProviderPosition, ProviderRange } from './provider';
 import {createDiagnosis} from './diagnosis'
 let workspaceRoot: string;
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const documents: TextDocuments = new TextDocuments();
 
-const resolver = new VsCodeResolver(documents);
-
-const provider = new Provider(resolver);
+const provider = createProvider(documents);
 
 documents.listen(connection);
 
@@ -75,14 +73,3 @@ documents.onDidChangeContent(function(change){
     let diagnostics = createDiagnosis(change.document);
     connection.sendDiagnostics({uri: change.document.uri, diagnostics: diagnostics})
 })
-
-
-// function getRange(rng: ProviderRange | undefined): Range | undefined {
-//     if (!rng) {
-//         return;
-//     }
-//     const r = Range.create(Position.create(rng.start.line, rng.start.character), Position.create(rng.end.line, rng.end.character));
-//     return r
-// }
-
-
