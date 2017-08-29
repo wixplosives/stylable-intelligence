@@ -8,7 +8,6 @@ import {MinimalDocs} from './minimal-docs'
 
 import {
     parseSelector,
-    isSelectorChunk,
     SelectorChunk
 } from './utils/selector-analyzer';
 
@@ -74,18 +73,16 @@ const defaultDirective = new Completion('-st-default:', 'Default object export n
 function classCompletion(className: string, isDefaultImport?: boolean) {
     return new Completion((isDefaultImport ? '' : '.') + className, 'mine', 'b')
 }
-function extendCompletion(symbolName: string, range?: ProviderRange) {
-    return new Completion(symbolName, 'yours', 'a', new snippet(' ' + symbolName + ';\n'), range)
-}
+// function extendCompletion(symbolName: string, range?: ProviderRange) {
+//     return new Completion(symbolName, 'yours', 'a', new snippet(' ' + symbolName + ';\n'), range)
+// }
 function stateCompletion(stateName: string, from: string, pos: ProviderPosition) {
     return new Completion(':' + stateName, 'from: ' + from, 'a', new snippet(':' + stateName), singleLineRange(pos.line, pos.character - 1, pos.character));
 }
-function fileNameCompletion(name: string) {
-    return new Completion(name, '', 'a', './' + name);
-}
+// function fileNameCompletion(name: string) {
+//     return new Completion(name, '', 'a', './' + name);
+// }
 // end completions
-
-type CompletionMap = { [s: string]: Completion };
 
 
 export interface CompletionProvider {
@@ -259,14 +256,7 @@ function isIllegalLine(line: string): boolean {
     return !!/^\s*[-\.:]*\s*$/.test(line)
 }
 
-
 const lineEndsRegexp = /({|}|;)/;
-
-
-function isSpacy(char: string) {
-    return char === '' || char === ' ' || char === '\t' || char === '\n';
-}
-
 
 export default class Provider {
     constructor(private resolver: StylableResolver, private docs:MinimalDocs) {}
@@ -362,9 +352,7 @@ export default class Provider {
         let currentSelector = (ps.selector[ps.selector.length - 1] as SelectorChunk).classes[0]  //Gives last. Replace with one at cursor position.
         let tr = currentSelector ? this.resolver.resolveExtends(meta, currentSelector) : [];
 
-        let newCompletions: Completion[] = [];
-
-        this.providers.forEach(p => newCompletions.push(
+        this.providers.forEach(p => completions.push(
             ...p.provide(
                 meta,
                 lastRule,
@@ -377,76 +365,8 @@ export default class Provider {
                 tr
             ))
         );
-
-
-        if (lastRule) {
-            if (lastChar === '-' || isSpacy(lastChar) || lastChar == "{") {
-                if (lastRule.selector === ':import') {
-                    completions.push(...getNewCompletions({
-                        "-st-from": fromDirective,
-                        "-st-default": defaultDirective,
-                        "-st-named": namedDirective
-                    }, lastRule));
-                } else {
-
-                    const declarationBlockDirectives: CompletionMap = {
-                        '-st-mixin': mixinDirective
-                    };
-                    if (!!/^\s*\.?\w*$/.test(lastRule.selector)) {  //Simple selector. Need better way.
-                        declarationBlockDirectives["-st-extends"] = extendsDirective;
-                        declarationBlockDirectives["-st-variant"] = variantDirective;
-                        declarationBlockDirectives["-st-states"] = statesDirective;
-                    }
-                    completions.push(...getNewCompletions(declarationBlockDirectives, lastRule));
-                }
-            } else if (meta && lastChar == ":" && trimmedLine.split(':').length === 2) {
-                if (trimmedLine.indexOf('-st-extends:') === 0) {
-                    Object.keys(meta.mappedSymbols)
-                        .filter(k => meta.mappedSymbols[k]._kind === 'import')
-                        .forEach(name => completions.push(extendCompletion(name)))
-                } else if (trimmedLine.indexOf('-st-from:') === 0) {
-                    this.docs.keys().forEach(k => completions.push(fileNameCompletion(k)))
-                }
-            }
-        }
-        if (trimmedLine.length < 2) {
-            if ((lastChar === ':' || isSpacy(lastChar)) && (<PostCss.Root>lastPart).type === 'root') {
-                completions.push(importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position)));
-            }
-            if (lastChar === '.' || isSpacy(lastChar)) {
-                completions.push(rootClass);
-                this.addExistingClasses(meta, completions, true);
-            }
-        } else if (lastChar === ':' && meta !== undefined) {
-
-            const selectorRes = parseSelector(currentLine, cursorLineIndex);//position.character);
-            const focusChunk = selectorRes.target.focusChunk;
-
-            if (!Array.isArray(focusChunk) && isSelectorChunk(focusChunk)) {// || isSelectorInternalChunk(focusChunk)
-                focusChunk.classes.forEach((className) => {
-
-                    const extendResolution = this.resolver.resolveExtends(meta, className);
-                    const states: any[] = [];
-
-                    extendResolution.forEach((s:any) => {
-                        if (s.symbol._kind === 'class' && s.symbol[valueMapping.states]) {
-                            Object.keys(s.symbol[valueMapping.states]).forEach((name: string) => states.push({ name, from: s.meta.source }));
-                        }
-                    });
-
-                    states.forEach((stateDef) => {
-                        if (focusChunk.states.indexOf(stateDef.name) !== -1) { return }
-                        completions.push(stateCompletion(stateDef.name, stateDef.from, position))
-                    });
-
-                })
-            }
-        } else {
-            completions.push(rootClass);
-            this.addExistingClasses(meta, completions, true);
-        }
-
-        return Promise.resolve(newCompletions);
+        this.docs;
+        return Promise.resolve(completions);
     }
 
 
@@ -475,16 +395,4 @@ export default class Provider {
             });
     }
 
-}
-
-// function getSelectorFromPosition(src: string, index: number) {}
-
-function getNewCompletions(completionMap: CompletionMap, ruleset: PostCss.Rule): Completion[] {
-    ruleset.nodes!.forEach(node => {
-        let dec = node as PostCss.Declaration;
-        if (completionMap[dec.prop]) {
-            delete completionMap[dec.prop]
-        }
-    });
-    return Object.keys(completionMap).map(name => completionMap[name]);
 }
