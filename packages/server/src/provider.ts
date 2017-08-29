@@ -120,17 +120,10 @@ export default class Provider {
         currentLine: string,
         cursorLineIndex: number) {
 
-        const position1Based: ProviderPosition = {
-            line: position.line + 1,
-            character: position.character
-        }
-
-        const path = pathFromPosition(meta.rawAst, position1Based);
-
+        const path = pathFromPosition(meta.rawAst, {line: position.line +1 , character: position.character});
         const lastChar = src.charAt(getPositionInSrc(src, position));
         const lastPart: PostCss.NodeBase = path[path.length - 1];
         const prevPart: PostCss.NodeBase = path[path.length - 2];
-
         const lastRule: SRule | null = prevPart && isSelector(prevPart) ? <SRule>prevPart : lastPart && isSelector(lastPart) ? <SRule>lastPart : null
 
         let ps = parseSelector( currentLine.trim(), cursorLineIndex);
