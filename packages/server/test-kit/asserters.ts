@@ -3,8 +3,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { TextDocument } from 'vscode-languageserver-types';
 
-import { VsCodeResolver } from '../src/adapters/vscode-resolver';
-import Provider, { Completion, ProviderRange, snippet } from '../src/provider';
+import {createProvider} from '../src/provider-factory'
+import { Completion, ProviderRange, snippet } from '../src/provider';
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {
@@ -68,7 +68,7 @@ function completionsIntenal(fileName: string, src: string): Thenable<Completion[
 
     src = src.replace('|', "");
 
-    const resolver = new VsCodeResolver({
+    const provider = createProvider({
         get(uri: string): TextDocument {
             console.log(uri)
             return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(7)).toString())
@@ -78,7 +78,6 @@ function completionsIntenal(fileName: string, src: string): Thenable<Completion[
         }
     });
 
-    const provider = new Provider(resolver);
 
     return provider.provideCompletionItemsFromSrc(src, {
         line: linesTillCaret.length - 1,
