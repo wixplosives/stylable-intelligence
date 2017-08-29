@@ -12,7 +12,7 @@ import {
     // NotificationType
 } from 'vscode-languageserver';
 import { createProvider} from './provider-factory';
-import { Completion, ProviderPosition, ProviderRange } from './provider';
+import { Completion, ProviderPosition, ProviderRange } from './providers/completion-provider';
 import {createDiagnosis} from './diagnosis'
 let workspaceRoot: string;
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));

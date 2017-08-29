@@ -4,7 +4,7 @@ import * as path from 'path';
 import { TextDocument } from 'vscode-languageserver-types';
 
 import {createProvider} from '../src/provider-factory'
-import { Completion, ProviderRange, snippet } from '../src/provider';
+import { Completion, ProviderRange, snippet } from '../src/providers/completion-provider';
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {
