@@ -25,11 +25,11 @@ function createDiagnostics(files:{[filePath:string]:string}, path:string) {
 
 describe('diagnostics', function () {
     it('should create basic diagnostics', function(){
-        let fileName = '/some-file.css'
+        let filePath = 'some-file.css'
 
         let diagnostics = createDiagnostics({
-            [fileName]:'.gaga .root{}'
-        }, fileName)
+            [filePath]:'.gaga .root{}'
+        }, filePath)
 
         return expect(diagnostics).to.deep.include({
             "range":{
