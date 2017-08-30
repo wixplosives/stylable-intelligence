@@ -1,14 +1,13 @@
-import { CSSResolve } from 'stylable/dist/src';
 //must remain independent from vscode
 
 import * as PostCss from 'postcss';
-import { StylableMeta, process, safeParse, valueMapping, SRule, StylableResolver} from 'stylable';
-import { getPositionInSrc, isContainer, isDeclaration, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
-import {MinimalDocs} from './minimal-docs'
-
+import { StylableMeta, process, safeParse, valueMapping, SRule, StylableResolver, CSSResolve } from 'stylable';
+import { /*getPositionInSrc,*/ isContainer, isDeclaration, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
+import { MinimalDocs } from './minimal-docs'
+// const psp = require('postcss-selector-parser');
 import {
     parseSelector,
-    SelectorChunk
+    // SelectorChunk
 } from './utils/selector-analyzer';
 
 
@@ -56,20 +55,36 @@ function singleLineRange(line: number, start: number, end: number): ProviderRang
 // :import -> Keyword
 // -st-* directive -> Keyword
 //
-const rootClass = new Completion('.root', 'The root class', 'b');
+function rootClass(rng: ProviderRange) {
+    return new Completion('.root', 'The root class', 'b');
+}
 function importsDirective(rng: ProviderRange) {
     return new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}$0'), rng);
 }
 function varsDirective(rng: ProviderRange) {
     return new Completion(':vars', 'Declare variables', 'a', new snippet(':vars {\n\t$1\n}$0'), rng);
 }
-const extendsDirective = new Completion(valueMapping.extends + ':', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
-const statesDirective = new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'));
-const mixinDirective = new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'));
-const variantDirective = new Completion('-st-variant:', '', 'a', new snippet('-st-variant: true;'));
-const fromDirective = new Completion('-st-from:', 'Path to library', 'a', new snippet('-st-from: "$1";'));
-const namedDirective = new Completion('-st-named:', 'Named object export name', 'a', new snippet('-st-named: $1;'));
-const defaultDirective = new Completion('-st-default:', 'Default object export name', 'a', new snippet('-st-default: $1;'));
+function extendsDirective(rng: ProviderRange) {
+    return new Completion(valueMapping.extends + ':', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), rng, true);
+}
+function statesDirective(rng: ProviderRange) {
+    return new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'),rng);
+}
+function mixinDirective(rng: ProviderRange) {
+    return new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'), rng);
+}
+function variantDirective(rng: ProviderRange)  {
+    return new Completion('-st-variant:', '', 'a', new snippet('-st-variant: true;'), rng);
+}
+function fromDirective(rng: ProviderRange)  {
+    return  new Completion('-st-from:', 'Path to library', 'a', new snippet('-st-from: "$1";'), rng);
+}
+function namedDirective(rng: ProviderRange)  {
+    return  new Completion('-st-named:', 'Named object export name', 'a', new snippet('-st-named: $1;'), rng);
+}
+function defaultDirective(rng: ProviderRange)  {
+    return  new Completion('-st-default:', 'Default object export name', 'a', new snippet('-st-default: $1;'), rng);
+}
 function classCompletion(className: string, isDefaultImport?: boolean) {
     return new Completion((isDefaultImport ? '' : '.') + className, 'mine', 'b')
 }
@@ -86,16 +101,16 @@ function stateCompletion(stateName: string, from: string, pos: ProviderPosition)
 
 
 export interface CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[]
+    provide(meta: StylableMeta, lastRule: SRule | null, trimmedLine: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[]
     text: string[];
 }
 //TODO: add isVars to signature.
 
 
 export class RootClassProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
+    provide(meta: StylableMeta, lastRule: SRule | null, trimmedLine: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
         if (isTopLevel && isLineStart) {
-            return [rootClass];
+            return [rootClass(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - trimmedLine.length)), position))];
         } else {
             return [];
         }
@@ -104,9 +119,9 @@ export class RootClassProvider implements CompletionProvider {
 }
 
 export class ImportDirectiveProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
+    provide(meta: StylableMeta, lastRule: SRule | null, trimmedLine: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
         if (isTopLevel && isLineStart) {
-            return [importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position))];
+            return [importsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - trimmedLine.length)), position))];
         } else {
             return [];
         }
@@ -115,9 +130,9 @@ export class ImportDirectiveProvider implements CompletionProvider {
 }
 
 export class VarsDirectiveProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
+    provide(meta: StylableMeta, lastRule: SRule | null, trimmedLine: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
         if (isTopLevel && isLineStart) {
-            return [varsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position))];
+            return [varsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - trimmedLine.length)), position))];
         } else {
             return [];
         }
@@ -126,10 +141,10 @@ export class VarsDirectiveProvider implements CompletionProvider {
 }
 
 export class ExtendsDirectiveProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
+    provide(meta: StylableMeta, lastRule: SRule | null, trimmedLine: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
         if (insideSimpleSelector && isLineStart && lastRule &&
             (isContainer(lastRule) && lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
-            return [extendsDirective];
+            return [extendsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - trimmedLine.length)), position))];
         } else {
             return [];
         }
@@ -138,10 +153,10 @@ export class ExtendsDirectiveProvider implements CompletionProvider {
 }
 
 export class StatesDirectiveProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
+    provide(meta: StylableMeta, lastRule: SRule | null, trimmedLine: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
         if (insideSimpleSelector && isLineStart && lastRule &&
             (isContainer(lastRule) && lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
-            return [statesDirective];
+            return [statesDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - trimmedLine.length)), position))];
         } else {
             return [];
         }
@@ -150,10 +165,10 @@ export class StatesDirectiveProvider implements CompletionProvider {
 }
 
 export class MixinDirectiveProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
+    provide(meta: StylableMeta, lastRule: SRule | null, trimmedLine: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
         if (isLineStart && !isImport && lastRule &&
             (isContainer(lastRule) && lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
-            return [mixinDirective];
+            return [mixinDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - trimmedLine.length)), position))];
         } else {
             return [];
         }
@@ -162,10 +177,10 @@ export class MixinDirectiveProvider implements CompletionProvider {
 }
 
 export class VariantDirectiveProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
+    provide(meta: StylableMeta, lastRule: SRule | null, trimmedLine: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
         if (insideSimpleSelector && isLineStart && lastRule &&
             (isContainer(lastRule) && lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
-            return [variantDirective];
+            return [variantDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - trimmedLine.length)), position))];
         } else {
             return [];
         }
@@ -174,10 +189,10 @@ export class VariantDirectiveProvider implements CompletionProvider {
 }
 
 export class FromDirectiveProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
+    provide(meta: StylableMeta, lastRule: SRule | null, trimmedLine: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
         if (isImport && isLineStart && lastRule &&
             (isContainer(lastRule) && lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
-            return [fromDirective];
+            return [fromDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - trimmedLine.length)), position))];
         } else {
             return [];
         }
@@ -186,10 +201,10 @@ export class FromDirectiveProvider implements CompletionProvider {
 }
 
 export class NamedDirectiveProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
+    provide(meta: StylableMeta, lastRule: SRule | null, trimmedLine: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
         if (isImport && isLineStart && lastRule &&
             (isContainer(lastRule) && lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
-            return [namedDirective];
+            return [namedDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - trimmedLine.length)), position))];
         } else {
             return [];
         }
@@ -198,10 +213,10 @@ export class NamedDirectiveProvider implements CompletionProvider {
 }
 
 export class DefaultDirectiveProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
+    provide(meta: StylableMeta, lastRule: SRule | null, trimmedLine: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
         if (isImport && isLineStart && lastRule &&
             (isContainer(lastRule) && lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
-            return [defaultDirective];
+            return [defaultDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - trimmedLine.length)), position))];
         } else {
             return [];
         }
@@ -212,8 +227,8 @@ export class DefaultDirectiveProvider implements CompletionProvider {
 // Top level
 // Extra files
 export class ClassCompletionProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
-        if (isTopLevel && lastChar!==':') {
+    provide(meta: StylableMeta, lastRule: SRule | null, trimmedLine: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
+        if (isTopLevel && !trimmedLine.endsWith(':')) {
             return Object.keys(meta.classes).filter(c => c !== 'root').map(c => classCompletion(c, false))
         } else
             return [];
@@ -224,29 +239,20 @@ export class ClassCompletionProvider implements CompletionProvider {
 // In -st-extends
 // Extra files
 export class ExtendCompletionProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
+    provide(meta: StylableMeta, lastRule: SRule | null, trimmedLine: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
         return [];
     }
     text: string[] = [''];
 }
 
 export class StateCompletionProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
+    provide(meta: StylableMeta, lastRule: SRule | null, trimmedLine: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
         if (isTopLevel && !!currentSelector) {
             let states = currentSelector.reduce((acc: string[][], t) => acc.concat(Object.keys((t.symbol as any)['-st-states'] || []).map(s => [s, t.meta.source])), []);
             return states.reduce((acc: Completion[], st) => { acc.push(stateCompletion(st[0], st[1], position)); return acc; }, [])
         } else {
             return [];
         }
-    }
-    text: string[] = [''];
-}
-
-// In -st-from
-// File list
-export class FilenameCompletionProvider implements CompletionProvider {
-    provide(meta: StylableMeta, lastRule: SRule | null, lastChar: string, position: ProviderPosition, isTopLevel: boolean, isLineStart: boolean, isImport: boolean, insideSimpleSelector: boolean, currentSelector: CSSResolve[]): Completion[] {
-        return [];
     }
     text: string[] = [''];
 }
@@ -259,7 +265,7 @@ function isIllegalLine(line: string): boolean {
 const lineEndsRegexp = /({|}|;)/;
 
 export default class Provider {
-    constructor(private resolver: StylableResolver, private docs:MinimalDocs) {}
+    constructor(private resolver: StylableResolver, private docs: MinimalDocs) { }
 
     providers = [
         new RootClassProvider(),
@@ -275,7 +281,6 @@ export default class Provider {
         new ClassCompletionProvider(),
         new ExtendCompletionProvider(),
         new StateCompletionProvider(),
-        new FilenameCompletionProvider(),
     ]
 
     public provideCompletionItemsFromSrc(
@@ -337,32 +342,47 @@ export default class Provider {
             line: position.line + 1,
             character: position.character
         }
-
+        process
         const path = pathFromPosition(meta.rawAst, position1Based);
 
-        const posInSrc = getPositionInSrc(src, position);
-        const lastChar = src.charAt(posInSrc);
+        // const posInSrc = getPositionInSrc(src, position);
+        // const lastChar = src.charAt(posInSrc);
         const lastPart: PostCss.NodeBase = path[path.length - 1];
         const prevPart: PostCss.NodeBase = path[path.length - 2];
 
         const lastRule: SRule | null = prevPart && isSelector(prevPart) ? <SRule>prevPart : lastPart && isSelector(lastPart) ? <SRule>lastPart : null
 
+
         let ps = parseSelector(trimmedLine, cursorLineIndex);
-        // let currentSelector = ps.target.focusChunk;
-        let currentSelector = (ps.selector[ps.selector.length - 1] as SelectorChunk).classes[0]  //Gives last. Replace with one at cursor position.
-        let tr = currentSelector ? this.resolver.resolveExtends(meta, currentSelector) : [];
+
+        let chunkStrings: string[] = ps.selector.map(s => s.text).reduce((acc,arr) => { return acc.concat(arr)},[]);
+        let spaces: number = currentLine.match(/^\s*/)![0].length || 0;
+        // let currentSelector = '';
+        let remain = cursorLineIndex - spaces;
+        let pos = chunkStrings.findIndex(str => {
+            if (str.length >= remain) {
+                return true;
+            } else {
+                remain -= str.length;
+                return false;
+            }
+        })
+        let currentSelector = /:+/.test(chunkStrings[pos]) ? chunkStrings[pos-1] : chunkStrings[pos]
+        if (currentSelector && currentSelector.startsWith('.')) { currentSelector = currentSelector.slice(1)}
+        // let currentSelector = (ps.selector[ps.selector.length - 1] as SelectorChunk).classes[0]  //Gives last. Replace with one at cursor position.
+        let resolved = currentSelector ? this.resolver.resolveExtends(meta, currentSelector) : [];
 
         this.providers.forEach(p => completions.push(
             ...p.provide(
                 meta,
                 lastRule,
-                lastChar,
+                trimmedLine,
                 position,
                 !lastRule,
                 p.text.some(s => s.indexOf(trimmedLine) === 0),
                 !!lastRule && lastRule.selector === ':import',
                 !!lastRule && !!/^\s*\.?\w*$/.test(lastRule.selector),
-                tr
+                resolved
             ))
         );
         this.docs;

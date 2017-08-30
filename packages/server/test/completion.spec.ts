@@ -21,6 +21,25 @@ describe('completion unit test', function () {
             });
         });
 
+        it('should not complete broken classes at top level', function () {
+            return asserters.getCompletions('general/top-level-existing-classes-broken.css').then((asserter) => {
+                asserter.suggested(
+                    [
+                        asserters.importCompletion,
+                        asserters.rootCompletion,
+                        asserters.classCompletion('gaga'),
+                    ]
+                );
+                asserter.notSuggested([
+                    asserters.classCompletion('baga'),
+                    asserters.statesDirectiveCompletion,
+                    asserters.extendsDirectiveCompletion,
+                    asserters.mixinDirectiveCompletion,
+                    asserters.variantDirectiveCompletion
+                ]);
+            });
+        });
+
         it('should complete root and existing classes at top level after "."', function () {
             return asserters.getCompletions('general/top-level-dot.css').then((asserter) => {
                 asserter.suggested([
