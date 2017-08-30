@@ -19,6 +19,7 @@ export function createDiagnosis(doc:TextDocument, fp:FileProcessor<StylableMeta>
     let meta = process(docPostCSSRoot, stylableDiagnostics)
 
     fp.add(doc.uri, meta);
+    debugger
     transformer.transform(meta)
     return stylableDiagnostics.reports.map(reportToDiagnostic)
 }
