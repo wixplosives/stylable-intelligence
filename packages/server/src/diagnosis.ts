@@ -1,14 +1,25 @@
+import { StylableMeta } from 'stylable/dist/src/stylable-processor';
 import { Diagnostic, Range,DiagnosticSeverity } from 'vscode-languageserver-types/lib/main';
 import { TextDocument } from 'vscode-languageserver-types/lib/main';
 import {NodeSource} from 'postcss'
 import * as path from 'path';
-import {safeParse, Diagnostics, process} from 'stylable';
+import {safeParse, Diagnostics, process, StylableTransformer, FileProcessor} from 'stylable';
 import {Diagnostic as Report} from 'stylable/src/diagnostics'
 
-export function createDiagnosis(doc:TextDocument):Diagnostic[] {
-    let docPostCSSRoot = safeParse(doc.getText(), { from:path.resolve(doc.uri) })
+export function createDiagnosis(doc:TextDocument, fp:FileProcessor<StylableMeta>):Diagnostic[] {
+
     let stylableDiagnostics = new Diagnostics()
-    process(docPostCSSRoot, stylableDiagnostics)
+    let transformer = new StylableTransformer({
+        diagnostics: stylableDiagnostics,
+        fileProcessor: fp,
+        requireModule: () => ({"default":{}})
+    })
+
+    let docPostCSSRoot = safeParse(doc.getText(), { from:path.resolve(doc.uri) })
+    let meta = process(docPostCSSRoot, stylableDiagnostics)
+
+    fp.add(doc.uri, meta);
+    transformer.transform(meta)
     return stylableDiagnostics.reports.map(reportToDiagnostic)
 }
 
