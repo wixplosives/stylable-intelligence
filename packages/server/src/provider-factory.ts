@@ -21,7 +21,7 @@ export function createProvider (docs:MinimalDocs, withFilePrefix:boolean = true)
         }), () => { return {default:{}}
             /* requireModule - handle js imports */ }
     )
-    return new Provider(stylableResolver, docs)
+    return new Provider(stylableResolver)
 }
 
 
