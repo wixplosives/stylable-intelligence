@@ -1,5 +1,5 @@
 import * as PostCss from 'postcss';
-import {ProviderPosition} from '../provider'
+import {ProviderPosition} from '../providers'
 
 export function isInNode(position: ProviderPosition, node: PostCss.NodeBase): boolean {
     if (node.source.start!.line > position.line) {
