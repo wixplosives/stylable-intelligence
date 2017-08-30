@@ -369,7 +369,6 @@ export default class Provider {
         })
         let currentSelector = /:+/.test(chunkStrings[pos]) ? chunkStrings[pos-1] : chunkStrings[pos]
         if (currentSelector && currentSelector.startsWith('.')) { currentSelector = currentSelector.slice(1)}
-        // let currentSelector = (ps.selector[ps.selector.length - 1] as SelectorChunk).classes[0]  //Gives last. Replace with one at cursor position.
         let resolved = currentSelector ? this.resolver.resolveExtends(meta, currentSelector) : [];
 
         this.providers.forEach(p => completions.push(
