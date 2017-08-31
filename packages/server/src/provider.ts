@@ -1,28 +1,31 @@
 //must remain independent from vscode
 
 import * as PostCss from 'postcss';
-import { StylableMeta, process, safeParse, SRule, StylableResolver} from 'stylable';
-import { getPositionInSrc, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
-import {ProviderPosition,
-        Completion,
-        RootClassProvider,
-        ImportDirectiveProvider,
-        VarsDirectiveProvider,
-        ExtendsDirectiveProvider,
-        StatesDirectiveProvider,
-        MixinDirectiveProvider,
-        VariantDirectiveProvider,
-        FromDirectiveProvider,
-        NamedDirectiveProvider,
-        DefaultDirectiveProvider,
-        ClassCompletionProvider,
-        ExtendCompletionProvider,
-        StateCompletionProvider
-    } from './providers'
+import { StylableMeta, process, safeParse, SRule, StylableResolver } from 'stylable';
+import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
+import {
+    ProviderPosition,
+    Completion,
+    RootClassProvider,
+    ImportDirectiveProvider,
+    VarsDirectiveProvider,
+    ExtendsDirectiveProvider,
+    StatesDirectiveProvider,
+    MixinDirectiveProvider,
+    VariantDirectiveProvider,
+    FromDirectiveProvider,
+    NamedDirectiveProvider,
+    DefaultDirectiveProvider,
+    ClassCompletionProvider,
+    TypeCompletionProvider,
+    ExtendCompletionProvider,
+    StateCompletionProvider,
+    ProviderOptions
+} from './providers'
 
 import {
     parseSelector,
-    SelectorChunk
+    // SelectorChunk
 } from './utils/selector-analyzer';
 
 function isIllegalLine(line: string): boolean {
@@ -32,7 +35,7 @@ function isIllegalLine(line: string): boolean {
 const lineEndsRegexp = /({|}|;)/;
 
 export default class Provider {
-    constructor(private resolver: StylableResolver) {}
+    constructor(private resolver: StylableResolver) { }
 
     providers = [
         new RootClassProvider(),
@@ -46,8 +49,9 @@ export default class Provider {
         new NamedDirectiveProvider(),
         new DefaultDirectiveProvider(),
         new ClassCompletionProvider(),
+        new TypeCompletionProvider(),
         new ExtendCompletionProvider(),
-        new StateCompletionProvider()
+        new StateCompletionProvider(),
     ]
 
     public provideCompletionItemsFromSrc(
@@ -105,7 +109,7 @@ export default class Provider {
         let options = this.createProviderOptions(src, position, meta, currentLine, cursorLineIndex)
 
         this.providers.forEach(p => {
-            options.isLineStart = p.text.some((s:string)=> s.indexOf(currentLine.trim()) === 0)
+            options.isLineStart = p.text.some((s: string) => s.indexOf(currentLine.trim()) === 0)
             completions.push(...p.provide(options))
         }
         );
@@ -116,28 +120,51 @@ export default class Provider {
         position: ProviderPosition,
         meta: StylableMeta,
         currentLine: string,
-        cursorLineIndex: number) {
+        cursorLineIndex: number): ProviderOptions {
 
-        const path = pathFromPosition(meta.rawAst, {line: position.line +1 , character: position.character});
-        const lastChar = src.charAt(getPositionInSrc(src, position));
+        const path = pathFromPosition(meta.rawAst, { line: position.line + 1, character: position.character });
         const lastPart: PostCss.NodeBase = path[path.length - 1];
         const prevPart: PostCss.NodeBase = path[path.length - 2];
         const lastRule: SRule | null = prevPart && isSelector(prevPart) ? <SRule>prevPart : lastPart && isSelector(lastPart) ? <SRule>lastPart : null
+        while (currentLine.lastIndexOf(' ') > cursorLineIndex) {
+            currentLine = currentLine.slice(0, currentLine.lastIndexOf(' '))
+        }
+        if (currentLine.lastIndexOf(' ') === cursorLineIndex) { currentLine = currentLine.slice(0, currentLine.lastIndexOf(' ')) }
+        let trimmedLine = currentLine.trim();
 
-        let ps = parseSelector( currentLine.trim(), cursorLineIndex);
-        let currentSelector = (ps.selector[ps.selector.length - 1] as SelectorChunk).classes[0]  //Gives last. Replace with one at cursor position.
-        let tr = currentSelector ? this.resolver.resolveExtends(meta, currentSelector) : [];
+
+        let ps = parseSelector(trimmedLine, cursorLineIndex);
+
+        let chunkStrings: string[] = ps.selector.map(s => s.text).reduce((acc, arr) => { return acc.concat(arr) }, []);
+        let spaces: number = currentLine.match(/^\s*/)![0].length || 0;
+        let remain = cursorLineIndex - spaces;
+        let pos = chunkStrings.findIndex(str => {
+            if (str.length >= remain) {
+                return true;
+            } else {
+                remain -= str.length;
+                return false;
+            }
+        })
+
+        let rev = chunkStrings.slice().reverse();
+        pos -= rev.findIndex(s => !/:+/.test(s))
+        let currentSelector = /:+/.test(chunkStrings[pos]) ? chunkStrings[pos - 1] : chunkStrings[pos]
+        if (currentSelector && currentSelector.startsWith('.')) { currentSelector = currentSelector.slice(1) }
+        let resolved = currentSelector ? this.resolver.resolveExtends(meta, currentSelector) : [];
 
         return {
             meta: meta,
             lastRule: lastRule,
-            lastChar: lastChar,
+            trimmedLine: trimmedLine,
             position: position,
             isTopLevel: !lastRule,
-            isLineStart:  false,
+            isLineStart: false,
             isImport: !!lastRule && lastRule.selector === ':import',
             insideSimpleSelector: !!lastRule && !!/^\s*\.?\w*$/.test(lastRule.selector),
-            currentSelector: tr
+            resolved: resolved,
+            currentSelector: currentSelector,
+            target: ps.target
         }
     }
 

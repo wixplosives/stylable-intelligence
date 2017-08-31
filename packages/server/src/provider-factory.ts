@@ -18,7 +18,8 @@ export function createProvider (docs:MinimalDocs, withFilePrefix:boolean = true)
                     mtime: new Date(doc.version)
                 }
             }
-        }), () => {/* requireModule - handle js imports */ }
+        }), () => { return {default:{}}
+            /* requireModule - handle js imports */ }
     )
     return new Provider(stylableResolver)
 }

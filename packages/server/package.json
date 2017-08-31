@@ -51,12 +51,13 @@
     "webpack-dev-server": "~2.6.1"
   },
   "dependencies": {
-    "tslib": "~1.7.1",
     "css-selector-tokenizer": "^0.7.0",
     "ipaddr": "^0.0.9",
     "postcss": "^6.0.7",
     "postcss-nested": "^2.0.4",
+    "postcss-selector-parser": "^2.2.3",
     "stylable": "^4.0.0",
+    "tslib": "~1.7.1",
     "vscode-languageclient": "^3.3.0",
     "vscode-languageserver": "^3.3.0"
   },

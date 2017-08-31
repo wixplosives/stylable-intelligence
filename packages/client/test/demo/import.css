@@ -6,3 +6,7 @@
 .lol{
     -st-states: red
 }
+
+.root {
+    -st-states : state,otherState;
+}
