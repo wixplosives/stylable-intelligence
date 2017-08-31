@@ -1,6 +1,6 @@
 'use strict';
+import { TextDocument } from 'vscode-languageserver';
 import { cachedProcessFile, process, safeParse, StylableMeta, StylableResolver } from 'stylable';
-import {MinimalDocs} from './minimal-docs'
 import Provider from './provider';
 
 export function createProvider (docs:MinimalDocs, withFilePrefix:boolean = true): Provider{
@@ -25,3 +25,7 @@ export function createProvider (docs:MinimalDocs, withFilePrefix:boolean = true)
 }
 
 
+export interface MinimalDocs {
+    get: (uri: string) => TextDocument;
+    keys: () => string[]
+}
