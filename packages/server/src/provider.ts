@@ -4,29 +4,25 @@ import * as PostCss from 'postcss';
 import { StylableMeta, process, safeParse, SRule, StylableResolver } from 'stylable';
 import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
 import {
-    ProviderPosition,
-    Completion,
-    RootClassProvider,
-    ImportDirectiveProvider,
-    VarsDirectiveProvider,
-    ExtendsDirectiveProvider,
-    StatesDirectiveProvider,
-    MixinDirectiveProvider,
-    VariantDirectiveProvider,
-    FromDirectiveProvider,
-    NamedDirectiveProvider,
     DefaultDirectiveProvider,
+    ExtendsDirectiveProvider,
+    FromDirectiveProvider,
+    ImportDirectiveProvider,
+    MixinDirectiveProvider,
+    NamedDirectiveProvider,
+    RootClassProvider,
+    StatesDirectiveProvider,
+    VariantDirectiveProvider,
+    VarsDirectiveProvider,
     ClassCompletionProvider,
-    TypeCompletionProvider,
     ExtendCompletionProvider,
     StateCompletionProvider,
-    ProviderOptions
-} from './providers'
-
-import {
-    parseSelector,
-    // SelectorChunk
-} from './utils/selector-analyzer';
+    TypeCompletionProvider,
+    ProviderPosition,
+    ProviderOptions,
+} from './completion-providers'
+import { Completion } from './completion-types'
+import { parseSelector, } from './utils/selector-analyzer';
 
 function isIllegalLine(line: string): boolean {
     return !!/^\s*[-\.:]*\s*$/.test(line)
