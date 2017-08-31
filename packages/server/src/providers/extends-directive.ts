@@ -3,7 +3,7 @@ import {isContainer, isDeclaration  } from '../utils/postcss-ast-utils';
 import {valueMapping} from 'stylable'
 
 function extendsDirective(rng: ProviderRange) {
-    return new Completion(valueMapping.extends + ':', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), undefined, true);
+    return new Completion(valueMapping.extends + ':', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), rng, true);
 }
 
 export class ExtendsDirectiveProvider implements CompletionProvider {

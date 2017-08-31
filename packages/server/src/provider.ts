@@ -17,8 +17,10 @@ import {
     NamedDirectiveProvider,
     DefaultDirectiveProvider,
     ClassCompletionProvider,
+    TypeCompletionProvider,
     ExtendCompletionProvider,
-    StateCompletionProvider
+    StateCompletionProvider,
+    ProviderOptions
 } from './providers'
 
 import {
@@ -47,6 +49,7 @@ export default class Provider {
         new NamedDirectiveProvider(),
         new DefaultDirectiveProvider(),
         new ClassCompletionProvider(),
+        new TypeCompletionProvider(),
         new ExtendCompletionProvider(),
         new StateCompletionProvider(),
     ]
@@ -117,13 +120,18 @@ export default class Provider {
         position: ProviderPosition,
         meta: StylableMeta,
         currentLine: string,
-        cursorLineIndex: number) {
+        cursorLineIndex: number): ProviderOptions {
 
         const path = pathFromPosition(meta.rawAst, { line: position.line + 1, character: position.character });
         const lastPart: PostCss.NodeBase = path[path.length - 1];
         const prevPart: PostCss.NodeBase = path[path.length - 2];
         const lastRule: SRule | null = prevPart && isSelector(prevPart) ? <SRule>prevPart : lastPart && isSelector(lastPart) ? <SRule>lastPart : null
-        const trimmedLine = currentLine.trim();
+        while (currentLine.lastIndexOf(' ') > cursorLineIndex) {
+            currentLine = currentLine.slice(0, currentLine.lastIndexOf(' '))
+        }
+        if (currentLine.lastIndexOf(' ') === cursorLineIndex) { currentLine = currentLine.slice(0, currentLine.lastIndexOf(' ')) }
+        let trimmedLine = currentLine.trim();
+
 
         let ps = parseSelector(trimmedLine, cursorLineIndex);
 
@@ -138,6 +146,9 @@ export default class Provider {
                 return false;
             }
         })
+
+        let rev = chunkStrings.slice().reverse();
+        pos -= rev.findIndex(s => !/:+/.test(s))
         let currentSelector = /:+/.test(chunkStrings[pos]) ? chunkStrings[pos - 1] : chunkStrings[pos]
         if (currentSelector && currentSelector.startsWith('.')) { currentSelector = currentSelector.slice(1) }
         let resolved = currentSelector ? this.resolver.resolveExtends(meta, currentSelector) : [];
@@ -151,7 +162,9 @@ export default class Provider {
             isLineStart: false,
             isImport: !!lastRule && lastRule.selector === ':import',
             insideSimpleSelector: !!lastRule && !!/^\s*\.?\w*$/.test(lastRule.selector),
-            currentSelector: resolved
+            resolved: resolved,
+            currentSelector: currentSelector,
+            target: ps.target
         }
     }
 

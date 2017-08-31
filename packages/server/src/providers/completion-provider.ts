@@ -1,5 +1,6 @@
 import { StylableMeta, SRule } from 'stylable';
 import { CSSResolve } from 'stylable/dist/src';
+import { CursorPosition } from "../utils/selector-analyzer";
 
 export interface ProviderOptions {
     meta: StylableMeta,
@@ -10,7 +11,9 @@ export interface ProviderOptions {
     isLineStart: boolean,
     isImport: boolean,
     insideSimpleSelector: boolean,
-    currentSelector: CSSResolve[]
+    resolved: CSSResolve[],
+    currentSelector: string,
+    target: CursorPosition
 }
 
 export interface CompletionProvider {

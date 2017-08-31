@@ -3,7 +3,7 @@ import { ProviderPosition, ProviderRange, Completion, CompletionProvider, Provid
 import {isContainer, isDeclaration  } from '../utils/postcss-ast-utils';
 
 function variantDirective(rng: ProviderRange) {
-    return new Completion('-st-variant:', '', 'a', new snippet('-st-variant: true;'));
+    return new Completion('-st-variant:', '', 'a', new snippet('-st-variant: true;'),rng);
 }
 
 export class VariantDirectiveProvider implements CompletionProvider {

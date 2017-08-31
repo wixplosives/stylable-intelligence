@@ -88,15 +88,6 @@ describe('Imports', function () {
         });
     });
 
-    xit('should complete -st-from value from files in dir', function () {
-        return asserters.getCompletions('imports/st-from.css').then((asserter) => {
-                asserter.suggested([
-                    asserters.filePathCompletion('import-from-here.css')
-                ]);
-
-            });
-    });
-
     it('should not complete -st-from, -st-default, -st-named inside import statements when exists', function () {
         return asserters.getCompletions('imports/inside-import-selector-with-fields.css').then((asserter) => {
             asserter.notSuggested([
@@ -111,7 +102,7 @@ describe('Imports', function () {
         });
     });
 
-    xit('completes default and named imports in -st-extends', function () {
+    it('completes default and named imports in -st-extends', function () {
         return asserters.getCompletions('imports/st-extends.css', true).then((asserter) => {
             asserter.suggested([
                 asserters.extendsCompletion('Comp'),
@@ -124,7 +115,7 @@ describe('Imports', function () {
         });
     });
 
-    xit('completes named and default imports when a following ; exists', function () {
+    it('completes named and default imports in -st-extends when a following ; exists', function () {
         return asserters.getCompletions('imports/st-extends-with-semicolon.css').then((asserter) => {
             asserter.suggested([
                 asserters.extendsCompletion('Comp'),
@@ -137,7 +128,7 @@ describe('Imports', function () {
         });
     });
 
-    xit('completes named and default imports as initial selectors', function () {
+    it('completes named and default imports as initial selectors', function () {
         return asserters.getCompletions('imports/st-extends-selectors.css').then((asserter) => {
             asserter.suggested([
                 asserters.classCompletion('Comp',true),
@@ -150,7 +141,7 @@ describe('Imports', function () {
         });
     });
 
-    xit('completes named and default imports as non-initial selectors', function () {
+    it('completes named and default imports as non-initial selectors', function () {
         return asserters.getCompletions('imports/st-extends-complex-selectors.css').then((asserter) => {
             asserter.suggested([
                 asserters.classCompletion('shlomo'),

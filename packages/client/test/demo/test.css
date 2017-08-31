@@ -1,7 +1,7 @@
-.root {
-    -st-states: state;
+:import{
+    -st-from:"./import.css";
+    -st-default:Comp;
+    -st-named: shlomo
 }
 
 
-
-.baga

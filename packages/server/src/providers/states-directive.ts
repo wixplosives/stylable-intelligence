@@ -3,7 +3,7 @@ import { ProviderRange, ProviderPosition, Completion, CompletionProvider, snippe
 import { isContainer, isDeclaration } from '../utils/postcss-ast-utils';
 
 function statesDirective(rng: ProviderRange) {
-    return new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'));
+    return new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'),rng);
 }
 
 export class StatesDirectiveProvider implements CompletionProvider {

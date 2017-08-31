@@ -1,7 +1,7 @@
 import { ProviderRange, ProviderPosition, Completion, CompletionProvider, ProviderOptions } from "./completion-provider";
 
 function rootClass(rng: ProviderRange) {
-    return new Completion('.root', 'The root class', 'b');
+    return new Completion('.root', 'The root class', 'b', undefined, rng);
 }
 
 export class RootClassProvider implements CompletionProvider {

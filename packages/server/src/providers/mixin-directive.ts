@@ -3,7 +3,7 @@ import { ProviderRange, ProviderPosition, Completion, CompletionProvider, Provid
 import { isContainer, isDeclaration } from '../utils/postcss-ast-utils';
 
 function mixinDirective(rng: ProviderRange) {
-    return new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'));
+    return new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'), rng);
 }
 
 export class MixinDirectiveProvider implements CompletionProvider {

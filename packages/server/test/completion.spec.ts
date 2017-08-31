@@ -144,9 +144,20 @@ describe('completion unit test', function () {
             });
         });
 
+        it('should complete available states after : in complex selectors', function () {
+            return asserters.getCompletions('states/complex-selectors.css').then((asserter) => {
+                asserter.suggested([
+                    asserters.stateCompletion('hello', 'states/complex-selectors.css')
+                ]);
+                asserter.notSuggested([
+                    asserters.importCompletion,
+                    asserters.stateCompletion('goodbye', 'states/complex-selectors.css'),
+                    asserters.stateCompletion('cheerio', 'states/complex-selectors.css')
+                ]);
+            });
+        });
 
-        //parseSelector issue
-        xit('should complete available states after : in complex selectors', function () {
+        it('should complete available states after : in complex selectors ending in state name', function () {
             return asserters.getCompletions('states/complex-selectors-with-states.css').then((asserter) => {
                 asserter.suggested([
                     asserters.stateCompletion('hello', 'states/complex-selectors-with-states.css')
@@ -159,8 +170,7 @@ describe('completion unit test', function () {
             });
         });
 
-        //parseSelector issue
-        xit('should not complete available states after : in complex selectors if existing', function () {
+        it('should not complete available states after : in complex selectors if existing', function () {
             return asserters.getCompletions('states/complex-selectors-with-states-existing.css').then((asserter) => {
                 asserter.suggested([
                     asserters.stateCompletion('goodbye','states/complex-selectors-with-states-existing.css')
