@@ -11,7 +11,7 @@ import {
     TextEdit,
     // NotificationType
 } from 'vscode-languageserver';
-import { createProvider} from './provider-factory';
+import { createProvider, createProcessor} from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import {createDiagnosis} from './diagnosis'
@@ -20,6 +20,7 @@ const connection: IConnection = createConnection(new IPCMessageReader(process), 
 const documents: TextDocuments = new TextDocuments();
 
 const provider = createProvider(documents);
+const processor = createProcessor(documents)
 
 documents.listen(connection);
 
@@ -71,6 +72,6 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
 })
 
 documents.onDidChangeContent(function(change){
-    let diagnostics = createDiagnosis(change.document);
+    let diagnostics = createDiagnosis(change.document, processor);
     connection.sendDiagnostics({uri: change.document.uri, diagnostics: diagnostics})
 })
