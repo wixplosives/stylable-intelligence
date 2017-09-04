@@ -1,5 +1,5 @@
 :import{
-    -st-from:"./advanced-dependency.css";
+    -st-from:"./advanced-dependency.st.css";
     -st-default:Comp;
 }
 
