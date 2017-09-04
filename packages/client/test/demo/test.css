@@ -1,7 +1,5 @@
 :import{
-    -st-from:"./import.css";
+    -st-from:"./import-from-here.css";
     -st-default:Comp;
-    -st-named: shlomo
+    -st-named: 
 }
-
-

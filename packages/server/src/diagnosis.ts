@@ -23,7 +23,7 @@ export function createDiagnosis(doc:TextDocument, fp:FileProcessor<StylableMeta>
     return stylableDiagnostics.reports.map(reportToDiagnostic)
 }
 
-//stylable diagnostic to vscode diagnostic
+//stylable diagnostic to protocol diagnostic
 function reportToDiagnostic(report:Report) {
     let severity = report.type === 'error' ? DiagnosticSeverity.Error: DiagnosticSeverity.Warning
     let range = createRange(report.node.source)
