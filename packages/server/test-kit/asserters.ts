@@ -23,6 +23,25 @@ function assertPresent(actualCompletions: Completion[], expectedCompletions: Par
     });
 }
 
+function assertExact(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
+    expectedCompletions.forEach(expected => {
+        const actualInd = actualCompletions.findIndex((comp) => comp.label === expected.label);
+        const actual = actualCompletions[actualInd];
+        expect(actual, prefix + 'completion not found: ' + expected.label + ' ').to.not.be.equal(undefined);
+        if (actual) {
+            for (var field in expected) {
+                let actualVal: any = (actual as any)[field];
+                if (actualVal instanceof snippet) {
+                    actualVal = actualVal.source;
+                }
+                const expectedVal: any = (expected as any)[field];
+                expect(actualVal, actual.label + ":" + field).to.equal(expectedVal);
+            }
+            actualCompletions = actualCompletions.splice(actualInd,1)
+        }
+    });
+}
+
 function assertNotPresent(actualCompletions: Completion[], nonCompletions: Partial<Completion>[], prefix: string = '') {
     nonCompletions.forEach(notAllowed => {
         const actual = actualCompletions.find((comp) => comp.label === notAllowed.label);
@@ -33,6 +52,7 @@ function assertNotPresent(actualCompletions: Completion[], nonCompletions: Parti
 
 export interface Assertable {
     suggested: (expectedCompletions: Partial<Completion>[]) => void;
+    exactSuggested: (expectedCompletions: Partial<Completion>[]) => void;
     notSuggested: (nonCompletions: Partial<Completion>[]) => void
 }
 
@@ -50,6 +70,10 @@ export function getCompletions(fileName: string, checkSingleLine: boolean = fals
             return {
                 suggested: (expectedCompletions: Partial<Completion>[]) => {
                     assertPresent(normalCompletions, expectedCompletions);
+                    singleLineCompletions && assertPresent(singleLineCompletions, expectedCompletions, 'single line: ');
+                },
+                exactSuggested: (expectedCompletions: Partial<Completion>[]) => {
+                    assertExact(normalCompletions, expectedCompletions);
                     singleLineCompletions && assertPresent(singleLineCompletions, expectedCompletions, 'single line: ');
                 },
                 notSuggested: (expectedNoCompletions: Partial<Completion>[]) => {
@@ -95,6 +119,8 @@ export const variantDirectiveCompletion: Partial<Completion> = { label: '-st-var
 export const importFromDirectiveCompletion: Partial<Completion> = { label: '-st-from:', detail: 'Path to library', sortText: 'a', insertText: '-st-from: "$1";' };
 export const importDefaultDirectiveCompletion: Partial<Completion> = { label: '-st-default:', detail: 'Default object export name', sortText: 'a', insertText: '-st-default: $1;' };
 export const importNamedDirectiveCompletion: Partial<Completion> = { label: '-st-named:', detail: 'Named object export name', sortText: 'a', insertText: '-st-named: $1;' };
+export const namespaceDirectiveCompletion: Partial<Completion> = { label: '@namespace', detail: 'Declare a namespace for the file', sortText: 'a', insertText: '@namespace "$1";\n$0' };
+export const themeDirectiveCompletion: Partial<Completion> = { label: '-st-theme:', detail: 'Declare a theme', sortText: 'a', insertText: '-st-theme: true;\n$0' };
 export const filePathCompletion: (filePath: string) => Partial<Completion> = (filePath) => { return { label: filePath, insertText: './' + filePath } };
 export const classCompletion: (className: string, isDefaultImport?: boolean) => Partial<Completion> = (className, isDefaultImport?) => { return { label: (isDefaultImport ? '' : '.') + className, sortText: 'b' } }
 export const stateCompletion: (stateName: string, from?: string) => Partial<Completion> = (stateName, from = 'projectRoot/main.css') => { return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + path.join(__dirname, '/../test/cases/', from), insertText: ':' + stateName } }

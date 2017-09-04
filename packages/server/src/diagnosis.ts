@@ -1,9 +1,9 @@
-import { Diagnostic, Range,DiagnosticSeverity } from 'vscode-languageserver-types/lib/main';
-import { TextDocument } from 'vscode-languageserver-types/lib/main';
+import { Diagnostic, Range,DiagnosticSeverity } from 'vscode-languageserver-types';
+import { TextDocument } from 'vscode-languageserver-types';
 import {NodeSource} from 'postcss'
 import * as path from 'path';
 import {safeParse, Diagnostics, process} from 'stylable';
-import {Diagnostic as Report} from 'stylable/src/diagnostics'
+import {Diagnostic as Report} from 'stylable'
 
 export function createDiagnosis(doc:TextDocument):Diagnostic[] {
     let docPostCSSRoot = safeParse(doc.getText(), { from:path.resolve(doc.uri) })
@@ -12,7 +12,7 @@ export function createDiagnosis(doc:TextDocument):Diagnostic[] {
     return stylableDiagnostics.reports.map(reportToDiagnostic)
 }
 
-//stylable diagnostic to vscode diagnostic
+//stylable diagnostic to protocol diagnostic
 function reportToDiagnostic(report:Report) {
     let severity = report.type === 'error' ? DiagnosticSeverity.Error: DiagnosticSeverity.Warning
     let range = createRange(report.node.source)

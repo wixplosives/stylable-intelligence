@@ -10,8 +10,10 @@ import {
     ImportDirectiveProvider,
     MixinDirectiveProvider,
     NamedDirectiveProvider,
+    NamespaceDirectiveProvider,
     RootClassProvider,
     StatesDirectiveProvider,
+    ThemeDirectiveProvider,
     VariantDirectiveProvider,
     VarsDirectiveProvider,
     ClassCompletionProvider,
@@ -25,7 +27,7 @@ import { Completion } from './completion-types'
 import { parseSelector, } from './utils/selector-analyzer';
 
 function isIllegalLine(line: string): boolean {
-    return !!/^\s*[-\.:]*\s*$/.test(line)
+    return !!/^\s*[-\.:]+\s*$/.test(line)
 }
 
 const lineEndsRegexp = /({|}|;)/;
@@ -44,6 +46,8 @@ export default class Provider {
         new FromDirectiveProvider(),
         new NamedDirectiveProvider(),
         new DefaultDirectiveProvider(),
+        new NamespaceDirectiveProvider(),
+        new ThemeDirectiveProvider(),
         new ClassCompletionProvider(),
         new TypeCompletionProvider(),
         new ExtendCompletionProvider(),
@@ -94,6 +98,7 @@ export default class Provider {
         return this.provideCompletionItemsFromAst(src, position, meta, currentLine, cursorLineIndex);
 
     }
+
     public provideCompletionItemsFromAst(
         src: string,
         position: ProviderPosition,
@@ -111,6 +116,7 @@ export default class Provider {
         );
         return Promise.resolve(completions);
     }
+
     private createProviderOptions(
         src: string,
         position: ProviderPosition,
@@ -121,19 +127,23 @@ export default class Provider {
         const path = pathFromPosition(meta.rawAst, { line: position.line + 1, character: position.character });
         const lastPart: PostCss.NodeBase = path[path.length - 1];
         const prevPart: PostCss.NodeBase = path[path.length - 2];
+        const isMediaQuery = path.some(n => (n as PostCss.Container).type === 'atrule');
         const lastRule: SRule | null = prevPart && isSelector(prevPart) ? <SRule>prevPart : lastPart && isSelector(lastPart) ? <SRule>lastPart : null
         while (currentLine.lastIndexOf(' ') > cursorLineIndex) {
             currentLine = currentLine.slice(0, currentLine.lastIndexOf(' '))
         }
         if (currentLine.lastIndexOf(' ') === cursorLineIndex) { currentLine = currentLine.slice(0, currentLine.lastIndexOf(' ')) }
+
+        // if (currentLine.lastIndexOf(' ') > 0 && currentLine.lastIndexOf(' ') < cursorLineIndex) { currentLine = currentLine.slice(currentLine.lastIndexOf(' ')) }
+
         let trimmedLine = currentLine.trim();
 
 
         let ps = parseSelector(trimmedLine, cursorLineIndex);
 
         let chunkStrings: string[] = ps.selector.map(s => s.text).reduce((acc, arr) => { return acc.concat(arr) }, []);
-        let spaces: number = currentLine.match(/^\s*/)![0].length || 0;
-        let remain = cursorLineIndex - spaces;
+        let spacesBefore: number = currentLine.match(/^\s*/)![0].length || 0;
+        let remain = cursorLineIndex - spacesBefore;
         let pos = chunkStrings.findIndex(str => {
             if (str.length >= remain) {
                 return true;
@@ -160,7 +170,8 @@ export default class Provider {
             insideSimpleSelector: !!lastRule && !!/^\s*\.?\w*$/.test(lastRule.selector),
             resolved: resolved,
             currentSelector: currentSelector,
-            target: ps.target
+            target: ps.target,
+            isMediaQuery: isMediaQuery
         }
     }
 
