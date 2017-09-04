@@ -4,7 +4,7 @@ import * as path from 'path';
 import { TextDocument } from 'vscode-languageserver-types';
 
 import {createProvider} from '../src/provider-factory'
-import { Completion, ProviderRange, snippet } from '../src/providers';
+import { Completion, snippet } from '../src/providers';
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {
@@ -98,4 +98,4 @@ export const importNamedDirectiveCompletion: Partial<Completion> = { label: '-st
 export const filePathCompletion: (filePath: string) => Partial<Completion> = (filePath) => { return { label: filePath, insertText: './' + filePath } };
 export const classCompletion: (className: string, isDefaultImport?: boolean) => Partial<Completion> = (className, isDefaultImport?) => { return { label: (isDefaultImport ? '' : '.') + className, sortText: 'b' } }
 export const stateCompletion: (stateName: string, from?: string) => Partial<Completion> = (stateName, from = 'projectRoot/main.css') => { return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + path.join(__dirname, '/../test/cases/', from), insertText: ':' + stateName } }
-export const extendsCompletion: (typeName: string, range?: ProviderRange) => Partial<Completion> = (typeName, range) => { return { label: typeName, sortText: 'a', insertText: ' ' + typeName + ';\n', range } };
+export const extendsCompletion: (typeName: string) => Partial<Completion> = (typeName) => { return { label: typeName, sortText: 'a', insertText: ' ' + typeName + ';\n' } };

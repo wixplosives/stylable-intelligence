@@ -8,7 +8,7 @@ export class VarsDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         let position = options.position
         if (options.isTopLevel && options.isLineStart) {
-            return [varsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - 1)), position))];
+            return [varsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - options.trimmedLine.length)), position))];
         } else {
             return [];
         }

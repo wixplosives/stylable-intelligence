@@ -8,7 +8,8 @@ export class ImportDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         let position = options.position
         if (options.isTopLevel && options.isLineStart) {
-            return [importsDirective(new ProviderRange(new ProviderPosition(options.position.line, Math.max(0, position.character - 1)), position))];
+            return [importsDirective(new ProviderRange(
+                new ProviderPosition(options.position.line, Math.max(0, position.character - options.trimmedLine.length)), position))];
         } else {
             return [];
         }

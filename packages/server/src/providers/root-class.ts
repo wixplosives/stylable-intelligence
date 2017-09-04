@@ -1,11 +1,14 @@
-import { Completion, CompletionProvider, ProviderOptions } from "./completion-provider";
+import { ProviderRange, ProviderPosition, Completion, CompletionProvider, ProviderOptions } from "./completion-provider";
 
-const rootClass = new Completion('.root', 'The root class', 'b');
+function rootClass(rng: ProviderRange) {
+    return new Completion('.root', 'The root class', 'b', undefined, rng);
+}
 
 export class RootClassProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.isTopLevel && options.isLineStart) {
-            return [rootClass];
+            return [rootClass(new ProviderRange(
+                new ProviderPosition(options.position.line, Math.max(0, options.position.character - options.trimmedLine.length)), options.position))];
         } else {
             return [];
         }
