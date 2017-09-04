@@ -38,7 +38,7 @@ describe('diagnostics', function () {
             "severity":2
         })
     })
-    //TODO: integrate once stylable has cross browser erros
+    //TODO: integrate once stylable has cross files erros
     //
     xit('should create cross file errors', function() {
         let filePathA = 'style.css'
