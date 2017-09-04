@@ -21,6 +21,25 @@ describe('completion unit test', function () {
             });
         });
 
+        it('should not complete broken classes at top level', function () {
+            return asserters.getCompletions('general/top-level-existing-classes-broken.css').then((asserter) => {
+                asserter.suggested(
+                    [
+                        asserters.importCompletion,
+                        asserters.rootCompletion,
+                        asserters.classCompletion('gaga'),
+                    ]
+                );
+                asserter.notSuggested([
+                    asserters.classCompletion('baga'),
+                    asserters.statesDirectiveCompletion,
+                    asserters.extendsDirectiveCompletion,
+                    asserters.mixinDirectiveCompletion,
+                    asserters.variantDirectiveCompletion
+                ]);
+            });
+        });
+
         it('should complete root and existing classes at top level after "."', function () {
             return asserters.getCompletions('general/top-level-dot.css').then((asserter) => {
                 asserter.suggested([
@@ -125,9 +144,20 @@ describe('completion unit test', function () {
             });
         });
 
+        it('should complete available states after : in complex selectors', function () {
+            return asserters.getCompletions('states/complex-selectors.css').then((asserter) => {
+                asserter.suggested([
+                    asserters.stateCompletion('hello', 'states/complex-selectors.css')
+                ]);
+                asserter.notSuggested([
+                    asserters.importCompletion,
+                    asserters.stateCompletion('goodbye', 'states/complex-selectors.css'),
+                    asserters.stateCompletion('cheerio', 'states/complex-selectors.css')
+                ]);
+            });
+        });
 
-        //parseSelector issue
-        xit('should complete available states after : in complex selectors', function () {
+        it('should complete available states after : in complex selectors ending in state name', function () {
             return asserters.getCompletions('states/complex-selectors-with-states.css').then((asserter) => {
                 asserter.suggested([
                     asserters.stateCompletion('hello', 'states/complex-selectors-with-states.css')
@@ -140,8 +170,7 @@ describe('completion unit test', function () {
             });
         });
 
-        //parseSelector issue
-        xit('should not complete available states after : in complex selectors if existing', function () {
+        it('should not complete available states after : in complex selectors if existing', function () {
             return asserters.getCompletions('states/complex-selectors-with-states-existing.css').then((asserter) => {
                 asserter.suggested([
                     asserters.stateCompletion('goodbye','states/complex-selectors-with-states-existing.css')
