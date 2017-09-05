@@ -37,14 +37,14 @@ suite("Extension Tests", () => {
         const testCases: [vscode.Position, string[]][] = [
             [new vscode.Position(0, 0), [':import', '.root']]
         ];
-        return testCompletion('simple-completion.css', testCases);
+        return testCompletion('simple-completion.st.css', testCases);
 
     });
     test.skip("advanced completion", () => {
         const testCases: [vscode.Position, string[]][] = [
             [new vscode.Position(10, 6), ['shmover', 'bover']]
         ];
-        return testCompletion('advanced-completion.css', testCases);
+        return testCompletion('advanced-completion.st.css', testCases);
     });
 });
 

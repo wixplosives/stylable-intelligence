@@ -10,7 +10,7 @@ function assertDiagnosticExist(client:any, casePath:string, result:Object){
 
 suite('test diagnostics', function() {
     test('should support single file error', function (){
-        const casePath = path.join(__dirname, '..', '..', 'test', 'cases', 'single-file-diag.css')
+        const casePath = path.join(__dirname, '..', '..', 'test', 'cases', 'single-file-diag.st.css')
         const ext = vscode.extensions.getExtension('Wix.stylable-intelligence')
         let extClient:any;
 
