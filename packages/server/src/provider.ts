@@ -127,7 +127,7 @@ export default class Provider {
         const path = pathFromPosition(meta.rawAst, { line: position.line + 1, character: position.character });
         const lastPart: PostCss.NodeBase = path[path.length - 1];
         const prevPart: PostCss.NodeBase = path[path.length - 2];
-        const isMediaQuery = path.some(n => (n as PostCss.Container).type === 'atrule');
+        const isMediaQuery = path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media');
         const lastRule: SRule | null = prevPart && isSelector(prevPart) ? <SRule>prevPart : lastPart && isSelector(lastPart) ? <SRule>lastPart : null
         while (currentLine.lastIndexOf(' ') > cursorLineIndex) {
             currentLine = currentLine.slice(0, currentLine.lastIndexOf(' '))

@@ -75,4 +75,12 @@ describe('Variables Directive', function () {
             });
     });
 
+    it('should not complete :vars inside media query', function () {
+        return asserters.getCompletions('imports/media-query.css').then((asserter) => {
+                asserter.suggested([]);
+                asserter.notSuggested([
+                    asserters.varsCompletion
+                ]);
+            });
+    });
 });

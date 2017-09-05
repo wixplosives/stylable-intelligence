@@ -53,7 +53,7 @@ export class DefaultDirectiveProvider implements CompletionProvider {
 
 export class ExtendsDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.insideSimpleSelector && options.isLineStart && options.lastRule &&
+        if (options.insideSimpleSelector && options.isLineStart && options.lastRule && !options.isMediaQuery &&
             (isContainer(options.lastRule) && options.lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
             return [extendsDirective(new ProviderRange(
                 new ProviderPosition(options.position.line, Math.max(0, options.position.character - options.trimmedLine.length)), options.position))];
@@ -115,6 +115,18 @@ export class NamedDirectiveProvider implements CompletionProvider {
     text: string[] = [valueMapping.named]
 }
 
+export class NamespaceDirectiveProvider implements CompletionProvider {
+    provide(options: ProviderOptions): Completion[] {
+        let position = options.position
+        if (options.isTopLevel && options.isLineStart && !options.isMediaQuery) {
+            return [namespaceDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - options.trimmedLine.length)), position))];
+        } else {
+            return [];
+        }
+    }
+    text: string[] = ['@namespace']
+}
+
 export class RootClassProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.isTopLevel && options.isLineStart) {
@@ -129,7 +141,7 @@ export class RootClassProvider implements CompletionProvider {
 
 export class StatesDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.insideSimpleSelector && options.isLineStart && options.lastRule &&
+        if (options.insideSimpleSelector && options.isLineStart && options.lastRule && !options.isMediaQuery &&
             (isContainer(options.lastRule) && options.lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
             return [statesDirective((new ProviderRange(
                 new ProviderPosition(options.position.line, Math.max(0, options.position.character - options.trimmedLine.length)), options.position)))];
@@ -156,7 +168,7 @@ export class ThemeDirectiveProvider implements CompletionProvider {
 export class VariantDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         let lastRule = options.lastRule
-        if (options.insideSimpleSelector && options.isLineStart && lastRule &&
+        if (options.insideSimpleSelector && options.isLineStart && lastRule && !options.isMediaQuery &&
             (isContainer(lastRule) && lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
             return [variantDirective(new ProviderRange(
                 new ProviderPosition(options.position.line, Math.max(0, options.position.character - options.trimmedLine.length)), options.position))];
@@ -170,25 +182,13 @@ export class VariantDirectiveProvider implements CompletionProvider {
 export class VarsDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         let position = options.position
-        if (options.isTopLevel && options.isLineStart) {
+        if (options.isTopLevel && options.isLineStart && !options.isMediaQuery) {
             return [varsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - options.trimmedLine.length)), position))];
         } else {
             return [];
         }
     }
     text: string[] = [':vars']
-}
-
-export class NamespaceDirectiveProvider implements CompletionProvider {
-    provide(options: ProviderOptions): Completion[] {
-        let position = options.position
-        if (options.isTopLevel && options.isLineStart) {
-            return [namespaceDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - options.trimmedLine.length)), position))];
-        } else {
-            return [];
-        }
-    }
-    text: string[] = ['@namespace']
 }
 
 

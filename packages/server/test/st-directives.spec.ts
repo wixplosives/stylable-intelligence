@@ -46,7 +46,7 @@ describe('Inner Directives', function () {
             });
     });
 
-    it('should not complete -st-states, -st-extends, -st-mixin, -st-variant inside simple ruleset when they exist', function () {
+    it('should not complete -st-states, -st-extends, -st-mixin, -st-variant inside simple selector ruleset when they exist', function () {
         return asserters.getCompletions('general/inside-simple-ruleset-with-all-st-fields.css').then((asserter) => {
             asserter.notSuggested([
                 asserters.statesDirectiveCompletion,

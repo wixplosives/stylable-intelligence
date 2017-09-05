@@ -43,4 +43,12 @@ describe('Namespace Directive', function () {
             });
     });
 
+    it('should not complete @namespace inside media query', function () {
+        return asserters.getCompletions('imports/media-query.css').then((asserter) => {
+                asserter.notSuggested([
+                    asserters.namespaceDirectiveCompletion
+                ]);
+            });
+    });
+
 });
