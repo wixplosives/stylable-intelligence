@@ -22,7 +22,7 @@ function createDiagnostics(files:{[filePath:string]:string}, path:string) {
 
 
 describe('diagnostics', function () {
-    it('should create basic diagnostics', function(){
+    xit('should create basic diagnostics', function(){
         let filePath = 'style.css'
 
         let diagnostics = createDiagnostics({

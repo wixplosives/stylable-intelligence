@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { TextDocument } from 'vscode-languageserver-types';
 
-import {createProvider} from '../src/provider-factory'
+import { createProvider } from '../src/provider-factory'
 import { Completion, snippet } from '../src/completion-types';
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
@@ -37,7 +37,7 @@ function assertExact(actualCompletions: Completion[], expectedCompletions: Parti
                 const expectedVal: any = (expected as any)[field];
                 expect(actualVal, actual.label + ":" + field).to.equal(expectedVal);
             }
-            actualCompletions = actualCompletions.splice(actualInd,1)
+            actualCompletions = actualCompletions.splice(actualInd, 1)
         }
     });
 }
@@ -125,3 +125,4 @@ export const filePathCompletion: (filePath: string) => Partial<Completion> = (fi
 export const classCompletion: (className: string, isDefaultImport?: boolean) => Partial<Completion> = (className, isDefaultImport?) => { return { label: (isDefaultImport ? '' : '.') + className, sortText: 'b' } }
 export const stateCompletion: (stateName: string, from?: string) => Partial<Completion> = (stateName, from = 'projectRoot/main.css') => { return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + path.join(__dirname, '/../test/cases/', from), insertText: ':' + stateName } }
 export const extendsCompletion: (typeName: string) => Partial<Completion> = (typeName) => { return { label: typeName, sortText: 'a', insertText: ' ' + typeName + ';\n' } };
+export const pseudoElementCompletion: (elementName: string, from?: string) => Partial<Completion> = (elementName, from?) => { return { label: '::' + elementName, sortText: 'b', detail: 'from: ' + from, insertText: '::' + elementName } }

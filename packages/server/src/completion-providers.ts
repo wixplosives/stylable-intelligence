@@ -3,9 +3,11 @@ import { CSSResolve } from 'stylable/dist/src';
 import { CursorPosition, SelectorChunk } from "./utils/selector-analyzer";
 import {
     defaultDirective, extendsDirective, fromDirective, importsDirective, mixinDirective, namedDirective, rootClass, statesDirective, variantDirective, varsDirective,
-    classCompletion, extendCompletion, stateCompletion, Completion, namespaceDirective, themeDirective
+    classCompletion, extendCompletion, stateCompletion, Completion, namespaceDirective, themeDirective, pseudoElementCompletion
 } from './completion-types'
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
+import * as PostCss from 'postcss';
+
 
 export interface ProviderOptions {
     meta: StylableMeta,
@@ -20,6 +22,7 @@ export interface ProviderOptions {
     currentSelector: string,
     target: CursorPosition
     isMediaQuery: boolean,
+    fakes: PostCss.Rule[],
 }
 
 export interface CompletionProvider {
@@ -198,7 +201,7 @@ export class ClassCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.isTopLevel && !options.trimmedLine.endsWith(':')) {
             let comps: string[] = [];
-            comps.push(...Object.keys(options.meta.classes).filter(k => k !== 'root'))
+            comps.push(...Object.keys(options.meta.classes).filter(k => k !== 'root' && options.fakes.findIndex(f => f.selector === '.' + k) === -1))
             options.meta.imports.forEach(i => comps.push(...Object.keys(i.named)))
             return comps.map(c => classCompletion(c, new ProviderRange(new ProviderPosition(options.position.line, Math.max(0, options.position.character - options.trimmedLine.length)), options.position)), false, );
         } else
@@ -222,13 +225,47 @@ export class ExtendCompletionProvider implements CompletionProvider {
     text: string[] = [''];
 }
 
+export class NamedCompletionProvider implements CompletionProvider {
+    provide(options: ProviderOptions): Completion[] {
+        // if (options.currentSelector === valueMapping.named || options.trimmedLine.replace(':', '') === valueMapping.named) {
+        //     let comps: string[] = [];
+        //     return comps.map(c => namedCompletion(c, new ProviderRange(options.position, options.position)));
+        // } else {
+        return [];
+        // }
+    }
+    text: string[] = [''];
+}
+
+export class PseudoElementCompletionProvider implements CompletionProvider {
+    provide(options: ProviderOptions): Completion[] {
+        if (options.isTopLevel && !!options.resolved &&
+            options.meta.imports.some(i => i.defaultExport === options.currentSelector || Object.keys(i.named).indexOf(options.currentSelector) !== -1)) {
+            let pseudos = options.resolved.reduce(
+                (acc: string[][], t) => acc.concat(Object.keys((t.meta.classes) || []).filter(s => s !== 'root').map(s => [s, options.resolved.find(r => r.symbol.name === options.currentSelector)!.meta.imports[0].fromRelative])), []);
+            return pseudos.reduce((acc: Completion[], p) => {
+                acc.push(pseudoElementCompletion(p[0], p[1], (new ProviderRange(
+                    new ProviderPosition(options.position.line,
+                        Math.max(0, options.position.character - (options.trimmedLine.match(/:+/g) ? (options.trimmedLine.match(/:+/g)!.reverse()[0].length) : 0))
+                    ), options.position)
+                )));
+                return acc;
+            }, [])
+        } else {
+            return [];
+        }
+    }
+    text: string[] = [''];
+}
+
+
 export class StateCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.isTopLevel && !!options.resolved && !options.trimmedLine.endsWith('::')) {
             let states = options.resolved.reduce(
                 (acc: string[][], t) => acc.concat(Object.keys((t.symbol as any)['-st-states'] || []).map(s => [s, t.meta.source])), []);
             return states.reduce((acc: Completion[], st) => {
-                if ((options.target.focusChunk as SelectorChunk).states.indexOf(st[0]) == -1) {
+                if ((options.target.focusChunk as SelectorChunk).states.indexOf(st[0]) === -1) {
 
                     acc.push(stateCompletion(st[0], st[1], (new ProviderRange(
                         new ProviderPosition(options.position.line, Math.max(0, options.position.character - (options.trimmedLine.endsWith(':') ? 1 : 0))), options.position)

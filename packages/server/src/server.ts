@@ -9,9 +9,10 @@ import {
     IPCMessageWriter,
     TextDocuments,
     TextEdit,
-    // NotificationType
 } from 'vscode-languageserver';
-import { createProvider, createProcessor} from './provider-factory';
+import { createProvider,
+     createProcessor
+} from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import {createDiagnosis} from './diagnosis'
@@ -42,7 +43,6 @@ connection.listen();
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
     // connection.sendNotification(OpenDocNotification.type, '/home/wix/projects/demo/test.css');
-    console.log('Looking for file');
 
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;

@@ -2,6 +2,9 @@ import * as PostCss from 'postcss';
 import {ProviderPosition} from '../completion-providers'
 
 export function isInNode(position: ProviderPosition, node: PostCss.NodeBase): boolean {
+    if (!node.source) {
+        return false;
+    }
     if (node.source.start!.line > position.line) {
         return false;
     }

@@ -32,10 +32,10 @@ function reportToDiagnostic(report:Report) {
 
 function createRange(source:NodeSource) {
     return Range.create({
-        line: source.start!.line,
-        character: source.start!.column
+        line: source.start!.line -1,
+        character: source.start!.column -1
     }, {
-        line: source.end!.line,
+        line: source.end!.line -1,
         character: source.end!.column
     })
 }

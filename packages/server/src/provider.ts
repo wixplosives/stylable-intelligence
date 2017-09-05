@@ -18,6 +18,7 @@ import {
     VarsDirectiveProvider,
     ClassCompletionProvider,
     ExtendCompletionProvider,
+    PseudoElementCompletionProvider,
     StateCompletionProvider,
     TypeCompletionProvider,
     ProviderPosition,
@@ -52,6 +53,7 @@ export default class Provider {
         new TypeCompletionProvider(),
         new ExtendCompletionProvider(),
         new StateCompletionProvider(),
+        new PseudoElementCompletionProvider(),
     ]
 
     public provideCompletionItemsFromSrc(
@@ -88,14 +90,31 @@ export default class Provider {
             fixedSrc = lines.join('\n');
         }
 
+
         let meta: StylableMeta;
+        let fakes: PostCss.Rule[] = [];
         try {
-            meta = process(safeParse(fixedSrc, { from: filePath.indexOf('file://') === 0 ? filePath.slice(7) : filePath }));
+            let ast: PostCss.Root = safeParse(fixedSrc, { from: filePath.indexOf('file://') === 0 ? filePath.slice(7) : filePath })
+            ast.nodes && ast.nodes.forEach((node) => {
+                if (node.type === 'decl') {
+                    let r = PostCss.rule({ selector: node.prop + ':' + node.value });
+                    r.source = node.source;
+                    node.replaceWith(r);
+                    fakes.push(r)
+                }
+            })
+            if (ast.raws.after && ast.raws.after.trim()) {
+                let r = PostCss.rule({ selector: ast.raws.after.trim() })
+                ast.append(r);
+                fakes.push(r);
+            }
+
+            meta = process(ast);
         } catch (error) {
             console.log(error);
             return Promise.resolve([]);
         }
-        return this.provideCompletionItemsFromAst(src, position, meta, currentLine, cursorLineIndex);
+        return this.provideCompletionItemsFromAst(src, position, meta, fakes, currentLine, cursorLineIndex);
 
     }
 
@@ -103,11 +122,12 @@ export default class Provider {
         src: string,
         position: ProviderPosition,
         meta: StylableMeta,
+        fakes: PostCss.Rule[],
         currentLine: string,
         cursorLineIndex: number
     ): Thenable<Completion[]> {
         const completions: Completion[] = [];
-        let options = this.createProviderOptions(src, position, meta, currentLine, cursorLineIndex)
+        let options = this.createProviderOptions(src, position, meta, fakes, currentLine, cursorLineIndex)
 
         this.providers.forEach(p => {
             options.isLineStart = p.text.some((s: string) => s.indexOf(currentLine.trim()) === 0)
@@ -121,6 +141,7 @@ export default class Provider {
         src: string,
         position: ProviderPosition,
         meta: StylableMeta,
+        fakes: PostCss.Rule[],
         currentLine: string,
         cursorLineIndex: number): ProviderOptions {
 
@@ -128,7 +149,9 @@ export default class Provider {
         const lastPart: PostCss.NodeBase = path[path.length - 1];
         const prevPart: PostCss.NodeBase = path[path.length - 2];
         const isMediaQuery = path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media');
-        const lastRule: SRule | null = prevPart && isSelector(prevPart) ? <SRule>prevPart : lastPart && isSelector(lastPart) ? <SRule>lastPart : null
+        const lastRule: SRule | null = prevPart && isSelector(prevPart) && fakes.findIndex((f) => { return f.selector === prevPart.selector })
+            ? <SRule>prevPart
+            : lastPart && isSelector(lastPart) && fakes.findIndex((f) => {return f.selector === lastPart.selector}) ? <SRule>lastPart : null
         while (currentLine.lastIndexOf(' ') > cursorLineIndex) {
             currentLine = currentLine.slice(0, currentLine.lastIndexOf(' '))
         }
@@ -157,7 +180,7 @@ export default class Provider {
         pos -= rev.findIndex(s => !/:+/.test(s))
         let currentSelector = /:+/.test(chunkStrings[pos]) ? chunkStrings[pos - 1] : chunkStrings[pos]
         if (currentSelector && currentSelector.startsWith('.')) { currentSelector = currentSelector.slice(1) }
-        let resolved = currentSelector ? this.resolver.resolveExtends(meta, currentSelector) : [];
+        let resolved = currentSelector ? this.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase()) : [];
 
         return {
             meta: meta,
@@ -171,7 +194,8 @@ export default class Provider {
             resolved: resolved,
             currentSelector: currentSelector,
             target: ps.target,
-            isMediaQuery: isMediaQuery
+            isMediaQuery: isMediaQuery,
+            fakes: fakes,
         }
     }
 

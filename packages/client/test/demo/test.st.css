@@ -1,4 +1,8 @@
-    div.baga{
+.local {
+    background: value(bla);
+    -st-extends: bla;
+}
 
-    }
+
+
 

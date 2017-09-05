@@ -70,6 +70,14 @@ export function extendCompletion(symbolName: string, rng: ProviderRange) {
     return new Completion(symbolName, 'Stylable class or tag', 'a', new snippet(' ' + symbolName + ';\n'), rng)
 }
 
+export function namedCompletion(symbolName: string, rng: ProviderRange) {
+    return new Completion(symbolName, 'Stylable class or tag', 'a', new snippet(' ' + symbolName + ';\n'), rng)
+}
+
+export function pseudoElementCompletion(elementName: string, from: string, rng: ProviderRange) {
+    return new Completion('::' + elementName, 'from: ' + from, 'b', '::' + elementName, rng)
+}
+
 export function stateCompletion(stateName: string, from: string, rng: ProviderRange) {
     return new Completion(':' + stateName, 'from: ' + from, 'a', new snippet(':' + stateName), rng);
 }
