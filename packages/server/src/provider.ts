@@ -1,3 +1,4 @@
+import { valueMapping } from 'stylable/dist/src';
 //must remain independent from vscode
 
 import * as PostCss from 'postcss';
@@ -149,24 +150,30 @@ export default class Provider {
         const lastPart: PostCss.NodeBase = path[path.length - 1];
         const prevPart: PostCss.NodeBase = path[path.length - 2];
         const isMediaQuery = path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media');
+        const isDirective = Object.keys(valueMapping).some(k => currentLine.indexOf(k) !== -1)
+
+
         const lastRule: SRule | null = prevPart && isSelector(prevPart) && fakes.findIndex((f) => { return f.selector === prevPart.selector })
             ? <SRule>prevPart
-            : lastPart && isSelector(lastPart) && fakes.findIndex((f) => {return f.selector === lastPart.selector}) ? <SRule>lastPart : null
+            : lastPart && isSelector(lastPart) && fakes.findIndex((f) => { return f.selector === lastPart.selector }) ? <SRule>lastPart : null
         while (currentLine.lastIndexOf(' ') > cursorLineIndex) {
             currentLine = currentLine.slice(0, currentLine.lastIndexOf(' '))
         }
         if (currentLine.lastIndexOf(' ') === cursorLineIndex) { currentLine = currentLine.slice(0, currentLine.lastIndexOf(' ')) }
 
-        // if (currentLine.lastIndexOf(' ') > 0 && currentLine.lastIndexOf(' ') < cursorLineIndex) { currentLine = currentLine.slice(currentLine.lastIndexOf(' ')) }
+        if (!isDirective && currentLine.lastIndexOf(' ') > 0 && currentLine.lastIndexOf(' ') < cursorLineIndex) {
+            cursorLineIndex -= (currentLine.lastIndexOf(' ') + 1);
+            currentLine = currentLine.slice(currentLine.lastIndexOf(' '));
+        }
 
         let trimmedLine = currentLine.trim();
 
-
+        //
         let ps = parseSelector(trimmedLine, cursorLineIndex);
 
         let chunkStrings: string[] = ps.selector.map(s => s.text).reduce((acc, arr) => { return acc.concat(arr) }, []);
-        let spacesBefore: number = currentLine.match(/^\s*/)![0].length || 0;
-        let remain = cursorLineIndex - spacesBefore;
+        // let spacesBefore: number = currentLine.match(/^\s*/)![0].length || 0;
+        let remain = cursorLineIndex;
         let pos = chunkStrings.findIndex(str => {
             if (str.length >= remain) {
                 return true;
@@ -177,8 +184,8 @@ export default class Provider {
         })
 
         let rev = chunkStrings.slice().reverse();
-        pos -= rev.findIndex(s => !/:+/.test(s))
-        let currentSelector = /:+/.test(chunkStrings[pos]) ? chunkStrings[pos - 1] : chunkStrings[pos]
+        pos -= Math.max(rev.findIndex(s => !/^:+/.test(s)), 0)
+        let currentSelector = /$:+/.test(chunkStrings[pos]) ? chunkStrings[pos - 1] : chunkStrings[pos]
         if (currentSelector && currentSelector.startsWith('.')) { currentSelector = currentSelector.slice(1) }
         let resolved = currentSelector ? this.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase()) : [];
 

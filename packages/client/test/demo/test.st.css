@@ -1,8 +1,9 @@
-.local {
-    background: value(bla);
-    -st-extends: bla;
+:import {
+    -st-from: "./import.css";
+    -st-named: shlomo, momo;
 }
 
+.gaga {
+    -st-extends:
 
-
-
+}

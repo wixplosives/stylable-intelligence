@@ -35,7 +35,7 @@ suite("Extension Tests", () => {
     test("simple completion", function() {
         this.timeout(5000)
         const testCases: [vscode.Position, string[]][] = [
-            [new vscode.Position(0, 0), [':import', '.root']]
+            [new vscode.Position(0, 0), [':import', '.']]
         ];
         return testCompletion('simple-completion.st.css', testCases);
 

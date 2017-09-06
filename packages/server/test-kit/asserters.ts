@@ -5,6 +5,7 @@ import { TextDocument } from 'vscode-languageserver-types';
 
 import { createProvider } from '../src/provider-factory'
 import { Completion, snippet } from '../src/completion-types';
+import { ProviderRange } from '../src/completion-providers';
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {
@@ -17,7 +18,7 @@ function assertPresent(actualCompletions: Completion[], expectedCompletions: Par
                     actualVal = actualVal.source;
                 }
                 const expectedVal: any = (expected as any)[field];
-                expect(actualVal, actual.label + ":" + field).to.equal(expectedVal);
+                expect(actualVal, actual.label + ":" + field).to.eql(expectedVal);
             }
         }
     });
@@ -56,29 +57,20 @@ export interface Assertable {
     notSuggested: (nonCompletions: Partial<Completion>[]) => void
 }
 
-export function getCompletions(fileName: string, checkSingleLine: boolean = false): Thenable<Assertable> {
+export function getCompletions(fileName: string): Thenable<Assertable> {
     const fullPath = path.join(__dirname, '/../test/cases/', fileName);
     const src: string = fs.readFileSync(fullPath).toString();
-    const singleLineSrc = src.split('\n').join('');
-    let normalCompletions: Completion[];
     return completionsIntenal(fullPath, src)
         .then((completions) => {
-            normalCompletions = completions;
-        })
-        .then<Completion[] | null>(() => checkSingleLine ? completionsIntenal(fullPath, singleLineSrc) : Promise.resolve(null))
-        .then((singleLineCompletions) => {
             return {
                 suggested: (expectedCompletions: Partial<Completion>[]) => {
-                    assertPresent(normalCompletions, expectedCompletions);
-                    singleLineCompletions && assertPresent(singleLineCompletions, expectedCompletions, 'single line: ');
+                    assertPresent(completions, expectedCompletions);
                 },
                 exactSuggested: (expectedCompletions: Partial<Completion>[]) => {
-                    assertExact(normalCompletions, expectedCompletions);
-                    singleLineCompletions && assertPresent(singleLineCompletions, expectedCompletions, 'single line: ');
+                    assertExact(completions, expectedCompletions);
                 },
                 notSuggested: (expectedNoCompletions: Partial<Completion>[]) => {
-                    assertNotPresent(normalCompletions, expectedNoCompletions);
-                    singleLineCompletions && assertNotPresent(singleLineCompletions, expectedNoCompletions, 'single line: ');
+                    assertNotPresent(completions, expectedNoCompletions);
                 }
             }
 
@@ -109,20 +101,55 @@ function completionsIntenal(fileName: string, src: string): Thenable<Completion[
     }, fileName)
 }
 
-export const importCompletion: Partial<Completion> = { label: ':import', detail: 'Import an external library', sortText: 'a', insertText: ':import {\n\t-st-from: "$1";\n}$0' };
-export const varsCompletion: Partial<Completion> = { label: ':vars', detail: 'Declare variables', sortText: 'a', insertText: ':vars {\n\t$1\n}$0' };
-export const rootCompletion: Partial<Completion> = { label: '.root', detail: 'The root class', sortText: 'b', insertText: '.root' };
-export const statesDirectiveCompletion: Partial<Completion> = { label: '-st-states:', detail: 'Define the CSS states available for this class', sortText: 'a', insertText: '-st-states: $1;' };
-export const extendsDirectiveCompletion: Partial<Completion> = { label: '-st-extends:', detail: 'Extend an external component', sortText: 'a', insertText: '-st-extends: $1;', additionalCompletions: true };
-export const mixinDirectiveCompletion: Partial<Completion> = { label: '-st-mixin:', detail: 'Apply mixins on the class', sortText: 'a', insertText: '-st-mixin: $1;' };
-export const variantDirectiveCompletion: Partial<Completion> = { label: '-st-variant:', detail: '', sortText: 'a', insertText: '-st-variant: true;' };
-export const importFromDirectiveCompletion: Partial<Completion> = { label: '-st-from:', detail: 'Path to library', sortText: 'a', insertText: '-st-from: "$1";' };
-export const importDefaultDirectiveCompletion: Partial<Completion> = { label: '-st-default:', detail: 'Default object export name', sortText: 'a', insertText: '-st-default: $1;' };
-export const importNamedDirectiveCompletion: Partial<Completion> = { label: '-st-named:', detail: 'Named object export name', sortText: 'a', insertText: '-st-named: $1;' };
-export const namespaceDirectiveCompletion: Partial<Completion> = { label: '@namespace', detail: 'Declare a namespace for the file', sortText: 'a', insertText: '@namespace "$1";\n$0' };
-export const themeDirectiveCompletion: Partial<Completion> = { label: '-st-theme:', detail: 'Declare a theme', sortText: 'a', insertText: '-st-theme: true;\n$0' };
-export const filePathCompletion: (filePath: string) => Partial<Completion> = (filePath) => { return { label: filePath, insertText: './' + filePath } };
-export const classCompletion: (className: string, isDefaultImport?: boolean) => Partial<Completion> = (className, isDefaultImport?) => { return { label: (isDefaultImport ? '' : '.') + className, sortText: 'b' } }
-export const stateCompletion: (stateName: string, from?: string) => Partial<Completion> = (stateName, from = 'projectRoot/main.css') => { return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + path.join(__dirname, '/../test/cases/', from), insertText: ':' + stateName } }
-export const extendsCompletion: (typeName: string) => Partial<Completion> = (typeName) => { return { label: typeName, sortText: 'a', insertText: ' ' + typeName + ';\n' } };
-export const pseudoElementCompletion: (elementName: string, from?: string) => Partial<Completion> = (elementName, from?) => { return { label: '::' + elementName, sortText: 'b', detail: 'from: ' + from, insertText: '::' + elementName } }
+//syntactic
+export const extendsDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return { label: '-st-extends:', detail: 'Extend an external component', sortText: 'a', insertText: '-st-extends: $1;', additionalCompletions: true, range: rng };
+}
+export const importDefaultDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return { label: '-st-default:', detail: 'Default object export name', sortText: 'a', insertText: '-st-default: $1;', range: rng };
+}
+export const importDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return { label: ':import', detail: 'Import an external library', sortText: 'a', insertText: ':import {\n\t-st-from: "$1";\n}$0', range: rng }
+};
+export const importFromDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return { label: '-st-from:', detail: 'Path to library', sortText: 'a', insertText: '-st-from: "$1";', range: rng };
+}
+export const importNamedDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return { label: '-st-named:', detail: 'Named object export name', sortText: 'a', insertText: '-st-named: $1;', range: rng };
+}
+export const mixinDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return { label: '-st-mixin:', detail: 'Apply mixins on the class', sortText: 'a', insertText: '-st-mixin: $1;', range: rng };
+}
+export const namespaceDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return { label: '@namespace', detail: 'Declare a namespace for the file', sortText: 'a', insertText: '@namespace "$1";\n$0', range: rng };
+}
+export const rootClassCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return { label: '.root', detail: 'The root class', sortText: 'b', insertText: '.root', range: rng };
+}
+export const statesDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return { label: '-st-states:', detail: 'Define the CSS states available for this class', sortText: 'a', insertText: '-st-states: $1;', range: rng };
+}
+export const themeDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return { label: '-st-theme:', detail: 'Declare a theme', sortText: 'a', insertText: '-st-theme: true;\n$0', range: rng };
+}
+export const varsDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return { label: ':vars', detail: 'Declare variables', sortText: 'a', insertText: ':vars {\n\t$1\n}$0', range: rng };
+}
+export const variantDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return { label: '-st-variant:', detail: '', sortText: 'a', insertText: '-st-variant: true;', range: rng };
+}
+
+
+//semantic
+export const classCompletion: (className: string, rng: ProviderRange, isDefaultImport?: boolean) => Partial<Completion> = (className, rng, isDefaultImport?) => {
+    return { label: (isDefaultImport ? '' : '.') + className, sortText: 'b', range: rng }
+}
+export const extendsCompletion: (typeName: string, rng: ProviderRange) => Partial<Completion> = (typeName, rng) => {
+    return { label: typeName, sortText: 'a', insertText: ' ' + typeName + ';\n', range: rng }
+};
+export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (stateName, rng, from = 'projectRoot/main.css') => {
+    return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + path.join(__dirname, '/../test/cases/', from), insertText: ':' + stateName, range: rng }
+}
+export const pseudoElementCompletion: (elementName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (elementName, rng, from?) => {
+    return { label: '::' + elementName, sortText: 'b', detail: 'from: ' + from, insertText: '::' + elementName, range: rng }
+}

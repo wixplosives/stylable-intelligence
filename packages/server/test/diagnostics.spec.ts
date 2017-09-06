@@ -14,6 +14,9 @@ function createDiagnostics(files:{[filePath:string]:string}, path:string) {
     const documents: TextDocuments = {
         get:(filePath) => {
             return docs[filePath]
+        },
+        keys: () => {
+            return Object.keys(docs)
         }
     } as TextDocuments
 
@@ -22,7 +25,7 @@ function createDiagnostics(files:{[filePath:string]:string}, path:string) {
 
 
 describe('diagnostics', function () {
-    xit('should create basic diagnostics', function(){
+    it('should create basic diagnostics', function(){
         let filePath = 'style.css'
 
         let diagnostics = createDiagnostics({
@@ -31,8 +34,8 @@ describe('diagnostics', function () {
 
         return expect(diagnostics).to.deep.include({
             "range":{
-                "start":{"line":1, "character":1},
-                "end": {"line":1, "character":13}
+                "start":{"line":0, "character":0},
+                "end": {"line":0, "character":13}
             },
             "message":".root class cannot be used after spacing",
             "severity":2

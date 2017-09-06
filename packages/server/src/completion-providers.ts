@@ -38,6 +38,10 @@ export class ProviderRange {
     constructor(public start: ProviderPosition, public end: ProviderPosition) { }
 }
 
+export function createRange(startLine: number, startPos: number, endline: number, endPos: number) {
+    return new ProviderRange(new ProviderPosition(startLine, startPos), new ProviderPosition(endline, endPos));
+}
+
 
 //Providers
 //Syntactic
@@ -186,7 +190,7 @@ export class VarsDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         let position = options.position
         if (options.isTopLevel && options.isLineStart && !options.isMediaQuery) {
-            return [varsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - options.trimmedLine.length)), position))];
+            return [varsDirective(new ProviderRange(new ProviderPosition(position.line, Math.max(0, position.character - options.trimmedLine.length)), <ProviderPosition>position))];
         } else {
             return [];
         }

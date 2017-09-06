@@ -1,4 +1,5 @@
 import * as asserters from '../test-kit/asserters';
+import { createRange } from '../src/completion-providers';
 
 describe('completion unit test', function () {
     describe('root level', function () {
@@ -6,18 +7,18 @@ describe('completion unit test', function () {
             return asserters.getCompletions('general/top-level-existing-classes.css').then((asserter) => {
                 asserter.suggested(
                     [
-                        asserters.importCompletion,
-                        asserters.rootCompletion,
-                        asserters.varsCompletion,
-                        asserters.classCompletion('gaga'),
-                        asserters.classCompletion('baga'),
+                        asserters.importDirectiveCompletion(createRange(3, 0, 3, 0)),
+                        asserters.rootClassCompletion(createRange(3, 0, 3, 0)),
+                        asserters.varsDirectiveCompletion(createRange(3, 0, 3, 0)),
+                        asserters.classCompletion('gaga', (createRange(3, 0, 3, 0))),
+                        asserters.classCompletion('baga', (createRange(3, 0, 3, 0))),
                     ]
                 );
                 asserter.notSuggested([
-                    asserters.statesDirectiveCompletion,
-                    asserters.extendsDirectiveCompletion,
-                    asserters.mixinDirectiveCompletion,
-                    asserters.variantDirectiveCompletion
+                    asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.extendsDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.mixinDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.variantDirectiveCompletion(createRange(0, 0, 0, 0))
                 ]);
             });
         });
@@ -26,17 +27,17 @@ describe('completion unit test', function () {
             return asserters.getCompletions('general/top-level-existing-classes-broken.css').then((asserter) => {
                 asserter.suggested(
                     [
-                        asserters.importCompletion,
-                        asserters.rootCompletion,
-                        asserters.classCompletion('gaga'),
+                        asserters.importDirectiveCompletion(createRange(3, 0, 3, 0)),
+                        asserters.rootClassCompletion(createRange(3, 0, 3, 0)),
+                        asserters.classCompletion('gaga', (createRange(3, 0, 3, 0))),
                     ]
                 );
                 asserter.notSuggested([
-                    asserters.classCompletion('baga'),
-                    asserters.statesDirectiveCompletion,
-                    asserters.extendsDirectiveCompletion,
-                    asserters.mixinDirectiveCompletion,
-                    asserters.variantDirectiveCompletion
+                    asserters.classCompletion('baga', createRange(0, 0, 0, 0)),
+                    asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.extendsDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.mixinDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.variantDirectiveCompletion(createRange(0, 0, 0, 0)),
                 ]);
             });
         });
@@ -44,15 +45,15 @@ describe('completion unit test', function () {
         it('should complete root and existing classes at top level after "."', function () {
             return asserters.getCompletions('general/top-level-dot.css').then((asserter) => {
                 asserter.suggested([
-                    asserters.rootCompletion,
-                    asserters.classCompletion('gaga'),
+                    asserters.rootClassCompletion(createRange(0, 0, 0, 1)),
+                    asserters.classCompletion('gaga', (createRange(0, 0, 0, 1))),
                 ]);
                 asserter.notSuggested([
-                    asserters.importCompletion,
-                    asserters.statesDirectiveCompletion,
-                    asserters.extendsDirectiveCompletion,
-                    asserters.mixinDirectiveCompletion,
-                    asserters.variantDirectiveCompletion
+                    asserters.importDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.extendsDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.mixinDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.variantDirectiveCompletion(createRange(0, 0, 0, 0)),
                 ])
             });
         });
@@ -61,40 +62,32 @@ describe('completion unit test', function () {
             return asserters.getCompletions('general/non-initial-chunk.css').then((asserter) => {
                 asserter.suggested(
                     [
-                        asserters.classCompletion('shlomo'),
-                        asserters.classCompletion('momo'),
-                        asserters.classCompletion('Compo',true),
+                        asserters.classCompletion('shlomo', (createRange(6, 6, 6, 6))),
+                        asserters.classCompletion('momo', (createRange(6, 6, 6, 6))),
+                        asserters.classCompletion('Compo', (createRange(6, 6, 6, 6)), true),
                     ]
                 );
                 asserter.notSuggested([
-                    asserters.rootCompletion,
-                    asserters.importCompletion,
-                    asserters.varsCompletion,
-                    asserters.statesDirectiveCompletion,
-                    asserters.extendsDirectiveCompletion,
-                    asserters.mixinDirectiveCompletion,
-                    asserters.variantDirectiveCompletion
+                    asserters.rootClassCompletion(createRange(0, 0, 0, 0)),
                 ]);
             });
         });
-    });
 
-    describe('directives', function () {
         it('should not break when no completions to provide', function () {
             return asserters.getCompletions('general/no-completions.css').then((asserter) => {
-                //todo: write 'no completions' asserter
                 asserter.exactSuggested([]);
             });
         });
-
     });
+
+
 
     describe('states', function () {
         it('should complete available states from same file after :', function () {
             return asserters.getCompletions('states/class-with-states.css').then((asserter) => {
                 asserter.suggested([
-                    asserters.stateCompletion('hello', 'states/class-with-states.css'),
-                    asserters.stateCompletion('goodbye', 'states/class-with-states.css')
+                    asserters.stateCompletion('hello', createRange(4, 5, 4, 6), 'states/class-with-states.css'),
+                    asserters.stateCompletion('goodbye', createRange(4, 5, 4, 6), 'states/class-with-states.css')
                 ]);
             });
         });
@@ -103,11 +96,11 @@ describe('completion unit test', function () {
         it('should complete available states after : in complex selectors', function () {
             return asserters.getCompletions('states/complex-selectors.css').then((asserter) => {
                 asserter.suggested([
-                    asserters.stateCompletion('hello', 'states/complex-selectors.css')
+                    asserters.stateCompletion('hello', createRange(9, 19, 9, 20), 'states/complex-selectors.css')
                 ]);
                 asserter.notSuggested([
-                    asserters.stateCompletion('goodbye', 'states/complex-selectors.css'),
-                    asserters.stateCompletion('cheerio', 'states/complex-selectors.css')
+                    asserters.stateCompletion('goodbye', createRange(9, 19, 9, 20), 'states/complex-selectors.css'),
+                    asserters.stateCompletion('cheerio', createRange(9, 19, 9, 20), 'states/complex-selectors.css')
                 ]);
             });
         });
@@ -115,11 +108,11 @@ describe('completion unit test', function () {
         it('should complete available states after : in complex selectors ending in state name', function () {
             return asserters.getCompletions('states/complex-selectors-with-states.css').then((asserter) => {
                 asserter.suggested([
-                    asserters.stateCompletion('hello', 'states/complex-selectors-with-states.css')
+                    asserters.stateCompletion('hello', createRange(9, 25, 9, 26), 'states/complex-selectors-with-states.css')
                 ]);
                 asserter.notSuggested([
-                    asserters.stateCompletion('goodbye', 'states/complex-selectors-with-states.css'),
-                    asserters.stateCompletion('cheerio', 'states/complex-selectors-with-states.css')
+                    asserters.stateCompletion('goodbye', createRange(9, 25, 9, 26), 'states/complex-selectors-with-states.css'),
+                    asserters.stateCompletion('cheerio', createRange(9, 25, 9, 26), 'states/complex-selectors-with-states.css')
                 ]);
             });
         });
@@ -127,11 +120,10 @@ describe('completion unit test', function () {
         it('should not complete available states after : in complex selectors if existing', function () {
             return asserters.getCompletions('states/complex-selectors-with-states-existing.css').then((asserter) => {
                 asserter.suggested([
-                    asserters.stateCompletion('goodbye', 'states/complex-selectors-with-states-existing.css')
+                    asserters.stateCompletion('goodbye', createRange(4, 11, 4, 12), 'states/complex-selectors-with-states-existing.css')
                 ]);
                 asserter.notSuggested([
-                    asserters.importCompletion,
-                    asserters.stateCompletion('hello')
+                    asserters.stateCompletion('hello', createRange(0, 0, 0, 0))
                 ]);
             });
         });
@@ -139,11 +131,8 @@ describe('completion unit test', function () {
         it('should not complete state value after :: ', function () {
             return asserters.getCompletions('states/class-with-states-double-colon.css').then((asserter) => {
                 asserter.notSuggested([
-                    asserters.extendsCompletion('Comp'),
-                    asserters.stateCompletion('hello'),
-                    asserters.stateCompletion('goodbye'),
-                    asserters.importCompletion,
-                    asserters.mixinDirectiveCompletion
+                    asserters.stateCompletion('hello', createRange(0, 0, 0, 0)),
+                    asserters.stateCompletion('goodbye', createRange(0, 0, 0, 0))
                 ]);
             });
         });
@@ -153,13 +142,24 @@ describe('completion unit test', function () {
     describe('extends', function () {
         it('complete extensible classes and tags', function () {
             return asserters.getCompletions('extends/extend.css')
-            .then((asserter) => {
-                asserter.suggested([
-                    asserters.extendsCompletion('shlomo'),
-                    asserters.extendsCompletion('momo'),
-                    asserters.extendsCompletion('root'),
-                ]);
-            });
+                .then((asserter) => {
+                    asserter.suggested([
+                        asserters.extendsCompletion('shlomo', createRange(6, 16, 6, 16)),
+                        asserters.extendsCompletion('momo', createRange(6, 16, 6, 16)),
+                        asserters.extendsCompletion('root', createRange(6, 16, 6, 16)),
+                    ]);
+                });
+        });
+
+        it('complete extensible classes and tags after space', function () {
+            return asserters.getCompletions('extends/extend-space.css')
+                .then((asserter) => {
+                    asserter.suggested([
+                        asserters.extendsCompletion('shlomo', createRange(6, 17, 6, 17)),
+                        asserters.extendsCompletion('momo', createRange(6, 17, 6, 17)),
+                        asserters.extendsCompletion('root', createRange(6, 17, 6, 17)),
+                    ]);
+                });
         });
     });
 
@@ -169,7 +169,7 @@ describe('completion unit test', function () {
             return asserters.getCompletions('states/locally-imported-component.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.stateCompletion('shmover', 'states/comp-to-import.css')
+                        asserters.stateCompletion('shmover', createRange(10, 5, 10, 6), 'states/comp-to-import.css')
                     ]);
                 });
         });
@@ -178,8 +178,8 @@ describe('completion unit test', function () {
             return asserters.getCompletions('states/locally-imported-component-with-states.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.stateCompletion('shmover', 'states/comp-to-import.css'),
-                        asserters.stateCompletion('clover', 'states/locally-imported-component-with-states.css'),
+                        asserters.stateCompletion('shmover', createRange(11, 5, 11, 6), 'states/comp-to-import.css'),
+                        asserters.stateCompletion('clover', createRange(11, 5, 11, 6), 'states/locally-imported-component-with-states.css'),
                     ]);
                 });
         });
@@ -189,9 +189,9 @@ describe('completion unit test', function () {
             return asserters.getCompletions('states/locally-imported-component-recursive.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.stateCompletion('shmover', 'states/comp-to-import.css'),
-                        asserters.stateCompletion('hoover', 'states/mid-level-import.css'),
-                        asserters.stateCompletion('clover', 'states/locally-imported-component-recursive.css'),
+                        asserters.stateCompletion('shmover', createRange(11, 11, 11, 12), 'states/comp-to-import.css'),
+                        asserters.stateCompletion('hoover', createRange(11, 11, 11, 12), 'states/mid-level-import.css'),
+                        asserters.stateCompletion('clover', createRange(11, 11, 11, 12), 'states/locally-imported-component-recursive.css'),
                     ]);
                 });
         });
@@ -200,16 +200,16 @@ describe('completion unit test', function () {
         xit('complete states for localy imported variant', function () {
             return asserters.getCompletions(
                 `
-                :import{
-                    -st-from: "./comp.css";
-                    -st-named: zagzag;
+                    :import{
+                        -st-from: "./comp.css";
+                        -st-named: zagzag;
 
-                }
-                .gaga{
-            //         -st-extends: zagzag;
-            //     }
-            //     .gaga:|
-            //     `
+                    }
+                    .gaga{
+                //         -st-extends: zagzag;
+                //     }
+                //     .gaga:|
+                //     `
                 //     'comp.css':`
                 //     .root{
                 //         -st-states:shmover;
@@ -220,7 +220,7 @@ describe('completion unit test', function () {
                 // `
             ).then((asserter) => {
                 asserter.suggested([
-                    asserters.stateCompletion('shmover', 'projectRoot/comp.css')
+                    // asserters.stateCompletion('shmover', 'projectRoot/comp.css')
                 ]);
             });
         });
