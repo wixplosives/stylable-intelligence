@@ -1,6 +1,6 @@
 {
   "name": "stylable-intelligence",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Stylable Language Services Client",
   "author": "Nadav Abraami (nadav@wix.com)",
   "publisher": "Wix",
@@ -34,7 +34,7 @@
   ],
   "browser": "dist/src/index.js",
   "scripts": {
-    "clear":"rimraf node_modules dist",
+    "clear": "rimraf node_modules dist",
     "vscode:prepublish": "rm -rf dist && yarn install && tsc -d -p ./tsconfig.publish.json && yarn install --prod",
     "build": "tsc -d",
     "compile": "tsc -watch -d",
