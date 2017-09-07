@@ -137,6 +137,24 @@ describe('completion unit test', function () {
             });
         });
 
+        it('should complete state value after pseudo-element on default import', function () {
+            return asserters.getCompletions('pseudo-elements/default-import-as-tag.st.css').then((asserter) => {
+                asserter.suggested([
+                    asserters.stateCompletion('state', createRange(6, 4, 6, 4), 'pseudo-elements/import.st.css'),
+                    asserters.stateCompletion('otherState', createRange(6, 4, 6, 4), 'pseudo-elements/import.st.css')
+                ]);
+            });
+        });
+
+        it('should complete state value after pseudo-element on local calss extending import', function () {
+            return asserters.getCompletions('pseudo-elements/default-import-extended.st.css').then((asserter) => {
+                asserter.suggested([
+                    asserters.stateCompletion('state', createRange(10, 5, 10, 5), 'pseudo-elements/import.st.css'),
+                    asserters.stateCompletion('otherState', createRange(10, 5, 10, 5), 'pseudo-elements/import.st.css')
+                ]);
+            });
+        });
+
     });
 
     describe('extends', function () {

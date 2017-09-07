@@ -1,6 +1,6 @@
 import { StylableMeta, SRule, valueMapping } from 'stylable';
 import { CSSResolve } from 'stylable/dist/src';
-import { CursorPosition, SelectorChunk } from "./utils/selector-analyzer";
+import { CursorPosition, SelectorChunk, SelectorInternalChunk } from "./utils/selector-analyzer";
 import {
     defaultDirective, extendsDirective, fromDirective, importsDirective, mixinDirective, namedDirective, rootClass, statesDirective, variantDirective, varsDirective,
     classCompletion, extendCompletion, stateCompletion, Completion, namespaceDirective, themeDirective, pseudoElementCompletion
@@ -246,11 +246,28 @@ export class PseudoElementCompletionProvider implements CompletionProvider {
         if (options.isTopLevel && !!options.resolved &&
             options.meta.imports.some(i => i.defaultExport === options.currentSelector || Object.keys(i.named).indexOf(options.currentSelector) !== -1)) {
             let pseudos = options.resolved.reduce(
-                (acc: string[][], t) => acc.concat(Object.keys((t.meta.classes) || []).filter(s => s !== 'root').map(s => [s, options.resolved.find(r => r.symbol.name === options.currentSelector)!.meta.imports[0].fromRelative])), []);
+                (acc: string[][], t) => acc.concat(
+                    Object.keys((t.meta.classes) || [])
+                        .filter(s => s !== 'root')
+                        .filter(s => {
+                            if (/:/.test(options.trimmedLine)) {
+                                return s.startsWith(options.trimmedLine.split(':').reverse()[0]);
+                            }
+                            return true;
+                        })
+                        .filter(s => {
+                            Array.isArray(options.target.focusChunk)
+                                ? options.target.focusChunk.every((c: SelectorInternalChunk) => !c.name || c.name !== s)
+                                : !(options.target.focusChunk as SelectorInternalChunk).name || (options.target.focusChunk as SelectorInternalChunk).name !== s;
+                        })
+                        .map(s => [s, options.resolved.find(r => r.symbol.name === options.currentSelector)!.meta.imports[0].fromRelative])
+                ), []);
             return pseudos.reduce((acc: Completion[], p) => {
                 acc.push(pseudoElementCompletion(p[0], p[1], (new ProviderRange(
                     new ProviderPosition(options.position.line,
-                        Math.max(0, options.position.character - (options.trimmedLine.match(/:+/g) ? (options.trimmedLine.match(/:+/g)!.reverse()[0].length) : 0))
+                        Math.max(0, options.position.character - (options.trimmedLine.match(/:+/g)
+                            ? (options.trimmedLine.split(':').reverse()[0].length + options.trimmedLine.match(/:/g)!.length)
+                            : 0))
                     ), options.position)
                 )));
                 return acc;
@@ -269,8 +286,10 @@ export class StateCompletionProvider implements CompletionProvider {
             let states = options.resolved.reduce(
                 (acc: string[][], t) => acc.concat(Object.keys((t.symbol as any)['-st-states'] || []).map(s => [s, t.meta.source])), []);
             return states.reduce((acc: Completion[], st) => {
-                if ((options.target.focusChunk as SelectorChunk).states.indexOf(st[0]) === -1) {
-
+                if (Array.isArray(options.target.focusChunk)
+                    ? options.target.focusChunk.every(c => c.states.indexOf(st[0]) === -1)
+                    : (options.target.focusChunk as SelectorChunk).states.indexOf(st[0]) === -1
+                ) {
                     acc.push(stateCompletion(st[0], st[1], (new ProviderRange(
                         new ProviderPosition(options.position.line, Math.max(0, options.position.character - (options.trimmedLine.endsWith(':') ? 1 : 0))), options.position)
                     )));
