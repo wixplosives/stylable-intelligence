@@ -244,11 +244,15 @@ export class NamedCompletionProvider implements CompletionProvider {
 export class PseudoElementCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.isTopLevel && !!options.resolved &&
-            options.meta.imports.some(i => i.defaultExport === options.currentSelector || Object.keys(i.named).indexOf(options.currentSelector) !== -1)) {
+            options.meta.imports.some((i) => {
+                return i.defaultExport === options.currentSelector //Using default import as tag
+                    || Object.keys(i.named).indexOf(options.currentSelector) !== -1 //using named import as tag
+                    || options.resolved.filter(r => r.symbol.name === options.currentSelector).some((r) => { return !!(r as any).symbol[valueMapping.extends]})
+            })) {
             let pseudos = options.resolved.reduce(
                 (acc: string[][], t) => acc.concat(
                     Object.keys((t.meta.classes) || [])
-                        .filter(s => s !== 'root')
+                        .filter(s => s !== 'root' && s !== options.currentSelector)
                         .filter(s => {
                             if (/:/.test(options.trimmedLine)) {
                                 return s.startsWith(options.trimmedLine.split(':').reverse()[0]);
@@ -256,8 +260,8 @@ export class PseudoElementCompletionProvider implements CompletionProvider {
                             return true;
                         })
                         .filter(s => {
-                            Array.isArray(options.target.focusChunk)
-                                ? options.target.focusChunk.every((c: SelectorInternalChunk) => !c.name || c.name !== s)
+                            return Array.isArray(options.target.focusChunk)
+                                ? options.target.focusChunk.every((c: SelectorInternalChunk) => { return !c.name || c.name !== s })
                                 : !(options.target.focusChunk as SelectorInternalChunk).name || (options.target.focusChunk as SelectorInternalChunk).name !== s;
                         })
                         .map(s => [s, options.resolved.find(r => r.symbol.name === options.currentSelector)!.meta.imports[0].fromRelative])
