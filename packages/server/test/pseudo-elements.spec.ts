@@ -98,6 +98,63 @@ describe('Pseudo-elements', function () {
                 ]);
             });
         });
+    });
 
+    xdescribe('Named import extended by class', function () {
+        it('should not complete root pseudo-elements on class extending named import', function () {
+            return asserters.getCompletions('pseudo-elements/named-import-extended.st.css').then((asserter) => {
+                asserter.notSuggested([
+                    asserters.pseudoElementCompletion('momo', createRange(10, 5, 10, 5), './import.st.css'),
+                    asserters.pseudoElementCompletion('shlomo', createRange(10, 5, 10, 5), './import.st.css'),
+                ]);
+            });
+        } )
+
+        xit('should complete pseudo-element ', function () { //multifile
+            return asserters.getCompletions('pseudo-elements/named-import-extended.st.css').then((asserter) => {
+                asserter.suggested([
+                    asserters.pseudoElementCompletion('momo', createRange(10, 5, 10, 5), './import.st.css'),
+                    asserters.pseudoElementCompletion('shlomo', createRange(10, 5, 10, 5), './import.st.css'),
+                ]);
+            });
+        });
+
+        xit('should complete pseudo-element after : ', function () { //multifile
+            return asserters.getCompletions('pseudo-elements/named-import-extended-colon.st.css').then((asserter) => {
+                asserter.suggested([
+                    asserters.pseudoElementCompletion('shlomo', createRange(10, 5, 10, 6), './import.st.css'),
+                    asserters.pseudoElementCompletion('momo', createRange(10, 5, 10, 6), './import.st.css'),
+                ]);
+            });
+        });
+
+        xit('should complete pseudo-element after :: ', function () { //multifile
+            return asserters.getCompletions('pseudo-elements/named-import-extended-colon-colon.st.css').then((asserter) => {
+                asserter.suggested([
+                    asserters.pseudoElementCompletion('shlomo', createRange(10, 5, 10, 7), './import.st.css'),
+                    asserters.pseudoElementCompletion('momo', createRange(10, 5, 10, 7), './import.st.css'),
+                ]);
+            });
+        });
+
+        xit('should complete pseudo-element after :: + initial string ', function () { //multifile
+            return asserters.getCompletions('pseudo-elements/named-import-extended-colon-colon-letter.st.css').then((asserter) => {
+                asserter.suggested([
+                    asserters.pseudoElementCompletion('shlomo', createRange(10,5,10,8), './import.st.css'),
+                ]);
+                asserter.notSuggested([
+                    asserters.pseudoElementCompletion('momo', createRange(10,5,10,8), './import.st.css'),
+                ]);
+            });
+        });
+
+        xit('should not complete pseudo-element if one exists ', function () { //multifile
+            return asserters.getCompletions('pseudo-elements/named-import-extended-pseudo-element-exists.st.css').then((asserter) => {
+                asserter.notSuggested([
+                    asserters.pseudoElementCompletion('shlomo', createRange(6, 4, 6, 6), './import.st.css'),
+                    asserters.pseudoElementCompletion('momo', createRange(6, 4, 6, 6), './import.st.css'),
+                ]);
+            });
+        });
     });
 });

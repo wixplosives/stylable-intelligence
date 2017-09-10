@@ -137,7 +137,7 @@ describe('completion unit test', function () {
             });
         });
 
-        it('should complete state value after pseudo-element on default import', function () {
+        it('should complete state value for default import used as tag', function () {
             return asserters.getCompletions('pseudo-elements/default-import-as-tag.st.css').then((asserter) => {
                 asserter.suggested([
                     asserters.stateCompletion('state', createRange(6, 4, 6, 4), 'pseudo-elements/import.st.css'),
@@ -146,7 +146,7 @@ describe('completion unit test', function () {
             });
         });
 
-        it('should complete state value after pseudo-element on local calss extending import', function () {
+        it('should complete state value for local class extending default import', function () {
             return asserters.getCompletions('pseudo-elements/default-import-extended.st.css').then((asserter) => {
                 asserter.suggested([
                     asserters.stateCompletion('state', createRange(10, 5, 10, 5), 'pseudo-elements/import.st.css'),
@@ -155,6 +155,17 @@ describe('completion unit test', function () {
             });
         });
 
+        it('should complete state value for local class extending named import', function () {
+            return asserters.getCompletions('pseudo-elements/named-import-extended.st.css').then((asserter) => {
+                asserter.suggested([
+                    asserters.stateCompletion('anotherState', createRange(10, 5, 10, 5), 'pseudo-elements/import.st.css'),
+                ]);
+                asserter.notSuggested([
+                    asserters.stateCompletion('state', createRange(10, 5, 10, 5), 'pseudo-elements/import.st.css'),
+                    asserters.stateCompletion('otherState', createRange(10, 5, 10, 5), 'pseudo-elements/import.st.css')
+                ]);
+            });
+        });
     });
 
     describe('extends', function () {
