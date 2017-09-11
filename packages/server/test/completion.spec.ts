@@ -158,14 +158,27 @@ describe('completion unit test', function () {
         it('should complete state value for local class extending named import', function () {
             return asserters.getCompletions('pseudo-elements/named-import-extended.st.css').then((asserter) => {
                 asserter.suggested([
-                    asserters.stateCompletion('anotherState', createRange(10, 5, 10, 5), 'pseudo-elements/import.st.css'),
+                    asserters.stateCompletion('state', createRange(9, 5, 9, 5), 'pseudo-elements/import.st.css'),
+                    asserters.stateCompletion('otherState', createRange(9, 5, 9, 5), 'pseudo-elements/import.st.css')
                 ]);
                 asserter.notSuggested([
-                    asserters.stateCompletion('state', createRange(10, 5, 10, 5), 'pseudo-elements/import.st.css'),
-                    asserters.stateCompletion('otherState', createRange(10, 5, 10, 5), 'pseudo-elements/import.st.css')
+                    asserters.stateCompletion('anotherState', createRange(9, 5, 9, 5), 'pseudo-elements/import.st.css'),
                 ]);
             });
         });
+
+        it('should complete state value for local class extending named import', function () {
+            return asserters.getCompletions('pseudo-elements/named-import-extended.st.css').then((asserter) => {
+                asserter.suggested([
+                    asserters.stateCompletion('state', createRange(9, 5, 9, 5), 'pseudo-elements/import.st.css'),
+                    asserters.stateCompletion('otherState', createRange(9, 5, 9, 5), 'pseudo-elements/import.st.css')
+                ]);
+                asserter.notSuggested([
+                    asserters.stateCompletion('anotherState', createRange(9, 5, 9, 5), 'pseudo-elements/import.st.css'),
+                ]);
+            });
+        });
+
     });
 
     describe('extends', function () {

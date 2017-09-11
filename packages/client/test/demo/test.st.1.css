@@ -1,0 +1,10 @@
+:import {
+    -st-from: "./import.st.css";
+    -st-named: momo;
+}
+
+.gaga {
+    -st-extends: momo;
+}
+
+.gaga

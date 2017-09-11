@@ -1,9 +1,10 @@
 :import {
     -st-from: "./import.st.css";
-    -st-default: Comp;
+    -st-default: Domp;
 }
 
 .bobo {
-    -st-extends: Comp;
+    -st-extends: Domp;
+    -st-states: boboState;
 }
 

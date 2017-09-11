@@ -188,6 +188,15 @@ export default class Provider {
         let currentSelector = /$:+/.test(chunkStrings[pos]) ? chunkStrings[pos - 1] : chunkStrings[pos]
         if (currentSelector && currentSelector.startsWith('.')) { currentSelector = currentSelector.slice(1) }
         let resolved = currentSelector ? this.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase()) : [];
+        let pseudo = (trimmedLine.match(/::/))
+            ? (trimmedLine.endsWith('::')
+                ? trimmedLine.split('::').reverse()[1]
+                : this.resolver.resolveExtends(resolved[resolved.length - 1].meta, trimmedLine.split('::').reverse()[0].replace(':', '')).length>0
+                    ? trimmedLine.split('::').reverse()[0].replace(':', '')
+                    : trimmedLine.split('::').reverse()[1].replace(':', '')
+            )
+            : null;
+        let resolvedPseudo = pseudo ? this.resolver.resolveExtends(resolved[resolved.length - 1].meta, pseudo) : [];
 
         return {
             meta: meta,
@@ -203,6 +212,8 @@ export default class Provider {
             target: ps.target,
             isMediaQuery: isMediaQuery,
             fakes: fakes,
+            pseudo: pseudo,
+            resolvedPseudo: resolvedPseudo,
         }
     }
 

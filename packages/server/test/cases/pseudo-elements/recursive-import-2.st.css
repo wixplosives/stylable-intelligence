@@ -1,10 +1,9 @@
 :import {
-    -st-from: "./more-import.st.css";
+    -st-from: "./recursive-import-1.st.css";
     -st-default: Comp;
 }
 
-.gaga {
+.bobo {
     -st-extends: Comp;
 }
 
-.gaga::bobo

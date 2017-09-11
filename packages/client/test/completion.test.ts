@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as path from 'path';
 import * as vscode from 'vscode';
-
+::
 function testCompletion(fileToTest: string, testCases: [vscode.Position, string[]][]) {
     const casesPath = path.join(__dirname, '..', '..', 'test', 'cases', fileToTest)
     const ext = vscode.extensions.getExtension('Wix.stylable-intelligence')
