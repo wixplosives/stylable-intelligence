@@ -251,7 +251,13 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number) {
     return Object.keys((t.meta.classes) || [])
         .filter(s => s !== 'root' && s !== options.currentSelector)
         .filter(s => {
-            if (/:/.test(options.trimmedLine) && (options.resolvedPseudo.length === 0 || (options.resolvedPseudo.length > 0 && !options.trimmedLine.endsWith(':') && !options.trimmedLine.endsWith(options.pseudo!)))) {
+            if (Object.keys((options.resolved.find(r => r.symbol.name === options.currentSelector) as any).symbol[valueMapping.states] || [])
+                .some(k => k === options.trimmedLine.split(':').reverse()[0])) {
+                return true;
+            }
+            if (/:/.test(options.trimmedLine) &&
+                (!options.pseudo || (options.pseudo && !options.trimmedLine.endsWith(':') && !options.trimmedLine.endsWith(options.pseudo)))
+            ) {
                 return s.startsWith(options.trimmedLine.split(':').reverse()[0]);
             } else {
                 return true;
@@ -278,16 +284,20 @@ export class PseudoElementCompletionProvider implements CompletionProvider {
                     (acc: string[][], t, ind) => acc.concat(
                         collectElements(t, options, ind)
                     ), []);
-            return pseudos.reduce((acc: Completion[], p) => {
-                let offset = 0;
-                if (options.trimmedLine.match(/:+/g)) {
-                    if (options.resolvedPseudo.length === 0) {
-                        offset = (options.trimmedLine.split(':').reverse()[0].length + options.trimmedLine.match(/:/g)!.length)
-                    } else {
-                        offset = options.trimmedLine.length - (options.trimmedLine.indexOf(options.resolvedPseudo[0].symbol.name) + options.resolvedPseudo[0].symbol.name.length)
-                    }
+            let offset = 0;
+            if (options.trimmedLine.match(/:+/g)) {
+                if (options.resolved.length > 0
+                    && (options.resolved.find(r => r.symbol.name === options.currentSelector) as any).symbol[valueMapping.states]
+                    && (Object.keys((options.resolved.find(r => r.symbol.name === options.currentSelector) as any).symbol[valueMapping.states]) || [])
+                        .some(k => k === options.trimmedLine.split(':').reverse()[0])) {
+                    offset = 0;
+                } else if (options.resolvedPseudo.length === 0) {
+                    offset = (options.trimmedLine.split(':').reverse()[0].length + options.trimmedLine.match(/:/g)!.length)
+                } else {
+                    offset = options.trimmedLine.length - (options.trimmedLine.indexOf(options.resolvedPseudo[0].symbol.name) + options.resolvedPseudo[0].symbol.name.length)
                 }
-
+            }
+            return pseudos.reduce((acc: Completion[], p) => {
                 acc.push(pseudoElementCompletion(p[0], p[1], (new ProviderRange(
                     new ProviderPosition(options.position.line,
                         Math.max(0, options.position.character - offset)
