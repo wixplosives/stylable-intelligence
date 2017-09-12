@@ -1,5 +1,5 @@
 :import {
-    -st-from: "./more-import.st.css";
+    -st-from: "./recursive-import-2.st.css";
     -st-default: Comp;
 }
 
@@ -8,4 +8,4 @@
     -st-states: lala;
 }
 
-.gaga:lala::bobo:state
+.gaga::bobo|

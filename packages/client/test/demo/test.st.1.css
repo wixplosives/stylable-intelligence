@@ -1,10 +1,10 @@
 :import {
     -st-from: "./import.st.css";
-    -st-default: Comp;
     -st-named: momo;
 }
 
-.bobo {
-    -st-extends: Comp;
+.gaga {
+    -st-extends: momo;
 }
 
+.gaga
