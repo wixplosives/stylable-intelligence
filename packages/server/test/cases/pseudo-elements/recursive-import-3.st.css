@@ -5,6 +5,7 @@
 
 .gaga {
     -st-extends: Comp;
+    -st-states: lala;
 }
 
 .gaga::bobo|

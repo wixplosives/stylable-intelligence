@@ -315,9 +315,12 @@ export class PseudoElementCompletionProvider implements CompletionProvider {
 
 export class StateCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isTopLevel && !!options.resolved && !options.trimmedLine.endsWith('::')) {
-            let states = options.resolved.reduce(
-                (acc: string[][], t) => acc.concat(Object.keys((t.symbol as any)['-st-states'] || []).map(s => [s, t.meta.source])), []);
+        if (options.isTopLevel && !options.trimmedLine.endsWith('::')) {
+            let states = options.resolvedPseudo.length > 0
+                ? options.resolvedPseudo.reduce(
+                    (acc: string[][], t) => acc.concat(Object.keys((t.symbol as any)['-st-states'] || []).map(s => [s, t.meta.source])), [])
+                : options.resolved.reduce(
+                    (acc: string[][], t) => acc.concat(Object.keys((t.symbol as any)['-st-states'] || []).map(s => [s, t.meta.source])), [])
             return states.reduce((acc: Completion[], st) => {
                 if (Array.isArray(options.target.focusChunk)
                     ? options.target.focusChunk.every(c => c.states.indexOf(st[0]) === -1)

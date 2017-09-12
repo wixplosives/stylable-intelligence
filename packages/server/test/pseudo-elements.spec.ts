@@ -2,6 +2,17 @@ import * as asserters from '../test-kit/asserters';
 import { createRange } from '../src/completion-providers';
 
 describe('Pseudo-elements', function () {
+    describe('general', function () {
+        it('should complete pseudo-element after local state', function () {
+            return asserters.getCompletions('pseudo-elements/default-import-extended-local-state.st.css').then((asserter) => {
+                asserter.suggested([
+                    asserters.pseudoElementCompletion('shlomo', createRange(11, 10, 11, 10), './import.st.css'),
+                    asserters.pseudoElementCompletion('momo', createRange(11, 10, 11, 10), './import.st.css'),
+                ]);
+            });
+        });
+    });
+
     describe('Deafult import used as tag', function () {
         it('should complete pseudo-element ', function () {
             return asserters.getCompletions('pseudo-elements/default-import-as-tag.st.css').then((asserter) => {
@@ -161,8 +172,8 @@ describe('Pseudo-elements', function () {
         it('Should complete inner pseudo-elements', function () {
             return asserters.getCompletions('pseudo-elements/recursive-import-3.st.css').then((asserter) => {
                 asserter.suggested([
-                    asserters.pseudoElementCompletion('shlomo', createRange(9, 11, 9, 11), './recursive-import-2.st.css'),
-                    asserters.pseudoElementCompletion('momo', createRange(9, 11, 9, 11), './recursive-import-2.st.css'),
+                    asserters.pseudoElementCompletion('shlomo', createRange(10, 11, 10, 11), './recursive-import-2.st.css'),
+                    asserters.pseudoElementCompletion('momo', createRange(10, 11, 10, 11), './recursive-import-2.st.css'),
                 ]);
             });
         })
@@ -179,8 +190,8 @@ describe('Pseudo-elements', function () {
         it('Should complete inner pseudo-elements after :: ', function () {
             return asserters.getCompletions('pseudo-elements/recursive-import-3-colon-colon.st.css').then((asserter) => {
                 asserter.suggested([
-                    asserters.pseudoElementCompletion('shlomo', createRange(9,11,9,13), './recursive-import-2.st.css'),
-                    asserters.pseudoElementCompletion('momo', createRange(9,11,9,13), './recursive-import-2.st.css'),
+                    asserters.pseudoElementCompletion('shlomo', createRange(9, 11, 9, 13), './recursive-import-2.st.css'),
+                    asserters.pseudoElementCompletion('momo', createRange(9, 11, 9, 13), './recursive-import-2.st.css'),
                 ]);
             });
         })
