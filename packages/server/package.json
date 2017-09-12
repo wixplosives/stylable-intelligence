@@ -8,7 +8,7 @@
   "types": "./dist/src/index.d.ts",
   "engines": {
     "node": "*",
-    "vscode": "^1.14.2"
+    "vscode": "^1.16.0"
   },
   "repository": {
     "type": "git",

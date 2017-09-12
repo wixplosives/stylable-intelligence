@@ -7,12 +7,13 @@ function testCompletion(fileToTest: string, testCases: [vscode.Position, string[
     const ext = vscode.extensions.getExtension('Wix.stylable-intelligence')
     let testDoc:vscode.TextDocument
 
-    return vscode.workspace.openTextDocument(casesPath)
+    if (ext) {
+        return vscode.workspace.openTextDocument(casesPath)
         .then((doc)=> {
            testDoc = doc;
            return vscode.window.showTextDocument(testDoc)
         })
-        .then(() =>  ext!.activate())
+        .then(() =>  ext.activate())
         .then(() => {
             return Promise.all(testCases.map(([position, expected]) => {
                 return vscode.commands.executeCommand<vscode.CompletionList>('vscode.executeCompletionItemProvider', testDoc.uri, position)
@@ -27,6 +28,9 @@ function testCompletion(fileToTest: string, testCases: [vscode.Position, string[
                     })
             }))
         });
+    } else {
+        throw new Error('Where is my extension?!!')
+    }
 }
 
 
