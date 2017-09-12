@@ -12,7 +12,7 @@
     "url": "https://github.com/wixplosives/stylable-intelligence/issues"
   },
   "engines": {
-    "vscode": "^1.14.2"
+    "vscode": "^1.16.0"
   },
   "categories": [
     "Languages",
