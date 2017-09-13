@@ -101,4 +101,3 @@ generates an AST with one selector `.gaga \n .baga'
 - https://github.com/Microsoft/vscode-languageserver-node-example/ (simple example repo)
 - https://github.com/Microsoft/vscode-tslint/ (Working Lang Server, not very advanced)
 - https://github.com/Microsoft/vscode/issues/26096 (Completion sorting explanation)
-
