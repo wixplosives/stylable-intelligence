@@ -115,7 +115,7 @@ export default class Provider {
 
             meta = process(ast);
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             return Promise.resolve([]);
         }
         return this.provideCompletionItemsFromAst(src, position, meta, fakes, currentLine, cursorLineIndex);
