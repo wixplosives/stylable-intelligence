@@ -2,8 +2,9 @@ import { StylableMeta, SRule, valueMapping } from 'stylable';
 import { ClassSymbol, CSSResolve } from 'stylable/dist/src';
 import { CursorPosition, SelectorChunk, SelectorInternalChunk } from "./utils/selector-analyzer";
 import {
-    defaultDirective, extendsDirective, fromDirective, importsDirective, mixinDirective, namedDirective, rootClass, statesDirective, variantDirective, varsDirective,
-    classCompletion, extendCompletion, stateCompletion, Completion, namespaceDirective, themeDirective, pseudoElementCompletion
+    defaultDirective, extendsDirective, fromDirective, importsDirective, mixinDirective, namedDirective, namespaceDirective, rootClass, statesDirective, themeDirective, variantDirective, varsDirective,
+    classCompletion, extendCompletion, namedCompletion, pseudoElementCompletion, stateCompletion,
+    Completion
 } from './completion-types'
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
@@ -13,10 +14,12 @@ export interface ProviderOptions {
     meta: StylableMeta,
     lastRule: SRule | null,
     trimmedLine: string,
+    postDirectiveSpaces: number,
     position: ProviderPosition,
     isTopLevel: boolean,
     isLineStart: boolean,
     isImport: boolean,
+    resolvedImport: StylableMeta | null
     insideSimpleSelector: boolean,
     resolved: CSSResolve[],
     currentSelector: string,
@@ -49,7 +52,7 @@ export function createRange(startLine: number, startPos: number, endline: number
 //Syntactic
 export class DefaultDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isImport && options.isLineStart && options.lastRule &&
+        if (options.isImport && options.isLineStart && options.lastRule && !options.isMediaQuery &&
             (isContainer(options.lastRule) && options.lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
             return [defaultDirective(new ProviderRange(
                 new ProviderPosition(options.position.line, Math.max(0, options.position.character - options.trimmedLine.length)), options.position))];
@@ -75,7 +78,7 @@ export class ExtendsDirectiveProvider implements CompletionProvider {
 
 export class FromDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isImport && options.isLineStart && options.lastRule &&
+        if (options.isImport && options.isLineStart && options.lastRule && !options.isMediaQuery &&
             (isContainer(options.lastRule) && options.lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
             return [fromDirective(new ProviderRange(new ProviderPosition(options.position.line, Math.max(0, options.position.character - options.trimmedLine.length)), options.position))];
         } else {
@@ -218,12 +221,17 @@ export class ClassCompletionProvider implements CompletionProvider {
 
 export class ExtendCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.currentSelector === valueMapping.extends || options.trimmedLine.replace(':', '') === valueMapping.extends) {
+        if (options.trimmedLine.startsWith(valueMapping.extends)) {
+            let value = options.trimmedLine.slice((valueMapping.extends + ':').length);
+            let spaces = value.search(/\S|$/);
+            let str = value.slice(spaces);
             let comps: string[] = [];
-            comps.push(...Object.keys(options.meta.classes))
-            options.meta.imports.forEach(i => { if (i.defaultExport) { comps.push(i.defaultExport) } })
-            options.meta.imports.forEach(i => comps.push(...Object.keys(i.named)))
-            return comps.map(c => extendCompletion(c, new ProviderRange(options.position, options.position)));
+            comps.push(...Object.keys(options.meta.classes).filter(s => s.startsWith(str)))
+            options.meta.imports.forEach(i => { if (i.defaultExport && i.defaultExport.startsWith(str)) { comps.push(i.defaultExport) } })
+            options.meta.imports.forEach(i => comps.push(...Object.keys(i.named).filter(s => s.startsWith(str))))
+            return comps.map(c => extendCompletion(c, new ProviderRange(
+                new ProviderPosition(options.position.line, options.position.character - str.length - options.postDirectiveSpaces),
+                new ProviderPosition(options.position.line, Number.MAX_VALUE))));
         } else {
             return [];
         }
@@ -233,12 +241,17 @@ export class ExtendCompletionProvider implements CompletionProvider {
 
 export class NamedCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        // if (options.currentSelector === valueMapping.named || options.trimmedLine.replace(':', '') === valueMapping.named) {
-        //     let comps: string[] = [];
-        //     return comps.map(c => namedCompletion(c, new ProviderRange(options.position, options.position)));
-        // } else {
-        return [];
-        // }
+        if (options.trimmedLine.startsWith(valueMapping.named) && options.resolvedImport) {
+            let value = options.trimmedLine.slice((valueMapping.named + ':').length);
+            let spaces = value.search(/\S|$/);
+            let str = value.slice(spaces);
+            let comps: string[] = Object.keys(options.resolvedImport.mappedSymbols).filter(ms => options.resolvedImport!.mappedSymbols[ms]._kind === 'class' && ms !== 'root');
+            return comps.map(c => namedCompletion(c, new ProviderRange(
+                new ProviderPosition(options.position.line, options.position.character - str.length - options.postDirectiveSpaces),
+                new ProviderPosition(options.position.line, Number.MAX_VALUE))));
+        } else {
+            return [];
+        }
     }
     text: string[] = [''];
 }

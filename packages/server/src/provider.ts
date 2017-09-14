@@ -2,7 +2,7 @@ import { valueMapping } from 'stylable/dist/src';
 //must remain independent from vscode
 
 import * as PostCss from 'postcss';
-import { StylableMeta, process, safeParse, SRule, StylableResolver } from 'stylable';
+import { StylableMeta, process, safeParse, SRule, Stylable } from 'stylable';
 import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
 import {
     DefaultDirectiveProvider,
@@ -24,9 +24,11 @@ import {
     TypeCompletionProvider,
     ProviderPosition,
     ProviderOptions,
+    NamedCompletionProvider,
 } from './completion-providers'
 import { Completion } from './completion-types'
 import { parseSelector, } from './utils/selector-analyzer';
+import { Declaration } from 'postcss';
 
 function isIllegalLine(line: string): boolean {
     return !!/^\s*[-\.:]+\s*$/.test(line)
@@ -35,7 +37,7 @@ function isIllegalLine(line: string): boolean {
 const lineEndsRegexp = /({|}|;)/;
 
 export default class Provider {
-    constructor(private resolver: StylableResolver) { }
+    constructor(private styl: Stylable) { }
 
     providers = [
         new RootClassProvider(),
@@ -53,6 +55,7 @@ export default class Provider {
         new ClassCompletionProvider(),
         new TypeCompletionProvider(),
         new ExtendCompletionProvider(),
+        new NamedCompletionProvider(),
         new StateCompletionProvider(),
         new PseudoElementCompletionProvider(),
     ]
@@ -150,7 +153,7 @@ export default class Provider {
         const lastPart: PostCss.NodeBase = path[path.length - 1];
         const prevPart: PostCss.NodeBase = path[path.length - 2];
         const isMediaQuery = path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media');
-        const isDirective = Object.keys(valueMapping).some(k => currentLine.indexOf(k) !== -1)
+        const isDirective = Object.keys(valueMapping).some(k => currentLine.indexOf((valueMapping as any)[k]) !== -1)
 
 
         const lastRule: SRule | null = prevPart && isSelector(prevPart) && fakes.findIndex((f) => { return f.selector === prevPart.selector })
@@ -167,12 +170,10 @@ export default class Provider {
         }
 
         let trimmedLine = currentLine.trim();
-
-        //
+        let postDirectiveSpaces = (Object.keys(valueMapping).some(k => { return trimmedLine.startsWith((valueMapping as any)[k]) })) ? currentLine.match((/:(\s*)\w?/))![1].length : 0
         let ps = parseSelector(trimmedLine, cursorLineIndex);
 
         let chunkStrings: string[] = ps.selector.map(s => s.text).reduce((acc, arr) => { return acc.concat(arr) }, []);
-        // let spacesBefore: number = currentLine.match(/^\s*/)![0].length || 0;
         let remain = cursorLineIndex;
         let pos = chunkStrings.findIndex(str => {
             if (str.length >= remain) {
@@ -187,25 +188,32 @@ export default class Provider {
         pos -= Math.max(rev.findIndex(s => !/^:+/.test(s)), 0)
         let currentSelector = /$:+/.test(chunkStrings[pos]) ? chunkStrings[pos - 1] : chunkStrings[pos]
         if (currentSelector && currentSelector.startsWith('.')) { currentSelector = currentSelector.slice(1) }
-        let resolved = currentSelector ? this.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase()) : [];
+        let resolved = currentSelector ? this.styl.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase()) : [];
         let pseudo = (trimmedLine.match(/::/))
             ? (trimmedLine.endsWith('::')
                 ? trimmedLine.split('::').reverse()[1]
-                : this.resolver.resolveExtends(resolved[resolved.length - 1].meta, trimmedLine.split('::').reverse()[0].replace(':', '')).length>0
+                : this.styl.resolver.resolveExtends(resolved[resolved.length - 1].meta, trimmedLine.split('::').reverse()[0].replace(':', '')).length > 0
                     ? trimmedLine.split('::').reverse()[0].replace(':', '')
                     : trimmedLine.split('::').reverse()[1].replace(':', '')
             )
             : null;
-        let resolvedPseudo = pseudo ? this.resolver.resolveExtends(resolved[resolved.length - 1].meta, pseudo) : [];
+
+        let resolvedPseudo = pseudo ? this.styl.resolver.resolveExtends(resolved[resolved.length - 1].meta, pseudo) : [];
+        let isImport = !!lastRule && (lastRule.selector === ':import');
+        let fromNode: Declaration | undefined = isImport ? (lastRule!.nodes as Declaration[]).find(n => n.prop === valueMapping.from) : undefined;
+        let importName = (isImport && fromNode) ? fromNode.value.replace(/'/g, '').replace(/"/g, '') : '';
+        let resolvedImport: StylableMeta | null = importName ? this.styl.fileProcessor.process(meta.imports.find(i => i.fromRelative === importName)!.from) : null;
 
         return {
             meta: meta,
             lastRule: lastRule,
             trimmedLine: trimmedLine,
+            postDirectiveSpaces: postDirectiveSpaces,
             position: position,
             isTopLevel: !lastRule,
             isLineStart: false,
-            isImport: !!lastRule && lastRule.selector === ':import',
+            isImport: isImport,
+            resolvedImport: resolvedImport,
             insideSimpleSelector: !!lastRule && !!/^\s*\.?\w*$/.test(lastRule.selector),
             resolved: resolved,
             currentSelector: currentSelector,

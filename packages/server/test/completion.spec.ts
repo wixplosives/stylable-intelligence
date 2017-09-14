@@ -185,9 +185,9 @@ describe('completion unit test', function () {
             return asserters.getCompletions('extends/extend.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.extendsCompletion('shlomo', createRange(6, 16, 6, 16)),
-                        asserters.extendsCompletion('momo', createRange(6, 16, 6, 16)),
-                        asserters.extendsCompletion('root', createRange(6, 16, 6, 16)),
+                        asserters.extendsCompletion('shlomo', createRange(6, 16, 6, Number.MAX_VALUE)),
+                        asserters.extendsCompletion('momo', createRange(6, 16, 6, Number.MAX_VALUE)),
+                        asserters.extendsCompletion('root', createRange(6, 16, 6, Number.MAX_VALUE)),
                     ]);
                 });
         });
@@ -196,9 +196,9 @@ describe('completion unit test', function () {
             return asserters.getCompletions('extends/extend-space.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.extendsCompletion('shlomo', createRange(6, 17, 6, 17)),
-                        asserters.extendsCompletion('momo', createRange(6, 17, 6, 17)),
-                        asserters.extendsCompletion('root', createRange(6, 17, 6, 17)),
+                        asserters.extendsCompletion('shlomo', createRange(6, 16, 6, Number.MAX_VALUE)),
+                        asserters.extendsCompletion('momo', createRange(6, 16, 6, Number.MAX_VALUE)),
+                        asserters.extendsCompletion('root', createRange(6, 16, 6, Number.MAX_VALUE)),
                     ]);
                 });
         });
