@@ -71,7 +71,7 @@ export function extendCompletion(symbolName: string, rng: ProviderRange) {
 }
 
 export function namedCompletion(symbolName: string, rng: ProviderRange) {
-    return new Completion(symbolName, 'Stylable class or tag', 'a', new snippet(symbolName), rng)
+    return new Completion(symbolName, 'Stylable class or tag', 'a', new snippet(' ' + symbolName), rng)
 }
 
 export function pseudoElementCompletion(elementName: string, from: string, rng: ProviderRange) {

@@ -246,7 +246,7 @@ export class NamedCompletionProvider implements CompletionProvider {
             let str = value.slice(spaces);
             let comps: string[] = Object.keys(options.resolvedImport.mappedSymbols).filter(ms => options.resolvedImport!.mappedSymbols[ms]._kind === 'class' && ms !== 'root');
             return comps.map(c => namedCompletion(c, new ProviderRange(
-                new ProviderPosition(options.position.line, options.position.character - str.length - options.postDirectiveSpaces +1),
+                new ProviderPosition(options.position.line, options.position.character - str.length - options.postDirectiveSpaces),
                 new ProviderPosition(options.position.line, Number.MAX_VALUE))));
         } else {
             return [];
