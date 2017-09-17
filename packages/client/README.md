@@ -20,9 +20,13 @@ Reload window when prompted by VsCode.
 
 ## Known Issues
 
-### Not supported yet:
-* Mixins
+### Not supported yet (in order of priority to support):
+* Aliased imports
 * Variables
-* Esoteric syntax (-st-compose, -st-theme, -st-root)
+* Mixins
 * Variants
 * Globals
+* Esoteric syntax (-st-compose, -st-theme, -st-root)
+
+## Roadmap
+
