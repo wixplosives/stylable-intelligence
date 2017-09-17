@@ -90,10 +90,9 @@ export class FromDirectiveProvider implements CompletionProvider {
 
 export class ImportDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        let position = options.position
         if (options.isTopLevel && options.isLineStart && !options.isMediaQuery) {
             return [importsDirective(new ProviderRange(
-                new ProviderPosition(options.position.line, Math.max(0, position.character - options.trimmedLine.length)), position))];
+                new ProviderPosition(options.position.line, Math.max(0, options.position.character - options.trimmedLine.length)), options.position))];
         } else {
             return [];
         }
@@ -247,7 +246,7 @@ export class NamedCompletionProvider implements CompletionProvider {
             let str = value.slice(spaces);
             let comps: string[] = Object.keys(options.resolvedImport.mappedSymbols).filter(ms => options.resolvedImport!.mappedSymbols[ms]._kind === 'class' && ms !== 'root');
             return comps.map(c => namedCompletion(c, new ProviderRange(
-                new ProviderPosition(options.position.line, options.position.character - str.length - options.postDirectiveSpaces),
+                new ProviderPosition(options.position.line, options.position.character - str.length - options.postDirectiveSpaces +1),
                 new ProviderPosition(options.position.line, Number.MAX_VALUE))));
         } else {
             return [];

@@ -1,9 +1,9 @@
-.shlomo {
-    color: black;
+.momo {
+    -st-states: anotherState;
 }
 
-.momo{
-    -st-states: anotherState;
+.shlomo {
+    -st-states: oneMoreState;
 }
 
 .root {
