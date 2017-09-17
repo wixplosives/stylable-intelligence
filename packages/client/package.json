@@ -1,15 +1,17 @@
 {
   "name": "stylable-intelligence",
+  "displayName": "Stylable Intelligence",
   "version": "0.0.3",
-  "description": "Stylable Language Services Client",
-  "author": "Nadav Abraami (nadav@wix.com)",
+  "description": "Code completion, reference detection, diagnostics and other features for Stylable CSS.",
+  "author": "Ory Henn (ory@wix.com)",
   "publisher": "Wix",
   "repository": {
     "type": "git",
-    "url": "git@github.com:wixplosives/stylable-intelligence.git"
+    "url": "git@github.com:wix/stylable-intelligence.git"
   },
+  "icon": "https://github.com/wix/stylable/blob/master/branding/logo/PNG/96-logo-OnlySymbol%402x.png",
   "bugs": {
-    "url": "https://github.com/wixplosives/stylable-intelligence/issues"
+    "url": "https://github.com/wix/stylable-intelligence/issues"
   },
   "engines": {
     "vscode": "^1.16.0"
@@ -27,7 +29,7 @@
     "dist/src"
   ],
   "testGlob": "./dist/test/**/*.spec.js?(x)",
-  "homepage": "https://github.com/wixplosives/stylable-intelligence#readme",
+  "homepage": "https://github.com/wix/stylable-intelligence#readme",
   "keywords": [
     "typescript",
     "tdd"
