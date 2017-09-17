@@ -106,7 +106,7 @@ export const extendsDirectiveCompletion: (rng: ProviderRange) => Partial<Complet
     return { label: '-st-extends:', detail: 'Extend an external component', sortText: 'a', insertText: '-st-extends: $1;', additionalCompletions: true, range: rng };
 }
 export const importDefaultDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
-    return { label: '-st-default:', detail: 'Default object export name', sortText: 'a', insertText: '-st-default: $1;', range: rng };
+    return { label: '-st-default:', detail: 'Default export name', sortText: 'a', insertText: '-st-default: $1;', range: rng };
 }
 export const importDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
     return { label: ':import', detail: 'Import an external library', sortText: 'a', insertText: ':import {\n\t-st-from: "$1";\n}$0', range: rng }
@@ -115,7 +115,7 @@ export const importFromDirectiveCompletion: (rng: ProviderRange) => Partial<Comp
     return { label: '-st-from:', detail: 'Path to library', sortText: 'a', insertText: '-st-from: "$1";', range: rng };
 }
 export const importNamedDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
-    return { label: '-st-named:', detail: 'Named object export name', sortText: 'a', insertText: '-st-named: $1;', range: rng };
+    return { label: '-st-named:', detail: 'Named export name', sortText: 'a', insertText: '-st-named: $1;', range: rng };
 }
 export const mixinDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
     return { label: '-st-mixin:', detail: 'Apply mixins on the class', sortText: 'a', insertText: '-st-mixin: $1;', range: rng };

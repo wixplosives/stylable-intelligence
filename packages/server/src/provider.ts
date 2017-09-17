@@ -5,28 +5,24 @@ import * as PostCss from 'postcss';
 import { StylableMeta, process, safeParse, SRule, Stylable } from 'stylable';
 import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
 import {
-    DefaultDirectiveProvider,
     ExtendsDirectiveProvider,
-    FromDirectiveProvider,
     ImportDirectiveProvider,
+    ImportInternalDirectivesProvider,
     MixinDirectiveProvider,
-    NamedDirectiveProvider,
     NamespaceDirectiveProvider,
     RootClassProvider,
     StatesDirectiveProvider,
-    ThemeDirectiveProvider,
     VariantDirectiveProvider,
     VarsDirectiveProvider,
-    ClassCompletionProvider,
+    SelectorCompletionProvider,
     ExtendCompletionProvider,
     PseudoElementCompletionProvider,
     StateCompletionProvider,
-    TypeCompletionProvider,
     ProviderPosition,
     ProviderOptions,
     NamedCompletionProvider,
 } from './completion-providers'
-import { Completion } from './completion-types'
+import { Completion,  } from './completion-types';
 import { parseSelector, } from './utils/selector-analyzer';
 import { Declaration } from 'postcss';
 
@@ -47,13 +43,9 @@ export default class Provider {
         new StatesDirectiveProvider(),
         new MixinDirectiveProvider(),
         new VariantDirectiveProvider(),
-        new FromDirectiveProvider(),
-        new NamedDirectiveProvider(),
-        new DefaultDirectiveProvider(),
+        new ImportInternalDirectivesProvider(),
         new NamespaceDirectiveProvider(),
-        new ThemeDirectiveProvider(),
-        new ClassCompletionProvider(),
-        new TypeCompletionProvider(),
+        new SelectorCompletionProvider(),
         new ExtendCompletionProvider(),
         new NamedCompletionProvider(),
         new StateCompletionProvider(),
