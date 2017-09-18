@@ -79,12 +79,13 @@ export class ImportDirectiveProvider implements CompletionProvider {
     text: string[] = [':import']
 }
 
+const importDeclarations: ValMapVals[] = ['default', 'named', 'from', 'theme']
 export class ImportInternalDirectivesProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.isImport && options.isLineStart && options.lastRule && !options.isMediaQuery && isContainer(options.lastRule)) {
             const res: Completion[] = [];
-            this.text.forEach(type => {
-                if (options.lastRule!.nodes!.every(n => isDeclaration(n) && type !== n.prop)) {
+            importDeclarations.forEach(type => {
+                if (options.lastRule!.nodes!.every(n => isDeclaration(n) && valueMapping[type] !== n.prop)) {
                     const dir = importInternalDirective(
                         type,
                         createDirectiveRange(options)
@@ -97,7 +98,7 @@ export class ImportInternalDirectivesProvider implements CompletionProvider {
             return [];
         }
     }
-    text: ValMapVals[] = ['default', 'named', 'from', 'theme']
+    text = importDeclarations.map(name => valueMapping[name]);
 }
 
 export class MixinDirectiveProvider implements CompletionProvider {

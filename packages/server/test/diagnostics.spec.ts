@@ -26,7 +26,7 @@ function createDiagnostics(files:{[filePath:string]:string}, path:string) {
 
 describe('diagnostics', function () {
     it('should create basic diagnostics', function(){
-        let filePath = 'style.css'
+        let filePath = 'style.st.css'
 
         let diagnostics = createDiagnostics({
             [filePath]:'.gaga .root{}'
@@ -45,7 +45,7 @@ describe('diagnostics', function () {
     //
     xit('should create cross file errors', function() {
         let filePathA = 'style.css'
-        let filePathB = 'import-style.css'
+        let filePathB = 'import-style.st.css'
 
         let diagnostics = createDiagnostics({
             [filePathA]: ``,

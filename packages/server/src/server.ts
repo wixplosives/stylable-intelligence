@@ -11,17 +11,17 @@ import {
     TextEdit,
 } from 'vscode-languageserver';
 import { createProvider,
-    //  createProcessor
+     createProcessor
 } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
-// import {createDiagnosis} from './diagnosis'
+import {createDiagnosis} from './diagnosis'
 let workspaceRoot: string;
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const documents: TextDocuments = new TextDocuments();
 
 const provider = createProvider(documents);
-// const processor = createProcessor(documents)
+const processor = createProcessor(documents)
 
 documents.listen(connection);
 
@@ -43,14 +43,12 @@ connection.listen();
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
     // connection.sendNotification(OpenDocNotification.type, '/home/wix/projects/demo/test.css');
-
+    if (!params.textDocument.uri.endsWith('.st.css')) {return Promise.resolve([])}
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
     return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
         .then((res) => {
-            // console.log('Received Completions in server:')
             return res.map((com: Completion) => {
-                // console.log(JSON.stringify(com, null, '\t'));
                 let vsCodeCompletion = CompletionItem.create(com.label);
                 let ted: TextEdit = TextEdit.replace(
                     com.range ? com.range : new ProviderRange(new ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos),
@@ -71,7 +69,7 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
         })
 })
 
-// documents.onDidChangeContent(function(change){
-//     let diagnostics = createDiagnosis(change.document, processor);
-//     connection.sendDiagnostics({uri: change.document.uri, diagnostics: diagnostics})
-// })
+documents.onDidChangeContent(function(change){
+    let diagnostics = createDiagnosis(change.document, processor);
+    connection.sendDiagnostics({uri: change.document.uri, diagnostics: diagnostics})
+})
