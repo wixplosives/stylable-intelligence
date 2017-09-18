@@ -7,7 +7,7 @@ import {safeParse, Diagnostics, process, StylableTransformer, FileProcessor} fro
 import {Diagnostic as Report} from 'stylable/src/diagnostics'
 
 export function createDiagnosis(doc:TextDocument, fp:FileProcessor<StylableMeta>):Diagnostic[] {
-
+    let file = doc.uri.replace('file://','')
     if (!doc.uri.endsWith('.st.css')) {return []};
     let stylableDiagnostics = new Diagnostics()
     let transformer = new StylableTransformer({
@@ -16,10 +16,10 @@ export function createDiagnosis(doc:TextDocument, fp:FileProcessor<StylableMeta>
         requireModule: () => ({"default":{}})
     })
 
-    let docPostCSSRoot = safeParse(doc.getText(), { from:path.resolve(doc.uri) })
+    let docPostCSSRoot = safeParse(doc.getText(), { from:path.resolve(file) })
     let meta = process(docPostCSSRoot, stylableDiagnostics)
 
-    fp.add(doc.uri.replace('file://',''), meta);
+    fp.add(file, meta);
     transformer.transform(meta)
     return stylableDiagnostics.reports.map(reportToDiagnostic)
 }
