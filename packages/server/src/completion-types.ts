@@ -1,5 +1,5 @@
-import {ProviderRange} from './completion-providers';
-import {valueMapping} from 'stylable'
+import { ProviderRange } from './completion-providers';
+import { valueMapping } from 'stylable'
 
 export class Completion {
     constructor(public label: string, public detail: string = "", public sortText: string = 'd', public insertText: string | snippet = label,
@@ -12,28 +12,28 @@ export class snippet {
 }
 
 //syntactic
-export function defaultDirective(rng: ProviderRange) {
-    return new Completion('-st-default:', 'Default object export name', 'a', new snippet('-st-default: $1;'), rng);
-}
 
 export function extendsDirective(rng: ProviderRange) {
     return new Completion(valueMapping.extends + ':', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), rng, true);
-}
-
-export function fromDirective(rng: ProviderRange) {
-    return new Completion('-st-from:', 'Path to library', 'a', new snippet('-st-from: "$1";'), rng);
 }
 
 export function importsDirective(rng: ProviderRange) {
     return new Completion(':import', 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}$0'), rng);
 }
 
-export function mixinDirective(rng: ProviderRange) {
-    return new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'), rng);
+export type ValMap = typeof valueMapping;
+export function importInternalDirective(type: keyof ValMap, rng: ProviderRange) {
+    switch (valueMapping[type]) {
+        case valueMapping.default: return new Completion(valueMapping.default + ':', 'Default export name', 'a', new snippet(valueMapping.default + ': $1;'), rng);
+        case valueMapping.from: return new Completion(valueMapping.from + ':', 'Path to library', 'a', new snippet(valueMapping.from + ': "$1";'), rng);
+        case valueMapping.named: return new Completion(valueMapping.named + ':', 'Named export name', 'a', new snippet(valueMapping.named + ': $1;'), rng);
+        case valueMapping.theme: return new Completion(valueMapping.theme + ':', 'Declare a theme', 'a', new snippet(valueMapping.theme + ': true;\n$0'), rng);
+        default: return null;
+    }
 }
 
-export function namedDirective(rng: ProviderRange) {
-    return new Completion('-st-named:', 'Named object export name', 'a', new snippet('-st-named: $1;'), rng);
+export function mixinDirective(rng: ProviderRange) {
+    return new Completion('-st-mixin:', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'), rng);
 }
 
 export function namespaceDirective(rng: ProviderRange) {
@@ -45,15 +45,11 @@ export function rootClass(rng: ProviderRange) {
 }
 
 export function statesDirective(rng: ProviderRange) {
-    return new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'),rng);
-}
-
-export function themeDirective(rng: ProviderRange) {
-    return new Completion('-st-theme:', 'Declare a theme', 'a', new snippet('-st-theme: true;\n$0'),rng);
+    return new Completion('-st-states:', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'), rng);
 }
 
 export function variantDirective(rng: ProviderRange) {
-    return new Completion('-st-variant:', '', 'a', new snippet('-st-variant: true;'),rng);
+    return new Completion('-st-variant:', '', 'a', new snippet('-st-variant: true;'), rng);
 }
 
 export function varsDirective(rng: ProviderRange) {

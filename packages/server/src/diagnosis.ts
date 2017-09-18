@@ -8,6 +8,7 @@ import {Diagnostic as Report} from 'stylable/src/diagnostics'
 
 export function createDiagnosis(doc:TextDocument, fp:FileProcessor<StylableMeta>):Diagnostic[] {
 
+    if (!doc.uri.endsWith('.st.css')) {return []};
     let stylableDiagnostics = new Diagnostics()
     let transformer = new StylableTransformer({
         diagnostics: stylableDiagnostics,
