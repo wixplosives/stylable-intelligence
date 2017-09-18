@@ -5,15 +5,9 @@ import * as PostCss from 'postcss';
 import { StylableMeta, process, safeParse, SRule, Stylable } from 'stylable';
 import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
 import {
-    ExtendsDirectiveProvider,
-    ImportDirectiveProvider,
     ImportInternalDirectivesProvider,
-    MixinDirectiveProvider,
-    NamespaceDirectiveProvider,
-    RootClassProvider,
-    StatesDirectiveProvider,
-    VariantDirectiveProvider,
-    VarsDirectiveProvider,
+    RulesetInternalDirectivesProvider,
+    TopLevelDirectiveProvider,
     SelectorCompletionProvider,
     ExtendCompletionProvider,
     PseudoElementCompletionProvider,
@@ -36,15 +30,9 @@ export default class Provider {
     constructor(private styl: Stylable) { }
 
     providers = [
-        new RootClassProvider(),
-        new ImportDirectiveProvider(),
-        new VarsDirectiveProvider(),
-        new ExtendsDirectiveProvider(),
-        new StatesDirectiveProvider(),
-        new MixinDirectiveProvider(),
-        new VariantDirectiveProvider(),
+        new RulesetInternalDirectivesProvider(),
         new ImportInternalDirectivesProvider(),
-        new NamespaceDirectiveProvider(),
+        new TopLevelDirectiveProvider(),
         new SelectorCompletionProvider(),
         new ExtendCompletionProvider(),
         new NamedCompletionProvider(),

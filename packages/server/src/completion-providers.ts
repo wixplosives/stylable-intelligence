@@ -1,10 +1,9 @@
-import { StylableMeta, SRule, valueMapping } from 'stylable';
-import { ClassSymbol, CSSResolve } from 'stylable/dist/src';
+// import { importDefaultDirectiveCompletion, importDirectiveCompletion } from '../test-kit/asserters';
+import { StylableMeta, SRule, valueMapping, ClassSymbol, CSSResolve } from 'stylable';
 import { CursorPosition, SelectorChunk, SelectorInternalChunk } from "./utils/selector-analyzer";
 import {
-    extendsDirective, importsDirective, mixinDirective, namespaceDirective, rootClass, statesDirective, variantDirective, varsDirective,
     classCompletion, extendCompletion, namedCompletion, pseudoElementCompletion, stateCompletion, importInternalDirective,
-    Completion
+    Completion, importDirectives, rulesetDirectives, rulesetInternalDirective, topLevelDirective, topLevelDirectives
 } from './completion-types'
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
@@ -54,43 +53,65 @@ function createDirectiveRange(options: ProviderOptions): ProviderRange {
 //Providers
 //Syntactic
 
-export type ValMapVals = keyof typeof valueMapping;
 
-export class ExtendsDirectiveProvider implements CompletionProvider {
-    provide(options: ProviderOptions): Completion[] {
-        if (options.insideSimpleSelector && options.isLineStart && options.lastRule && !options.isMediaQuery &&
-            (isContainer(options.lastRule) && options.lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
-            return [extendsDirective(createDirectiveRange(options))];
-        } else {
-            return [];
-        }
-    }
-    text: string[] = [valueMapping.extends]
-}
 
-export class ImportDirectiveProvider implements CompletionProvider {
-    provide(options: ProviderOptions): Completion[] {
-        if (options.isTopLevel && options.isLineStart && !options.isMediaQuery) {
-            return [importsDirective(createDirectiveRange(options))];
-        } else {
-            return [];
-        }
-    }
-    text: string[] = [':import']
-}
 
-const importDeclarations: ValMapVals[] = ['default', 'named', 'from', 'theme']
+// export class ImportDirectiveProvider implements CompletionProvider {
+//     provide(options: ProviderOptions): Completion[] {
+//         if (options.isTopLevel && options.isLineStart && !options.isMediaQuery) {
+//             return [importsDirective(createDirectiveRange(options))];
+//         } else {
+//             return [];
+//         }
+//     }
+//     text: string[] = [':import']
+// }
+
+
+// export class NamespaceDirectiveProvider implements CompletionProvider {
+//     provide(options: ProviderOptions): Completion[] {
+//         if (options.isTopLevel && options.isLineStart && !options.isMediaQuery) {
+//             return [namespaceDirective(createDirectiveRange(options))];
+//         } else {
+//             return [];
+//         }
+//     }
+//     text: string[] = ['@namespace']
+// }
+
+// export class RootClassProvider implements CompletionProvider {
+//     provide(options: ProviderOptions): Completion[] {
+//         if (options.isTopLevel && options.isLineStart) {
+//             return [rootClass(createDirectiveRange(options))];
+//         } else {
+//             return [];
+//         }
+//     }
+//     text: string[] = ['.root']
+// }
+
+// export class VarsDirectiveProvider implements CompletionProvider {
+//     provide(options: ProviderOptions): Completion[] {
+//         if (options.isTopLevel && options.isLineStart && !options.isMediaQuery) {
+//             return [varsDirective((createDirectiveRange(options)))];
+//         } else {
+//             return [];
+//         }
+//     }
+//     text: string[] = [':vars']
+// }
+
+const importDeclarations: (keyof typeof importDirectives)[] = ['default', 'named', 'from', 'theme']
+const simpleRulesetDeclarations: (keyof typeof rulesetDirectives)[] = ['extends', 'states', 'variant']
+const topLevelDeclarations: (keyof typeof topLevelDirectives)[] = ['root', 'namespace', 'vars', 'import']
+
 export class ImportInternalDirectivesProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.isImport && options.isLineStart && options.lastRule && !options.isMediaQuery && isContainer(options.lastRule)) {
             const res: Completion[] = [];
             importDeclarations.forEach(type => {
-                if (options.lastRule!.nodes!.every(n => isDeclaration(n) && valueMapping[type] !== n.prop)) {
-                    const dir = importInternalDirective(
-                        type,
-                        createDirectiveRange(options)
-                    )
-                    if (dir) { res.push(dir) }
+                if (options.lastRule!.nodes!.every(n => isDeclaration(n) && importDirectives[type] !== n.prop)) {
+                    res.push(importInternalDirective(type, createDirectiveRange(options)))
                 }
             })
             return res;
@@ -98,78 +119,48 @@ export class ImportInternalDirectivesProvider implements CompletionProvider {
             return [];
         }
     }
-    text = importDeclarations.map(name => valueMapping[name]);
+    text = importDeclarations.map(name => importDirectives[name]);
 }
 
-export class MixinDirectiveProvider implements CompletionProvider {
+
+export class RulesetInternalDirectivesProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isLineStart && !options.isImport && options.lastRule &&
-            (isContainer(options.lastRule) && options.lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
-            return [mixinDirective(createDirectiveRange(options))];
+        let res: Completion[] = [];
+        if (!options.isImport && options.isLineStart && options.lastRule && (isContainer(options.lastRule))) {
+            if (options.lastRule.nodes!.every(n => isDeclaration(n) && rulesetDirectives.mixin !== n.prop)) {
+                res.push(rulesetInternalDirective('mixin', createDirectiveRange(options)));
+            }
+            if (options.insideSimpleSelector && !options.isMediaQuery) {
+                simpleRulesetDeclarations.forEach(type => {
+                    if (options.lastRule!.nodes!.every(n => isDeclaration(n) && rulesetDirectives[type] !== n.prop)) {
+                        res.push(rulesetInternalDirective(type, createDirectiveRange(options)))
+                    }
+                })
+            }
+            return res;
         } else {
             return [];
         }
     }
-    text: string[] = [valueMapping.mixin]
+    text = simpleRulesetDeclarations.map(name => rulesetDirectives[name]);
 }
 
-export class NamespaceDirectiveProvider implements CompletionProvider {
-    provide(options: ProviderOptions): Completion[] {
-        if (options.isTopLevel && options.isLineStart && !options.isMediaQuery) {
-            return [namespaceDirective(createDirectiveRange(options))];
-        } else {
-            return [];
-        }
-    }
-    text: string[] = ['@namespace']
-}
-
-export class RootClassProvider implements CompletionProvider {
+export class TopLevelDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.isTopLevel && options.isLineStart) {
-            return [rootClass(createDirectiveRange(options))];
+            if (!options.isMediaQuery) {
+                return topLevelDeclarations.map(d => topLevelDirective(d, createDirectiveRange(options)));
+            } else {
+                return [topLevelDirective("root", createDirectiveRange(options))]
+            }
         } else {
             return [];
         }
     }
-    text: string[] = ['.root']
+    text = topLevelDeclarations.map(name => topLevelDirectives[name]);
 }
 
-export class StatesDirectiveProvider implements CompletionProvider {
-    provide(options: ProviderOptions): Completion[] {
-        if (options.insideSimpleSelector && options.isLineStart && options.lastRule && !options.isMediaQuery &&
-            (isContainer(options.lastRule) && options.lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
-            return [statesDirective(createDirectiveRange(options))];
-        } else {
-            return [];
-        }
-    }
-    text: string[] = [valueMapping.states]
-}
 
-export class VariantDirectiveProvider implements CompletionProvider {
-    provide(options: ProviderOptions): Completion[] {
-        let lastRule = options.lastRule
-        if (options.insideSimpleSelector && options.isLineStart && lastRule && !options.isMediaQuery &&
-            (isContainer(lastRule) && lastRule.nodes!.every(n => isDeclaration(n) && this.text.every(t => t !== n.prop)))) {
-            return [variantDirective(createDirectiveRange(options))];
-        } else {
-            return [];
-        }
-    }
-    text: string[] = [valueMapping.variant]
-}
-
-export class VarsDirectiveProvider implements CompletionProvider {
-    provide(options: ProviderOptions): Completion[] {
-        if (options.isTopLevel && options.isLineStart && !options.isMediaQuery) {
-            return [varsDirective((createDirectiveRange(options)))];
-        } else {
-            return [];
-        }
-    }
-    text: string[] = [':vars']
-}
 
 
 
@@ -183,13 +174,7 @@ export class SelectorCompletionProvider implements CompletionProvider {
                 .filter(k => k !== 'root' && options.fakes.findIndex(f => f.selector === '.' + k) === -1) //not root, not local broken class
                 .map(c => classCompletion(c, (createDirectiveRange(options)))));
             return options.meta.imports.reduce((acc: Completion[], imp) => {
-                acc.push(
-                    classCompletion(
-                        imp.defaultExport,
-                        createDirectiveRange(options),
-                        true
-                    )
-                );
+                acc.push(classCompletion(imp.defaultExport, createDirectiveRange(options), true));
                 Object.keys(imp.named).forEach(exp => acc.push(classCompletion(imp.named[exp], (createDirectiveRange(options)))));
                 return acc;
             }, comps)

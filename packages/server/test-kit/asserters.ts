@@ -136,7 +136,7 @@ export const varsDirectiveCompletion: (rng: ProviderRange) => Partial<Completion
     return { label: ':vars', detail: 'Declare variables', sortText: 'a', insertText: ':vars {\n\t$1\n}$0', range: rng };
 }
 export const variantDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
-    return { label: '-st-variant:', detail: '', sortText: 'a', insertText: '-st-variant: true;', range: rng };
+    return { label: '-st-variant:', detail: 'Is a variant', sortText: 'a', insertText: '-st-variant: true;', range: rng };
 }
 
 
