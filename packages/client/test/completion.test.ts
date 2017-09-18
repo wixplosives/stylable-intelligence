@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 
 function testCompletion(fileToTest: string, testCases: [vscode.Position, string[]][]) {
     const casesPath = path.join(__dirname, '..', '..', 'test', 'cases', fileToTest)
-    const ext = vscode.extensions.getExtension('Wix.stylable-intelligence')
+    const ext = vscode.extensions.getExtension('wix.stylable-intelligence')
     let testDoc:vscode.TextDocument
 
     if (ext) {
