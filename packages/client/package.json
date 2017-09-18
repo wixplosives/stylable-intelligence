@@ -4,7 +4,7 @@
   "version": "0.0.3",
   "description": "Code completion, reference detection, diagnostics and other features for Stylable CSS.",
   "author": "Ory Henn (ory@wix.com)",
-  "publisher": "Wix",
+  "publisher": "wix",
   "repository": {
     "type": "git",
     "url": "git@github.com:wix/stylable-intelligence.git"
