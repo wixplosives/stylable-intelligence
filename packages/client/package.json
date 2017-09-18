@@ -9,6 +9,7 @@
     "type": "git",
     "url": "git@github.com:wix/stylable-intelligence.git"
   },
+  "license": "SEE LICENSE IN LICENSE.txt",
   "icon": "https://github.com/wix/stylable/blob/master/branding/logo/PNG/96-logo-OnlySymbol%402x.png",
   "bugs": {
     "url": "https://github.com/wix/stylable-intelligence/issues"
