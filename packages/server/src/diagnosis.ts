@@ -37,7 +37,9 @@ function createRange(report:Report) {
     let end =  {line: -1, character: -1}
     if(report.options.word){
         let lines:string[] = (source.input as any).css.split('\n')
-        for (var i=0; i < lines.length; ++i) {
+        const searchStart = source.start!.line - 1
+        const searchEnd =  source.end!.line -1
+        for (var i=searchStart; i < searchEnd; ++i) {
             const wordIndex = lines[i].indexOf(report.options.word!)
             if (!!~wordIndex) {
                 start.line = i
