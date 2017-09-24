@@ -13,8 +13,6 @@ namespace OpenDocNotification {
 
 export function activate(context: ExtensionContext) {
 
-    console.log('client lalala');
-
     let serverModule = context.asAbsolutePath(path.join('server', 'src', 'server.js'));
     let debugOptions = { execArgv: ['--inspect'] };
 
@@ -30,7 +28,7 @@ export function activate(context: ExtensionContext) {
     }
 
     let client = new LanguageClient('stylable', serverOptions, clientOptions);
-    client.trace = Trace.Verbose;
+    // client.trace = Trace.Verbose;
 
 
     context.subscriptions.push(client.start());
