@@ -1496,6 +1496,10 @@ hpack.js@^2.1.6:
     readable-stream "^2.0.1"
     wbuf "^1.1.0"
 
+htap@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/htap/-/htap-1.0.2.tgz#954e5fd064427a7356d432afc7a2d73875b7db39"
+
 html-comment-regex@^1.1.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/html-comment-regex/-/html-comment-regex-1.1.1.tgz#668b93776eaae55ebde8f3ad464b307a4963625e"

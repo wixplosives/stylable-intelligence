@@ -1,34 +1,43 @@
 'use strict';
 import { TextDocument } from 'vscode-languageserver';
-import { cachedProcessFile, process, safeParse, StylableMeta,
+import {
+    cachedProcessFile, process as stylableProcess, safeParse, StylableMeta,
     // StylableResolver,
-     FileProcessor, Stylable } from 'stylable';
+    FileProcessor, Stylable
+} from 'stylable';
 import Provider from './provider';
 import * as fs from 'fs';
+import { htap } from 'htap';
 
 
 export function createProvider(docs: MinimalDocs, withFilePrefix: boolean = true): Provider {
-    // let proccesor = createProcessor(docs, withFilePrefix)
-    // const stylableResolver = new StylableResolver(proccesor, () => ({ default: {} }))
-    const styl = new Stylable('/',createFs(docs, withFilePrefix),  () => ({ default: {} }))
-    // const stylabletransformer = new StylableTransformer({fileProcessor: processor, requireModule: () => ({ default: {} }), diagnostics: });
-    // return new Provider(styl.resolver)
+    const styl = new Stylable('/', createFs(docs, withFilePrefix), () => ({ default: {} }))
     return new Provider(styl)
 }
 
 function createFs(docs: MinimalDocs, withFilePrefix: boolean = true): any {
-    const getFullPath = (path: string) => withFilePrefix ? 'file://' + path : path
+
+
+    const getDocFormatPath = (path: string) => {
+        if (process.platform === 'win32') {
+            return withFilePrefix ? 'file:///' + htap(path) : htap(path);
+        } else {
+            return withFilePrefix ? 'file://' + path : path
+        }
+    }
+
+
     return {
         readFileSync(path: string) {
-            if (docs.keys().indexOf(getFullPath(path)) !== -1) {
-                return docs.get(getFullPath(path)).getText()
+            if (docs.keys().indexOf(getDocFormatPath(path)) !== -1) {
+                return docs.get(getDocFormatPath(path)).getText()
             } else {
-                return fs.readFileSync(getFullPath(path).slice(7)).toString();
+                return fs.readFileSync(path).toString();
             }
         },
         statSync(path: string) {
-            const doc = docs.get(getFullPath(path));
-            if (docs.keys().indexOf(getFullPath(path)) !== -1) {
+            const doc = docs.get(getDocFormatPath(path));
+            if (docs.keys().indexOf(getDocFormatPath(path)) !== -1) {
                 return {
                     mtime: new Date(doc.version)
                 }
@@ -42,7 +51,7 @@ function createFs(docs: MinimalDocs, withFilePrefix: boolean = true): any {
 }
 export function createProcessor(docs: MinimalDocs, withFilePrefix: boolean = true): FileProcessor<StylableMeta> {
     let proccesor = cachedProcessFile<StylableMeta>((fullpath, content) => {
-        return process(safeParse(content, { from: fullpath }))
+        return stylableProcess(safeParse(content, { from: fullpath }))
     }, createFs(docs, withFilePrefix))
     return proccesor;
 

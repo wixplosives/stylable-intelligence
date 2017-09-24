@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "css-selector-tokenizer": "^0.7.0",
+    "htap": "^1.0.2",
     "ipaddr": "^0.0.9",
     "postcss": "^6.0.7",
     "postcss-nested": "^2.0.4",

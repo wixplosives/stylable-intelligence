@@ -54,8 +54,6 @@ function createDirectiveRange(options: ProviderOptions): ProviderRange {
 //Providers
 //Syntactic
 
-
-
 const importDeclarations: (keyof typeof importDirectives)[] = ['default', 'named', 'from', 'theme']
 const simpleRulesetDeclarations: (keyof typeof rulesetDirectives)[] = ['extends', 'states', 'variant']
 const topLevelDeclarations: (keyof typeof topLevelDirectives)[] = ['root', 'namespace', 'vars', 'import']

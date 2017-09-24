@@ -2,7 +2,7 @@ import { valueMapping } from 'stylable/dist/src';
 //must remain independent from vscode
 
 import * as PostCss from 'postcss';
-import { StylableMeta, process, safeParse, SRule, Stylable } from 'stylable';
+import { StylableMeta, process as  stylableProcess, safeParse, SRule, Stylable } from 'stylable';
 import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
 import {
     ImportInternalDirectivesProvider,
@@ -19,6 +19,7 @@ import {
 import { Completion, } from './completion-types';
 import { parseSelector, } from './utils/selector-analyzer';
 import { Declaration } from 'postcss';
+
 
 export function isIllegalLine(line: string): boolean {
     return /^\s*[-\.:]+\s*$/.test(line)
@@ -80,7 +81,8 @@ export default class Provider {
         let meta: StylableMeta;
         let fakes: PostCss.Rule[] = [];
         try {
-            let ast: PostCss.Root = safeParse(fixedSrc, { from: filePath.indexOf('file://') === 0 ? filePath.slice(7) : filePath })
+            let ast: PostCss.Root = safeParse(fixedSrc, { from: this.createFrom(filePath) })
+            // let ast: PostCss.Root = safeParse(fixedSrc, { from: filePath.indexOf('file://') === 0 ? filePath.slice(7) : filePath })
             ast.nodes && ast.nodes.forEach((node) => {
                 if (node.type === 'decl') {
                     let r = PostCss.rule({ selector: node.prop + ':' + node.value });
@@ -95,12 +97,16 @@ export default class Provider {
                 fakes.push(r);
             }
 
-            meta = process(ast);
+            meta = stylableProcess(ast);
         } catch (error) {
             return Promise.resolve([]);
         }
         return this.provideCompletionItemsFromAst(src, position, meta, fakes, currentLine, cursorLineIndex);
 
+    }
+
+    private createFrom(filePath: string): string | undefined {
+        return filePath.indexOf('file://') === 0 ? filePath.slice(7 + Number(process.platform==='win32')) : filePath;
     }
 
     public provideCompletionItemsFromAst(
@@ -212,5 +218,6 @@ export default class Provider {
             resolvedPseudo: resolvedPseudo,
         }
     }
+
 
 }
