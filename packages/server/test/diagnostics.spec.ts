@@ -42,8 +42,7 @@ describe('diagnostics', function () {
         })
     })
     //
-    //TODO: integrate once stylable has cross files errors
-    xit('should create cross file errors', function() {
+    it('should create cross file errors', function() {
         let filePathA = 'style.css'
         let filePathB = 'import-style.st.css'
 
@@ -59,14 +58,13 @@ describe('diagnostics', function () {
                         `
 
         }, filePathB)
-
         return expect(diagnostics).to.deep.include({
             "range":{
-                "start":{"line":1, "character":1},
-                "end": {"line":1, "character":13}
+                "start":{"line":3, "character":39},
+                "end": {"line":3, "character":44}
             },
-            "message":".root class cannot be used after spacing",
-            "severity":2
+            "message":"Trying to import unknown alias",
+            "severity":1
         })
     })
 })

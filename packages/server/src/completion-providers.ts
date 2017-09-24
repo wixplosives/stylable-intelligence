@@ -14,6 +14,7 @@ export interface ProviderOptions {
     lastRule: SRule | null,
     trimmedLine: string,
     postDirectiveSpaces: number,
+    postValueSpaces: number,
     position: ProviderPosition,
     isTopLevel: boolean,
     isLineStart: boolean,
@@ -54,52 +55,6 @@ function createDirectiveRange(options: ProviderOptions): ProviderRange {
 //Syntactic
 
 
-
-
-// export class ImportDirectiveProvider implements CompletionProvider {
-//     provide(options: ProviderOptions): Completion[] {
-//         if (options.isTopLevel && options.isLineStart && !options.isMediaQuery) {
-//             return [importsDirective(createDirectiveRange(options))];
-//         } else {
-//             return [];
-//         }
-//     }
-//     text: string[] = [':import']
-// }
-
-
-// export class NamespaceDirectiveProvider implements CompletionProvider {
-//     provide(options: ProviderOptions): Completion[] {
-//         if (options.isTopLevel && options.isLineStart && !options.isMediaQuery) {
-//             return [namespaceDirective(createDirectiveRange(options))];
-//         } else {
-//             return [];
-//         }
-//     }
-//     text: string[] = ['@namespace']
-// }
-
-// export class RootClassProvider implements CompletionProvider {
-//     provide(options: ProviderOptions): Completion[] {
-//         if (options.isTopLevel && options.isLineStart) {
-//             return [rootClass(createDirectiveRange(options))];
-//         } else {
-//             return [];
-//         }
-//     }
-//     text: string[] = ['.root']
-// }
-
-// export class VarsDirectiveProvider implements CompletionProvider {
-//     provide(options: ProviderOptions): Completion[] {
-//         if (options.isTopLevel && options.isLineStart && !options.isMediaQuery) {
-//             return [varsDirective((createDirectiveRange(options)))];
-//         } else {
-//             return [];
-//         }
-//     }
-//     text: string[] = [':vars']
-// }
 
 const importDeclarations: (keyof typeof importDirectives)[] = ['default', 'named', 'from', 'theme']
 const simpleRulesetDeclarations: (keyof typeof rulesetDirectives)[] = ['extends', 'states', 'variant']
@@ -149,9 +104,11 @@ export class TopLevelDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.isTopLevel && options.isLineStart) {
             if (!options.isMediaQuery) {
-                return topLevelDeclarations.map(d => topLevelDirective(d, createDirectiveRange(options)));
+                return topLevelDeclarations
+                    .filter(d => topLevelDirectives[d].startsWith(options.trimmedLine))
+                    .map(d => topLevelDirective(d, createDirectiveRange(options)));
             } else {
-                return [topLevelDirective("root", createDirectiveRange(options))]
+                return [topLevelDirective('root', createDirectiveRange(options))]
             }
         } else {
             return [];
@@ -159,9 +116,6 @@ export class TopLevelDirectiveProvider implements CompletionProvider {
     }
     text = topLevelDeclarations.map(name => topLevelDirectives[name]);
 }
-
-
-
 
 
 //Semantic
@@ -210,12 +164,34 @@ export class NamedCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.trimmedLine.startsWith(valueMapping.named) && options.resolvedImport) {
             let value = options.trimmedLine.slice((valueMapping.named + ':').length);
-            let spaces = value.search(/\S|$/);
-            let str = value.slice(spaces);
-            let comps: string[] = Object.keys(options.resolvedImport.mappedSymbols).filter(ms => options.resolvedImport!.mappedSymbols[ms]._kind === 'class' && ms !== 'root');
-            return comps.map(c => namedCompletion(c, new ProviderRange(
-                new ProviderPosition(options.position.line, options.position.character - str.length - options.postDirectiveSpaces),
-                new ProviderPosition(options.position.line, Number.MAX_VALUE))));
+
+
+            // let spaces = value.search(/\S|$/);
+            // let str = value.slice(spaces);
+
+            let names = value.split(',').map(x => x.trim());
+            let lastName = names.reverse()[0];
+            let multival: boolean = false;
+
+            let comps: string[] = Object.keys(options.resolvedImport.mappedSymbols)
+                .filter(ms => options.resolvedImport!.mappedSymbols[ms]._kind === 'class' && ms !== 'root')
+                .filter(ms => {
+                    if (names.some(name => name === ms)) { multival = true };
+                    return names.every(name => name !== ms);
+                });
+            return comps.map(c => namedCompletion(
+                c,
+                new ProviderRange(
+                    new ProviderPosition(options.position.line,
+                        options.position.character
+                        - (multival ? 0 : (lastName.length + options.postDirectiveSpaces))
+                        - (value.endsWith(',') ? 1 : 0)
+                        - (options.resolvedImport!.mappedSymbols[lastName] ? 0 : options.postValueSpaces)
+                    ),
+                    new ProviderPosition(options.position.line, Number.MAX_VALUE)
+                ),
+                multival
+            ));
         } else {
             return [];
         }

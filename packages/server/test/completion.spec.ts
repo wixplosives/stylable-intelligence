@@ -80,8 +80,6 @@ describe('completion unit test', function () {
         });
     });
 
-
-
     describe('states', function () {
         it('should complete available states from same file after :', function () {
             return asserters.getCompletions('states/class-with-states.css').then((asserter) => {

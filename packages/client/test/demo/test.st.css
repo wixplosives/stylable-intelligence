@@ -1,9 +1,12 @@
+:import {
+    -st-from: "./import.st.css";
+    -st-default: Comp;
+    -st-named: shlomo;
+ }
 
-.gaga{
+Comp::
 
-    }
-
-
-    .gaga:hover{
-
-    }
+:import {
+    -st-from: "./import.st.css";
+    -st-default: Lala;
+}

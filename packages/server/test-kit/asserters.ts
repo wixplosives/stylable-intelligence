@@ -86,7 +86,7 @@ function completionsIntenal(fileName: string, src: string): Thenable<Completion[
 
     const provider = createProvider({
         get(uri: string): TextDocument {
-            console.log(uri)
+            // console.log(uri)
             return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(7)).toString())
         },
         keys(): string[] {
@@ -147,8 +147,8 @@ export const classCompletion: (className: string, rng: ProviderRange, isDefaultI
 export const extendsCompletion: (typeName: string, rng: ProviderRange) => Partial<Completion> = (typeName, rng) => {
     return { label: typeName, sortText: 'a', insertText: ' ' + typeName + ';\n', range: rng }
 };
-export const namedCompletion: (typeName: string, rng: ProviderRange) => Partial<Completion> = (typeName, rng) => {
-    return { label: typeName, sortText: 'a', insertText: ' ' + typeName, range: rng }
+export const namedCompletion: (typeName: string, rng: ProviderRange, comma?: boolean) => Partial<Completion> = (typeName, rng, comma) => {
+    return { label: typeName, sortText: 'a', insertText: (comma ? ', ' : ' ') + typeName, range: rng }
 };
 export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (stateName, rng, from = 'projectRoot/main.css') => {
     return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + path.join(__dirname, '/../test/cases/', from), insertText: ':' + stateName, range: rng }

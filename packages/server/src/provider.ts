@@ -16,12 +16,12 @@ import {
     ProviderOptions,
     NamedCompletionProvider,
 } from './completion-providers'
-import { Completion,  } from './completion-types';
+import { Completion, } from './completion-types';
 import { parseSelector, } from './utils/selector-analyzer';
 import { Declaration } from 'postcss';
 
-function isIllegalLine(line: string): boolean {
-    return !!/^\s*[-\.:]+\s*$/.test(line)
+export function isIllegalLine(line: string): boolean {
+    return /^\s*[-\.:]+\s*$/.test(line)
 }
 
 const lineEndsRegexp = /({|}|;)/;
@@ -58,6 +58,7 @@ export default class Provider {
                 if (currentLocation >= position.character) {
                     currentLine = splitLine[i];
                     if (isIllegalLine(currentLine)) {
+                        // if (true) {
                         splitLine[i] = '\n'
                         lines.splice(position.line, 1, splitLine.join(''));
                         fixedSrc = lines.join('\n');
@@ -70,6 +71,7 @@ export default class Provider {
 
         }
         else if (isIllegalLine(currentLine)) {
+            // else if (true) {
             lines.splice(position.line, 1, "");
             fixedSrc = lines.join('\n');
         }
@@ -95,7 +97,6 @@ export default class Provider {
 
             meta = process(ast);
         } catch (error) {
-            // console.log(error);
             return Promise.resolve([]);
         }
         return this.provideCompletionItemsFromAst(src, position, meta, fakes, currentLine, cursorLineIndex);
@@ -136,9 +137,12 @@ export default class Provider {
         const isDirective = Object.keys(valueMapping).some(k => currentLine.indexOf((valueMapping as any)[k]) !== -1)
 
 
-        const lastRule: SRule | null = prevPart && isSelector(prevPart) && fakes.findIndex((f) => { return f.selector === prevPart.selector })
+        const lastRule: SRule | null = prevPart && isSelector(prevPart) && prevPart.selector.indexOf('\n') === -1 && fakes.findIndex((f) => { return f.selector === prevPart.selector }) === -1
             ? <SRule>prevPart
-            : lastPart && isSelector(lastPart) && fakes.findIndex((f) => { return f.selector === lastPart.selector }) ? <SRule>lastPart : null
+            : lastPart && isSelector(lastPart) && lastPart.selector.indexOf('\n') === -1 && fakes.findIndex((f) => { return f.selector === lastPart.selector }) === -1
+                ? <SRule>lastPart
+                : null
+
         while (currentLine.lastIndexOf(' ') > cursorLineIndex) {
             currentLine = currentLine.slice(0, currentLine.lastIndexOf(' '))
         }
@@ -151,6 +155,9 @@ export default class Provider {
 
         let trimmedLine = currentLine.trim();
         let postDirectiveSpaces = (Object.keys(valueMapping).some(k => { return trimmedLine.startsWith((valueMapping as any)[k]) })) ? currentLine.match((/:(\s*)\w?/))![1].length : 0
+        let postValueSpaces = (Object.keys(valueMapping).some(k => { return trimmedLine.startsWith((valueMapping as any)[k]) && trimmedLine.indexOf(',') !== -1 }))
+            ? (currentLine.replace(/^\s*/, '').match(/\s+/) || [''])[0].length
+            : 0
         let ps = parseSelector(trimmedLine, cursorLineIndex);
 
         let chunkStrings: string[] = ps.selector.map(s => s.text).reduce((acc, arr) => { return acc.concat(arr) }, []);
@@ -189,6 +196,7 @@ export default class Provider {
             lastRule: lastRule,
             trimmedLine: trimmedLine,
             postDirectiveSpaces: postDirectiveSpaces,
+            postValueSpaces: postValueSpaces,
             position: position,
             isTopLevel: !lastRule,
             isLineStart: false,
