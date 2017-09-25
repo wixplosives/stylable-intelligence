@@ -2,7 +2,7 @@ import { valueMapping } from 'stylable/dist/src';
 //must remain independent from vscode
 
 import * as PostCss from 'postcss';
-import { StylableMeta, process as  stylableProcess, safeParse, SRule, Stylable } from 'stylable';
+import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable } from 'stylable';
 import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
 import {
     ImportInternalDirectivesProvider,
@@ -15,6 +15,7 @@ import {
     ProviderPosition,
     ProviderOptions,
     NamedCompletionProvider,
+    ValueDirectiveProvider,
 } from './completion-providers'
 import { Completion, } from './completion-types';
 import { parseSelector, } from './utils/selector-analyzer';
@@ -28,12 +29,13 @@ export function isIllegalLine(line: string): boolean {
 const lineEndsRegexp = /({|}|;)/;
 
 export default class Provider {
-    constructor(private styl: Stylable) { }
+    constructor(public styl: Stylable) { }
 
     providers = [
         new RulesetInternalDirectivesProvider(),
         new ImportInternalDirectivesProvider(),
         new TopLevelDirectiveProvider(),
+        new ValueDirectiveProvider(),
         new SelectorCompletionProvider(),
         new ExtendCompletionProvider(),
         new NamedCompletionProvider(),
@@ -106,7 +108,7 @@ export default class Provider {
     }
 
     private createFrom(filePath: string): string | undefined {
-        return filePath.indexOf('file://') === 0 ? filePath.slice(7 + Number(process.platform==='win32')) : filePath;
+        return filePath.indexOf('file://') === 0 ? decodeURIComponent(filePath.slice(7 + Number(process.platform === 'win32'))) : decodeURIComponent(filePath);
     }
 
     public provideCompletionItemsFromAst(
@@ -149,6 +151,7 @@ export default class Provider {
                 ? <SRule>lastPart
                 : null
 
+        const wholeLine = currentLine;
         while (currentLine.lastIndexOf(' ') > cursorLineIndex) {
             currentLine = currentLine.slice(0, currentLine.lastIndexOf(' '))
         }
@@ -201,6 +204,7 @@ export default class Provider {
             meta: meta,
             lastRule: lastRule,
             trimmedLine: trimmedLine,
+            wholeLine: wholeLine,
             postDirectiveSpaces: postDirectiveSpaces,
             postValueSpaces: postValueSpaces,
             position: position,

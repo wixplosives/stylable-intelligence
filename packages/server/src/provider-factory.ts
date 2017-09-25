@@ -17,7 +17,6 @@ export function createProvider(docs: MinimalDocs, withFilePrefix: boolean = true
 
 function createFs(docs: MinimalDocs, withFilePrefix: boolean = true): any {
 
-
     const getDocFormatPath = (path: string) => {
         if (process.platform === 'win32') {
             return withFilePrefix ? 'file:///' + htap(path) : htap(path);
@@ -25,7 +24,6 @@ function createFs(docs: MinimalDocs, withFilePrefix: boolean = true): any {
             return withFilePrefix ? 'file://' + path : path
         }
     }
-
 
     return {
         readFileSync(path: string) {
@@ -49,6 +47,7 @@ function createFs(docs: MinimalDocs, withFilePrefix: boolean = true): any {
         }
     }
 }
+
 export function createProcessor(docs: MinimalDocs, withFilePrefix: boolean = true): FileProcessor<StylableMeta> {
     let proccesor = cachedProcessFile<StylableMeta>((fullpath, content) => {
         return stylableProcess(safeParse(content, { from: fullpath }))

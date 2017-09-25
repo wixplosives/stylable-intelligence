@@ -1,10 +1,20 @@
-// import { importDefaultDirectiveCompletion, importDirectiveCompletion } from '../test-kit/asserters';
 import { StylableMeta, SRule, valueMapping, ClassSymbol, CSSResolve } from 'stylable';
 import { CursorPosition, SelectorChunk, SelectorInternalChunk } from "./utils/selector-analyzer";
 import {
-    classCompletion, extendCompletion, namedCompletion, pseudoElementCompletion, stateCompletion, importInternalDirective,
-    Completion, importDirectives, rulesetDirectives, rulesetInternalDirective, topLevelDirective, topLevelDirectives
-} from './completion-types'
+    classCompletion,
+    Completion,
+    extendCompletion,
+    importDirectives,
+    importInternalDirective,
+    namedCompletion,
+    pseudoElementCompletion,
+    rulesetDirectives,
+    rulesetInternalDirective,
+    stateCompletion,
+    topLevelDirective,
+    topLevelDirectives,
+    valueDirective,
+} from './completion-types';
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 
@@ -13,6 +23,7 @@ export interface ProviderOptions {
     meta: StylableMeta,
     lastRule: SRule | null,
     trimmedLine: string,
+    wholeLine: string,
     postDirectiveSpaces: number,
     postValueSpaces: number,
     position: ProviderPosition,
@@ -115,7 +126,19 @@ export class TopLevelDirectiveProvider implements CompletionProvider {
     text = topLevelDeclarations.map(name => topLevelDirectives[name]);
 }
 
-
+export class ValueDirectiveProvider implements CompletionProvider {
+    provide(options: ProviderOptions): Completion[] {
+        if (!options.isTopLevel && options.wholeLine.indexOf(':') !== -1 && this.text.some(t => t.startsWith(options.wholeLine.slice(options.wholeLine.indexOf(':') + 1).trim()))) {
+            return [valueDirective(new ProviderRange(
+                new ProviderPosition(options.position.line, options.wholeLine.indexOf(':') + 1),
+                options.position
+                ))]
+        } else {
+            return [];
+        }
+    }
+    text: string[] = ['value()']
+}
 //Semantic
 
 export class SelectorCompletionProvider implements CompletionProvider {

@@ -44,9 +44,9 @@ suite("Extension Tests", () => {
         return testCompletion('simple-completion.st.css', testCases);
     });
 
-    test.skip("advanced completion", () => {
+    test("advanced completion", () => {
         const testCases: [vscode.Position, string[]][] = [
-            [new vscode.Position(10, 6), ['shmover', 'bover']]
+            [new vscode.Position(10, 6), [':shmover', ':bover']]
         ];
         return testCompletion('advanced-completion.st.css', testCases);
     });

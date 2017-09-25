@@ -61,6 +61,9 @@ export function topLevelDirective(type: keyof typeof topLevelDirectives, rng: Pr
     }
 }
 
+export function valueDirective(rng: ProviderRange) {
+    return new Completion('value()', 'Use the value of a variable', 'a', new snippet(' value($1)$0'), rng);
+}
 
 //semantic
 export function classCompletion(className: string, rng: ProviderRange, removeDot: boolean = false) {

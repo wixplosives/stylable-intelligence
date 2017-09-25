@@ -1,11 +1,3 @@
-.shlomo {
-    color: black;
-}
-
-.momo{
-    -st-states: anotherState;
-}
-
-.root {
-    -st-states : state,otherState;
+.root{
+    -st-states:shmover;
 }

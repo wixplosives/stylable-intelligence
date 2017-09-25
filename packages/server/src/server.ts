@@ -11,7 +11,7 @@ import {
     TextEdit,
 } from 'vscode-languageserver';
 import { createProvider,
-     createProcessor
+    //  createProcessor
 } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
@@ -21,7 +21,8 @@ const connection: IConnection = createConnection(new IPCMessageReader(process), 
 const documents: TextDocuments = new TextDocuments();
 
 const provider = createProvider(documents);
-const processor = createProcessor(documents)
+// const processor = createProcessor(documents)
+const processor = provider.styl.fileProcessor;
 
 documents.listen(connection);
 
