@@ -1,11 +1,4 @@
-:import{
-    -st-from:"./import.st.css";
-    -st-default:Comp;
+:import {
+    -st-from: "./import.st.css";
+    -st-named: bob ;
 }
-
-.gaga{
-    -st-extends:Comp;
-    -st-states:bover;
-}
-
-.gaga:
