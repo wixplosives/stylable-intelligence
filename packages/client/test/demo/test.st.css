@@ -1,4 +1,8 @@
 :import {
     -st-from: "./import.st.css";
-    -st-named: bob ;
+    -st-default: Comp;
+}
+
+Comp {
+
 }

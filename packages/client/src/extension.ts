@@ -5,7 +5,6 @@ import { ExtensionContext, workspace, TextDocument } from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, Executable, NotificationType } from 'vscode-languageclient';
 import path = require('path');
 
-import * as glob from 'glob';
 
 namespace OpenDocNotification {
     export const type = new NotificationType<string, void>('stylable/openDocument');
