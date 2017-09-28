@@ -11,13 +11,22 @@ describe('Import Directive', function () {
         });
     });
 
-    // it('should complete :import at top level II', function () {
-    //     return asserters.getCompletions('imports/top-level-no-chars.css').then((asserter) => {
-    //         asserter.suggested([
-    //             asserters.importDirectiveCompletion(createRange(0,0,0,0))
-    //         ]);
-    //     });
-    // });
+    
+    
+    
+    
+    
+    it('should complete :import at top level II', function () {
+        return asserters.getCompletions('imports/top-level-no-chars.css').then((asserter) => {
+            asserter.suggested([
+                asserters.importDirectiveCompletion(createRange(0,0,0,0))
+            ]);
+        });
+    });
+
+
+
+
 
     it('should complete :import at top level after ":"', function () {
         return asserters.getCompletions('imports/top-level-colon.css').then((asserter) => {

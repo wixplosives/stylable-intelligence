@@ -104,15 +104,11 @@ export function getCompletions(fileName: string): Thenable<Assertable> {
 //     }
 // }
 
-const provider = createProvider({
-    get(uri: string): TextDocument {
-        return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(7)).toString())
-    },
-    keys(): string[] {
-        return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'))
-    }
-});
-
+function completionsIntenal(provider: Provider, fileName: string, src: string, prefix: string): Thenable<Completion[]> {
+    let pos = getCaretPosition(src);
+    src = src.replace('|', prefix);
+    return provider.provideCompletionItemsFromSrc(src, pos, fileName)
+}
 
 export function getCaretPosition(src: string) {
     const caretPos = src.indexOf('|');
@@ -130,11 +126,20 @@ export function getPath(fileName: string): NodeBase[] {
     return pathFromPosition(proc.meta!.rawAst, new ProviderPosition(pos.line + 1, pos.character))
 }
 
-function completionsIntenal(provider: Provider, fileName: string, src: string, prefix: string): Thenable<Completion[]> {
-    let pos = getCaretPosition(src);
-    src = src.replace('|', prefix);
-    return provider.provideCompletionItemsFromSrc(src, pos, fileName)
-}
+const provider = createProvider({
+    get(uri: string): TextDocument {
+        if (process.platform === 'win32') {
+            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(8)).toString())
+        } else {
+            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(7)).toString())
+        }
+    },
+    keys(): string[] {
+        return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'))
+    }
+});
+
+
 
 //syntactic
 export const extendsDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
