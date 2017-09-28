@@ -1,11 +1,16 @@
-.root{
-    -st-states:shmover;
+.shlomo {
+    color: red;
+}
+
+.momo {
+    color: blue;
 }
 
 .bobo {
-    color:red;
+    color: black;
+    -st-states: three,four;
 }
 
-.mobo {
-    color: red;
+.root {
+    -st-states: one,two;
 }

@@ -30,6 +30,7 @@ export interface ProviderOptions {
     isTopLevel: boolean,
     isLineStart: boolean,
     isImport: boolean,
+    isDirective: boolean,
     resolvedImport: StylableMeta | null
     insideSimpleSelector: boolean,
     resolved: CSSResolve[],
@@ -128,17 +129,43 @@ export class TopLevelDirectiveProvider implements CompletionProvider {
 
 export class ValueDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (!options.isTopLevel && options.wholeLine.indexOf(':') !== -1 && this.text.some(t => t.startsWith(options.wholeLine.slice(options.wholeLine.indexOf(':') + 1).trim()))) {
+        if (!options.isTopLevel && !options.isDirective && !this.isInsideValueDirective(options.wholeLine, options.position.character)
+            && options.wholeLine.indexOf(':') !== -1 && this.text.some(t => t.startsWith(options.wholeLine.slice(options.wholeLine.indexOf(':') + 1).trim()))) {
             return [valueDirective(new ProviderRange(
                 new ProviderPosition(options.position.line, options.wholeLine.indexOf(':') + 1),
                 options.position
-                ))]
+            ))]
         } else {
             return [];
         }
     }
     text: string[] = ['value()']
+
+    isInsideValueDirective(wholeLine: string, pos: number) {
+        if (!/value\(/.test(wholeLine)) { return false }
+        let line = wholeLine.slice(0, pos).slice(wholeLine.lastIndexOf('value('));
+        let stack = 0;
+        for (let i = 0; i <= line.length; i++) {
+            if (line[i] === '(') {
+                stack += 1
+            } else if (line[i] === ')') {
+                stack -= 1
+            }
+        }
+        return stack > 0;
+    }
+
+
 }
+
+
+
+
+
+
+
+
+
 //Semantic
 
 export class SelectorCompletionProvider implements CompletionProvider {
@@ -184,14 +211,11 @@ export class ExtendCompletionProvider implements CompletionProvider {
 export class NamedCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.trimmedLine.startsWith(valueMapping.named) && options.resolvedImport) {
-            let value = options.trimmedLine.slice((valueMapping.named + ':').length);
 
-
-            // let spaces = value.search(/\S|$/);
-            // let str = value.slice(spaces);
-
+            let valueStart = options.wholeLine.indexOf(':') + 1;
+            let newPos = options.position.character - valueStart;
+            let value = options.wholeLine.slice(valueStart);
             let names = value.split(',').map(x => x.trim());
-            let lastName = names.reverse()[0];
             let multival: boolean = false;
 
             let comps: string[] = Object.keys(options.resolvedImport.mappedSymbols)
@@ -200,6 +224,23 @@ export class NamedCompletionProvider implements CompletionProvider {
                     if (names.some(name => name === ms)) { multival = true };
                     return names.every(name => name !== ms);
                 });
+
+
+            let next = value.slice(newPos, newPos + value.slice(newPos).indexOf(',')).trim();
+            let prev = value.slice(value.slice(0, newPos).lastIndexOf(' '), newPos).trim()
+
+            let isAfterColon: boolean = !value.slice(0, newPos).trim();
+            let beforeValue: boolean = Object.keys(options.resolvedImport.mappedSymbols).some(ms => ms === next)
+            let afterInitialString: boolean = !!prev && Object.keys(options.resolvedImport.mappedSymbols).some(ms => ms.startsWith(prev))
+            // let betweenValues: boolean
+            // let afterLastValue: boolean
+            isAfterColon; beforeValue; afterInitialString;
+
+
+
+            let lastName = names.reverse()[0];
+
+
             return comps.map(c => namedCompletion(
                 c,
                 new ProviderRange(

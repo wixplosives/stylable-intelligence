@@ -11,6 +11,14 @@ describe('Import Directive', function () {
         });
     });
 
+    // it('should complete :import at top level II', function () {
+    //     return asserters.getCompletions('imports/top-level-no-chars.css').then((asserter) => {
+    //         asserter.suggested([
+    //             asserters.importDirectiveCompletion(createRange(0,0,0,0))
+    //         ]);
+    //     });
+    // });
+
     it('should complete :import at top level after ":"', function () {
         return asserters.getCompletions('imports/top-level-colon.css').then((asserter) => {
             asserter.suggested([
@@ -38,15 +46,7 @@ describe('Import Directive', function () {
     it('should not complete :import inside ruleset', function () {
         return asserters.getCompletions('imports/inside-ruleset.css').then((asserter) => {
             asserter.notSuggested([
-                asserters.importFromDirectiveCompletion(createRange(0,0,0,0)),
-            ]);
-        });
-    });
-
-    it('should not complete :import inside ruleset', function () {
-        return asserters.getCompletions('imports/inside-ruleset.css').then((asserter) => {
-            asserter.notSuggested([
-                asserters.importFromDirectiveCompletion(createRange(0,0,0,0)),
+                asserters.importDirectiveCompletion(createRange(0,0,0,0)),
             ]);
         });
     });
@@ -70,9 +70,7 @@ describe('Import Directive', function () {
             it('complex rule ' + src.slice(0, src.indexOf('{')), function () {
                 return asserters.getCompletions(src).then((asserter) => {
                     asserter.notSuggested([
-                        asserters.statesDirectiveCompletion(createRange(0,0,0,0)),
-                        asserters.extendsDirectiveCompletion(createRange(0,0,0,0)),
-                        asserters.variantDirectiveCompletion(createRange(0,0,0,0)),
+                        asserters.importDirectiveCompletion(createRange(0,0,0,0)),
                     ]);
                 });
             })

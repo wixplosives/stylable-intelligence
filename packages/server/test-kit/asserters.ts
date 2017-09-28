@@ -5,7 +5,12 @@ import { TextDocument } from 'vscode-languageserver-types';
 
 import { createProvider } from '../src/provider-factory'
 import { Completion, snippet } from '../src/completion-types';
-import { ProviderRange } from '../src/completion-providers';
+import { ProviderPosition, ProviderRange } from '../src/completion-providers';
+import { createMeta } from '../src/provider';
+import { pathFromPosition } from '../src/utils/postcss-ast-utils'
+import { NodeBase } from 'postcss';
+import { Provider } from '../src/index';
+
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {
@@ -60,7 +65,8 @@ export interface Assertable {
 export function getCompletions(fileName: string): Thenable<Assertable> {
     const fullPath = path.join(__dirname, '/../test/cases/', fileName);
     const src: string = fs.readFileSync(fullPath).toString();
-    return completionsIntenal(fullPath, src)
+
+    return completionsIntenal(provider, fullPath, src, "")
         .then((completions) => {
             return {
                 suggested: (expectedCompletions: Partial<Completion>[]) => {
@@ -73,32 +79,61 @@ export function getCompletions(fileName: string): Thenable<Assertable> {
                     assertNotPresent(completions, expectedNoCompletions);
                 }
             }
-
         })
 }
 
-function completionsIntenal(fileName: string, src: string): Thenable<Completion[]> {
+// export function getCompletionsWithPrefixVariants(fileName: string, prefix: string): Thenable<Assertable> {
+//     const fullPath = path.join(__dirname, '/../test/cases/', fileName);
+//     const src: string = fs.readFileSync(fullPath).toString();
+
+//     for (let i = 0; i <= prefix.length, i++;) {
+//         completionsIntenal(provider, fullPath, src, prefix.slice(0, i))
+//             .then((completions) => {
+//                 return {
+//                     suggested: (expectedCompletions: Partial<Completion>[]) => {
+//                         assertPresent(completions, expectedCompletions);
+//                     },
+//                     exactSuggested: (expectedCompletions: Partial<Completion>[]) => {
+//                         assertExact(completions, expectedCompletions);
+//                     },
+//                     notSuggested: (expectedNoCompletions: Partial<Completion>[]) => {
+//                         assertNotPresent(completions, expectedNoCompletions);
+//                     }
+//                 }
+//             })
+//     }
+// }
+
+const provider = createProvider({
+    get(uri: string): TextDocument {
+        return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(7)).toString())
+    },
+    keys(): string[] {
+        return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'))
+    }
+});
+
+
+export function getCaretPosition(src: string) {
     const caretPos = src.indexOf('|');
     const linesTillCaret = src.substr(0, caretPos).split('\n');
     const character = linesTillCaret[linesTillCaret.length - 1].length;
+    return new ProviderPosition(linesTillCaret.length - 1, character);
+}
 
+export function getPath(fileName: string): NodeBase[] {
+    const fullPath = path.join(__dirname, '/../test/cases/', fileName);
+    let src: string = fs.readFileSync(fullPath).toString();
+    let pos = getCaretPosition(src);
     src = src.replace('|', "");
+    const proc = createMeta(src, fullPath);
+    return pathFromPosition(proc.meta!.rawAst, new ProviderPosition(pos.line + 1, pos.character))
+}
 
-    const provider = createProvider({
-        get(uri: string): TextDocument {
-            // console.log(uri)
-            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(7)).toString())
-        },
-        keys(): string[] {
-            return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'))
-        }
-    });
-
-
-    return provider.provideCompletionItemsFromSrc(src, {
-        line: linesTillCaret.length - 1,
-        character
-    }, fileName)
+function completionsIntenal(provider: Provider, fileName: string, src: string, prefix: string): Thenable<Completion[]> {
+    let pos = getCaretPosition(src);
+    src = src.replace('|', prefix);
+    return provider.provideCompletionItemsFromSrc(src, pos, fileName)
 }
 
 //syntactic

@@ -3,7 +3,7 @@
 }
 
 .momo{
-    -st-states: anotherState;
+    -st-states: anotherState,oneMoreState;
 }
 
 .root {

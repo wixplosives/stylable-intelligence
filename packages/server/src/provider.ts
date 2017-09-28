@@ -28,6 +28,40 @@ export function isIllegalLine(line: string): boolean {
 
 const lineEndsRegexp = /({|}|;)/;
 
+export function createMeta(src: string, path: string) {
+    let meta: StylableMeta;
+    let fakes: PostCss.Rule[] = [];
+    try {
+        let ast: PostCss.Root = safeParse(src, { from: createFrom(path) })
+        ast.nodes && ast.nodes.forEach((node) => {
+            if (node.type === 'decl') {
+                let r = PostCss.rule({ selector: node.prop + ':' + node.value });
+                r.source = node.source;
+                node.replaceWith(r);
+                fakes.push(r)
+            }
+        })
+        if (ast.raws.after && ast.raws.after.trim()) {
+            let r = PostCss.rule({ selector: ast.raws.after.trim() })
+            ast.append(r);
+            fakes.push(r);
+        }
+
+        meta = stylableProcess(ast);
+    } catch (error) {
+        return {meta: null, fakes: fakes};
+    }
+    return {
+        meta: meta,
+        fakes: fakes
+    }
+}
+
+function createFrom(filePath: string): string | undefined {
+    return filePath.indexOf('file://') === 0 ? decodeURIComponent(filePath.slice(7 + Number(process.platform === 'win32'))) : decodeURIComponent(filePath);
+}
+
+
 export default class Provider {
     constructor(public styl: Stylable) { }
 
@@ -61,55 +95,27 @@ export default class Provider {
                 if (currentLocation >= position.character) {
                     currentLine = splitLine[i];
                     if (isIllegalLine(currentLine)) {
-                        // if (true) {
                         splitLine[i] = '\n'
                         lines.splice(position.line, 1, splitLine.join(''));
                         fixedSrc = lines.join('\n');
-                    } //Bug here when working in single line mode - current line is wrong when between selectors
+                    }
                     break;
                 } else {
                     cursorLineIndex -= splitLine[i].length + 1
                 }
             }
-
         }
         else if (isIllegalLine(currentLine)) {
-            // else if (true) {
             lines.splice(position.line, 1, "");
             fixedSrc = lines.join('\n');
         }
 
-
-        let meta: StylableMeta;
-        let fakes: PostCss.Rule[] = [];
-        try {
-            let ast: PostCss.Root = safeParse(fixedSrc, { from: this.createFrom(filePath) })
-            // let ast: PostCss.Root = safeParse(fixedSrc, { from: filePath.indexOf('file://') === 0 ? filePath.slice(7) : filePath })
-            ast.nodes && ast.nodes.forEach((node) => {
-                if (node.type === 'decl') {
-                    let r = PostCss.rule({ selector: node.prop + ':' + node.value });
-                    r.source = node.source;
-                    node.replaceWith(r);
-                    fakes.push(r)
-                }
-            })
-            if (ast.raws.after && ast.raws.after.trim()) {
-                let r = PostCss.rule({ selector: ast.raws.after.trim() })
-                ast.append(r);
-                fakes.push(r);
-            }
-
-            meta = stylableProcess(ast);
-        } catch (error) {
-            return Promise.resolve([]);
-        }
-        return this.provideCompletionItemsFromAst(src, position, meta, fakes, currentLine, cursorLineIndex);
+        let processed = createMeta(fixedSrc, filePath);
+        return this.provideCompletionItemsFromAst(src, position, processed.meta!, processed.fakes, currentLine, cursorLineIndex);
 
     }
 
-    private createFrom(filePath: string): string | undefined {
-        return filePath.indexOf('file://') === 0 ? decodeURIComponent(filePath.slice(7 + Number(process.platform === 'win32'))) : decodeURIComponent(filePath);
-    }
+
 
     public provideCompletionItemsFromAst(
         src: string,
@@ -145,9 +151,9 @@ export default class Provider {
         const isDirective = Object.keys(valueMapping).some(k => currentLine.indexOf((valueMapping as any)[k]) !== -1)
 
 
-        const lastRule: SRule | null = prevPart && isSelector(prevPart) && prevPart.selector.indexOf('\n') === -1 && fakes.findIndex((f) => { return f.selector === prevPart.selector }) === -1
+        const lastRule: SRule | null = prevPart && isSelector(prevPart) && fakes.findIndex((f) => { return f.selector === prevPart.selector }) === -1
             ? <SRule>prevPart
-            : lastPart && isSelector(lastPart) && lastPart.selector.indexOf('\n') === -1 && fakes.findIndex((f) => { return f.selector === lastPart.selector }) === -1
+            : lastPart && isSelector(lastPart) && fakes.findIndex((f) => { return f.selector === lastPart.selector }) === -1
                 ? <SRule>lastPart
                 : null
 
@@ -188,9 +194,9 @@ export default class Provider {
         let pseudo = (trimmedLine.match(/::/))
             ? (trimmedLine.endsWith('::')
                 ? trimmedLine.split('::').reverse()[1]
-                : this.styl.resolver.resolveExtends(resolved[resolved.length - 1].meta, trimmedLine.split('::').reverse()[0].replace(':', '')).length > 0
-                    ? trimmedLine.split('::').reverse()[0].replace(':', '')
-                    : trimmedLine.split('::').reverse()[1].replace(':', '')
+                : this.styl.resolver.resolveExtends(resolved[resolved.length - 1].meta, trimmedLine.split('::').reverse()[0].split(':')[0]).length > 0
+                    ? trimmedLine.split('::').reverse()[0].split(':')[0]
+                    : trimmedLine.split('::').reverse()[1].split(':')[0]
             )
             : null;
 
@@ -211,6 +217,7 @@ export default class Provider {
             isTopLevel: !lastRule,
             isLineStart: false,
             isImport: isImport,
+            isDirective: isDirective,
             resolvedImport: resolvedImport,
             insideSimpleSelector: !!lastRule && !!/^\s*\.?\w*$/.test(lastRule.selector),
             resolved: resolved,

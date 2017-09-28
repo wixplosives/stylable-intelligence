@@ -24,6 +24,17 @@ describe('Inner Directives', function () {
         });
     });
 
+    it('should not complete -st-from, -st-default, -st-named, -st-theme outisde the import ruleset', function () {
+        return asserters.getCompletions('imports/outside-ruleset.css').then((asserter) => {
+            asserter.notSuggested([
+                asserters.importFromDirectiveCompletion(createRange(0,0,0,0)),
+                asserters.importDefaultDirectiveCompletion(createRange(0,0,0,0)),
+                asserters.importNamedDirectiveCompletion(createRange(0,0,0,0)),
+                asserters.themeDirectiveCompletion(createRange(0,0,0,0)),
+            ]);
+        });
+    });
+
     it('should complete -st-states, -st-extends, -st-mixin, -st-variant inside simple selector ruleset', function () {
         return asserters.getCompletions('imports/inside-ruleset.css').then((asserter) => {
             asserter.suggested([

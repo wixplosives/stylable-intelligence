@@ -68,7 +68,7 @@ describe('Named Values', function () {
         });
     });
 
-    it('completes more than one name with following ; ', function () {
+    xit('completes more than one name with following ; ', function () {
         return asserters.getCompletions('named/st-named-multi-value-semicolon.st.css').then((asserter) => {
             asserter.suggested([
                 asserters.namedCompletion('bobo', createRange(2, 21, 2, Number.MAX_VALUE), true),
@@ -80,7 +80,7 @@ describe('Named Values', function () {
         });
     });
 
-    xit('completes more than one name with initial string ; ', function () {
+    xit('completes more than one name with initial string ', function () {
         return asserters.getCompletions('named/st-named-multi-value-initial-string.st.css').then((asserter) => {
             asserter.suggested([
                 asserters.namedCompletion('momo', createRange(2, 21, 2, Number.MAX_VALUE), true),

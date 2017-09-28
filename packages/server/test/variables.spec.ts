@@ -27,6 +27,22 @@ describe('Variables', function () {
             });
     });
 
+    it('should not complete value() for st-directives', function () {
+        return asserters.getCompletions('variables/directive.st.css').then((asserter) => {
+                asserter.notSuggested([
+                    asserters.valueDirective(createRange(6,17,6,17)),
+                ]);
+            });
+    });
+
+    it('should not complete value() inside other value()', function () {
+        return asserters.getCompletions('variables/inside-value.st.css').then((asserter) => {
+                asserter.notSuggested([
+                    asserters.valueDirective(createRange(6,23,6,23)),
+                ]);
+            });
+    });
+
 });
 
 
