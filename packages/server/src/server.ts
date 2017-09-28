@@ -58,7 +58,7 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
                 vsCodeCompletion.detail = com.detail;
                 vsCodeCompletion.textEdit = ted;
                 vsCodeCompletion.sortText = com.sortText;
-                // vsCodeCompletion.filterText =  typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
+                vsCodeCompletion.filterText =  typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
                 if (com.additionalCompletions) {
                     vsCodeCompletion.command = {
                         title: "additional",
