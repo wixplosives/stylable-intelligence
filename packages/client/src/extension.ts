@@ -27,7 +27,7 @@ export function activate(context: ExtensionContext) {
     }
 
     let client = new LanguageClient('stylable', serverOptions, clientOptions);
-    client.trace = Trace.Verbose;
+    // client.trace = Trace.Verbose;
 
 
     context.subscriptions.push(client.start());
@@ -38,10 +38,8 @@ export function activate(context: ExtensionContext) {
         .then(() => workspace.findFiles('**/*.st.css'))
         .then((files) => Promise.all(files.map((file) => workspace.openTextDocument(file.fsPath))))
         .then(() => {
-            client.onNotification(OpenDocNotification.type, (uri: string) => {
-                // debugger;
-                console.log(uri);
-            })
+            // client.onNotification(OpenDocNotification.type, (uri: string) => {
+            // })
 
             return client
         })
