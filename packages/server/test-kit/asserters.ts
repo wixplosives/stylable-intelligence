@@ -15,7 +15,7 @@ import { Provider } from '../src/index';
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {
         const actual = actualCompletions.find((comp) => comp.label === expected.label);
-        expect(actual, prefix + 'completion not found: ' + expected.label + ' ').to.not.be.equal(undefined);
+        expect(actual, 'Completion not found: ' + expected.label + ' ' + 'with prefix ' + prefix + ' ').to.not.be.equal(undefined);
         if (actual) {
             for (var field in expected) {
                 let actualVal: any = (actual as any)[field];
@@ -23,7 +23,7 @@ function assertPresent(actualCompletions: Completion[], expectedCompletions: Par
                     actualVal = actualVal.source;
                 }
                 const expectedVal: any = (expected as any)[field];
-                expect(actualVal, actual.label + ":" + field).to.eql(expectedVal);
+                expect(actualVal, 'Field value mismatch: ' + actual.label + ":" + field + ' with prefix ' + prefix + ' ').to.eql(expectedVal);
             }
         }
     });
@@ -33,7 +33,7 @@ function assertExact(actualCompletions: Completion[], expectedCompletions: Parti
     expectedCompletions.forEach(expected => {
         const actualInd = actualCompletions.findIndex((comp) => comp.label === expected.label);
         const actual = actualCompletions[actualInd];
-        expect(actual, prefix + 'completion not found: ' + expected.label + ' ').to.not.be.equal(undefined);
+        expect(actual, 'Completion not found: ' + expected.label + ' ' + 'with prefix ' + prefix + ' ').to.not.be.equal(undefined);
         if (actual) {
             for (var field in expected) {
                 let actualVal: any = (actual as any)[field];
@@ -62,15 +62,15 @@ export interface Assertable {
     notSuggested: (nonCompletions: Partial<Completion>[]) => void
 }
 
-export function getCompletions(fileName: string): Thenable<Assertable> {
+export function getCompletions(fileName: string, prefix: string = ''): Thenable<Assertable> {
     const fullPath = path.join(__dirname, '/../test/cases/', fileName);
     const src: string = fs.readFileSync(fullPath).toString();
 
-    return completionsIntenal(provider, fullPath, src, "")
+    return completionsIntenal(provider, fullPath, src, prefix)
         .then((completions) => {
             return {
                 suggested: (expectedCompletions: Partial<Completion>[]) => {
-                    assertPresent(completions, expectedCompletions);
+                    assertPresent(completions, expectedCompletions, prefix);
                 },
                 exactSuggested: (expectedCompletions: Partial<Completion>[]) => {
                     assertExact(completions, expectedCompletions);
@@ -82,31 +82,10 @@ export function getCompletions(fileName: string): Thenable<Assertable> {
         })
 }
 
-// export function getCompletionsWithPrefixVariants(fileName: string, prefix: string): Thenable<Assertable> {
-//     const fullPath = path.join(__dirname, '/../test/cases/', fileName);
-//     const src: string = fs.readFileSync(fullPath).toString();
-
-//     for (let i = 0; i <= prefix.length, i++;) {
-//         completionsIntenal(provider, fullPath, src, prefix.slice(0, i))
-//             .then((completions) => {
-//                 return {
-//                     suggested: (expectedCompletions: Partial<Completion>[]) => {
-//                         assertPresent(completions, expectedCompletions);
-//                     },
-//                     exactSuggested: (expectedCompletions: Partial<Completion>[]) => {
-//                         assertExact(completions, expectedCompletions);
-//                     },
-//                     notSuggested: (expectedNoCompletions: Partial<Completion>[]) => {
-//                         assertNotPresent(completions, expectedNoCompletions);
-//                     }
-//                 }
-//             })
-//     }
-// }
-
 function completionsIntenal(provider: Provider, fileName: string, src: string, prefix: string): Thenable<Completion[]> {
     let pos = getCaretPosition(src);
     src = src.replace('|', prefix);
+    pos.character += prefix.length;
     return provider.provideCompletionItemsFromSrc(src, pos, fileName)
 }
 

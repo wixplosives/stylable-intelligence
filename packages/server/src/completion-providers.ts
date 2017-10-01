@@ -67,7 +67,7 @@ function createDirectiveRange(options: ProviderOptions): ProviderRange {
 //Syntactic
 
 const importDeclarations: (keyof typeof importDirectives)[] = ['default', 'named', 'from', 'theme']
-const simpleRulesetDeclarations: (keyof typeof rulesetDirectives)[] = ['extends', 'states', 'variant']
+const simpleRulesetDeclarations: (keyof typeof rulesetDirectives)[] = ['extends', 'states', 'variant', 'mixin']
 const topLevelDeclarations: (keyof typeof topLevelDirectives)[] = ['root', 'namespace', 'vars', 'import']
 
 export class ImportInternalDirectivesProvider implements CompletionProvider {
@@ -96,7 +96,7 @@ export class RulesetInternalDirectivesProvider implements CompletionProvider {
                 res.push(rulesetInternalDirective('mixin', createDirectiveRange(options)));
             }
             if (options.insideSimpleSelector && !options.isMediaQuery) {
-                simpleRulesetDeclarations.forEach(type => {
+                simpleRulesetDeclarations.filter(d => d!=='mixin').forEach(type => {
                     if (options.lastRule!.nodes!.every(n => isDeclaration(n) && rulesetDirectives[type] !== n.prop)) {
                         res.push(rulesetInternalDirective(type, createDirectiveRange(options)))
                     }

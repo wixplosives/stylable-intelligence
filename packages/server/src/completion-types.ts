@@ -3,7 +3,7 @@ import { valueMapping } from 'stylable'
 
 export class Completion {
     constructor(public label: string, public detail: string = "", public sortText: string = 'd', public insertText: string | snippet = label,
-        public range?: ProviderRange, public additionalCompletions: boolean = false) {
+        public range: ProviderRange, public additionalCompletions: boolean = false) {
     }
 }
 
