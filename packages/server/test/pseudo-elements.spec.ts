@@ -1,5 +1,6 @@
 import * as asserters from '../test-kit/asserters';
-import { createRange } from '../src/completion-providers';
+import { createRange, ProviderRange } from '../src/completion-providers';
+import { Completion } from '../src/index';
 
 describe('Pseudo-elements', function () {
     describe('general', function () {
@@ -109,6 +110,84 @@ describe('Pseudo-elements', function () {
                 ]);
             });
         });
+
+
+        describe('*** Pseudos with prefix', function () {
+
+            const str1 = '::shlomo';
+            const str2 = '::momo';
+            const createComp = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './import.st.css');
+
+            [str1, str2].forEach((str, j, a) => {
+
+                str.split('').forEach((c, i) => {
+                    let prefix = str.slice(0, i);
+
+                    it('should complete pseudo-element ' +a[j] + ' after local state with prefix: ' + prefix + ' ', function () {
+                        let rng = createRange(10, 11, 10, 11 + i);
+                        return asserters.getCompletions('pseudo-elements/default-import-local-state.st.css', prefix).then((asserter) => {
+
+                            let exp: Partial<Completion>[] = [];
+                            let notExp: Partial<Completion>[] = [];
+
+                            exp.push(createComp(a[j], rng));
+                            if (prefix.length <= 2) {
+                                exp.push(createComp(a[1 - j], rng));
+                            } else {
+                                notExp.push(createComp(a[1 - j], rng));
+                            }
+
+                            asserter.suggested(exp);
+                            asserter.notSuggested(notExp);
+                        });
+                    });
+
+                    it('should complete pseudo-element ' +a[j] + ' after CSS state with prefix: ' + prefix + ' ', function () {
+                        let rng = createRange(10, 12, 10, 12 + i);
+                        return asserters.getCompletions('pseudo-elements/default-import-css-state.st.css', prefix).then((asserter) => {
+                            let exp: Partial<Completion>[] = [];
+                            let notExp: Partial<Completion>[] = [];
+
+                            exp.push(createComp(a[j], rng));
+                            if (prefix.length <= 2) {
+                                exp.push(createComp(a[1 - j], rng));
+                            } else {
+                                notExp.push(createComp(a[1 - j], rng));
+                            }
+
+                            asserter.suggested(exp);
+                            asserter.notSuggested(notExp);
+                        });
+                    });
+
+                    it('should complete pseudo-element ' +a[j] + ' after imported state with prefix: ' + prefix + ' ', function () {
+                        let rng = createRange(10, 12, 10, 12 + i);
+                        return asserters.getCompletions('pseudo-elements/default-import-imported-state.st.css', prefix).then((asserter) => {
+                            let exp: Partial<Completion>[] = [];
+                            let notExp: Partial<Completion>[] = [];
+
+                            exp.push(createComp(a[j], rng));
+                            if (prefix.length <= 2) {
+                                exp.push(createComp(a[1 - j], rng));
+                            } else {
+                                notExp.push(createComp(a[1 - j], rng));
+                            }
+
+                            asserter.suggested(exp);
+                            asserter.notSuggested(notExp);
+                        });
+                    });
+
+                });
+
+            });
+
+
+        });
+
+
+
+
     });
 
     describe('Named import extended by class', function () {

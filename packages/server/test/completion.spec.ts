@@ -58,6 +58,24 @@ describe('completion unit test', function () {
             });
         });
 
+        it('should complete named imports used locally only once', function () {
+            return asserters.getCompletions('general/top-level-import-and-local.st.css').then((asserter) => {
+                asserter.exactSuggested([
+                    asserters.rootClassCompletion(createRange(9, 0, 9, 0)),
+                    asserters.classCompletion('btn', (createRange(9, 0, 9, 0))),
+                    asserters.varsDirectiveCompletion((createRange(9, 0, 9, 0))),
+                    asserters.importDirectiveCompletion(createRange(9, 0, 9, 0)),
+                    asserters.namespaceDirectiveCompletion(createRange(9, 0, 9, 0)),
+                ]);
+                asserter.notSuggested([
+                    asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.extendsDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.mixinDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.variantDirectiveCompletion(createRange(0, 0, 0, 0)),
+                ])
+            });
+        });
+
         it('should complete classes and tags, but not root, in non-initial selector chunks', function () {
             return asserters.getCompletions('general/non-initial-chunk.css').then((asserter) => {
                 asserter.suggested(

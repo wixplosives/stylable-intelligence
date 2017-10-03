@@ -41,9 +41,9 @@ function assertExact(actualCompletions: Completion[], expectedCompletions: Parti
                     actualVal = actualVal.source;
                 }
                 const expectedVal: any = (expected as any)[field];
-                expect(actualVal, actual.label + ":" + field).to.equal(expectedVal);
+                expect(actualVal, actual.label + ":" + field).to.eql(expectedVal);
             }
-            actualCompletions = actualCompletions.splice(actualInd, 1)
+            actualCompletions.splice(actualInd, 1)
         }
     });
 }

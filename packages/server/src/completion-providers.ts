@@ -63,6 +63,58 @@ function createDirectiveRange(options: ProviderOptions): ProviderRange {
     return new ProviderRange(new ProviderPosition(options.position.line, Math.max(0, options.position.character - options.trimmedLine.length)), options.position);
 }
 
+const cssPseudoClasses = [
+    'active',
+    'any',
+    'checked',
+    'default',
+    'dir()',
+    'disabled',
+    'empty',
+    'enabled',
+    'first',
+    'first-child',
+    'first-of-type',
+    'fullscreen',
+    'focus',
+    'hover',
+    'indeterminate',
+    'in-range',
+    'invalid',
+    'lang()',
+    'last-child',
+    'last-of-type',
+    'left',
+    'link',
+    'not()',
+    'nth-child()',
+    'nth-last-child()',
+    'nth-last-of-type()',
+    'nth-of-type()',
+    'only-child',
+    'only-of-type',
+    'optional',
+    'out-of-range',
+    'read-only',
+    'read-write',
+    'required',
+    'right',
+    'root',
+    'scope',
+    'target',
+    'valid',
+    'visited',
+];
+
+// const cssPseudoElements = [
+//     '::after',
+//     '::before',
+//     '::cue',
+//     '::first-letter',
+//     '::first-line',
+//     '::selection',
+// ]
+
 //Providers
 //Syntactic
 
@@ -96,7 +148,7 @@ export class RulesetInternalDirectivesProvider implements CompletionProvider {
                 res.push(rulesetInternalDirective('mixin', createDirectiveRange(options)));
             }
             if (options.insideSimpleSelector && !options.isMediaQuery) {
-                simpleRulesetDeclarations.filter(d => d!=='mixin').forEach(type => {
+                simpleRulesetDeclarations.filter(d => d !== 'mixin').forEach(type => {
                     if (options.lastRule!.nodes!.every(n => isDeclaration(n) && rulesetDirectives[type] !== n.prop)) {
                         res.push(rulesetInternalDirective(type, createDirectiveRange(options)))
                     }
@@ -173,14 +225,18 @@ export class SelectorCompletionProvider implements CompletionProvider {
         if (options.isTopLevel && !options.trimmedLine.endsWith(':')) {
             let comps: Completion[] = [];
             comps.push(...Object.keys(options.meta.classes)
-                .filter(k => k !== 'root' && options.fakes.findIndex(f => f.selector === '.' + k) === -1) //not root, not local broken class
+                .filter(k => k !== 'root' && options.fakes.findIndex(f => f.selector === '.' + k) === -1)
                 .map(c => classCompletion(c, (createDirectiveRange(options)))));
-            return options.meta.imports.reduce((acc: Completion[], imp) => {
-                acc.push(classCompletion(imp.defaultExport, createDirectiveRange(options), true));
-                Object.keys(imp.named).forEach(exp => acc.push(classCompletion(imp.named[exp], (createDirectiveRange(options)))));
+            let moreComps = options.meta.imports.reduce((acc: Completion[], imp) => {
+                if (acc.every(comp => comp.label !== imp.defaultExport)) { acc.push(classCompletion(imp.defaultExport, createDirectiveRange(options), true)) };
+                Object.keys(imp.named).forEach(exp => {
+                    if (acc.every(comp => comp.label.replace('.','') !== imp.named[exp])) {
+                        acc.push(classCompletion(imp.named[exp], (createDirectiveRange(options))))
+                    }
+                });
                 return acc;
             }, comps)
-
+            return moreComps;
         } else {
             return [];
         }
@@ -272,14 +328,27 @@ export class PseudoElementCompletionProvider implements CompletionProvider {
             )
 
             let offset = 0;
+
             if (options.trimmedLine.match(/:+/g)) {
-                if (options.resolved.length > 0
-                    && (options.resolved.find(r => r.symbol.name === options.currentSelector) as any).symbol[valueMapping.states]
-                    && (Object.keys((options.resolved.find(r => r.symbol.name === options.currentSelector) as any).symbol[valueMapping.states]) || [])
-                        .some(k => k === options.trimmedLine.split(':').reverse()[0])) {
+
+                if (options.resolved.length > 0 && options.resolved
+                    .some(res => (
+                        Object.keys((res as any).symbol[valueMapping.states] || {})
+                            .some((k: string) => k === options.trimmedLine.split(':').reverse()[0])))
+                ) {
+                    offset = options.trimmedLine.endsWith(':')
+                        ? options.trimmedLine.endsWith('::') ? 2 : 1
+                        : 0;
+                }
+
+                else if (cssPseudoClasses.indexOf(options.trimmedLine.split(':').reverse()[0]) !== -1) {
                     offset = 0;
                 } else if (options.resolvedPseudo.length === 0) {
-                    offset = (options.trimmedLine.split(':').reverse()[0].length + options.trimmedLine.match(/:/g)!.length)
+                    if (options.trimmedLine.endsWith(':')) {
+                        offset = options.trimmedLine.match(/:+$/)![0].length;
+                    } else {
+                        offset = 2 + options.trimmedLine.split('::').reverse()[0].length;
+                    }
                 } else {
                     offset = options.trimmedLine.length - (options.trimmedLine.indexOf(options.resolvedPseudo[0].symbol.name) + options.resolvedPseudo[0].symbol.name.length)
                 }
@@ -331,14 +400,22 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number) {
     return Object.keys((t.meta.classes) || [])
         .filter(s => s !== 'root' && s !== options.currentSelector)
         .filter(s => {
-            if (Object.keys((options.resolved.find(r => r.symbol.name === options.currentSelector) as any).symbol[valueMapping.states] || [])
-                .some(k => k === options.trimmedLine.split(':').reverse()[0])) {
+            if (options.resolved
+                .some(res => (
+                    (Object.keys((res as any).symbol[valueMapping.states] || {}))
+                        .some((k: string) => k === options.trimmedLine.split(':').reverse()[0])))
+            ) {
                 return true;
             }
+
+            // if (Object.keys((options.resolved.find(r => r.symbol.name === options.currentSelector) as any).symbol[valueMapping.states] || [])
+            //     .some(k => k === options.trimmedLine.split(':').reverse()[0])) {
+            //     return true;
+            // }
             if (/:/.test(options.trimmedLine) &&
                 (!options.pseudo || (options.pseudo && !options.trimmedLine.endsWith(':') && !options.trimmedLine.endsWith(options.pseudo)))
             ) {
-                return s.startsWith(options.trimmedLine.split(':').reverse()[0]);
+                return s.startsWith(options.trimmedLine.split(':').reverse()[0]) || cssPseudoClasses.indexOf(options.trimmedLine.split(':').reverse()[0]) !== -1;
             } else {
                 return true;
             }

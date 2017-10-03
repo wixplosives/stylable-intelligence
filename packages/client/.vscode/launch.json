@@ -5,7 +5,7 @@
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
-      "args": ["${workspaceRoot}/test/demo","--extensionDevelopmentPath=${workspaceRoot}"],
+      "args": ["/home/wix/projects/bootstrap-stylable/src","--extensionDevelopmentPath=${workspaceRoot}"],
       "stopOnEntry": false,
       "sourceMaps": true,
       "preLaunchTask": "npm"
