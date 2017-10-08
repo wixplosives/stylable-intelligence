@@ -1,4 +1,4 @@
-import { valueMapping } from 'stylable/dist/src';
+import { CSSResolve, valueMapping } from 'stylable/dist/src';
 //must remain independent from vscode
 
 import * as PostCss from 'postcss';
@@ -49,7 +49,7 @@ export function createMeta(src: string, path: string) {
 
         meta = stylableProcess(ast);
     } catch (error) {
-        return {meta: null, fakes: fakes};
+        return { meta: null, fakes: fakes };
     }
     return {
         meta: meta,
@@ -191,12 +191,14 @@ export default class Provider {
         let currentSelector = /$:+/.test(chunkStrings[pos]) ? chunkStrings[pos - 1] : chunkStrings[pos]
         if (currentSelector && currentSelector.startsWith('.')) { currentSelector = currentSelector.slice(1) }
         let resolved = currentSelector ? this.styl.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase()) : [];
-        let pseudo = (trimmedLine.match(/::/))
+        let pseudo = (trimmedLine.match(/::\w+/))
             ? (trimmedLine.endsWith('::')
-                ? trimmedLine.split('::').reverse()[1]
-                : this.styl.resolver.resolveExtends(resolved[resolved.length - 1].meta, trimmedLine.split('::').reverse()[0].split(':')[0]).length > 0
+                ? trimmedLine.split('::').reverse()[1].split(':')[0]
+                : this.isFinalPseudo(resolved, trimmedLine)
                     ? trimmedLine.split('::').reverse()[0].split(':')[0]
-                    : trimmedLine.split('::').reverse()[1].split(':')[0]
+                    : trimmedLine.split('::').length > 2
+                        ? trimmedLine.split('::').reverse()[1].split(':')[0]
+                        : null
             )
             : null;
 
@@ -231,4 +233,16 @@ export default class Provider {
     }
 
 
+    private isFinalPseudo(resolved: CSSResolve[], trimmedLine: string) {
+        let curMeta: StylableMeta = resolved[resolved.length - 1].meta;
+        let pseudos: string[] = trimmedLine.split('::').slice(1).map(s => s.split(':')[0]);
+        let res = true;
+        for (let i = 0; i < pseudos.length; i++) {
+            let tmp = this.styl.resolver.resolveExtends(curMeta, pseudos[i], false);
+            if (tmp.length === 0) { res = false; break; }
+            curMeta = tmp[tmp.length - 1].meta;
+        }
+
+        return res;
+    }
 }

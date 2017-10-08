@@ -1,14 +1,11 @@
 :import {
-    -st-from: "./import.st.css";
-    -st-default: Comp;
+    -st-from: "./mid-import.st.css";
+    -st-named: bobo;
 }
 
-.local {
-    -st-extends: Comp;
-    -st-states: lala;
+.gaga {
+    -st-extends: bobo;
+    -st-states: localState;
 }
 
-.local:state:
-{
-
-}
+.gaga:visited::

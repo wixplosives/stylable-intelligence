@@ -230,7 +230,7 @@ export class SelectorCompletionProvider implements CompletionProvider {
             let moreComps = options.meta.imports.reduce((acc: Completion[], imp) => {
                 if (acc.every(comp => comp.label !== imp.defaultExport)) { acc.push(classCompletion(imp.defaultExport, createDirectiveRange(options), true)) };
                 Object.keys(imp.named).forEach(exp => {
-                    if (acc.every(comp => comp.label.replace('.','') !== imp.named[exp])) {
+                    if (acc.every(comp => comp.label.replace('.', '') !== imp.named[exp])) {
                         acc.push(classCompletion(imp.named[exp], (createDirectiveRange(options))))
                     }
                 });
@@ -324,33 +324,45 @@ export class PseudoElementCompletionProvider implements CompletionProvider {
             let pseudos = collectSelectorParts(
                 options.resolvedPseudo,
                 options.resolved,
-                (acc: string[][], t, ind) => acc.concat(collectElements(t, options, ind))
+                (acc: string[][], t, ind, arr) => acc.concat(collectElements(t, options, ind, arr))
             )
 
             let offset = 0;
 
             if (options.trimmedLine.match(/:+/g)) {
-
+                let trimmedPart = options.trimmedLine.replace(/:+$/, '').split(':').reverse()[0]
                 if (options.resolved.length > 0 && options.resolved
                     .some(res => (
                         Object.keys((res as any).symbol[valueMapping.states] || {})
-                            .some((k: string) => k === options.trimmedLine.split(':').reverse()[0])))
+                            .some((k: string) => k === trimmedPart)))
                 ) {
                     offset = options.trimmedLine.endsWith(':')
                         ? options.trimmedLine.endsWith('::') ? 2 : 1
                         : 0;
-                }
-
-                else if (cssPseudoClasses.indexOf(options.trimmedLine.split(':').reverse()[0]) !== -1) {
-                    offset = 0;
-                } else if (options.resolvedPseudo.length === 0) {
+                } else if (options.resolvedPseudo.length > 0 && options.resolvedPseudo
+                    .some(res => (
+                        Object.keys((res as any).symbol[valueMapping.states] || {})
+                            .some((k: string) => k === trimmedPart)))
+                ) {
+                    offset = options.trimmedLine.endsWith(':')
+                        ? options.trimmedLine.endsWith('::') ? 2 : 1
+                        : 0;
+                } else if (cssPseudoClasses.indexOf(trimmedPart) !== -1) {
+                    offset = options.trimmedLine.endsWith(':')
+                        ? options.trimmedLine.endsWith('::') ? 2 : 1
+                        : 0;
+                } else if (options.trimmedLine.match(/:{1,2}\w*$/)) {
                     if (options.trimmedLine.endsWith(':')) {
                         offset = options.trimmedLine.match(/:+$/)![0].length;
                     } else {
-                        offset = 2 + options.trimmedLine.split('::').reverse()[0].length;
+                        if (trimmedPart === options.pseudo) {
+                            offset = 0;
+                        } else {
+                            offset = 2 + options.trimmedLine.split('::').reverse()[0].length;
+                        }
                     }
                 } else {
-                    offset = options.trimmedLine.length - (options.trimmedLine.indexOf(options.resolvedPseudo[0].symbol.name) + options.resolvedPseudo[0].symbol.name.length)
+                    offset = options.trimmedLine.length - (options.trimmedLine.indexOf(options.pseudo!) + options.pseudo!.length)
                 }
             }
             return pseudos.reduce((acc: Completion[], p) => {
@@ -393,25 +405,20 @@ export class StateCompletionProvider implements CompletionProvider {
     text: string[] = [''];
 }
 
-function collectElements(t: CSSResolve, options: ProviderOptions, ind: number) {
+function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, arr: CSSResolve[]) {
     if (ind === 0) { return [] };
     if (!t.symbol) { return [] };
     if (!(t.symbol as ClassSymbol)[valueMapping.root]) { return [] };
     return Object.keys((t.meta.classes) || [])
         .filter(s => s !== 'root' && s !== options.currentSelector)
         .filter(s => {
-            if (options.resolved
+            if (arr
                 .some(res => (
                     (Object.keys((res as any).symbol[valueMapping.states] || {}))
                         .some((k: string) => k === options.trimmedLine.split(':').reverse()[0])))
             ) {
                 return true;
             }
-
-            // if (Object.keys((options.resolved.find(r => r.symbol.name === options.currentSelector) as any).symbol[valueMapping.states] || [])
-            //     .some(k => k === options.trimmedLine.split(':').reverse()[0])) {
-            //     return true;
-            // }
             if (/:/.test(options.trimmedLine) &&
                 (!options.pseudo || (options.pseudo && !options.trimmedLine.endsWith(':') && !options.trimmedLine.endsWith(options.pseudo)))
             ) {
@@ -425,10 +432,10 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number) {
                 ? options.target.focusChunk.every((c: SelectorInternalChunk) => { return !c.name || c.name !== s })
                 : !(options.target.focusChunk as SelectorInternalChunk).name || (options.target.focusChunk as SelectorInternalChunk).name !== s;
         })
-        .map(s => [s, options.resolved.find(r => r.symbol.name === options.currentSelector)!.meta.imports[0].fromRelative])
+        .map(s => [s, arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector))!.meta.imports[0].fromRelative])
 }
 
-function collectSelectorParts(value: CSSResolve[], defaultVal: CSSResolve[], reducer: (acc: string[][], t: CSSResolve, ind: number) => string[][]): string[][] {
+function collectSelectorParts(value: CSSResolve[], defaultVal: CSSResolve[], reducer: (acc: string[][], t: CSSResolve, ind: number, arr: CSSResolve[]) => string[][]): string[][] {
     return value.length > 0
         ? value.reduce(reducer, [])
         : defaultVal.reduce(reducer, []);
