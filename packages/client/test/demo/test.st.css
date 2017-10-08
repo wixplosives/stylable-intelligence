@@ -1,5 +1,10 @@
-.gaga{
-    -st-states:hello,goodbye;
+:import {
+    -st-from: "./import.st.css";
+    -st-default: Comp;
 }
 
-.gaga:goodbye
+.local {
+    -st-extends: Comp;
+}
+
+.local::momo:anotherState

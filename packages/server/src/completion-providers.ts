@@ -1,5 +1,5 @@
 import { StylableMeta, SRule, valueMapping, ClassSymbol, CSSResolve } from 'stylable';
-import { CursorPosition, SelectorChunk, SelectorInternalChunk } from "./utils/selector-analyzer";
+import { CursorPosition, SelectorInternalChunk } from "./utils/selector-analyzer";
 import {
     classCompletion,
     Completion,
@@ -391,15 +391,26 @@ export class StateCompletionProvider implements CompletionProvider {
                 options.resolved,
                 (acc: string[][], t, ind, arr) => acc.concat(collectStates(t, options, ind, arr))
             )
+            let lastState = '';
+            if (/[^:]:(\w+):?$/.test(options.trimmedLine)) {
+                lastState = options.trimmedLine.match(/[^:]:(\w+):?$/)![1];
+            }
+            let realState = options.resolvedPseudo.length > 0
+                ? options.resolvedPseudo.some(r => Object.keys((r.symbol as any)[valueMapping.states] || {}).indexOf(lastState) !== -1)
+                : options.resolved.some(r => Object.keys((r.symbol as any)[valueMapping.states] || {}).indexOf(lastState) !== -1)
+
             return states.reduce((acc: Completion[], st) => {
-                if (Array.isArray(options.target.focusChunk)
-                    ? options.target.focusChunk.every(c => c.states.indexOf(st[0]) === -1)
-                    : (options.target.focusChunk as SelectorChunk).states.indexOf(st[0]) === -1
-                ) {
-                    acc.push(stateCompletion(st[0], st[1], (new ProviderRange(
-                        new ProviderPosition(options.position.line, Math.max(0, options.position.character - (options.trimmedLine.endsWith(':') ? 1 : 0))), options.position)
-                    )));
-                }
+                acc.push(stateCompletion(st[0], st[1], (new ProviderRange(
+                    new ProviderPosition(
+                        options.position.line,
+                        lastState
+                            ? realState
+                                ? options.position.character - (options.trimmedLine.endsWith(':') ? 1 : 0)
+                                : options.position.character - (lastState.length + 1) - (options.trimmedLine.endsWith(':') ? 1 : 0)
+                            : options.position.character - (options.trimmedLine.endsWith(':') ? 1 : 0)
+                    ),
+                    options.position)
+                )));
                 return acc;
             }, [])
         } else {

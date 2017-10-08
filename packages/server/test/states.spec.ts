@@ -4,34 +4,36 @@ import { Completion } from '../src/completion-types';
 
 describe('States', function () {
 
+    describe('Prefixes', function () {
 
-    const str1 = ':hello';
-    const str2 = ':goodbye';
-    const createComp = (str: string, rng: ProviderRange) => asserters.stateCompletion(str.slice(1), rng, './states/class-with-states.css');
+        const str1 = ':hello';
+        const str2 = ':goodbye';
+        const createComp = (str: string, rng: ProviderRange) => asserters.stateCompletion(str.slice(1), rng, './states/class-with-states.css');
 
-    [str1, str2].forEach((str, j, a) => {
-        str.split('').forEach((c, i) => {
-            let prefix = str.slice(0, i);
+        [str1, str2].forEach((str, j, a) => {
+            str.split('').forEach((c, i) => {
+                let prefix = str.slice(0, i);
 
-            it('should complete available states from same file with prefix ' + prefix + ' ', function () {
-                let rng = createRange(4, 5, 4, 6 + i);
-                return asserters.getCompletions('states/class-with-states.css', prefix).then((asserter) => {
-                    let exp: Partial<Completion>[] = [];
-                    let notExp: Partial<Completion>[] = [];
+                it('should complete available states from same file with prefix ' + prefix + ' ', function () {
+                    let rng = createRange(4, 5, 4, 5 + i);
+                    return asserters.getCompletions('states/class-with-states.css', prefix).then((asserter) => {
+                        let exp: Partial<Completion>[] = [];
+                        let notExp: Partial<Completion>[] = [];
 
-                    exp.push(createComp(a[j], rng));
-                    if (prefix.length <= 2) {
-                        exp.push(createComp(a[1 - j], rng));
-                    } else {
-                        notExp.push(createComp(a[1 - j], rng));
-                    }
+                        exp.push(createComp(a[j], rng));
+                        if (prefix.length <= 1) {
+                            exp.push(createComp(a[1 - j], rng));
+                        } else {
+                            notExp.push(createComp(a[1 - j], rng));
+                        }
 
-                    asserter.suggested(exp);
-                    asserter.notSuggested(notExp);
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
+                    });
                 });
             });
         });
-    })
+    });
 
     it('should complete available states after : in complex selectors', function () {
         return asserters.getCompletions('states/complex-selectors.css').then((asserter) => {
@@ -51,6 +53,7 @@ describe('States', function () {
                 asserters.stateCompletion('hello', createRange(9, 25, 9, 26), 'states/complex-selectors-with-states.css')
             ]);
             asserter.notSuggested([
+                asserters.stateCompletion('holla', createRange(9, 25, 9, 26), 'states/complex-selectors-with-states.css'),
                 asserters.stateCompletion('goodbye', createRange(9, 25, 9, 26), 'states/complex-selectors-with-states.css'),
                 asserters.stateCompletion('cheerio', createRange(9, 25, 9, 26), 'states/complex-selectors-with-states.css')
             ]);
@@ -122,11 +125,11 @@ describe('States', function () {
     it('should complete pseudo-element more than one pseudo-element state', function () {
         return asserters.getCompletions('pseudo-elements/multiple-states.st.css').then((asserter) => {
             asserter.suggested([
-                asserters.stateCompletion('oneMoreState', createRange(9, 25, 9, 26), 'pseudo-elements/import.st.css'),
+                asserters.stateCompletion('oneMoreState', createRange(9, 25, 9, 25), 'pseudo-elements/import.st.css'),
             ]);
             asserter.notSuggested([
-                asserters.stateCompletion('state', createRange(9, 25, 9, 26), 'pseudo-elements/import.st.css'),
-                asserters.stateCompletion('otherState', createRange(9, 25, 9, 26), 'pseudo-elements/import.st.css')
+                asserters.stateCompletion('state', createRange(9, 25, 9, 25), 'pseudo-elements/import.st.css'),
+                asserters.stateCompletion('otherState', createRange(9, 25, 9, 25), 'pseudo-elements/import.st.css')
             ]);
         });
     });
