@@ -37,6 +37,7 @@ export interface ProviderOptions {
     currentSelector: string,
     target: CursorPosition
     isMediaQuery: boolean,
+    hasNamespace: boolean
     fakes: PostCss.Rule[],
     pseudo: string | null,
     resolvedPseudo: CSSResolve[],
@@ -167,6 +168,7 @@ export class TopLevelDirectiveProvider implements CompletionProvider {
         if (options.isTopLevel && options.isLineStart) {
             if (!options.isMediaQuery) {
                 return topLevelDeclarations
+                    .filter(d => options.hasNamespace ? (d !== 'namespace') : true)
                     .filter(d => topLevelDirectives[d].startsWith(options.trimmedLine))
                     .map(d => topLevelDirective(d, createDirectiveRange(options)));
             } else {
@@ -384,9 +386,11 @@ export class PseudoElementCompletionProvider implements CompletionProvider {
 export class StateCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.isTopLevel && !options.trimmedLine.endsWith('::')) {
-            let states = collectSelectorParts(options.resolvedPseudo, options.resolved,
-                (acc: string[][], t) => acc.concat(Object.keys((t.symbol as any)['-st-states'] || []).map(s => [s, t.meta.source])
-                ))
+            let states = collectSelectorParts(
+                options.resolvedPseudo,
+                options.resolved,
+                (acc: string[][], t, ind, arr) => acc.concat(collectStates(t, options, ind, arr))
+            )
             return states.reduce((acc: Completion[], st) => {
                 if (Array.isArray(options.target.focusChunk)
                     ? options.target.focusChunk.every(c => c.states.indexOf(st[0]) === -1)
@@ -433,6 +437,27 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, a
                 : !(options.target.focusChunk as SelectorInternalChunk).name || (options.target.focusChunk as SelectorInternalChunk).name !== s;
         })
         .map(s => [s, arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector))!.meta.imports[0].fromRelative])
+}
+
+function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr: CSSResolve[]) {
+    let lastState = '';
+    if (/[^:]:(\w+):?$/.test(options.trimmedLine)) {
+        lastState = options.trimmedLine.match(/[^:]:(\w+):?$/)![1];
+    }
+
+    let candidates = Object.keys((t.symbol as any)['-st-states'] || {});
+
+    return candidates
+        .filter(s => {
+            if (s.slice(0, -1).startsWith(lastState)) {
+                return true;
+            } else if (candidates.some(c => (c === lastState) && (c !== s))) {
+                return true;
+            } else {
+                return false;
+            }
+        })
+        .map(s => [s, t.meta.source])
 }
 
 function collectSelectorParts(value: CSSResolve[], defaultVal: CSSResolve[], reducer: (acc: string[][], t: CSSResolve, ind: number, arr: CSSResolve[]) => string[][]): string[][] {

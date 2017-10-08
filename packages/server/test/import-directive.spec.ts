@@ -1,6 +1,6 @@
 import * as asserters from '../test-kit/asserters';
 import { createRange } from '../src/completion-providers';
-import {topLevelDirectives} from '../src/completion-types';
+import { topLevelDirectives } from '../src/completion-types';
 
 describe('Import Directive', function () {
 
@@ -17,11 +17,14 @@ describe('Import Directive', function () {
         });
     });
 
-    it('should complete :import at top level even if exists', function () {
-        return asserters.getCompletions('imports/top-level-import-exists.css').then((asserter) => {
-            asserter.suggested([
-                asserters.importDirectiveCompletion(createRange(11, 0, 11, 1)),
-            ]);
+    topLevelDirectives.import.split('').map((c, i) => {
+        let prefix = topLevelDirectives.import.slice(0, i);
+        it('should complete :import at top level even if exists', function () {
+            return asserters.getCompletions('imports/top-level-import-exists.css', prefix).then((asserter) => {
+                asserter.suggested([
+                    asserters.importDirectiveCompletion(createRange(11, 0, 11, i)),
+                ]);
+            });
         });
     });
 

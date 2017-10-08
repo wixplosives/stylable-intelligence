@@ -1,5 +1,5 @@
 .gaga{
-    -st-states:hello;
+    -st-states:hello,holla;
 }
 .zagzag{
     -st-states:goodbye;
@@ -7,4 +7,4 @@
 .baga{
     -st-states:cheerio;
 }
-.zagzag button.gaga:hover:| .baga
+.zagzag button.gaga:holla:| .baga

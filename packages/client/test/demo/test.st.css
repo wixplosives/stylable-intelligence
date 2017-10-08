@@ -1,11 +1,5 @@
-:import {
-    -st-from: "./mid-import.st.css";
-    -st-named: bobo;
+.gaga{
+    -st-states:hello,goodbye;
 }
 
-.gaga {
-    -st-extends: bobo;
-    -st-states: localState;
-}
-
-.gaga:visited::
+.gaga:goodbye

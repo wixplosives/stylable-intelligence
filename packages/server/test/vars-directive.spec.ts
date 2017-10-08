@@ -17,18 +17,21 @@ describe('Variables Directive', function () {
         })
     })
 
-    it('should complete :vars at top level even if exists', function () {
-        return asserters.getCompletions('imports/top-level-import-exists.css').then((asserter) => {
-            asserter.suggested([
-                asserters.varsDirectiveCompletion(createRange(11,0,11,1)),
-            ]);
+    topLevelDirectives.vars.split('').map((c, i) => {
+        let prefix = topLevelDirectives.vars.slice(0, i);
+        it('should complete :vars at top level even if exists', function () {
+            return asserters.getCompletions('imports/top-level-import-exists.css', prefix).then((asserter) => {
+                asserter.suggested([
+                    asserters.varsDirectiveCompletion(createRange(11, 0, 11, i)),
+                ]);
+            });
         });
     });
 
     it('should not complete :vars after ::', function () {
         return asserters.getCompletions('imports/top-level-colon-colon.css').then((asserter) => {
             asserter.notSuggested([
-                asserters.varsDirectiveCompletion(createRange(0,0,0,0)),
+                asserters.varsDirectiveCompletion(createRange(0, 0, 0, 0)),
             ]);
         });
     });
@@ -37,7 +40,7 @@ describe('Variables Directive', function () {
         return asserters.getCompletions('imports/inside-ruleset.css').then((asserter) => {
             asserter.suggested([]);
             asserter.notSuggested([
-                asserters.varsDirectiveCompletion(createRange(0,0,0,0))
+                asserters.varsDirectiveCompletion(createRange(0, 0, 0, 0))
             ]);
         });
     });
@@ -46,7 +49,7 @@ describe('Variables Directive', function () {
         return asserters.getCompletions('imports/media-query.css').then((asserter) => {
             asserter.suggested([]);
             asserter.notSuggested([
-                asserters.varsDirectiveCompletion(createRange(0,0,0,0))
+                asserters.varsDirectiveCompletion(createRange(0, 0, 0, 0))
             ]);
         });
     });

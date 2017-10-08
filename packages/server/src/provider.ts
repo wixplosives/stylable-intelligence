@@ -226,6 +226,7 @@ export default class Provider {
             currentSelector: currentSelector,
             target: ps.target,
             isMediaQuery: isMediaQuery,
+            hasNamespace: /@namespace/.test(src),
             fakes: fakes,
             pseudo: pseudo,
             resolvedPseudo: resolvedPseudo,
