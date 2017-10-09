@@ -62,7 +62,25 @@ describe('Imported Values', function () {
 
             it('completes named and default imports as initial selectors, with prefix ' + prefix + ' ', function () {
                 let rng = createRange(6, 0, 6, i);
-                return asserters.getCompletions('imports/st-extends-selectors.css',prefix).then((asserter) => {
+                return asserters.getCompletions('imports/st-extends-selectors.css', prefix).then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+                    let notExp: Partial<Completion>[] = [];
+
+                    exp.push(createComp(a[j], rng));
+                    if (prefix.length === 0) {
+                        exp.push(createComp(a[1 - j], rng));
+                    } else {
+                        notExp.push(createComp(a[1 - j], rng));
+                    }
+
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
+                });
+            });
+
+            it('completes named and default imports as non-initial selectors, with prefix ' + prefix + ' ', function () {
+                let rng = createRange(6, 6, 6, 6 + i);
+                return asserters.getCompletions('imports/st-extends-complex-selectors.css', prefix).then((asserter) => {
                     let exp: Partial<Completion>[] = [];
                     let notExp: Partial<Completion>[] = [];
 
@@ -82,13 +100,5 @@ describe('Imported Values', function () {
 
 
 
-    it('completes named and default imports as non-initial selectors', function () {
-        return asserters.getCompletions('imports/st-extends-complex-selectors.css').then((asserter) => {
-            asserter.suggested([
-                asserters.classCompletion('shlomo', createRange(6, 6, 6, 6)),
-                asserters.classCompletion('Comp', createRange(6, 6, 6, 6), true),
-            ]);
-        });
-    });
 
 });
