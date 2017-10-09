@@ -238,7 +238,7 @@ export class SelectorCompletionProvider implements CompletionProvider {
                 });
                 return acc;
             }, comps)
-            return moreComps;
+            return moreComps.filter(c => c.label.startsWith(options.trimmedLine));
         } else {
             return [];
         }
@@ -460,7 +460,11 @@ function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr
 
     return candidates
         .filter(s => {
-            if (s.slice(0, -1).startsWith(lastState)) {
+            if (Array.isArray(options.target.focusChunk)
+            ? options.target.focusChunk.some((c: SelectorInternalChunk) => c.states.some(state => state ===s))
+            : (options.target.focusChunk as SelectorInternalChunk).states.some(state => state ===s) ) {
+                return false;
+            } else if (s.slice(0, -1).startsWith(lastState)) {
                 return true;
             } else if (candidates.some(c => (c === lastState) && (c !== s))) {
                 return true;

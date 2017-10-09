@@ -1,11 +1,7 @@
-:import {
-    -st-from: "./import.st.css";
-    -st-default: Comp;
+:import{
+    -st-from:"./import.st.css";
+    -st-default:Comp;
+    -st-named:shlomo;
 }
 
-.local {
-    -st-extends: Comp;
-}
-
-.local{}
-
+C

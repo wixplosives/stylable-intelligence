@@ -7,7 +7,7 @@ describe('Variables Directive', function () {
     describe('should complete :vars at top level ', function () {
         topLevelDirectives.vars.split('').map((c, i) => {
             let prefix = topLevelDirectives.vars.slice(0, i);
-            it(' with Prefix: ' + prefix + ' ', function () {
+            it('when it doesn\'t exist, with prefix: ' + prefix + ' ', function () {
                 return asserters.getCompletions('imports/top-level.css', prefix).then((asserter) => {
                     asserter.suggested([
                         asserters.varsDirectiveCompletion(createRange(0, 0, 0, i))
@@ -15,18 +15,19 @@ describe('Variables Directive', function () {
                 });
             });
         })
-    })
 
-    topLevelDirectives.vars.split('').map((c, i) => {
-        let prefix = topLevelDirectives.vars.slice(0, i);
-        it('should complete :vars at top level even if exists', function () {
-            return asserters.getCompletions('imports/top-level-import-exists.css', prefix).then((asserter) => {
-                asserter.suggested([
-                    asserters.varsDirectiveCompletion(createRange(11, 0, 11, i)),
-                ]);
+        topLevelDirectives.vars.split('').map((c, i) => {
+            let prefix = topLevelDirectives.vars.slice(0, i);
+            it('when it exists, with prefix: ' + prefix + ' ', function () {
+                return asserters.getCompletions('imports/top-level-import-exists.css', prefix).then((asserter) => {
+                    asserter.suggested([
+                        asserters.varsDirectiveCompletion(createRange(11, 0, 11, i)),
+                    ]);
+                });
             });
         });
-    });
+    })
+
 
     it('should not complete :vars after ::', function () {
         return asserters.getCompletions('imports/top-level-colon-colon.css').then((asserter) => {
