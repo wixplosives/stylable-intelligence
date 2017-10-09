@@ -206,7 +206,12 @@ export default class Provider {
         let isImport = !!lastRule && (lastRule.selector === ':import');
         let fromNode: Declaration | undefined = isImport ? (lastRule!.nodes as Declaration[]).find(n => n.prop === valueMapping.from) : undefined;
         let importName = (isImport && fromNode) ? fromNode.value.replace(/'/g, '').replace(/"/g, '') : '';
-        let resolvedImport: StylableMeta | null = importName ? this.styl.fileProcessor.process(meta.imports.find(i => i.fromRelative === importName)!.from) : null;
+        let resolvedImport: StylableMeta | null = null;
+        if (importName) try {
+            resolvedImport = this.styl.fileProcessor.process(meta.imports.find(i => i.fromRelative === importName)!.from);
+        } catch(e) {
+            resolvedImport = null;
+        }
 
         return {
             meta: meta,
