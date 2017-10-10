@@ -28,6 +28,7 @@ export const rulesetDirectives = {
 export const topLevelDirectives = {
     root: '.root' as '.root',
     namespace: '@namespace' as '@namespace',
+    // customSelector: '@customSelector :--' as '@customSelector :--',
     vars: ':vars' as ':vars',
     import: ':import' as ':import'
 }
