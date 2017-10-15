@@ -6,10 +6,12 @@ import { expect } from 'chai'
 function getPathToDiagnostics(casePath:string){
     let pathToFile = ''
     if (process.platform === 'win32') {
+        console.log(1)
         pathToFile = casePath.split('\\').join('/')
         pathToFile = pathToFile.split(':').join('%3A')
         pathToFile = 'file:///' + pathToFile
     } else {
+        console.log(2)
         pathToFile = 'file://' + casePath
     }
     return pathToFile
@@ -20,7 +22,9 @@ function assertDiagnosticExist(client: any, casePath: string, result: Object) {
     console.log('!!!----------------------!!!')
     console.log(JSON.stringify(client._diagnostics._data))
     console.log('!!!----------------------!!!')
-    let diagnostic = client._diagnostics._data.get(getPathToDiagnostics(casePath))
+    let a = getPathToDiagnostics(casePath)
+    console.log('path: ', a)
+    let diagnostic = client._diagnostics._data.get(a)
     expect(diagnostic).to.be.not.empty
     return expect(diagnostic[0]).to.contain.keys(result)
 }
