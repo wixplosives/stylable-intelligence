@@ -20,7 +20,9 @@ function getPathToDiagnostics(casePath:string){
 function assertDiagnosticExist(client: any, casePath: string, result: Object) {
     console.log(casePath)
     console.log('!!!----------------------!!!')
-    console.log(JSON.stringify(client._diagnostics._data))
+    client._diagnostics._data.forEach(element => {
+        console.log('diag: ', element)
+    });
     console.log('!!!----------------------!!!')
     let a = getPathToDiagnostics(casePath)
     console.log('path: ', a)
