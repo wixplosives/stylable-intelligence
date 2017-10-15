@@ -8,6 +8,7 @@ function getPathToDiagnostics(casePath:string){
     if (process.platform === 'win32') {
         pathToFile = casePath.split('\\').join('/')
         pathToFile = pathToFile.split(':').join('%3A')
+        pathToFile = pathToFile.charAt(0).toLowerCase() + pathToFile.slice(1)
         pathToFile = 'file:///' + pathToFile
     } else {
         pathToFile = 'file://' + casePath
