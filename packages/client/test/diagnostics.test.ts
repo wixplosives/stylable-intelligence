@@ -16,6 +16,10 @@ function getPathToDiagnostics(casePath:string){
 
 }
 function assertDiagnosticExist(client: any, casePath: string, result: Object) {
+    console.log(casePath)
+    console.log('!!!----------------------!!!')
+    console.log(JSON.stringify(client._diagnostics._data))
+    console.log('!!!----------------------!!!')
     let diagnostic = client._diagnostics._data.get(getPathToDiagnostics(casePath))
     expect(diagnostic).to.be.not.empty
     return expect(diagnostic[0]).to.contain.keys(result)
