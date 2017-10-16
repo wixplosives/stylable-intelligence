@@ -2,13 +2,13 @@
 import { connect } from 'tls';
 import { Trace } from 'vscode-jsonrpc'
 import { ExtensionContext, workspace, TextDocument } from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, Executable, NotificationType } from 'vscode-languageclient';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, Executable  } from 'vscode-languageclient';
 import path = require('path');
 
 
-namespace OpenDocNotification {
-    export const type = new NotificationType<string, void>('stylable/openDocument');
-}
+// namespace OpenDocNotification {
+//     export const type = new NotificationType<string, void>('stylable/openDocument');
+// }
 
 export function activate(context: ExtensionContext) {
 

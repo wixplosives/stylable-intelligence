@@ -16,6 +16,7 @@ import {
     ProviderOptions,
     NamedCompletionProvider,
     ValueDirectiveProvider,
+    ValueCompletionProvider
 } from './completion-providers'
 import { Completion, } from './completion-types';
 import { parseSelector, } from './utils/selector-analyzer';
@@ -75,6 +76,7 @@ export default class Provider {
         new NamedCompletionProvider(),
         new StateCompletionProvider(),
         new PseudoElementCompletionProvider(),
+        new ValueCompletionProvider(),
     ]
 
     public provideCompletionItemsFromSrc(
@@ -187,10 +189,14 @@ export default class Provider {
         })
 
         let rev = chunkStrings.slice().reverse();
-        pos -= Math.max(rev.findIndex(s => !/^:+/.test(s)), 0)
-        let currentSelector = /$:+/.test(chunkStrings[pos]) ? chunkStrings[pos - 1] : chunkStrings[pos]
+        pos -= Math.max(rev.findIndex(s => !/^:+/.test(s) || /^:--/.test(s)), 0)
+        let currentSelector = /^:+/.test(chunkStrings[pos]) ? chunkStrings[Math.max(pos - 1, 0)] : chunkStrings[pos]
         if (currentSelector && currentSelector.startsWith('.')) { currentSelector = currentSelector.slice(1) }
-        let resolved = currentSelector ? this.styl.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase()) : [];
+        let resolved = currentSelector
+            ? Object.keys(meta.customSelectors).some(k => k === currentSelector)
+                ? this.styl.resolver.resolveExtends(meta, meta.customSelectors[currentSelector].match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0], currentSelector[0] === currentSelector[0].toUpperCase())
+                : this.styl.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase())
+            : [];
         let pseudo = (trimmedLine.match(/::\w+/))
             ? (trimmedLine.endsWith('::')
                 ? trimmedLine.split('::').reverse()[1].split(':')[0]
@@ -209,9 +215,40 @@ export default class Provider {
         let resolvedImport: StylableMeta | null = null;
         if (importName) try {
             resolvedImport = this.styl.fileProcessor.process(meta.imports.find(i => i.fromRelative === importName)!.from);
-        } catch(e) {
+        } catch (e) {
             resolvedImport = null;
         }
+        let customSelectorType = '';
+        if (trimmedLine.startsWith(':--')) {
+            let customSelector = trimmedLine.match(/^(:--\w*)/)![1];
+            let expanded = meta.customSelectors[customSelector];
+            if (expanded) {
+                let ps_exp = parseSelector(expanded, expanded.length)
+                customSelectorType = Array.isArray(ps_exp.target.focusChunk) ? ps_exp.target.focusChunk[0].type : (ps_exp.target.focusChunk as any).type
+            }
+        }
+
+        let isInValue: boolean = false;
+
+        if (/value\(/.test(wholeLine)) {
+            let line = wholeLine.slice(0, position.character);
+            let stack = 0;
+            for (let i = 0; i <= line.length; i++) {
+                if (line[i] === '(') {
+                    stack += 1
+                } else if (line[i] === ')') {
+                    stack -= 1
+                }
+            }
+            if (stack > 0) { isInValue = true }
+        }
+
+        let importVars: any[] = [];
+        meta.imports.forEach(imp => {
+            try {
+                this.styl.fileProcessor.process(imp.from).vars.forEach(v => importVars.push({ name: v.name, value: v.value, from: imp.fromRelative }))
+            } catch (e) { }
+        })
 
         return {
             meta: meta,
@@ -235,6 +272,9 @@ export default class Provider {
             fakes: fakes,
             pseudo: pseudo,
             resolvedPseudo: resolvedPseudo,
+            customSelector: customSelectorType,
+            isInValue: isInValue,
+            importVars: importVars,
         }
     }
 

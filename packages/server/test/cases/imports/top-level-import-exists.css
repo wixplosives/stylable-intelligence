@@ -14,3 +14,5 @@
 .gaga {
     color: red;
 }
+
+@custom-selector :--popo div > span;
