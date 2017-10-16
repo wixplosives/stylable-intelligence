@@ -43,6 +43,7 @@ export interface ProviderOptions {
     pseudo: string | null,
     resolvedPseudo: CSSResolve[],
     customSelector: string,
+    customSelectorType: string,
     isInValue: boolean,
     importVars: any[],
 }
@@ -375,7 +376,7 @@ export class PseudoElementCompletionProvider implements CompletionProvider {
                     if (options.trimmedLine.endsWith(':')) {
                         offset = options.trimmedLine.match(/:+$/)![0].length;
                     } else {
-                        if (trimmedPart === options.pseudo) {
+                        if (trimmedPart === options.pseudo || trimmedPart === options.customSelector.slice(3)) {
                             offset = 0;
                         } else {
                             offset = 2 + options.trimmedLine.split('::').reverse()[0].length;
@@ -477,7 +478,8 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, a
     if (!t.symbol) { return [] };
     if (!(t.symbol as ClassSymbol)[valueMapping.root]) { return [] };
     return Object.keys((t.meta.classes) || [])
-        .filter(s => s !== 'root' )
+        .concat(Object.keys(t.meta.customSelectors).map(cs => cs.slice(3)) || [])
+        .filter(s => s !== 'root')
         .filter(s => {
             if (arr
                 .some(res => (
@@ -487,7 +489,17 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, a
                 return true;
             }
             if (/[^^]:/.test(options.trimmedLine) &&
-                (!options.pseudo || (options.pseudo && !options.trimmedLine.endsWith(':') && !options.trimmedLine.endsWith(options.pseudo)))
+                ((!options.pseudo && !options.customSelector) ||
+                    (
+                        options.pseudo &&
+                        !options.trimmedLine.endsWith(':') &&
+                        !options.trimmedLine.endsWith(options.pseudo)
+                    ) || (
+                        options.customSelector &&
+                        !options.trimmedLine.endsWith(':') &&
+                        !options.trimmedLine.endsWith(options.customSelector.slice(3))
+                    )
+                )
             ) {
                 return s.startsWith(options.trimmedLine.split(':').reverse()[0]) || cssPseudoClasses.indexOf(options.trimmedLine.split(':').reverse()[0]) !== -1;
             } else {
@@ -501,7 +513,7 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, a
         })
         .map(s => [s, arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector))
             ? arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector))!.meta.imports[0].fromRelative
-            : arr.find(r => r.symbol.name === options.customSelector)!.meta.imports[0].fromRelative])
+            : arr.find(r => r.symbol.name === options.customSelectorType)!.meta.imports[0].fromRelative])
 }
 
 function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr: CSSResolve[]) {

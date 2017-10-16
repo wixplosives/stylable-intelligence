@@ -1,16 +1,10 @@
 :import {
     -st-from: "./import.st.css";
-    -st-default: AutoGrid;
+    -st-default: Comp2;
  }
 
  .grid{
-    -st-extends: AutoGrid;
-    width:100%;
-    align-items: stretch;
-    flex:1;
-    height: 800px
+    -st-extends: Comp2;
  }
 
-.grid
-
-
+.grid::mongo::shlomo

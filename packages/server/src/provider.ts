@@ -192,11 +192,13 @@ export default class Provider {
         pos -= Math.max(rev.findIndex(s => !/^:+/.test(s) || /^:--/.test(s)), 0)
         let currentSelector = /^:+/.test(chunkStrings[pos]) ? chunkStrings[Math.max(pos - 1, 0)] : chunkStrings[pos]
         if (currentSelector && currentSelector.startsWith('.')) { currentSelector = currentSelector.slice(1) }
+
         let resolved = currentSelector
             ? Object.keys(meta.customSelectors).some(k => k === currentSelector)
                 ? this.styl.resolver.resolveExtends(meta, meta.customSelectors[currentSelector].match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0], currentSelector[0] === currentSelector[0].toUpperCase())
                 : this.styl.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase())
             : [];
+
         let pseudo = (trimmedLine.match(/::\w+/))
             ? (trimmedLine.endsWith('::')
                 ? trimmedLine.split('::').reverse()[1].split(':')[0]
@@ -208,7 +210,29 @@ export default class Provider {
             )
             : null;
 
-        let resolvedPseudo = pseudo ? this.styl.resolver.resolveExtends(resolved[resolved.length - 1].meta, pseudo) : [];
+        let customSelectorType = '';
+        let customSelectorString = '';
+        let expanded: string = '';
+        if (trimmedLine.startsWith(':--')) {
+            customSelectorString = trimmedLine.match(/^(:--\w*)/)![1];
+            expanded = meta.customSelectors[customSelectorString];
+        }
+        if (resolved.some(res => Object.keys(res.meta.customSelectors).some(k => k === ':--' + pseudo))) {
+            let customSelector = resolved.find(res => Object.keys(res.meta.customSelectors).some(k => k === ':--' + pseudo));
+            customSelectorString = ':--' + pseudo
+            expanded = customSelector ? customSelector.meta.customSelectors[customSelectorString] : '';
+            pseudo = null;
+        }
+        if (expanded) {
+            let ps_exp = parseSelector(expanded, expanded.length)
+            customSelectorType = Array.isArray(ps_exp.target.focusChunk) ? ps_exp.target.focusChunk[0].type : (ps_exp.target.focusChunk as any).type
+        }
+
+        let resolvedPseudo = pseudo
+            ? this.styl.resolver.resolveExtends(resolved[resolved.length - 1].meta, pseudo)
+            : customSelectorType
+                ? this.styl.resolver.resolveExtends(resolved[resolved.length - 1].meta, customSelectorType, true)
+                : [];
         let isImport = !!lastRule && (lastRule.selector === ':import');
         let fromNode: Declaration | undefined = isImport ? (lastRule!.nodes as Declaration[]).find(n => n.prop === valueMapping.from) : undefined;
         let importName = (isImport && fromNode) ? fromNode.value.replace(/'/g, '').replace(/"/g, '') : '';
@@ -218,15 +242,7 @@ export default class Provider {
         } catch (e) {
             resolvedImport = null;
         }
-        let customSelectorType = '';
-        if (trimmedLine.startsWith(':--')) {
-            let customSelector = trimmedLine.match(/^(:--\w*)/)![1];
-            let expanded = meta.customSelectors[customSelector];
-            if (expanded) {
-                let ps_exp = parseSelector(expanded, expanded.length)
-                customSelectorType = Array.isArray(ps_exp.target.focusChunk) ? ps_exp.target.focusChunk[0].type : (ps_exp.target.focusChunk as any).type
-            }
-        }
+
 
         let isInValue: boolean = false;
 
@@ -272,7 +288,8 @@ export default class Provider {
             fakes: fakes,
             pseudo: pseudo,
             resolvedPseudo: resolvedPseudo,
-            customSelector: customSelectorType,
+            customSelector: customSelectorString,
+            customSelectorType: customSelectorType,
             isInValue: isInValue,
             importVars: importVars,
         }
@@ -283,8 +300,19 @@ export default class Provider {
         let curMeta: StylableMeta = resolved[resolved.length - 1].meta;
         let pseudos: string[] = trimmedLine.split('::').slice(1).map(s => s.split(':')[0]);
         let res = true;
+        let tmp;
+
         for (let i = 0; i < pseudos.length; i++) {
-            let tmp = this.styl.resolver.resolveExtends(curMeta, pseudos[i], false);
+            if (resolved.some(res => !!res.meta.customSelectors[':--' + pseudos[i]])) {
+                let customSelector = ':--' + pseudos[i];
+                let expanded = resolved.find(res => !!res.meta.customSelectors[':--' + pseudos[i]])!.meta.customSelectors[customSelector];
+                let ps_exp = parseSelector(expanded, expanded.length)
+                let customSelectorType = Array.isArray(ps_exp.target.focusChunk) ? ps_exp.target.focusChunk[0].type : (ps_exp.target.focusChunk as any).type
+                tmp = this.styl.resolver.resolveExtends(curMeta, customSelectorType, customSelectorType[0] === customSelectorType[0].toUpperCase())
+            } else {
+                tmp = this.styl.resolver.resolveExtends(curMeta, pseudos[i], false);
+            }
+
             if (tmp.length === 0) { res = false; break; }
             curMeta = tmp[tmp.length - 1].meta;
         }

@@ -3,10 +3,6 @@
     -st-default: Comp;
 }
 
-.lolo {
-    -st-extends: Comp;
-}
-
 @custom-selector :--pongo div > Comp;
 
 @custom-selector :--mongo div span Comp;
