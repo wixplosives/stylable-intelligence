@@ -121,6 +121,10 @@ const provider = createProvider({
 
 
 //syntactic
+
+export const customSelectorDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return { label: '@custom-selector', detail: 'Define a custom selector', sortText: 'a', insertText: '@custom-selector :--', range: rng };
+}
 export const extendsDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
     return { label: '-st-extends:', detail: 'Extend an external component', sortText: 'a', insertText: '-st-extends: $1;', additionalCompletions: true, range: rng };
 }
@@ -177,4 +181,7 @@ export const stateCompletion: (stateName: string, rng: ProviderRange, from?: str
 }
 export const pseudoElementCompletion: (elementName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (elementName, rng, from?) => {
     return { label: '::' + elementName, sortText: 'b', detail: 'from: ' + from, insertText: '::' + elementName, range: rng }
+}
+export const valueCompletion: (name: string, rng: ProviderRange, value: string, from: string) => Partial<Completion> = (name, rng, value, from) => {
+    return { label: name, sortText: 'a', detail: 'from: ' + from + '\n' + 'value: ' + value, insertText: name, range: rng }
 }

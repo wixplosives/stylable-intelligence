@@ -7,6 +7,7 @@ export interface SelectorQuery {
 export interface SelectorChunk extends SelectorQuery {
     type: string;
     classes: string[];
+    customSelectors: string[];
     states: string[];
 }
 export interface SelectorInternalChunk extends SelectorChunk {
@@ -21,17 +22,17 @@ export interface CursorPosition {
 }
 
 export function createSelectorChunk(value?: Partial<SelectorChunk>): SelectorChunk {
-    return { type: '*', classes: [], states: [], text: [], ...value, _type: 'chunk' };
+    return { type: '*', classes: [], customSelectors: [], states: [], text: [], ...value, _type: 'chunk' };
 }
 
 export function createSelectorInternalChunk(value?: Partial<SelectorInternalChunk>): SelectorInternalChunk {
     return { name: '', ...createSelectorChunk(value), _type: 'internal-chunk' };
 }
 export function createSelectorDescendent(): SelectorDescendent {
-    return { _type: 'descendent', text:[] };
+    return { _type: 'descendent', text: [] };
 }
 export function createSelectorDirectChild(): SelectorDirectChild {
-    return { _type: 'direct-child', text:[] };
+    return { _type: 'direct-child', text: [] };
 }
 
 export function isSelectorChunk(chunk: SelectorQuery): chunk is SelectorInternalChunk {
@@ -49,7 +50,7 @@ export function isSelectorDirectChild(chunk: SelectorQuery): chunk is SelectorDi
 
 export function parseSelector(inputSelector: string, cursorIndex: number = 0): { selector: SelectorQuery[], target: CursorPosition } {
     const res: SelectorQuery[] = [];
-    const textArr:string[] = [];
+    const textArr: string[] = [];
     let cursorTarget = { focusChunk: {} as any, text: textArr, index: -1 };
     const tokenizedSelectors = selectorTokenizer.parse(inputSelector);
 
@@ -93,11 +94,20 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                     }
                     break;
                 case 'pseudo-class':
-                    currentSourceQuery = ':' + selectorQueryItem.name;
-                    currentTarget.text.push(currentSourceQuery);
-                    currentTarget.states.push(selectorQueryItem.name);
-                    selector = selector.slice(currentSourceQuery.length);
-                    break;
+                    if (selectorQueryItem.name.startsWith('--')) {
+                        currentSourceQuery = ':' + selectorQueryItem.name;
+                        currentTarget.text.push(currentSourceQuery);
+                        currentTarget.customSelectors.push(':' + selectorQueryItem.name);
+                        selector = selector.slice(currentSourceQuery.length);
+                        break;
+                    }
+                    else {
+                        currentSourceQuery = ':' + selectorQueryItem.name;
+                        currentTarget.text.push(currentSourceQuery);
+                        currentTarget.states.push(selectorQueryItem.name);
+                        selector = selector.slice(currentSourceQuery.length);
+                        break;
+                    }
                 case 'pseudo-element':
                     currentSourceQuery = '::' + selectorQueryItem.name;
                     currentTarget.text.push(currentSourceQuery);
