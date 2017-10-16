@@ -10,6 +10,7 @@ import path = require('path');
 //     export const type = new NotificationType<string, void>('stylable/openDocument');
 // }
 
+
 export function activate(context: ExtensionContext) {
 
     let serverModule = context.asAbsolutePath(path.join('server', 'src', 'server.js'));
