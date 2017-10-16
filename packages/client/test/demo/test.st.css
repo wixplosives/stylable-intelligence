@@ -1,7 +1,8 @@
-:import{
-    -st-from:"./import.st.css";
-    -st-default:Comp;
-    -st-named:shlomo;
+:vars {
+    color1: red;
+    color2: blue;
 }
 
-
+.local {
+    color: value(color1), value()
+}

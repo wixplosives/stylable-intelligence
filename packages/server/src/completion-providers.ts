@@ -13,6 +13,7 @@ import {
     stateCompletion,
     topLevelDirective,
     topLevelDirectives,
+    valueCompletion,
     valueDirective,
 } from './completion-types';
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
@@ -41,6 +42,9 @@ export interface ProviderOptions {
     fakes: PostCss.Rule[],
     pseudo: string | null,
     resolvedPseudo: CSSResolve[],
+    customSelector: string,
+    isInValue: boolean,
+    importVars: any[],
 }
 
 export interface CompletionProvider {
@@ -58,10 +62,6 @@ export class ProviderRange {
 
 export function createRange(startLine: number, startPos: number, endline: number, endPos: number) {
     return new ProviderRange(new ProviderPosition(startLine, startPos), new ProviderPosition(endline, endPos));
-}
-
-function createDirectiveRange(options: ProviderOptions): ProviderRange {
-    return new ProviderRange(new ProviderPosition(options.position.line, Math.max(0, options.position.character - options.trimmedLine.length)), options.position);
 }
 
 const cssPseudoClasses = [
@@ -119,9 +119,21 @@ const cssPseudoClasses = [
 //Providers
 //Syntactic
 
+function createDirectiveRange(options: ProviderOptions): ProviderRange {
+    return new ProviderRange(
+        new ProviderPosition(
+            options.position.line,
+            Math.max(0, options.position.character -
+                (topLevelDirectives.customSelector.startsWith(options.wholeLine)
+                    ? options.wholeLine.length
+                    : options.trimmedLine.length))),
+        options.position
+    );
+}
+
 const importDeclarations: (keyof typeof importDirectives)[] = ['default', 'named', 'from', 'theme']
 const simpleRulesetDeclarations: (keyof typeof rulesetDirectives)[] = ['extends', 'states', 'variant', 'mixin']
-const topLevelDeclarations: (keyof typeof topLevelDirectives)[] = ['root', 'namespace', 'vars', 'import']
+const topLevelDeclarations: (keyof typeof topLevelDirectives)[] = ['root', 'namespace', 'vars', 'import', 'customSelector']
 
 export class ImportInternalDirectivesProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
@@ -169,7 +181,7 @@ export class TopLevelDirectiveProvider implements CompletionProvider {
             if (!options.isMediaQuery) {
                 return topLevelDeclarations
                     .filter(d => options.hasNamespace ? (d !== 'namespace') : true)
-                    .filter(d => topLevelDirectives[d].startsWith(options.trimmedLine))
+                    .filter(d => topLevelDirectives[d].startsWith(options.trimmedLine) || topLevelDirectives[d].startsWith(options.wholeLine))
                     .map(d => topLevelDirective(d, createDirectiveRange(options)));
             } else {
                 return [topLevelDirective('root', createDirectiveRange(options))]
@@ -184,9 +196,15 @@ export class TopLevelDirectiveProvider implements CompletionProvider {
 export class ValueDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (!options.isTopLevel && !options.isDirective && !this.isInsideValueDirective(options.wholeLine, options.position.character)
-            && options.wholeLine.indexOf(':') !== -1 && this.text.some(t => t.startsWith(options.wholeLine.slice(options.wholeLine.indexOf(':') + 1).trim()))) {
+            && options.wholeLine.indexOf(':') !== -1 && this.text.some(t => {
+                return t.startsWith(options.wholeLine.slice(options.wholeLine.indexOf(':') + 1).trim()) || t.startsWith(options.wholeLine.slice(options.wholeLine.lastIndexOf(',') + 1).trim())
+            })) {
             return [valueDirective(new ProviderRange(
-                new ProviderPosition(options.position.line, options.wholeLine.indexOf(':') + 1),
+                new ProviderPosition(
+                    options.position.line,
+                    options.wholeLine.includes(',')
+                        ? options.wholeLine.lastIndexOf(',') + 1
+                        : options.wholeLine.indexOf(':') + 1),
                 options.position
             ))]
         } else {
@@ -214,21 +232,17 @@ export class ValueDirectiveProvider implements CompletionProvider {
 
 
 
-
-
-
-
-
-
 //Semantic
 
 export class SelectorCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isTopLevel && !options.trimmedLine.endsWith(':')) {
+        if (options.isTopLevel && (options.trimmedLine === ':' || !options.trimmedLine.endsWith(':'))) {
             let comps: Completion[] = [];
             comps.push(...Object.keys(options.meta.classes)
                 .filter(k => k !== 'root' && options.fakes.findIndex(f => f.selector === '.' + k) === -1)
                 .map(c => classCompletion(c, (createDirectiveRange(options)))));
+            comps.push(...Object.keys(options.meta.customSelectors)
+                .map(c => classCompletion(c, (createDirectiveRange(options)), true)));
             let moreComps = options.meta.imports.reduce((acc: Completion[], imp) => {
                 if (acc.every(comp => comp.label !== imp.defaultExport)) { acc.push(classCompletion(imp.defaultExport, createDirectiveRange(options), true)) };
                 Object.keys(imp.named).forEach(exp => {
@@ -329,14 +343,18 @@ export class PseudoElementCompletionProvider implements CompletionProvider {
                 (acc: string[][], t, ind, arr) => acc.concat(collectElements(t, options, ind, arr))
             )
 
+            if (pseudos.length === 0) {
+                return [];
+            }
             let offset = 0;
 
             if (options.trimmedLine.match(/:+/g)) {
                 let trimmedPart = options.trimmedLine.replace(/:+$/, '').split(':').reverse()[0]
+                if (trimmedPart.startsWith('--')) { trimmedPart = ':' + trimmedPart }
                 if (options.resolved.length > 0 && options.resolved
                     .some(res => (
-                        Object.keys((res as any).symbol[valueMapping.states] || {})
-                            .some((k: string) => k === trimmedPart)))
+                        Object.keys((res as any).symbol[valueMapping.states] || {}).some((k: string) => k === trimmedPart)) ||
+                        Object.keys((res as any).meta.customSelectors || {}).some((k: string) => k === trimmedPart))
                 ) {
                     offset = options.trimmedLine.endsWith(':')
                         ? options.trimmedLine.endsWith('::') ? 2 : 1
@@ -391,6 +409,10 @@ export class StateCompletionProvider implements CompletionProvider {
                 options.resolved,
                 (acc: string[][], t, ind, arr) => acc.concat(collectStates(t, options, ind, arr))
             )
+            if (states.length === 0) {
+                return [];
+            }
+
             let lastState = '';
             if (/[^:]:(\w+):?$/.test(options.trimmedLine)) {
                 lastState = options.trimmedLine.match(/[^:]:(\w+):?$/)![1];
@@ -420,6 +442,36 @@ export class StateCompletionProvider implements CompletionProvider {
     text: string[] = [''];
 }
 
+export class ValueCompletionProvider implements CompletionProvider {
+    provide(options: ProviderOptions): Completion[] {
+        if (options.isInValue) {
+            let inner = options.wholeLine.slice(0, options.wholeLine.indexOf(')', options.position.character) + 1).slice(options.wholeLine.slice(0, options.wholeLine.indexOf(')', options.position.character) + 1).lastIndexOf('(')).replace('(', '').replace(')', '').trim();
+
+            let comps: Completion[] = [];
+            options.meta.vars.forEach(v => {
+                if (v.name.startsWith(inner)) {
+                    comps.push(valueCompletion(v.name, 'Local variable', v.value, new ProviderRange(
+                        new ProviderPosition(options.position.line, options.position.character - inner.length),
+                        options.position,
+                    )))
+                }
+            })
+            options.importVars.forEach(v => {
+                if (v.name.startsWith(inner)) {
+                    comps.push(valueCompletion(v.name, v.from, v.value, new ProviderRange(
+                        new ProviderPosition(options.position.line, options.position.character - inner.length),
+                        options.position,
+                    )))
+                }
+            })
+            return comps;
+        } else {
+            return [];
+        }
+    }
+    text: string[] = [''];
+}
+
 function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, arr: CSSResolve[]) {
     if (ind === 0) { return [] };
     if (!t.symbol) { return [] };
@@ -434,7 +486,7 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, a
             ) {
                 return true;
             }
-            if (/:/.test(options.trimmedLine) &&
+            if (/[^^]:/.test(options.trimmedLine) &&
                 (!options.pseudo || (options.pseudo && !options.trimmedLine.endsWith(':') && !options.trimmedLine.endsWith(options.pseudo)))
             ) {
                 return s.startsWith(options.trimmedLine.split(':').reverse()[0]) || cssPseudoClasses.indexOf(options.trimmedLine.split(':').reverse()[0]) !== -1;
@@ -447,7 +499,9 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, a
                 ? options.target.focusChunk.every((c: SelectorInternalChunk) => { return !c.name || c.name !== s })
                 : !(options.target.focusChunk as SelectorInternalChunk).name || (options.target.focusChunk as SelectorInternalChunk).name !== s;
         })
-        .map(s => [s, arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector))!.meta.imports[0].fromRelative])
+        .map(s => [s, arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector))
+            ? arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector))!.meta.imports[0].fromRelative
+            : arr.find(r => r.symbol.name === options.customSelector)!.meta.imports[0].fromRelative])
 }
 
 function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr: CSSResolve[]) {
@@ -461,8 +515,8 @@ function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr
     return candidates
         .filter(s => {
             if (Array.isArray(options.target.focusChunk)
-            ? options.target.focusChunk.some((c: SelectorInternalChunk) => c.states.some(state => state ===s))
-            : (options.target.focusChunk as SelectorInternalChunk).states.some(state => state ===s) ) {
+                ? options.target.focusChunk.some((c: SelectorInternalChunk) => c.states.some(state => state === s))
+                : (options.target.focusChunk as SelectorInternalChunk).states.some(state => state === s)) {
                 return false;
             } else if (s.slice(0, -1).startsWith(lastState)) {
                 return true;
