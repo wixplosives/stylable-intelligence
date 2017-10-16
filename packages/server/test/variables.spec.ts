@@ -66,11 +66,11 @@ describe('Variables', function () {
                 });
             });
 
-            it('Local variables should be completed, with prefix ' + prefix + ' ', function () {
+            it('Imported variables should be completed, with prefix ' + prefix + ' ', function () {
                 return asserters.getCompletions('variables/inside-value-imported-vars.st.css', prefix).then((asserter) => {
                     asserter.suggested([
-                        asserters.valueCompletion(str1, createRange(6, 27, 6, 27 + i), 'red', 'Local variable'),
-                        asserters.valueCompletion(str2, createRange(6, 27, 6, 27 + i), 'blue', 'Local variable'),
+                        asserters.valueCompletion(str1, createRange(6, 27, 6, 27 + i), 'red', './import.st.css'),
+                        asserters.valueCompletion(str2, createRange(6, 27, 6, 27 + i), 'blue', './import.st.css'),
                     ])
                 });
             });

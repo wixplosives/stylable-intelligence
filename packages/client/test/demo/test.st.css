@@ -1,8 +1,8 @@
-:vars {
-    color1: red;
-    color2: blue;
+:import {
+    -st-from: "./import.st.css";
+    -st-named: color1, color2;
 }
 
 .local {
-    color: value(color1), value()
+    color: value(color1), value( col)
 }

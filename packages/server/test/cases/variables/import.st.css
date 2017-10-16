@@ -9,3 +9,8 @@
 .root {
     -st-states : state,otherState;
 }
+
+:vars {
+    color1: red;
+    color2: blue;
+}
