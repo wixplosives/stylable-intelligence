@@ -1,8 +1,16 @@
 :import {
     -st-from: "./import.st.css";
-    -st-named: color1, color2;
-}
+    -st-default: AutoGrid;
+ }
 
-.local {
-    color: value(color1), value( col)
-}
+ .grid{
+    -st-extends: AutoGrid;
+    width:100%;
+    align-items: stretch;
+    flex:1;
+    height: 800px
+ }
+
+.grid
+
+

@@ -477,7 +477,7 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, a
     if (!t.symbol) { return [] };
     if (!(t.symbol as ClassSymbol)[valueMapping.root]) { return [] };
     return Object.keys((t.meta.classes) || [])
-        .filter(s => s !== 'root' && s !== options.currentSelector)
+        .filter(s => s !== 'root' )
         .filter(s => {
             if (arr
                 .some(res => (
