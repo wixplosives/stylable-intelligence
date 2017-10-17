@@ -118,6 +118,10 @@ describe('Custom Selectors', function () {
 
         const str1 = '::mongo';
         const str2 = '::pongo';
+        const str3 = ':state';
+        const str4 = ':otherState';
+        const str5 = '::momo';
+        const str6 = '::shlomo';
         const createComp = (str: string, rng: ProviderRange, path: string) => asserters.pseudoElementCompletion(str.slice(2), rng, path);
 
         [str1, str2].forEach((str, j, a) => {
@@ -127,6 +131,24 @@ describe('Custom Selectors', function () {
                 it('should be completed at top level after extending class, with prefix ' + prefix + ' ', function () {
                     let rng = createRange(9, 5, 9, 5 + i);
                     return asserters.getCompletions('custom-selectors/imported-selector-extended.st.css', prefix).then((asserter) => {
+                        let exp: Partial<Completion>[] = [];
+                        let notExp: Partial<Completion>[] = [];
+
+                        exp.push(createComp(a[j], rng, './import.st.css'));
+                        if (prefix.length <= 2) {
+                            exp.push(createComp(a[1 - j], rng, './import.st.css'));
+                        } else {
+                            notExp.push(createComp(a[1 - j], rng, './import.st.css'));
+                        }
+
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
+                    });
+                });
+
+                it('should be completed at top level after extending root class, with prefix ' + prefix + ' ', function () {
+                    let rng = createRange(9, 5, 9, 5 + i);
+                    return asserters.getCompletions('custom-selectors/imported-selector-extended-on-root.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
@@ -162,12 +184,6 @@ describe('Custom Selectors', function () {
             });
         });
 
-        const str3 = ':state';
-        const str4 = ':otherState';
-        const str5 = '::momo';
-        const str6 = '::shlomo';
-
-
         [str3, str4].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
                 let prefix = str.slice(0, i);
@@ -176,6 +192,24 @@ describe('Custom Selectors', function () {
                 it('should have relevant states, with prefix ' + prefix + ' ', function () {
                     let rng = createRange(9, 12, 9, 12 + i);
                     return asserters.getCompletions('custom-selectors/imported-selector-inner.st.css', prefix).then((asserter) => {
+                        let exp: Partial<Completion>[] = [];
+                        let notExp: Partial<Completion>[] = [];
+
+                        exp.push(createComp(a[j], rng, 'custom-selectors/top-import.st.css'));
+                        if (prefix.length <= 1) {
+                            exp.push(createComp(a[1 - j], rng, 'custom-selectors/top-import.st.css'));
+                        } else {
+                            notExp.push(createComp(a[1 - j], rng, 'custom-selectors/top-import.st.css'));
+                        }
+
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
+                    });
+                });
+
+                it('should have relevant states after root, with prefix ' + prefix + ' ', function () {
+                    let rng = createRange(9, 12, 9, 12 + i);
+                    return asserters.getCompletions('custom-selectors/imported-selector-on-root-inner.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
@@ -215,6 +249,25 @@ describe('Custom Selectors', function () {
                         asserter.notSuggested(notExp);
                     });
                 });
+
+                it('should have relevant pseudo-elements after root, with prefix ' + prefix + ' ', function () {
+                    let rng = createRange(9, 12, 9, 12 + i);
+                    return asserters.getCompletions('custom-selectors/imported-selector-on-root-inner.st.css', prefix).then((asserter) => {
+                        let exp: Partial<Completion>[] = [];
+                        let notExp: Partial<Completion>[] = [];
+
+                        exp.push(createComp(a[j], rng, './top-import.st.css'));
+                        if (prefix.length <= 2) {
+                            exp.push(createComp(a[1 - j], rng, './top-import.st.css'));
+                        } else {
+                            notExp.push(createComp(a[1 - j], rng, './top-import.st.css'));
+                        }
+
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
+                    });
+                });
+
             });
         });
     });

@@ -300,7 +300,7 @@ export default class Provider {
         let curMeta: StylableMeta = resolved[resolved.length - 1].meta;
         let pseudos: string[] = trimmedLine.split('::').slice(1).map(s => s.split(':')[0]);
         let res = true;
-        let tmp;
+        let tmp = [];
 
         for (let i = 0; i < pseudos.length; i++) {
             if (resolved.some(res => !!res.meta.customSelectors[':--' + pseudos[i]])) {
@@ -308,7 +308,7 @@ export default class Provider {
                 let expanded = resolved.find(res => !!res.meta.customSelectors[':--' + pseudos[i]])!.meta.customSelectors[customSelector];
                 let ps_exp = parseSelector(expanded, expanded.length)
                 let customSelectorType = Array.isArray(ps_exp.target.focusChunk) ? ps_exp.target.focusChunk[0].type : (ps_exp.target.focusChunk as any).type
-                tmp = this.styl.resolver.resolveExtends(curMeta, customSelectorType, customSelectorType[0] === customSelectorType[0].toUpperCase())
+                tmp = this.styl.resolver.resolveExtends(curMeta, customSelectorType, customSelectorType ? customSelectorType[0] === customSelectorType[0].toUpperCase() : false)
             } else {
                 tmp = this.styl.resolver.resolveExtends(curMeta, pseudos[i], false);
             }

@@ -511,7 +511,7 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, a
                 ? options.target.focusChunk.every((c: SelectorInternalChunk) => { return !c.name || c.name !== s })
                 : !(options.target.focusChunk as SelectorInternalChunk).name || (options.target.focusChunk as SelectorInternalChunk).name !== s;
         })
-        .map(s => [s, arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector))
+        .map(s => [s, arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector) && (options.currentSelector!=='root' || !options.customSelectorType))
             ? arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector))!.meta.imports[0].fromRelative
             : arr.find(r => r.symbol.name === options.customSelectorType)!.meta.imports[0].fromRelative])
 }
