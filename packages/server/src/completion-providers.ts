@@ -513,7 +513,7 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, a
         })
         .map(s => [s, arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector) && (options.currentSelector!=='root' || !options.customSelectorType))
             ? arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector))!.meta.imports[0].fromRelative
-            : arr.find(r => r.symbol.name === options.customSelectorType)!.meta.imports[0].fromRelative])
+            : arr.find(r => r.symbol.name === options.customSelectorType)!.meta.imports.find(i => i.defaultExport === options.customSelectorType)!.fromRelative])
 }
 
 function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr: CSSResolve[]) {
