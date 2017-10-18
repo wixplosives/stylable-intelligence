@@ -303,7 +303,7 @@ describe('Pseudo-elements', function () {
             str.split('').forEach((c, i) => {
                 let prefix = str.slice(0, i);
 
-                it('should complete pseudo-element ' + a[j] + ' after pseudo-element with prefix: ' + prefix + ' ', function () {
+                it('should complete pseudo-element ' + str + ' after pseudo-element with prefix: ' + prefix + ' ', function () {
                     let rng = createRange(10, 11, 10, 11 + i);
 
                     return asserters.getCompletions('pseudo-elements/recursive-import-3.st.css', prefix).then((asserter) => {
@@ -322,7 +322,7 @@ describe('Pseudo-elements', function () {
                     });
                 });
 
-                it('should complete pseudo-element ' + a[j] + ' after CSS state with prefix: ' + prefix + ' ', function () {
+                it('should complete pseudo-element ' + str + ' after CSS state with prefix: ' + prefix + ' ', function () {
                     let rng = createRange(10, 16, 10, 16 + i);
                     return asserters.getCompletions('pseudo-elements/recursive-import-3-css-state.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
@@ -358,18 +358,67 @@ describe('Pseudo-elements', function () {
                     });
                 });
 
-                    it('should not complete pseudo-element ' + a[j] + ' if a pseudo-element exists with prefix: ' + prefix + ' ', function () {
-                        let rng = createRange(0,0,0,0);
-                        return asserters.getCompletions('pseudo-elements/recursive-import-3-pseudo-element-exists.st.css', prefix).then((asserter) => {
-                            let notExp: Partial<Completion>[] = [];
+                it('should not complete pseudo-element ' + a[j] + ' if a pseudo-element exists with prefix: ' + prefix + ' ', function () {
+                    let rng = createRange(0, 0, 0, 0);
+                    return asserters.getCompletions('pseudo-elements/recursive-import-3-pseudo-element-exists.st.css', prefix).then((asserter) => {
+                        let notExp: Partial<Completion>[] = [];
 
-                            notExp.push(createComp(a[0], rng));
-                            notExp.push(createComp(a[1], rng));
+                        notExp.push(createComp(a[0], rng));
+                        notExp.push(createComp(a[1], rng));
 
-                            asserter.notSuggested(notExp);
-                        });
+                        asserter.notSuggested(notExp);
                     });
+                });
             });
         });
     });
+
+    describe('Deep Recursive imports', function () {
+        let str = '::momi';
+        let nonos = ['::momo', '::bobo', '::shlomo'];
+        let createComp = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './recursive-import-0.st.css');
+
+        str.split('').forEach((c, i) => {
+            let rng = createRange(10, 39, 10, 39 + i);
+            let prefix = str.slice(0, i);
+
+            it('should complete pseudo-element ' + str + ' in deep chain with prefix: ' + prefix + ' ', function () {
+
+                return asserters.getCompletions('pseudo-elements/recursive-import-3-deep.st.css', prefix).then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+                    let notExp: Partial<Completion>[] = [];
+
+                    exp.push(createComp(str, rng));
+                    nonos.forEach(nono => notExp.push(createComp(nono, rng)))
+
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
+                });
+            });
+        });
+
+        let str1 = ':oompa';
+        let nonos1 = [':state', ':otherState', ':lala', ':loompa'];
+        let createComp1 = (str: string, rng: ProviderRange) => asserters.stateCompletion(str.slice(1), rng, str === str1 ? 'pseudo-elements/recursive-import-0.st.css' : 'pseudo-elements/recursive-import-0.st.css');
+
+        str1.split('').forEach((c, i) => {
+            let prefix = '::momi' + str1.slice(0, i);
+            let rng = createRange(10, 45, 10, 39 + prefix.length);
+
+            it('should complete state ' + str + ' in deep chain with prefix: ' + prefix + ' ', function () {
+
+                return asserters.getCompletions('pseudo-elements/recursive-import-3-deep.st.css', prefix).then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+                    let notExp: Partial<Completion>[] = [];
+
+                    exp.push(createComp1(str1, rng));
+                    nonos1.forEach(nono => notExp.push(createComp1(nono, rng)))
+
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
+                });
+            });
+        });
+    });
+
 });

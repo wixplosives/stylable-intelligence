@@ -84,7 +84,6 @@ export default class Provider {
         position: ProviderPosition,
         filePath: string,
     ): Thenable<Completion[]> {
-        // debugger;
         let cursorLineIndex: number = position.character;
         let lines = src.split('\n');
         let currentLine = lines[position.line];
@@ -229,9 +228,9 @@ export default class Provider {
         }
 
         let resolvedPseudo = pseudo
-            ? this.styl.resolver.resolveExtends(resolved[resolved.length - 1].meta, pseudo)
+            ? this.recursiveResolve(resolved, pseudo, ps, customSelectorType)
             : customSelectorType
-                ? this.styl.resolver.resolveExtends(resolved[resolved.length - 1].meta, customSelectorType, true)
+                ? this.recursiveResolve(resolved, customSelectorType, ps, customSelectorString.slice(3))
                 : [];
         let isImport = !!lastRule && (lastRule.selector === ':import');
         let fromNode: Declaration | undefined = isImport ? (lastRule!.nodes as Declaration[]).find(n => n.prop === valueMapping.from) : undefined;
@@ -319,4 +318,24 @@ export default class Provider {
 
         return res;
     }
+
+    private recursiveResolve(resolved: CSSResolve[], pseudo: string, ps: any, customSelector: string): CSSResolve[] {
+        let chain: string[] = ps.selector.reduce((acc: string[], cur: any) => {
+            if (cur.name && (cur.name !== customSelector)) {
+                acc.push(cur.name)
+            } else {
+                if (cur.name || (cur.customSelectors.some((s: string) => s.slice(3) === customSelector))) { acc.push(pseudo) };
+            }
+            return acc;
+        }, []);
+
+        let curRes: CSSResolve[] = resolved;
+        for (let i = 0; i <= chain.length; i++) {
+            curRes = this.styl.resolver.resolveExtends(curRes[curRes.length - 1].meta, chain[i], chain[i][0] === chain[i][0].toUpperCase());
+            if (pseudo === chain[i]) { break; }
+        }
+        return curRes;
+    }
 }
+
+

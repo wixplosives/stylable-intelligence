@@ -42,8 +42,8 @@ function reportToDiagnostic(report: Report) {
 
 function createRange(report: Report) {
     let source = report.node.source
-    let start = { line: -1, character: -1 }
-    let end = { line: -1, character: -1 }
+    let start = { line: 0, character: 0 }
+    let end = { line: 0, character: 0 }
     if (report.options.word) {
         let lines: string[] = (source.input as any).css.split('\n')
         const searchStart = source.start!.line - 1

@@ -58,7 +58,7 @@ export function topLevelDirective(type: keyof typeof topLevelDirectives, rng: Pr
         case topLevelDirectives.import: return new Completion(topLevelDirectives.import, 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}$0'), rng);
         case topLevelDirectives.namespace: return new Completion(topLevelDirectives.namespace, 'Declare a namespace for the file', 'a', new snippet('@namespace "$1";\n$0'), rng);
         case topLevelDirectives.customSelector: return new Completion(topLevelDirectives.customSelector.slice(0,-4), 'Define a custom selector', 'a', topLevelDirectives.customSelector, rng);
-        case topLevelDirectives.root: return new Completion(topLevelDirectives.root, 'The root class', 'b', undefined, rng);
+        case topLevelDirectives.root: return new Completion(topLevelDirectives.root, 'The root class', 'a', undefined, rng);
         case topLevelDirectives.vars: return new Completion(topLevelDirectives.vars, 'Declare variables', 'a', new snippet(':vars {\n\t$1\n}$0'), rng);
     }
 }
@@ -69,7 +69,7 @@ export function valueDirective(rng: ProviderRange) {
 
 //semantic
 export function classCompletion(className: string, rng: ProviderRange, removeDot: boolean = false) {
-    return new Completion((removeDot ? '' : '.') + className, 'Stylable class or tag', 'b', undefined, rng)
+    return new Completion((removeDot ? '' : '.') + className, 'Stylable class or tag', 'a', undefined, rng)
 }
 
 export function extendCompletion(symbolName: string, rng: ProviderRange) {
@@ -81,7 +81,7 @@ export function namedCompletion(symbolName: string, rng: ProviderRange, comma?: 
 }
 
 export function pseudoElementCompletion(elementName: string, from: string, rng: ProviderRange) {
-    return new Completion('::' + elementName, 'from: ' + from, 'b', '::' + elementName, rng)
+    return new Completion('::' + elementName, 'from: ' + from, 'a', '::' + elementName, rng)
 }
 
 export function stateCompletion(stateName: string, from: string, rng: ProviderRange) {

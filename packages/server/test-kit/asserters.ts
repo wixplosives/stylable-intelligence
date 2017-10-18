@@ -147,7 +147,7 @@ export const namespaceDirectiveCompletion: (rng: ProviderRange) => Partial<Compl
     return { label: '@namespace', detail: 'Declare a namespace for the file', sortText: 'a', insertText: '@namespace "$1";\n$0', range: rng };
 }
 export const rootClassCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
-    return { label: '.root', detail: 'The root class', sortText: 'b', insertText: '.root', range: rng };
+    return { label: '.root', detail: 'The root class', sortText: 'a', insertText: '.root', range: rng };
 }
 export const statesDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
     return { label: '-st-states:', detail: 'Define the CSS states available for this class', sortText: 'a', insertText: '-st-states: $1;', range: rng };
@@ -168,7 +168,7 @@ export const variantDirectiveCompletion: (rng: ProviderRange) => Partial<Complet
 
 //semantic
 export const classCompletion: (className: string, rng: ProviderRange, isDefaultImport?: boolean) => Partial<Completion> = (className, rng, isDefaultImport?) => {
-    return { label: (isDefaultImport ? '' : '.') + className, sortText: 'b', range: rng }
+    return { label: (isDefaultImport ? '' : '.') + className, sortText: 'a', range: rng }
 }
 export const extendsCompletion: (typeName: string, rng: ProviderRange) => Partial<Completion> = (typeName, rng) => {
     return { label: typeName, sortText: 'a', insertText: ' ' + typeName + ';\n', range: rng }
@@ -180,7 +180,7 @@ export const stateCompletion: (stateName: string, rng: ProviderRange, from?: str
     return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + path.join(__dirname, '/../test/cases/', from), insertText: ':' + stateName, range: rng }
 }
 export const pseudoElementCompletion: (elementName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (elementName, rng, from?) => {
-    return { label: '::' + elementName, sortText: 'b', detail: 'from: ' + from, insertText: '::' + elementName, range: rng }
+    return { label: '::' + elementName, sortText: 'a', detail: 'from: ' + from, insertText: '::' + elementName, range: rng }
 }
 export const valueCompletion: (name: string, rng: ProviderRange, value: string, from: string) => Partial<Completion> = (name, rng, value, from) => {
     return { label: name, sortText: 'a', detail: 'from: ' + from + '\n' + 'value: ' + value, insertText: name, range: rng }

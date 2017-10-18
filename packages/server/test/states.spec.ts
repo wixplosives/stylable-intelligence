@@ -33,7 +33,7 @@ describe('States', function () {
                     });
                 });
 
-                it('should complete available states after in complex selectors, with prefix ' + prefix + ' ', function () {
+                it('should complete available states in complex selectors, with prefix ' + prefix + ' ', function () {
                     let rng = createRange(9, 19, 9, 19 + i);
                     return asserters.getCompletions('states/complex-selectors.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
@@ -169,7 +169,7 @@ describe('States', function () {
             str.split('').forEach((c, i) => {
                 let rng = createRange(10, 11, 10, 11 + i);
                 let prefix = str.slice(0, i);
-                it('should complete pseudo-element state ' + str + ' after pseudo-element, with prefix ' + prefix + ' ', function () {
+                it('should complete state ' + str + ' after pseudo-element, with prefix ' + prefix + ' ', function () {
                     return asserters.getCompletions('pseudo-elements/recursive-import-3.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
@@ -194,7 +194,7 @@ describe('States', function () {
             str.split('').forEach((c, i) => {
                 let prefix = str.slice(0, i);
                 it('should complete only unused pseudo-element states when pseudo-element state exists, with prefix ' + prefix + ' ', function () {
-                let rng = createRange(9, 25, 9, 25 + i);
+                    let rng = createRange(9, 25, 9, 25 + i);
                     return asserters.getCompletions('pseudo-elements/multiple-states.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
@@ -209,6 +209,27 @@ describe('States', function () {
                         asserter.suggested(exp);
                         asserter.notSuggested(notExp);
                     });
+                });
+            });
+        });
+    });
+
+    describe('Deep recursive immports', function () {
+        let str = ':loompa';
+        const createComp = (str: string, rng: ProviderRange, path: string) => asserters.stateCompletion(str.slice(1), rng, path);
+
+        str.split('').forEach((c, i) => {
+            let prefix = str.slice(0, i);
+            let rng = createRange(10, 52, 10, 52 + i);
+            it('should complete state ' + str + ' in deep chain ending with state, with prefix ' + prefix + ' ', function () {
+                return asserters.getCompletions('pseudo-elements/recursive-import-3-deep-state.st.css', prefix).then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+                    let notExp: Partial<Completion>[] = [];
+
+                    exp.push(createComp(str, rng, 'pseudo-elements/recursive-import-0.st.css'));
+
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
                 });
             });
         });

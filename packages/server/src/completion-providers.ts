@@ -511,7 +511,7 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, a
                 ? options.target.focusChunk.every((c: SelectorInternalChunk) => { return !c.name || c.name !== s })
                 : !(options.target.focusChunk as SelectorInternalChunk).name || (options.target.focusChunk as SelectorInternalChunk).name !== s;
         })
-        .map(s => [s, arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector) && (options.currentSelector!=='root' || !options.customSelectorType))
+        .map(s => [s, arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector) && (options.currentSelector !== 'root' || !options.customSelectorType))
             ? arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector))!.meta.imports[0].fromRelative
             : arr.find(r => r.symbol.name === options.customSelectorType)!.meta.imports.find(i => i.defaultExport === options.customSelectorType)!.fromRelative])
 }
@@ -522,6 +522,12 @@ function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr
         lastState = options.trimmedLine.match(/[^:]:(\w+):?$/)![1];
     }
 
+    let existing = arr.reduce((acc: string[], cur) => {
+        if ((cur.symbol as any)[valueMapping.states]) {
+            Object.keys((cur.symbol as any)[valueMapping.states]).forEach(s => acc.push(s))
+        }
+        return acc;
+    }, [])
     let candidates = Object.keys((t.symbol as any)['-st-states'] || {});
 
     return candidates
@@ -532,7 +538,7 @@ function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr
                 return false;
             } else if (s.slice(0, -1).startsWith(lastState)) {
                 return true;
-            } else if (candidates.some(c => (c === lastState) && (c !== s))) {
+            } else if (existing.some(c => (c === lastState) && (c !== s))) {
                 return true;
             } else {
                 return false;
