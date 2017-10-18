@@ -1,10 +1,1 @@
-:import {
-    -st-from: "./import.st.css";
-    -st-default: Comp2;
- }
-
- .grid{
-    -st-extends: Comp2;
- }
-
-.grid::lolo::momo
+@custom-selector :--lfffdf

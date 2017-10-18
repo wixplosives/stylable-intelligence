@@ -44,7 +44,7 @@ function createRange(report: Report) {
     let source = report.node.source
     let start = { line: 0, character: 0 }
     let end = { line: 0, character: 0 }
-    if (report.options.word) {
+    if (report.options.word && source) {
         let lines: string[] = (source.input as any).css.split('\n')
         const searchStart = source.start!.line - 1
         const searchEnd = source.end!.line - 1
@@ -58,7 +58,7 @@ function createRange(report: Report) {
                 break
             }
         }
-    } else {
+    } else if (source) {
         start.line = source.start!.line - 1
         start.character = source.start!.column - 1
         end.line = source.end!.line - 1
