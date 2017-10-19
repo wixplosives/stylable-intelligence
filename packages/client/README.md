@@ -1,10 +1,10 @@
-# Stylable Intelligence Server
-[![Build Status](https://travis-ci.org/wixplosives/stylable-intelligence.svg?branch=master)](https://travis-ci.org/wixplosives/stylable-intelligence)
+# Stylable Intelligence 
 
 ## Overview
-Stylable Intelligence is a server implementing the Language Server Protocol that provides IDE support for Stylable.
-It currently supports all code completiosn as well as all diagnostics provided by Stylable.
-Stylable Intelligence is currently only supported in VsCode (version 1.16 and later), and WebStorm will be the next IDE.
+Stylable Intelligence is an extension implementing the Language Server Protocol that provides IDE support for Stylable.
+It currently supports all code completions as well as all diagnostics provided by Stylable.
+Other Language Server features will be added in the near future.
+Stylable Intelligence is currently only supported in VSCode (version 1.16 and later). Support for JetBrains IDEs (WebStorm, IntelliJ) is planned.
 
 ## Installation
 
@@ -20,13 +20,10 @@ Reload window when prompted by VsCode.
 
 ## Known Issues
 
-### Not supported yet (in order of priority to support):
-* Aliased imports
-* Variables
-* Mixins
+### Not supported yet (in rough order of priority):
+* Complex types (.classA.classB, custom selectors with several chinks)
+* Mixins and JS imports
 * Variants
 * Globals
-* Esoteric syntax (-st-compose, -st-theme, -st-root)
-
-## Roadmap
+* Esoteric syntax (-st-compose, -st-theme, -st-root, -st-scoped)
 
