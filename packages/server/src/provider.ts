@@ -164,7 +164,7 @@ export default class Provider {
         }
         if (currentLine.lastIndexOf(' ') === cursorLineIndex) { currentLine = currentLine.slice(0, currentLine.lastIndexOf(' ')) }
 
-        if (!isDirective && currentLine.lastIndexOf(' ') > 0 && currentLine.lastIndexOf(' ') < cursorLineIndex) {
+        if (!isDirective && currentLine.lastIndexOf(' ') > -1 && currentLine.lastIndexOf(' ') < cursorLineIndex) {
             cursorLineIndex -= (currentLine.lastIndexOf(' ') + 1);
             currentLine = currentLine.slice(currentLine.lastIndexOf(' '));
         }
