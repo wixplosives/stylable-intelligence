@@ -322,6 +322,25 @@ describe('Pseudo-elements', function () {
                     });
                 });
 
+                it('should complete pseudo-element ' + str + ' after pseudo-element when line has leading spaces, with prefix: ' + prefix + ' ', function () {
+                    let rng = createRange(10, 12, 10, 12 + i);
+
+                    return asserters.getCompletions('pseudo-elements/recursive-import-3-leading-space.st.css', prefix).then((asserter) => {
+                        let exp: Partial<Completion>[] = [];
+                        let notExp: Partial<Completion>[] = [];
+
+                        exp.push(createComp(a[j], rng));
+                        if (prefix.length <= 2) {
+                            exp.push(createComp(a[1 - j], rng));
+                        } else {
+                            notExp.push(createComp(a[1 - j], rng));
+                        }
+
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
+                    });
+                });
+
                 it('should complete pseudo-element ' + str + ' after CSS state with prefix: ' + prefix + ' ', function () {
                     let rng = createRange(10, 16, 10, 16 + i);
                     return asserters.getCompletions('pseudo-elements/recursive-import-3-css-state.st.css', prefix).then((asserter) => {

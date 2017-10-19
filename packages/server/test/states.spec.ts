@@ -167,10 +167,30 @@ describe('States', function () {
 
         [str1, str2].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
-                let rng = createRange(10, 11, 10, 11 + i);
                 let prefix = str.slice(0, i);
                 it('should complete state ' + str + ' after pseudo-element, with prefix ' + prefix + ' ', function () {
+                    let rng = createRange(10, 11, 10, 11 + i);
                     return asserters.getCompletions('pseudo-elements/recursive-import-3.st.css', prefix).then((asserter) => {
+                        let exp: Partial<Completion>[] = [];
+                        let notExp: Partial<Completion>[] = [];
+
+                        exp.push(createComp(a[j], rng, 'pseudo-elements/recursive-import-1.st.css'));
+                        if (prefix.length <= 1) {
+                            exp.push(createComp(a[1 - j], rng, 'pseudo-elements/recursive-import-1.st.css'));
+                        } else {
+                            notExp.push(createComp(a[1 - j], rng, 'pseudo-elements/recursive-import-1.st.css'));
+                        }
+                        notExp.push(createComp(str3, rng, 'pseudo-elements/recursive-import-1.st.css'));
+                        notExp.push(createComp(str4, rng, 'pseudo-elements/recursive-import-1.st.css'));
+
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
+                    });
+                });
+
+                it('should complete state ' + str + ' after pseudo-element when line has leading spaces, with prefix ' + prefix + ' ', function () {
+                    let rng = createRange(10, 12, 10, 12 + i);
+                    return asserters.getCompletions('pseudo-elements/recursive-import-3-leading-space.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
