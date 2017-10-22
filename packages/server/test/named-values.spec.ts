@@ -89,6 +89,28 @@ describe('Named Values', function () {
                     asserter.notSuggested(notExp);
                 });
             });
+
+            it('completes names on second line, with prefix ' + prefix + ' ', function () {
+                let rng = createRange(3, 4, 3, 4 + i);
+                return asserters.getCompletions('named/st-named-multi-line.st.css', prefix).then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+                    let notExp: Partial<Completion>[] = [];
+
+                    if (prefix.length === 0) {
+                        a.forEach(c => { if (c !== str1 && c !== str3) { exp.push(createComp(c, rng)) } })
+                    } else {
+                        a.forEach(c => {
+                            if (c.startsWith(prefix) && c !== str1 && c !== str3) {
+                                exp.push(createComp(c, rng))
+                            } else {
+                                notExp.push(createComp(c, rng));
+                            }
+                        })
+                    }
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
+                });
+            });
         });
 
     });

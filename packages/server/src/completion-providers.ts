@@ -32,6 +32,8 @@ export interface ProviderOptions {
     isTopLevel: boolean,
     isLineStart: boolean,
     isImport: boolean,
+    isNamedValueLine: boolean,
+    namedValues: string[],
     isDirective: boolean,
     resolvedImport: StylableMeta | null
     insideSimpleSelector: boolean,
@@ -289,7 +291,7 @@ export class ExtendCompletionProvider implements CompletionProvider {
 
 export class NamedCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.trimmedLine.startsWith(valueMapping.named) && options.resolvedImport) {
+        if (options.isNamedValueLine && options.resolvedImport) {
 
             let valueStart = options.wholeLine.indexOf(':') + 1;
             let value = options.wholeLine.slice(valueStart);
@@ -303,7 +305,7 @@ export class NamedCompletionProvider implements CompletionProvider {
                 ...Object.keys(options.resolvedImport.mappedSymbols)
                     .filter(ms => (options.resolvedImport!.mappedSymbols[ms]._kind === 'class' || options.resolvedImport!.mappedSymbols[ms]._kind === 'var') && ms !== 'root')
                     .filter(ms => ms.slice(0, -1).startsWith(lastName))
-                    .filter(ms => ms === '' || names.every(name => name !== ms))
+                    .filter(ms => ms === '' || options.namedValues.every(name => name !== ms))
                     .map(ms => [
                         ms,
                         path.relative(options.meta.source, options.resolvedImport!.source).slice(1),

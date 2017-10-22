@@ -149,7 +149,8 @@ export default class Provider {
         const lastPart: PostCss.NodeBase = path[path.length - 1];
         const prevPart: PostCss.NodeBase = path[path.length - 2];
         const isMediaQuery = path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media');
-        const isDirective = Object.keys(valueMapping).some(k => currentLine.indexOf((valueMapping as any)[k]) !== -1)
+        function isDirective(line: string) { return Object.keys(valueMapping).some(k => line.indexOf((valueMapping as any)[k]) !== -1) };
+        function isNamedDirective(line: string) { return line.indexOf(valueMapping.named) !== -1 };
 
 
         const lastRule: SRule | null = prevPart && isSelector(prevPart) && fakes.findIndex((f) => { return f.selector === prevPart.selector }) === -1
@@ -164,12 +165,12 @@ export default class Provider {
         }
         if (currentLine.lastIndexOf(' ') === cursorLineIndex) { currentLine = currentLine.slice(0, currentLine.lastIndexOf(' ')) }
 
-        if (!isDirective && currentLine.lastIndexOf(' ') > -1 && currentLine.lastIndexOf(' ') < cursorLineIndex) {
+        if (!isDirective(currentLine) && currentLine.lastIndexOf(' ') > -1 && currentLine.lastIndexOf(' ') < cursorLineIndex) {
             cursorLineIndex -= (currentLine.lastIndexOf(' ') + 1);
             currentLine = currentLine.slice(currentLine.lastIndexOf(' '));
         }
 
-        let trimmedLine = currentLine.replace(',','').trim();
+        let trimmedLine = currentLine.replace(',', '').trim();
         let postDirectiveSpaces = (Object.keys(valueMapping).some(k => { return trimmedLine.startsWith((valueMapping as any)[k]) })) ? currentLine.match((/:(\s*)\w?/))![1].length : 0
         let postValueSpaces = (Object.keys(valueMapping).some(k => { return trimmedLine.startsWith((valueMapping as any)[k]) && trimmedLine.indexOf(',') !== -1 }))
             ? (currentLine.replace(/^\s*/, '').match(/\s+/) || [''])[0].length
@@ -242,6 +243,32 @@ export default class Provider {
             resolvedImport = null;
         }
 
+        let isNamedValueLine = false;
+        let namedValues: string[] = [];
+        let lines = src.split('\n');
+        if (importName) {
+            for (let i = position.line; i > 0; i--) {
+                if (isDirective(lines[i]) && !isNamedDirective(lines[i])) {
+                    break;
+                } else if (isNamedDirective(lines[i])) {
+                    isNamedValueLine = true;
+                    let valueStart = lines[i].indexOf(':') + 1;
+                    let value = lines[i].slice(valueStart);
+                    value.split(',').map(x => x.trim()).filter(x => x !== '').forEach(x => namedValues.push(x));
+                    break;
+                } else {
+                    isNamedValueLine = true;
+                    let valueStart = lines[i].indexOf(':') + 1;
+                    let value = lines[i].slice(valueStart);
+                    value.split(',').map(x => x.trim()).filter(x => x !== '').forEach(x => namedValues.push(x));
+                }
+            }
+        }
+
+
+
+
+
 
         let isInValue: boolean = false;
 
@@ -265,6 +292,7 @@ export default class Provider {
             } catch (e) { }
         })
 
+
         return {
             meta: meta,
             lastRule: lastRule,
@@ -276,7 +304,9 @@ export default class Provider {
             isTopLevel: !lastRule,
             isLineStart: false,
             isImport: isImport,
-            isDirective: isDirective,
+            isNamedValueLine: isNamedValueLine,
+            namedValues: namedValues,
+            isDirective: isDirective(trimmedLine),
             resolvedImport: resolvedImport,
             insideSimpleSelector: !!lastRule && !!/^\s*\.?\w*$/.test(lastRule.selector),
             resolved: resolved,
