@@ -1,8 +1,0 @@
-:import {
-    -st-from: "./import.css";
-    -st-named: shlomo, momo;
-}
-
-.gaga {
-    -st-extends:|;
-}

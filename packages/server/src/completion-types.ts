@@ -57,7 +57,7 @@ export function topLevelDirective(type: keyof typeof topLevelDirectives, rng: Pr
     switch (topLevelDirectives[type]) {
         case topLevelDirectives.import: return new Completion(topLevelDirectives.import, 'Import an external library', 'a', new snippet(':import {\n\t-st-from: "$1";\n}$0'), rng);
         case topLevelDirectives.namespace: return new Completion(topLevelDirectives.namespace, 'Declare a namespace for the file', 'a', new snippet('@namespace "$1";\n$0'), rng);
-        case topLevelDirectives.customSelector: return new Completion(topLevelDirectives.customSelector.slice(0,-4), 'Define a custom selector', 'a', topLevelDirectives.customSelector, rng);
+        case topLevelDirectives.customSelector: return new Completion(topLevelDirectives.customSelector.slice(0, -4), 'Define a custom selector', 'a', topLevelDirectives.customSelector, rng);
         case topLevelDirectives.root: return new Completion(topLevelDirectives.root, 'The root class', 'a', undefined, rng);
         case topLevelDirectives.vars: return new Completion(topLevelDirectives.vars, 'Declare variables', 'a', new snippet(':vars {\n\t$1\n}$0'), rng);
     }
@@ -72,12 +72,12 @@ export function classCompletion(className: string, rng: ProviderRange, removeDot
     return new Completion((removeDot ? '' : '.') + className, 'Stylable class or tag', 'a', undefined, rng)
 }
 
-export function extendCompletion(symbolName: string, rng: ProviderRange) {
-    return new Completion(symbolName, 'Stylable class or tag', 'a', new snippet(' ' + symbolName + ';\n'), rng)
+export function extendCompletion(symbolName: string, from: string, rng: ProviderRange) {
+    return new Completion(symbolName, 'from: ' + from, 'a', new snippet(symbolName), rng)
 }
 
-export function namedCompletion(symbolName: string, rng: ProviderRange, comma?: boolean) {
-    return new Completion(symbolName, 'Stylable class or tag', 'a', new snippet((comma ? ', ' : ' ') + symbolName), rng)
+export function namedCompletion(symbolName: string, rng: ProviderRange, from: string, value?: string) {
+    return new Completion(symbolName, 'from: ' + from + '\n' + 'Value: ' + value, 'a', new snippet(symbolName), rng)
 }
 
 export function pseudoElementCompletion(elementName: string, from: string, rng: ProviderRange) {
@@ -88,6 +88,6 @@ export function stateCompletion(stateName: string, from: string, rng: ProviderRa
     return new Completion(':' + stateName, 'from: ' + from, 'a', new snippet(':' + stateName), rng);
 }
 
-export function valueCompletion(name: string, from: string, value: string,  rng: ProviderRange) {
+export function valueCompletion(name: string, from: string, value: string, rng: ProviderRange) {
     return new Completion(name, 'from: ' + from + '\n' + 'value: ' + value, 'a', new snippet(name), rng);
 }

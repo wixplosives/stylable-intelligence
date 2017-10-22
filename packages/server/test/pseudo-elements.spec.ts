@@ -418,13 +418,13 @@ describe('Pseudo-elements', function () {
 
         let str1 = ':oompa';
         let nonos1 = [':state', ':otherState', ':lala', ':loompa'];
-        let createComp1 = (str: string, rng: ProviderRange) => asserters.stateCompletion(str.slice(1), rng, str === str1 ? 'pseudo-elements/recursive-import-0.st.css' : 'pseudo-elements/recursive-import-0.st.css');
+        let createComp1 = (str: string, rng: ProviderRange) => asserters.stateCompletion(str.slice(1), rng, str === str1 ? './recursive-import-0.st.css' : './recursive-import-0.st.css');
 
         str1.split('').forEach((c, i) => {
             let prefix = '::momi' + str1.slice(0, i);
             let rng = createRange(10, 45, 10, 39 + prefix.length);
 
-            it('should complete state ' + str + ' in deep chain with prefix: ' + prefix + ' ', function () {
+            it('should complete state ' + str1 + ' in deep chain with prefix: ' + prefix + ' ', function () {
 
                 return asserters.getCompletions('pseudo-elements/recursive-import-3-deep.st.css', prefix).then((asserter) => {
                     let exp: Partial<Completion>[] = [];

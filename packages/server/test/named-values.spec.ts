@@ -1,95 +1,86 @@
 import * as asserters from '../test-kit/asserters';
-import { createRange } from '../src/completion-providers'
+import { createRange, ProviderRange } from '../src/completion-providers'
+import { Completion } from '../src/completion-types';
 
 describe('Named Values', function () {
-    it('completes classes from imported file after -st-named', function () {
-        return asserters.getCompletions('named/st-named.st.css').then((asserter) => {
-            asserter.suggested([
-                asserters.namedCompletion('bobo', createRange(2, 14, 2, Number.MAX_VALUE)),
-                asserters.namedCompletion('momo', createRange(2, 14, 2, Number.MAX_VALUE)),
-                asserters.namedCompletion('shlomo', createRange(2, 14, 2, Number.MAX_VALUE))
-            ]);
+    const str1 = 'shlomo';
+    const str2 = 'momo';
+    const str3 = 'poopy';
+    const str4 = 'shmoopy';
+    const path = "./import.st.css";
+
+    [str1, str2, str3, str4].forEach((str, j, a) => {
+        str.split('').forEach((c, i) => {
+
+            const createComp = (str: string, rng: ProviderRange) => asserters.namedCompletion(
+                str,
+                rng,
+                path,
+                str === str4
+                    ? 'pink'
+                    : str === str3
+                        ? 'brown'
+                        : 'Stylable class'
+            );
+            let prefix = str.slice(0, i);
+
+            it('completes classes and vars from imported file after -st-named, with prefix ' + prefix + ' ', function () {
+                let rng = createRange(2, 15, 2, 15 + i);
+                return asserters.getCompletions('named/st-named.st.css', prefix).then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+                    let notExp: Partial<Completion>[] = [];
+
+                    if (prefix.length === 0) {
+                        a.forEach(c => exp.push(createComp(c, rng)))
+                    } else {
+                        a.forEach(c => {
+                            if (c.startsWith(prefix)) {
+                                exp.push(createComp(c, rng))
+                            } else {
+                                notExp.push(createComp(c, rng));
+                            }
+                        })
+                    }
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
+                });
+            });
+
+            it('completes names after single value', function () {
+                let rng = createRange(2, 22, 2, 22 + i);
+                return asserters.getCompletions('named/st-named-single-value.st.css').then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+                    let notExp: Partial<Completion>[] = [];
+
+                    if (prefix.length === 0) {
+                        a.forEach(c => { if (c !== str1) { exp.push(createComp(c, rng)) } })
+                    } else {
+                        a.forEach(c => {
+                            if (c.startsWith(prefix) && c!==str1) {
+                                exp.push(createComp(c, rng))
+                            } else {
+                                notExp.push(createComp(c, rng));
+                            }
+                        })
+                    }
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
+                });
+            });
         });
+
     });
 
-    it('completes classes from imported file after -st-named with following semicolon', function () {
-        return asserters.getCompletions('named/st-named-semicolon.st.css').then((asserter) => {
-            asserter.suggested([
-                asserters.namedCompletion('bobo', createRange(2, 14, 2, Number.MAX_VALUE)),
-                asserters.namedCompletion('momo', createRange(2, 14, 2, Number.MAX_VALUE)),
-                asserters.namedCompletion('shlomo', createRange(2, 14, 2, Number.MAX_VALUE))
-            ]);
-        });
-    });
 
-    it('completes classes from imported file after -st-named with initial string', function () {
-        return asserters.getCompletions('named/st-named-initial-string.st.css').then((asserter) => {
-            asserter.suggested([
-                asserters.namedCompletion('bobo', createRange(2, 14, 2, Number.MAX_VALUE)),
-                asserters.namedCompletion('momo', createRange(2, 14, 2, Number.MAX_VALUE)),
-                asserters.namedCompletion('shlomo', createRange(2, 14, 2, Number.MAX_VALUE))
-            ]);
-        });
-    });
-
-    it('completes names after single value', function () {
-        return asserters.getCompletions('named/st-named-multi-value.st.css').then((asserter) => {
-            asserter.suggested([
-                asserters.namedCompletion('bobo', createRange(2, 21, 2, Number.MAX_VALUE), true),
-                asserters.namedCompletion('momo', createRange(2, 21, 2, Number.MAX_VALUE), true),
-            ]);
-            asserter.notSuggested([
-                asserters.namedCompletion('shlomo', createRange(2, 21, 2, Number.MAX_VALUE))
-            ]);
-        });
-    });
-
-    it('completes names after multiple values', function () {
+    xit('completes names after multiple values', function () {
         return asserters.getCompletions('named/st-named-multi-values.st.css').then((asserter) => {
             asserter.suggested([
-                asserters.namedCompletion('momo', createRange(2, 27, 2, Number.MAX_VALUE), true),
+                asserters.namedCompletion('momo', createRange(2, 27, 2, Number.MAX_VALUE), path),
             ]);
             asserter.notSuggested([
-                asserters.namedCompletion('bobo', createRange(2, 21, 2, Number.MAX_VALUE), true),
-                asserters.namedCompletion('shlomo', createRange(2, 21, 2, Number.MAX_VALUE))
+                asserters.namedCompletion('bobo', createRange(2, 21, 2, Number.MAX_VALUE), path),
+                asserters.namedCompletion('shlomo', createRange(2, 21, 2, Number.MAX_VALUE), path)
             ]);
         });
     });
-
-    xit('completes more than one name after ,', function () {
-        return asserters.getCompletions('named/st-named-multi-value-comma.st.css').then((asserter) => {
-            asserter.suggested([
-                asserters.namedCompletion('bobo', createRange(2, 21, 2, Number.MAX_VALUE), true),
-                asserters.namedCompletion('momo', createRange(2, 21, 2, Number.MAX_VALUE), true),
-            ]);
-            asserter.notSuggested([
-                asserters.namedCompletion('shlomo', createRange(2, 21, 2, Number.MAX_VALUE))
-            ]);
-        });
-    });
-
-    xit('completes more than one name with following ; ', function () {
-        return asserters.getCompletions('named/st-named-multi-value-semicolon.st.css').then((asserter) => {
-            asserter.suggested([
-                asserters.namedCompletion('bobo', createRange(2, 21, 2, Number.MAX_VALUE), true),
-                asserters.namedCompletion('momo', createRange(2, 21, 2, Number.MAX_VALUE), true),
-            ]);
-            asserter.notSuggested([
-                asserters.namedCompletion('shlomo', createRange(2, 21, 2, Number.MAX_VALUE))
-            ]);
-        });
-    });
-
-    xit('completes more than one name with initial string ', function () {
-        return asserters.getCompletions('named/st-named-multi-value-initial-string.st.css').then((asserter) => {
-            asserter.suggested([
-                asserters.namedCompletion('momo', createRange(2, 21, 2, Number.MAX_VALUE), true),
-            ]);
-            asserter.notSuggested([
-                asserters.namedCompletion('bobo', createRange(2, 21, 2, Number.MAX_VALUE), true),
-                asserters.namedCompletion('shlomo', createRange(2, 21, 2, Number.MAX_VALUE))
-            ]);
-        });
-    });
-
 });

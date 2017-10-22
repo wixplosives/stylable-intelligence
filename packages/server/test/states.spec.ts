@@ -9,7 +9,7 @@ describe('States', function () {
         const str1 = ':hello';
         const str2 = ':goodbye';
         const str3 = ':holla';
-        const createComp = (str: string, rng: ProviderRange, path: string) => asserters.stateCompletion(str.slice(1), rng, path);
+        const createComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateCompletion(str.slice(1), rng, path);
 
         [str1, str2].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
@@ -21,11 +21,11 @@ describe('States', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, './states/class-with-states.css'));
+                        exp.push(createComp(a[j], rng));
                         if (prefix.length <= 1) {
-                            exp.push(createComp(a[1 - j], rng, './states/class-with-states.css'));
+                            exp.push(createComp(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, './states/class-with-states.css'));
+                            notExp.push(createComp(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -40,11 +40,11 @@ describe('States', function () {
                         let notExp: Partial<Completion>[] = [];
 
                         if (str === str1) {
-                            exp.push(createComp(str1, rng, './states/complex-selectors.css'));
+                            exp.push(createComp(str1, rng));
                         } else if (prefix.length <= 1) {
-                            exp.push(createComp(str1, rng, './states/complex-selectors.css'));
+                            exp.push(createComp(str1, rng));
                         }
-                        notExp.push(createComp(str2, rng, './states/complex-selectors.css'));
+                        notExp.push(createComp(str2, rng));
 
                         asserter.suggested(exp);
                         asserter.notSuggested(notExp);
@@ -64,11 +64,11 @@ describe('States', function () {
                         let notExp: Partial<Completion>[] = [];
 
                         if (str === str1) {
-                            exp.push(createComp(str1, rng, './states/complex-selectors-with-states.css'));
+                            exp.push(createComp(str1, rng));
                         } else if (prefix.length <= 2) {
-                            exp.push(createComp(str1, rng, './states/complex-selectors-with-states.css'));
+                            exp.push(createComp(str1, rng));
                         }
-                        notExp.push(createComp(str3, rng, './states/complex-selectors-with-states.css'));
+                        notExp.push(createComp(str3, rng));
 
                         asserter.suggested(exp);
                         asserter.notSuggested(notExp);
@@ -106,11 +106,11 @@ describe('States', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, 'pseudo-elements/import.st.css'));
+                        exp.push(createComp(a[j], rng, './import.st.css'));
                         if (prefix.length <= 1) {
-                            exp.push(createComp(a[1 - j], rng, 'pseudo-elements/import.st.css'));
+                            exp.push(createComp(a[1 - j], rng, './import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, 'pseudo-elements/import.st.css'));
+                            notExp.push(createComp(a[1 - j], rng, './import.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -124,11 +124,11 @@ describe('States', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, 'pseudo-elements/import.st.css'));
+                        exp.push(createComp(a[j], rng, './import.st.css'));
                         if (prefix.length <= 1) {
-                            exp.push(createComp(a[1 - j], rng, 'pseudo-elements/import.st.css'));
+                            exp.push(createComp(a[1 - j], rng, './import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, 'pseudo-elements/import.st.css'));
+                            notExp.push(createComp(a[1 - j], rng, './import.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -149,14 +149,14 @@ describe('States', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, 'pseudo-elements/import.st.css'));
+                        exp.push(createComp(a[j], rng, './import.st.css'));
                         if (prefix.length <= 1) {
-                            exp.push(createComp(a[1 - j], rng, 'pseudo-elements/import.st.css'));
+                            exp.push(createComp(a[1 - j], rng, './import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, 'pseudo-elements/import.st.css'));
+                            notExp.push(createComp(a[1 - j], rng, './import.st.css'));
                         }
-                        notExp.push(createComp(str1, rng, 'pseudo-elements/import.st.css'));
-                        notExp.push(createComp(str2, rng, 'pseudo-elements/import.st.css'));
+                        notExp.push(createComp(str1, rng, './import.st.css'));
+                        notExp.push(createComp(str2, rng, './import.st.css'));
 
                         asserter.suggested(exp);
                         asserter.notSuggested(notExp);
@@ -174,14 +174,14 @@ describe('States', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, 'pseudo-elements/recursive-import-1.st.css'));
+                        exp.push(createComp(a[j], rng, './recursive-import-1.st.css'));
                         if (prefix.length <= 1) {
-                            exp.push(createComp(a[1 - j], rng, 'pseudo-elements/recursive-import-1.st.css'));
+                            exp.push(createComp(a[1 - j], rng, './recursive-import-1.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, 'pseudo-elements/recursive-import-1.st.css'));
+                            notExp.push(createComp(a[1 - j], rng, './recursive-import-1.st.css'));
                         }
-                        notExp.push(createComp(str3, rng, 'pseudo-elements/recursive-import-1.st.css'));
-                        notExp.push(createComp(str4, rng, 'pseudo-elements/recursive-import-1.st.css'));
+                        notExp.push(createComp(str3, rng, './recursive-import-1.st.css'));
+                        notExp.push(createComp(str4, rng, './recursive-import-1.st.css'));
 
                         asserter.suggested(exp);
                         asserter.notSuggested(notExp);
@@ -194,14 +194,14 @@ describe('States', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, 'pseudo-elements/recursive-import-1.st.css'));
+                        exp.push(createComp(a[j], rng, './recursive-import-1.st.css'));
                         if (prefix.length <= 1) {
-                            exp.push(createComp(a[1 - j], rng, 'pseudo-elements/recursive-import-1.st.css'));
+                            exp.push(createComp(a[1 - j], rng, './recursive-import-1.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, 'pseudo-elements/recursive-import-1.st.css'));
+                            notExp.push(createComp(a[1 - j], rng, './recursive-import-1.st.css'));
                         }
-                        notExp.push(createComp(str3, rng, 'pseudo-elements/recursive-import-1.st.css'));
-                        notExp.push(createComp(str4, rng, 'pseudo-elements/recursive-import-1.st.css'));
+                        notExp.push(createComp(str3, rng, './recursive-import-1.st.css'));
+                        notExp.push(createComp(str4, rng, './recursive-import-1.st.css'));
 
                         asserter.suggested(exp);
                         asserter.notSuggested(notExp);
@@ -220,11 +220,11 @@ describe('States', function () {
                         let notExp: Partial<Completion>[] = [];
 
                         if (prefix.length <= 1 || str === str4) {
-                            exp.push(createComp(str4, rng, 'pseudo-elements/import.st.css'));
+                            exp.push(createComp(str4, rng, './import.st.css'));
                         }
-                        notExp.push(createComp(str1, rng, 'pseudo-elements/import.st.css'));
-                        notExp.push(createComp(str2, rng, 'pseudo-elements/import.st.css'));
-                        notExp.push(createComp(str3, rng, 'pseudo-elements/import.st.css'));
+                        notExp.push(createComp(str1, rng, './import.st.css'));
+                        notExp.push(createComp(str2, rng, './import.st.css'));
+                        notExp.push(createComp(str3, rng, './import.st.css'));
 
                         asserter.suggested(exp);
                         asserter.notSuggested(notExp);
@@ -246,7 +246,7 @@ describe('States', function () {
                     let exp: Partial<Completion>[] = [];
                     let notExp: Partial<Completion>[] = [];
 
-                    exp.push(createComp(str, rng, 'pseudo-elements/recursive-import-0.st.css'));
+                    exp.push(createComp(str, rng, './recursive-import-0.st.css'));
 
                     asserter.suggested(exp);
                     asserter.notSuggested(notExp);

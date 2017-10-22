@@ -1,12 +1,12 @@
-:import {
-    -st-from: './top-import.st.css';
-    -st-default: Comp;
+.shlomo {
+    color: red;
 }
 
-.lolo {
-    -st-extends: Comp;
+.momo {
+    color: blue;
 }
 
-@custom-selector :--pongo div > Comp;
-
-@custom-selector :--mongo div span Comp;
+:vars {
+    poopy: brown;
+    shmoopy: pink;
+}

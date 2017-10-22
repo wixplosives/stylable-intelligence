@@ -6,6 +6,7 @@
     color: blue;
 }
 
-.bobo {
-    color: black;
+:vars {
+    poopy: brown;
+    shmoopy: pink;
 }

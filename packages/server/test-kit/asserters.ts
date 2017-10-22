@@ -170,14 +170,14 @@ export const variantDirectiveCompletion: (rng: ProviderRange) => Partial<Complet
 export const classCompletion: (className: string, rng: ProviderRange, isDefaultImport?: boolean) => Partial<Completion> = (className, rng, isDefaultImport?) => {
     return { label: (isDefaultImport ? '' : '.') + className, sortText: 'a', range: rng }
 }
-export const extendsCompletion: (typeName: string, rng: ProviderRange) => Partial<Completion> = (typeName, rng) => {
-    return { label: typeName, sortText: 'a', insertText: ' ' + typeName + ';\n', range: rng }
+export const extendsCompletion: (typeName: string, rng: ProviderRange, from: string) => Partial<Completion> = (typeName, rng, from) => {
+    return { label: typeName, sortText: 'a', insertText: typeName, detail: 'from: ' + from, range: rng }
 };
-export const namedCompletion: (typeName: string, rng: ProviderRange, comma?: boolean) => Partial<Completion> = (typeName, rng, comma) => {
-    return { label: typeName, sortText: 'a', insertText: (comma ? ', ' : ' ') + typeName, range: rng }
+export const namedCompletion: (typeName: string, rng: ProviderRange, from: string, value?: string) => Partial<Completion> = (typeName, rng, from, value?) => {
+    return { label: typeName, sortText: 'a', insertText: typeName, detail: 'from: ' + from + '\n' + 'Value: ' + value, range: rng }
 };
-export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (stateName, rng, from = 'projectRoot/main.css') => {
-    return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + path.join(__dirname, '/../test/cases/', from), insertText: ':' + stateName, range: rng }
+export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (stateName, rng, from = 'Local file') => {
+    return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName, range: rng }
 }
 export const pseudoElementCompletion: (elementName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (elementName, rng, from?) => {
     return { label: '::' + elementName, sortText: 'a', detail: 'from: ' + from, insertText: '::' + elementName, range: rng }

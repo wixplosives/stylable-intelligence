@@ -1,4 +1,4 @@
-import { StylableMeta, SRule, valueMapping, ClassSymbol, CSSResolve } from 'stylable';
+import { StylableMeta, SRule, valueMapping, ClassSymbol, CSSResolve, VarSymbol } from 'stylable';
 import { CursorPosition, SelectorInternalChunk } from "./utils/selector-analyzer";
 import {
     classCompletion,
@@ -18,6 +18,7 @@ import {
 } from './completion-types';
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
+import * as path from 'path';
 
 
 export interface ProviderOptions {
@@ -267,13 +268,18 @@ export class ExtendCompletionProvider implements CompletionProvider {
             let value = options.trimmedLine.slice((valueMapping.extends + ':').length);
             let spaces = value.search(/\S|$/);
             let str = value.slice(spaces);
-            let comps: string[] = [];
-            comps.push(...Object.keys(options.meta.classes).filter(s => s.startsWith(str)))
-            options.meta.imports.forEach(i => { if (i.defaultExport && i.defaultExport.startsWith(str)) { comps.push(i.defaultExport) } })
-            options.meta.imports.forEach(i => comps.push(...Object.keys(i.named).filter(s => s.startsWith(str))))
-            return comps.map(c => extendCompletion(c, new ProviderRange(
-                new ProviderPosition(options.position.line, options.position.character - str.length - options.postDirectiveSpaces),
-                new ProviderPosition(options.position.line, Number.MAX_VALUE))));
+            let comps: string[][] = [[]];
+            comps.push(...Object.keys(options.meta.classes).filter(s => s.startsWith(str)).map(s => [s, 'Local file']))
+            options.meta.imports.forEach(i => { if (i.defaultExport && i.defaultExport.startsWith(str)) { comps.push([i.defaultExport, i.fromRelative]) } })
+            options.meta.imports.forEach(i => comps.push(...Object.keys(i.named).filter(s => s.startsWith(str)).map(s => [s, i.fromRelative])))
+            return comps.slice(1).map(c => extendCompletion(
+                c[0],
+                c[1],
+                new ProviderRange(
+                    new ProviderPosition(options.position.line, options.position.character - str.length),
+                    new ProviderPosition(options.position.line, options.position.character)
+                ),
+            ));
         } else {
             return [];
         }
@@ -286,46 +292,31 @@ export class NamedCompletionProvider implements CompletionProvider {
         if (options.trimmedLine.startsWith(valueMapping.named) && options.resolvedImport) {
 
             let valueStart = options.wholeLine.indexOf(':') + 1;
-            let newPos = options.position.character - valueStart;
             let value = options.wholeLine.slice(valueStart);
             let names = value.split(',').map(x => x.trim());
-            let multival: boolean = false;
-
-            let comps: string[] = Object.keys(options.resolvedImport.mappedSymbols)
-                .filter(ms => options.resolvedImport!.mappedSymbols[ms]._kind === 'class' && ms !== 'root')
-                .filter(ms => {
-                    if (names.some(name => name === ms)) { multival = true };
-                    return names.every(name => name !== ms);
-                });
-
-
-            let next = value.slice(newPos, newPos + value.slice(newPos).indexOf(',')).trim();
-            let prev = value.slice(value.slice(0, newPos).lastIndexOf(' '), newPos).trim()
-
-            let isAfterColon: boolean = !value.slice(0, newPos).trim();
-            let beforeValue: boolean = Object.keys(options.resolvedImport.mappedSymbols).some(ms => ms === next)
-            let afterInitialString: boolean = !!prev && Object.keys(options.resolvedImport.mappedSymbols).some(ms => ms.startsWith(prev))
-            // let betweenValues: boolean
-            // let afterLastValue: boolean
-            isAfterColon; beforeValue; afterInitialString;
-
-
-
             let lastName = names.reverse()[0];
 
+            let comps: string[][] = [[]];
+        comps.push(
+                ...Object.keys(options.resolvedImport.mappedSymbols)
+                    .filter(ms => (options.resolvedImport!.mappedSymbols[ms]._kind === 'class' || options.resolvedImport!.mappedSymbols[ms]._kind === 'var') && ms !== 'root')
+                    .filter(ms => ms.slice(0,-1).startsWith(lastName))
+                    .map(ms => [
+                        ms,
+                        path.relative(options.meta.source, options.resolvedImport!.source).slice(1),
+                        options.resolvedImport!.mappedSymbols[ms]._kind === 'var' ? (options.resolvedImport!.mappedSymbols[ms] as VarSymbol).value : 'Stylable class'
+                    ])
+            )
 
-            return comps.map(c => namedCompletion(
-                c,
+
+            return comps.slice(1).map(c => namedCompletion(
+                c[0],
                 new ProviderRange(
-                    new ProviderPosition(options.position.line,
-                        options.position.character
-                        - (multival ? 0 : (lastName.length + options.postDirectiveSpaces))
-                        - (value.endsWith(',') ? 1 : 0)
-                        - (options.resolvedImport!.mappedSymbols[lastName] ? 0 : options.postValueSpaces)
-                    ),
-                    new ProviderPosition(options.position.line, Number.MAX_VALUE)
+                    new ProviderPosition(options.position.line, options.position.character - lastName.length),
+                    new ProviderPosition(options.position.line, options.position.character)
                 ),
-                multival
+                c[1],
+                c[2]
             ));
         } else {
             return [];
@@ -544,7 +535,9 @@ function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr
                 return false;
             }
         })
-        .map(s => [s, t.meta.source])
+        .map(s => {
+            return [s, path.relative(options.meta.source, t.meta.source).slice(1) || 'Local file']
+        })
 }
 
 function collectSelectorParts(value: CSSResolve[], defaultVal: CSSResolve[], reducer: (acc: string[][], t: CSSResolve, ind: number, arr: CSSResolve[]) => string[][]): string[][] {

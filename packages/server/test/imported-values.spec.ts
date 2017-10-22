@@ -9,20 +9,21 @@ describe('Imported Values', function () {
     const str3 = '.shlomo';
 
 
-    [str1, str2].forEach((str, j, a) => {
+    [' ' + str1, ' ' + str2].forEach((str, j, a) => {
         str.split('').forEach((c, i) => {
 
-            const createComp = (str: string, rng: ProviderRange) => asserters.extendsCompletion(str, rng);
-            let prefix = str.slice(0, i);
+            const path = "./import-from-here.css";
+            const createComp = (str: string, rng: ProviderRange) => asserters.extendsCompletion(str.slice(1), rng, path);
+            let prefix = str.slice(0, i+1);
+            let rng = createRange(7, 17, 7, 17 + i);
 
             it('completes default and named imports in -st-extends, with prefix ' + prefix + ' ', function () {
-                let rng = createRange(7, 16, 7, Number.MAX_VALUE);
                 return asserters.getCompletions('imports/st-extends.css', prefix).then((asserter) => {
                     let exp: Partial<Completion>[] = [];
                     let notExp: Partial<Completion>[] = [];
 
                     exp.push(createComp(a[j], rng));
-                    if (prefix.length === 0) {
+                    if (prefix.length <= 1) {
                         exp.push(createComp(a[1 - j], rng));
                     } else {
                         notExp.push(createComp(a[1 - j], rng));
@@ -34,13 +35,12 @@ describe('Imported Values', function () {
             });
 
             it('completes named and default imports in -st-extends with final ; , with prefix ' + prefix + ' ', function () {
-                let rng = createRange(7, 16, 7, Number.MAX_VALUE);
                 return asserters.getCompletions('imports/st-extends-with-semicolon.css', prefix).then((asserter) => {
                     let exp: Partial<Completion>[] = [];
                     let notExp: Partial<Completion>[] = [];
 
                     exp.push(createComp(a[j], rng));
-                    if (prefix.length === 0) {
+                    if (prefix.length <= 1) {
                         exp.push(createComp(a[1 - j], rng));
                     } else {
                         notExp.push(createComp(a[1 - j], rng));

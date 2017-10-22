@@ -98,29 +98,6 @@ describe('completion unit test', function () {
         });
     });
 
-    describe('extends', function () {
-        it('complete extensible classes and tags', function () {
-            return asserters.getCompletions('extends/extend.css')
-                .then((asserter) => {
-                    asserter.suggested([
-                        asserters.extendsCompletion('shlomo', createRange(6, 16, 6, Number.MAX_VALUE)),
-                        asserters.extendsCompletion('momo', createRange(6, 16, 6, Number.MAX_VALUE)),
-                        asserters.extendsCompletion('root', createRange(6, 16, 6, Number.MAX_VALUE)),
-                    ]);
-                });
-        });
-
-        it('complete extensible classes and tags after space', function () {
-            return asserters.getCompletions('extends/extend-space.css')
-                .then((asserter) => {
-                    asserter.suggested([
-                        asserters.extendsCompletion('shlomo', createRange(6, 16, 6, Number.MAX_VALUE)),
-                        asserters.extendsCompletion('momo', createRange(6, 16, 6, Number.MAX_VALUE)),
-                        asserters.extendsCompletion('root', createRange(6, 16, 6, Number.MAX_VALUE)),
-                    ]);
-                });
-        });
-    });
 
     describe('multiple files', function () {
 
@@ -128,7 +105,7 @@ describe('completion unit test', function () {
             return asserters.getCompletions('states/locally-imported-component.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.stateCompletion('shmover', createRange(10, 5, 10, 6), 'states/comp-to-import.css')
+                        asserters.stateCompletion('shmover', createRange(10, 5, 10, 6), './comp-to-import.css')
                     ]);
                 });
         });
@@ -137,8 +114,8 @@ describe('completion unit test', function () {
             return asserters.getCompletions('states/locally-imported-component-with-states.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.stateCompletion('shmover', createRange(11, 5, 11, 6), 'states/comp-to-import.css'),
-                        asserters.stateCompletion('clover', createRange(11, 5, 11, 6), 'states/locally-imported-component-with-states.css'),
+                        asserters.stateCompletion('shmover', createRange(11, 5, 11, 6), './comp-to-import.css'),
+                        asserters.stateCompletion('clover', createRange(11, 5, 11, 6)),
                     ]);
                 });
         });
@@ -148,9 +125,9 @@ describe('completion unit test', function () {
             return asserters.getCompletions('states/locally-imported-component-recursive.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.stateCompletion('shmover', createRange(11, 11, 11, 12), 'states/comp-to-import.css'),
-                        asserters.stateCompletion('hoover', createRange(11, 11, 11, 12), 'states/mid-level-import.css'),
-                        asserters.stateCompletion('clover', createRange(11, 11, 11, 12), 'states/locally-imported-component-recursive.css'),
+                        asserters.stateCompletion('shmover', createRange(11, 11, 11, 12), './comp-to-import.css'),
+                        asserters.stateCompletion('hoover', createRange(11, 11, 11, 12), './mid-level-import.css'),
+                        asserters.stateCompletion('clover', createRange(11, 11, 11, 12)),
                     ]);
                 });
         });

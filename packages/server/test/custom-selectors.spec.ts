@@ -74,11 +74,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, 'pseudo-elements/import.st.css'));
+                        exp.push(createComp(a[j], rng, './import.st.css'));
                         if (prefix.length <= 1) {
-                            exp.push(createComp(a[1 - j], rng, 'pseudo-elements/import.st.css'));
+                            exp.push(createComp(a[1 - j], rng, './import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, 'pseudo-elements/import.st.css'));
+                            notExp.push(createComp(a[1 - j], rng, './import.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -195,11 +195,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, 'custom-selectors/top-import.st.css'));
+                        exp.push(createComp(a[j], rng, './top-import.st.css'));
                         if (prefix.length <= 1) {
-                            exp.push(createComp(a[1 - j], rng, 'custom-selectors/top-import.st.css'));
+                            exp.push(createComp(a[1 - j], rng, './top-import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, 'custom-selectors/top-import.st.css'));
+                            notExp.push(createComp(a[1 - j], rng, './top-import.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -213,11 +213,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, 'custom-selectors/top-import.st.css'));
+                        exp.push(createComp(a[j], rng, './top-import.st.css'));
                         if (prefix.length <= 1) {
-                            exp.push(createComp(a[1 - j], rng, 'custom-selectors/top-import.st.css'));
+                            exp.push(createComp(a[1 - j], rng, './top-import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, 'custom-selectors/top-import.st.css'));
+                            notExp.push(createComp(a[1 - j], rng, './top-import.st.css'));
                         }
 
                         asserter.suggested(exp);
