@@ -46,9 +46,9 @@ describe('Named Values', function () {
                 });
             });
 
-            it('completes names after single value', function () {
+            it('completes names after single value, with prefix ' + prefix + ' ', function () {
                 let rng = createRange(2, 22, 2, 22 + i);
-                return asserters.getCompletions('named/st-named-single-value.st.css').then((asserter) => {
+                return asserters.getCompletions('named/st-named-single-value.st.css', prefix).then((asserter) => {
                     let exp: Partial<Completion>[] = [];
                     let notExp: Partial<Completion>[] = [];
 
@@ -56,7 +56,29 @@ describe('Named Values', function () {
                         a.forEach(c => { if (c !== str1) { exp.push(createComp(c, rng)) } })
                     } else {
                         a.forEach(c => {
-                            if (c.startsWith(prefix) && c!==str1) {
+                            if (c.startsWith(prefix) && c !== str1) {
+                                exp.push(createComp(c, rng))
+                            } else {
+                                notExp.push(createComp(c, rng));
+                            }
+                        })
+                    }
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
+                });
+            });
+
+            it('completes names after multiple values, with prefix ' + prefix + ' ', function () {
+                let rng = createRange(2, 29, 2, 29 + i);
+                return asserters.getCompletions('named/st-named-multi-values.st.css', prefix).then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+                    let notExp: Partial<Completion>[] = [];
+
+                    if (prefix.length === 0) {
+                        a.forEach(c => { if (c !== str1 && c !== str3) { exp.push(createComp(c, rng)) } })
+                    } else {
+                        a.forEach(c => {
+                            if (c.startsWith(prefix) && c !== str1 && c !== str3) {
                                 exp.push(createComp(c, rng))
                             } else {
                                 notExp.push(createComp(c, rng));
@@ -69,18 +91,5 @@ describe('Named Values', function () {
             });
         });
 
-    });
-
-
-    xit('completes names after multiple values', function () {
-        return asserters.getCompletions('named/st-named-multi-values.st.css').then((asserter) => {
-            asserter.suggested([
-                asserters.namedCompletion('momo', createRange(2, 27, 2, Number.MAX_VALUE), path),
-            ]);
-            asserter.notSuggested([
-                asserters.namedCompletion('bobo', createRange(2, 21, 2, Number.MAX_VALUE), path),
-                asserters.namedCompletion('shlomo', createRange(2, 21, 2, Number.MAX_VALUE), path)
-            ]);
-        });
     });
 });

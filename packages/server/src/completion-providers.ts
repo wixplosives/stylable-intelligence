@@ -293,14 +293,17 @@ export class NamedCompletionProvider implements CompletionProvider {
 
             let valueStart = options.wholeLine.indexOf(':') + 1;
             let value = options.wholeLine.slice(valueStart);
-            let names = value.split(',').map(x => x.trim());
-            let lastName = names.reverse()[0];
+            let names = value.split(',').map(x => x.trim()).filter(x => x !== '');
+            let lastName = /,\s*$/.test(options.wholeLine)
+                ? ''
+                : names.reverse()[0] || '';
 
             let comps: string[][] = [[]];
-        comps.push(
+            comps.push(
                 ...Object.keys(options.resolvedImport.mappedSymbols)
                     .filter(ms => (options.resolvedImport!.mappedSymbols[ms]._kind === 'class' || options.resolvedImport!.mappedSymbols[ms]._kind === 'var') && ms !== 'root')
-                    .filter(ms => ms.slice(0,-1).startsWith(lastName))
+                    .filter(ms => ms.slice(0, -1).startsWith(lastName))
+                    .filter(ms => ms === '' || names.every(name => name !== ms))
                     .map(ms => [
                         ms,
                         path.relative(options.meta.source, options.resolvedImport!.source).slice(1),
