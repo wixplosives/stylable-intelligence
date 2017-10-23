@@ -224,6 +224,18 @@ describe('Custom Selectors', function () {
                         asserter.notSuggested(notExp);
                     });
                 });
+
+                it('should not have states when custom selector is grouped, with prefix ' + prefix + ' ', function () {
+                    let rng = createRange(9, 12, 9, 12 + i);
+                    return asserters.getCompletions('custom-selectors/imported-selector-grouped.st.css', prefix).then((asserter) => {
+                        let notExp: Partial<Completion>[] = [];
+
+                        notExp.push(createComp(str3, rng, './top-import.st.css'));
+                        notExp.push(createComp(str4, rng, './top-import.st.css'));
+
+                        asserter.notSuggested(notExp);
+                    });
+                });
             });
         });
 
@@ -264,6 +276,18 @@ describe('Custom Selectors', function () {
                         }
 
                         asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
+                    });
+                });
+
+                it('should not have pseudo-elements when custom selector is grouped, with prefix ' + prefix + ' ', function () {
+                    let rng = createRange(9, 12, 9, 12 + i);
+                    return asserters.getCompletions('custom-selectors/imported-selector-grouped.st.css', prefix).then((asserter) => {
+                        let notExp: Partial<Completion>[] = [];
+
+                        notExp.push(createComp(str5, rng, './top-import.st.css'));
+                        notExp.push(createComp(str6, rng, './top-import.st.css'));
+
                         asserter.notSuggested(notExp);
                     });
                 });

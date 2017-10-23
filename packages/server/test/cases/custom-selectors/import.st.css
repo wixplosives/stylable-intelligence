@@ -5,4 +5,4 @@
 
 @custom-selector :--pongo div > Comp;
 
-@custom-selector :--mongo div span Comp;
+@custom-selector :--mongo div span Comp, span Comp;

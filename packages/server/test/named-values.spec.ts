@@ -115,3 +115,5 @@ describe('Named Values', function () {
 
     });
 });
+
+// Does not complete names that appear in later lines
