@@ -156,7 +156,6 @@ export class ImportInternalDirectivesProvider implements CompletionProvider {
     text = importDeclarations.map(name => importDirectives[name]);
 }
 
-
 export class RulesetInternalDirectivesProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         let res: Completion[] = [];
@@ -234,7 +233,12 @@ export class ValueDirectiveProvider implements CompletionProvider {
 
 }
 
-
+export class GlobalCompletionProvider implements CompletionProvider {
+    provide(options: ProviderOptions): Completion[] {
+        return [];
+    }
+    text: string[] = [':global()']
+}
 
 //Semantic
 
@@ -308,7 +312,7 @@ export class NamedCompletionProvider implements CompletionProvider {
                     .filter(ms => ms === '' || options.namedValues.every(name => name !== ms))
                     .map(ms => [
                         ms,
-                        path.relative(options.meta.source, options.resolvedImport!.source).slice(1),
+                        path.relative(options.meta.source, options.resolvedImport!.source).slice(1).replace('\\','/'),
                         options.resolvedImport!.mappedSymbols[ms]._kind === 'var' ? (options.resolvedImport!.mappedSymbols[ms] as VarSymbol).value : 'Stylable class'
                     ])
             )
@@ -541,7 +545,7 @@ function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr
             }
         })
         .map(s => {
-            return [s, path.relative(options.meta.source, t.meta.source).slice(1) || 'Local file']
+            return [s, path.relative(options.meta.source, t.meta.source).slice(1).replace('\\','/') || 'Local file']
         })
 }
 
