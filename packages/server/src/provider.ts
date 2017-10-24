@@ -17,7 +17,8 @@ import {
     ProviderOptions,
     NamedCompletionProvider,
     ValueDirectiveProvider,
-    ValueCompletionProvider
+    ValueCompletionProvider,
+    MixinCompletionProvider
 } from './completion-providers'
 import { Completion, } from './completion-types';
 import { parseSelector, } from './utils/selector-analyzer';
@@ -75,6 +76,7 @@ export default class Provider {
         new GlobalCompletionProvider(),
         new SelectorCompletionProvider(),
         new ExtendCompletionProvider(),
+        new MixinCompletionProvider(),
         new NamedCompletionProvider(),
         new StateCompletionProvider(),
         new PseudoElementCompletionProvider(),

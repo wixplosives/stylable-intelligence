@@ -1,4 +1,4 @@
-import { StylableMeta, SRule, valueMapping, ClassSymbol, CSSResolve, VarSymbol } from 'stylable';
+import { StylableMeta, SRule, valueMapping, ClassSymbol, CSSResolve, VarSymbol, ImportSymbol } from 'stylable';
 import { CursorPosition, SelectorInternalChunk } from "./utils/selector-analyzer";
 import {
     classCompletion,
@@ -7,6 +7,7 @@ import {
     globalCompletion,
     importDirectives,
     importInternalDirective,
+    mixinCompletion,
     namedCompletion,
     pseudoElementCompletion,
     rulesetDirectives,
@@ -316,12 +317,40 @@ export class ExtendCompletionProvider implements CompletionProvider {
                 c[1],
                 new ProviderRange(
                     new ProviderPosition(options.position.line, options.position.character - str.length),
-                    new ProviderPosition(options.position.line, options.position.character)
+                    options.position
                 ),
             ));
         } else {
             return [];
         }
+    }
+    text: string[] = [''];
+}
+
+export class MixinCompletionProvider implements CompletionProvider {
+    provide(options: ProviderOptions): Completion[] {
+        if (options.trimmedLine.startsWith(valueMapping.mixin + ':')) {
+            let value = options.trimmedLine.slice((valueMapping.mixin + ':').length);
+            let spaces = value.search(/\S|$/);
+            let str = value.slice(spaces);
+
+            return Object.keys(options.meta.mappedSymbols)
+                .filter(ms => ms.startsWith(str))
+                .filter(ms => (options.meta.mappedSymbols[ms]._kind === 'import' || options.meta.mappedSymbols[ms]._kind === 'class'))
+                .map(ms => {
+                    return mixinCompletion(
+                        ms,
+                        new ProviderRange(
+                            new ProviderPosition(options.position.line, options.position.character - str.length),
+                            options.position
+                        ),
+                        options.meta.mappedSymbols[ms]._kind === 'import' ? (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative : 'Local file'
+                    )
+                });
+        } else {
+            return [];
+        }
+
     }
     text: string[] = [''];
 }
@@ -366,7 +395,6 @@ export class NamedCompletionProvider implements CompletionProvider {
     }
     text: string[] = [''];
 }
-
 
 export class PseudoElementCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
@@ -433,7 +461,6 @@ export class PseudoElementCompletionProvider implements CompletionProvider {
     }
     text: string[] = [''];
 }
-
 
 export class StateCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {

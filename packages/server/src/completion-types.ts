@@ -84,6 +84,10 @@ export function namedCompletion(symbolName: string, rng: ProviderRange, from: st
     return new Completion(symbolName, 'from: ' + from + '\n' + 'Value: ' + value, 'a', new snippet(symbolName), rng)
 }
 
+export function mixinCompletion(symbolName: string, rng: ProviderRange, from: string) {
+    return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName), rng)
+}
+
 export function pseudoElementCompletion(elementName: string, from: string, rng: ProviderRange) {
     return new Completion('::' + elementName, 'from: ' + from, 'a', '::' + elementName, rng)
 }

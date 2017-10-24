@@ -164,7 +164,6 @@ export const varsDirectiveCompletion: (rng: ProviderRange) => Partial<Completion
 export const variantDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
     return { label: '-st-variant:', detail: 'Is a variant', sortText: 'a', insertText: '-st-variant: true;', range: rng };
 }
-
 export const globalCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
     return new Completion(':global()', 'Target a global selector','a', ':global($0)', rng)
 }
@@ -176,10 +175,13 @@ export const classCompletion: (className: string, rng: ProviderRange, isDefaultI
 }
 export const extendsCompletion: (typeName: string, rng: ProviderRange, from: string) => Partial<Completion> = (typeName, rng, from) => {
     return { label: typeName, sortText: 'a', insertText: typeName, detail: 'from: ' + from, range: rng }
-};
+}
 export const namedCompletion: (typeName: string, rng: ProviderRange, from: string, value?: string) => Partial<Completion> = (typeName, rng, from, value?) => {
     return { label: typeName, sortText: 'a', insertText: typeName, detail: 'from: ' + from + '\n' + 'Value: ' + value, range: rng }
-};
+}
+export const mixinCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
+    return new Completion(symbolName, 'from: ' + from + '\n', 'a', symbolName, rng)
+}
 export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (stateName, rng, from = 'Local file') => {
     return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName, range: rng }
 }
