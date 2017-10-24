@@ -20,7 +20,7 @@
   ],
   "devDependencies": {
     "lerna": "^2.0.0",
-    "typescript": "~2.4.1",
+    "typescript": "~2.5.2",
     "vsce": "^1.30.0"
   },
   "scripts": {
