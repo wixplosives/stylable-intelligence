@@ -174,7 +174,7 @@ export default class Provider {
             currentLine = currentLine.slice(currentLine.lastIndexOf(' '));
         }
 
-        let trimmedLine = currentLine.replace(',', '').trim();
+        let trimmedLine = currentLine.trim();
         let postDirectiveSpaces = (Object.keys(valueMapping).some(k => { return trimmedLine.startsWith((valueMapping as any)[k]) })) ? currentLine.match((/:(\s*)\w?/))![1].length : 0
         let postValueSpaces = (Object.keys(valueMapping).some(k => { return trimmedLine.startsWith((valueMapping as any)[k]) && trimmedLine.indexOf(',') !== -1 }))
             ? (currentLine.replace(/^\s*/, '').match(/\s+/) || [''])[0].length

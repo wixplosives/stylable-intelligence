@@ -330,18 +330,23 @@ export class ExtendCompletionProvider implements CompletionProvider {
 export class MixinCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.trimmedLine.startsWith(valueMapping.mixin + ':')) {
-            let value = options.trimmedLine.slice((valueMapping.mixin + ':').length);
-            let spaces = value.search(/\S|$/);
-            let str = value.slice(spaces);
+            let valueStart = options.wholeLine.indexOf(':') + 1;
+            let value = options.wholeLine.slice(valueStart);
+            let names = value.split(',').map(x => x.trim()).filter(x => x !== '');
+            let lastName = /,\s*$/.test(options.wholeLine)
+                ? ''
+                : names.reverse()[0] || '';
+
 
             return Object.keys(options.meta.mappedSymbols)
-                .filter(ms => ms.startsWith(str))
                 .filter(ms => (options.meta.mappedSymbols[ms]._kind === 'import' || options.meta.mappedSymbols[ms]._kind === 'class'))
+                .filter(ms => ms.startsWith(lastName))
+                .filter(ms => names.indexOf(ms)===-1)
                 .map(ms => {
                     return mixinCompletion(
                         ms,
                         new ProviderRange(
-                            new ProviderPosition(options.position.line, options.position.character - str.length),
+                            new ProviderPosition(options.position.line, options.position.character - lastName.length),
                             options.position
                         ),
                         options.meta.mappedSymbols[ms]._kind === 'import' ? (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative : 'Local file'
