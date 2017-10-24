@@ -1,10 +1,6 @@
-:import {
-    -st-from: "./import.st.css";
-    -st-default: Comp;
- }
+C
 
  .grid{
-    -st-extends: Comp;
+    color: red;
  }
 
-.grid::pongo:otherState::momo

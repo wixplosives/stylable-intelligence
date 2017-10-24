@@ -165,6 +165,10 @@ export const variantDirectiveCompletion: (rng: ProviderRange) => Partial<Complet
     return { label: '-st-variant:', detail: 'Is a variant', sortText: 'a', insertText: '-st-variant: true;', range: rng };
 }
 
+export const globalCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return new Completion(':global()', 'Target a global selector','a', ':global($0)', rng)
+}
+
 
 //semantic
 export const classCompletion: (className: string, rng: ProviderRange, isDefaultImport?: boolean) => Partial<Completion> = (className, rng, isDefaultImport?) => {

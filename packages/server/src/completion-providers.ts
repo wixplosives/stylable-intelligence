@@ -4,6 +4,7 @@ import {
     classCompletion,
     Completion,
     extendCompletion,
+    globalCompletion,
     importDirectives,
     importInternalDirective,
     namedCompletion,
@@ -235,7 +236,39 @@ export class ValueDirectiveProvider implements CompletionProvider {
 
 export class GlobalCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        return [];
+        if (options.isTopLevel) {
+            if (options.isLineStart) {
+                return [globalCompletion(
+                    new ProviderRange(
+                        new ProviderPosition(
+                            options.position.line,
+                            options.position.character - options.trimmedLine.length
+                        ),
+                        options.position
+                    )
+                )];
+            } else {
+                let offset = 0;
+                if (options.wholeLine.lastIndexOf(':') !== -1) {
+                    if (this.text[0].startsWith(options.trimmedLine.slice(options.trimmedLine.lastIndexOf(':')))) {
+                        offset = options.trimmedLine.slice(options.trimmedLine.lastIndexOf(':')).length;
+                    }
+                }
+
+
+                return [globalCompletion(
+                    new ProviderRange(
+                        new ProviderPosition(
+                            options.position.line,
+                            options.position.character - offset
+                        ),
+                        options.position
+                    )
+                )];
+            }
+        } else {
+            return [];
+        }
     }
     text: string[] = [':global()']
 }
@@ -312,7 +345,7 @@ export class NamedCompletionProvider implements CompletionProvider {
                     .filter(ms => ms === '' || options.namedValues.every(name => name !== ms))
                     .map(ms => [
                         ms,
-                        path.relative(options.meta.source, options.resolvedImport!.source).slice(1).replace('\\','/'),
+                        path.relative(options.meta.source, options.resolvedImport!.source).slice(1).replace('\\', '/'),
                         options.resolvedImport!.mappedSymbols[ms]._kind === 'var' ? (options.resolvedImport!.mappedSymbols[ms] as VarSymbol).value : 'Stylable class'
                     ])
             )
@@ -545,7 +578,7 @@ function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr
             }
         })
         .map(s => {
-            return [s, path.relative(options.meta.source, t.meta.source).slice(1).replace('\\','/') || 'Local file']
+            return [s, path.relative(options.meta.source, t.meta.source).slice(1).replace('\\', '/') || 'Local file']
         })
 }
 
