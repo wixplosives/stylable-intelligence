@@ -1,6 +1,8 @@
-C
+:import {
+    -st-from: './import.st.css';
+    -st-named: a,b;
+}
 
- .grid{
-    color: red;
- }
-
+.local {
+    color: value(a)
+}

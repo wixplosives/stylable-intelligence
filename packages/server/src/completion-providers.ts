@@ -327,6 +327,10 @@ export class ExtendCompletionProvider implements CompletionProvider {
     text: string[] = [''];
 }
 
+// class Mixin {
+//     constructor(public name: string, public from: string) {}
+// }
+
 export class MixinCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.trimmedLine.startsWith(valueMapping.mixin + ':')) {
@@ -337,11 +341,13 @@ export class MixinCompletionProvider implements CompletionProvider {
                 ? ''
                 : names.reverse()[0] || '';
 
+            // let mixins: Mixin[] = [];
+            // let docs: string[] = collecetDocs()
 
             return Object.keys(options.meta.mappedSymbols)
                 .filter(ms => (options.meta.mappedSymbols[ms]._kind === 'import' || options.meta.mappedSymbols[ms]._kind === 'class'))
                 .filter(ms => ms.startsWith(lastName))
-                .filter(ms => names.indexOf(ms)===-1)
+                .filter(ms => names.indexOf(ms) === -1)
                 .map(ms => {
                     return mixinCompletion(
                         ms,
@@ -523,7 +529,7 @@ export class ValueCompletionProvider implements CompletionProvider {
                 }
             })
             options.importVars.forEach(v => {
-                if (v.name.startsWith(inner)) {
+                if (v.name.startsWith(inner) && options.meta.imports.some(imp => Object.keys(imp.named).some(key => key===v.name) ) ) {
                     comps.push(valueCompletion(v.name, v.from, v.value, new ProviderRange(
                         new ProviderPosition(options.position.line, options.position.character - inner.length),
                         options.position,

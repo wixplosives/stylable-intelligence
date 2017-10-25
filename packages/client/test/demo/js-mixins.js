@@ -9,3 +9,12 @@
 exports.myMixin = function(a,b) {
 
 }
+
+
+/**
+ * A mixin with no params
+ * @name myBareMixin
+ */
+exports.myBareMixin = function() {
+
+}
