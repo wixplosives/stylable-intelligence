@@ -365,7 +365,7 @@ export class MixinCompletionProvider implements CompletionProvider {
 
 export class NamedCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isNamedValueLine && options.resolvedImport && options.resolvedImport.source.endsWith('.st.css')) {
+        if (options.isNamedValueLine && options.resolvedImport) {
 
             let valueStart = options.wholeLine.indexOf(':') + 1;
             let value = options.wholeLine.slice(valueStart);

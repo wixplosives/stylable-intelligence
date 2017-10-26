@@ -1,11 +1,4 @@
-:import{
-    -st-from:"./import.st.css";
-    -st-default:Comp;
-    -st-named:shlomo;
+:import {
+    -st-from: './js-mixins.js';
+    -st-named:
 }
-
-@custom-selector :--popo div > Comp;
-
-@custom-selector :--pongo div span Comp;
-
-:--pongo

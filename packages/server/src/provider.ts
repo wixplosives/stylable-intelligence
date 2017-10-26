@@ -245,7 +245,7 @@ export default class Provider {
         let fromNode: Declaration | undefined = isImport ? (lastRule!.nodes as Declaration[]).find(n => n.prop === valueMapping.from) : undefined;
         let importName = (isImport && fromNode) ? fromNode.value.replace(/'/g, '').replace(/"/g, '') : '';
         let resolvedImport: StylableMeta | null = null;
-        if (importName) try {
+        if (importName && importName.endsWith('.st.css')) try {
             resolvedImport = this.styl.fileProcessor.process(meta.imports.find(i => i.fromRelative === importName)!.from);
         } catch (e) {
             resolvedImport = null;
@@ -373,13 +373,6 @@ export default class Provider {
                 acc.push(cur.name || pseudo)
             }
 
-            // if (cur.name && (cur.name !== customSelector)) {
-            //     acc.push(cur.name)
-            // } else {
-            //     if (cur.name || (cur.customSelectors.some((s: string) => s.slice(3) === customSelector))) {
-            //         acc.push(pseudo)
-            //     };
-            // }
             return acc;
         }, []);
 
