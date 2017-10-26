@@ -203,10 +203,15 @@ export default class Provider {
                 : this.styl.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase())
             : [];
 
+
+        let finalPseudo;
+        try {
+            finalPseudo = this.isFinalPartValidPseudo(resolved, trimmedLine);
+        } catch (e) { }
         let pseudo = (trimmedLine.match(/::\w+/))
             ? (trimmedLine.endsWith('::')
                 ? trimmedLine.split('::').reverse()[1].split(':')[0]
-                : this.isFinalPseudo(resolved, trimmedLine)
+                : (finalPseudo && finalPseudo.res)
                     ? trimmedLine.split('::').reverse()[0].split(':')[0]
                     : trimmedLine.split('::').length > 2
                         ? trimmedLine.split('::').reverse()[1].split(':')[0]
@@ -221,10 +226,9 @@ export default class Provider {
             customSelectorString = trimmedLine.match(/^(:--\w*)/)![1];
             expanded = meta.customSelectors[customSelectorString];
         }
-        if (resolved.some(res => Object.keys(res.meta.customSelectors).some(k => k === ':--' + pseudo))) {
-            let customSelector = resolved.find(res => Object.keys(res.meta.customSelectors).some(k => k === ':--' + pseudo));
+        if (finalPseudo && finalPseudo.curMeta && Object.keys(finalPseudo.curMeta[finalPseudo.curMeta.length - 1].customSelectors).some(cs => cs === ':--' + pseudo)) {
             customSelectorString = ':--' + pseudo
-            expanded = customSelector ? customSelector.meta.customSelectors[customSelectorString] : '';
+            expanded = finalPseudo.curMeta[finalPseudo.curMeta.length - 1].customSelectors[customSelectorString];
             pseudo = null;
         }
         if (expanded) {
@@ -233,9 +237,9 @@ export default class Provider {
         }
 
         let resolvedPseudo = pseudo
-            ? this.recursiveResolve(resolved, pseudo, ps, customSelectorType)
+            ? this.recursiveResolve(resolved, pseudo, ps, customSelectorType, finalPseudo ? finalPseudo.curMeta : [])
             : customSelectorType
-                ? this.recursiveResolve(resolved, customSelectorType, ps, customSelectorString.slice(3))
+                ? this.recursiveResolve(resolved, customSelectorType, ps, customSelectorString.slice(3), finalPseudo ? finalPseudo.curMeta : [])
                 : [];
         let isImport = !!lastRule && (lastRule.selector === ':import');
         let fromNode: Declaration | undefined = isImport ? (lastRule!.nodes as Declaration[]).find(n => n.prop === valueMapping.from) : undefined;
@@ -329,16 +333,17 @@ export default class Provider {
     }
 
 
-    private isFinalPseudo(resolved: CSSResolve[], trimmedLine: string) {
+    private isFinalPartValidPseudo(resolved: CSSResolve[], trimmedLine: string) {
+        let prevMetas: StylableMeta[] = [resolved[resolved.length - 1].meta];
         let curMeta: StylableMeta = resolved[resolved.length - 1].meta;
         let pseudos: string[] = trimmedLine.split('::').slice(1).map(s => s.split(':')[0]);
         let res = true;
         let tmp = [];
 
         for (let i = 0; i < pseudos.length; i++) {
-            if (resolved.some(res => !!res.meta.customSelectors[':--' + pseudos[i]])) {
+            if (curMeta.customSelectors[':--' + pseudos[i]]) {
                 let customSelector = ':--' + pseudos[i];
-                let expanded = resolved.find(res => !!res.meta.customSelectors[':--' + pseudos[i]])!.meta.customSelectors[customSelector];
+                let expanded = curMeta.customSelectors[customSelector];
                 let ps_exp = parseSelector(expanded, expanded.length)
                 let customSelectorType = Array.isArray(ps_exp.target.focusChunk) ? ps_exp.target.focusChunk[0].type : (ps_exp.target.focusChunk as any).type
                 tmp = this.styl.resolver.resolveExtends(curMeta, customSelectorType, customSelectorType ? customSelectorType[0] === customSelectorType[0].toUpperCase() : false)
@@ -347,19 +352,34 @@ export default class Provider {
             }
 
             if (tmp.length === 0) { res = false; break; }
+            prevMetas.push(curMeta);
             curMeta = tmp[tmp.length - 1].meta;
         }
 
-        return res;
+        return {
+            res,
+            curMeta: prevMetas
+        };
     }
 
-    private recursiveResolve(resolved: CSSResolve[], pseudo: string, ps: any, customSelector: string): CSSResolve[] {
+    private recursiveResolve(resolved: CSSResolve[], pseudo: string, ps: any, customSelector: string, metas: StylableMeta[]): CSSResolve[] {
         let chain: string[] = ps.selector.reduce((acc: string[], cur: any) => {
-            if (cur.name && (cur.name !== customSelector)) {
-                acc.push(cur.name)
-            } else {
-                if (cur.name || (cur.customSelectors.some((s: string) => s.slice(3) === customSelector))) { acc.push(pseudo) };
+            if (cur.name && metas.some(m => Object.keys(m.customSelectors).indexOf(':--' + cur.name) !== -1)) {
+                let exp = metas.find(m => Object.keys(m.customSelectors).indexOf(':--' + cur.name) !== -1)!.customSelectors[':--' + cur.name];
+                let ps_exp = parseSelector(exp, exp.length);
+                let type = Array.isArray(ps_exp.target.focusChunk) ? ps_exp.target.focusChunk[0].type : (ps_exp.target.focusChunk as any).type;
+                acc.push(type);
+            } else if (cur.name || cur.customSelectors.some((s: string) => s.slice(3) === customSelector)) {
+                acc.push(cur.name || pseudo)
             }
+
+            // if (cur.name && (cur.name !== customSelector)) {
+            //     acc.push(cur.name)
+            // } else {
+            //     if (cur.name || (cur.customSelectors.some((s: string) => s.slice(3) === customSelector))) {
+            //         acc.push(pseudo)
+            //     };
+            // }
             return acc;
         }, []);
 

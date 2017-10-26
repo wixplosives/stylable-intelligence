@@ -5,9 +5,9 @@ import { Completion } from '../src/completion-types';
 
 describe('Mixin values', function () {
 
-    const createComp = (str: string, rng: ProviderRange, path: string) => asserters.mixinCompletion(str, rng, path);
 
     describe('local and imported classes', function () {
+        const createComp = (str: string, rng: ProviderRange, path: string) => asserters.mixinCompletion(str, rng, path);
 
         const str1 = 'momo';
         const from1 = './recursive-import-1.st.css'
@@ -114,6 +114,8 @@ describe('Mixin values', function () {
         const str1 = 'aMixin';
         const str2 = 'aBareMixin';
         const from = './js-mixins.js';
+        const createComp = (str: string, rng: ProviderRange, value: string, path: string) => asserters.namedCompletion(str, rng, path, value);
+
         [str1, str2].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
                 let prefix = str.slice(0, i);
@@ -124,10 +126,10 @@ describe('Mixin values', function () {
                         let notExp: Partial<Completion>[] = [];
 
                         if (i <= 1) {
-                            a.forEach((comp, k) => exp.push(createComp(a[k], rng, from)))
+                            a.forEach((comp, k) => exp.push(createComp(a[k], rng, './js-mixins.js', from)))
                         } else {
-                            exp.push(createComp(str, rng, from));
-                            notExp.push(createComp(a[1-j], rng, from))
+                            exp.push(createComp(str, rng, './js-mixins.js', from));
+                            notExp.push(createComp(a[1-j], rng, './js-mixins.js', from))
                         }
 
                         asserter.suggested(exp);

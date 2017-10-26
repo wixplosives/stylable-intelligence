@@ -341,9 +341,6 @@ export class MixinCompletionProvider implements CompletionProvider {
                 ? ''
                 : names.reverse()[0] || '';
 
-            // let mixins: Mixin[] = [];
-            // let docs: string[] = collecetDocs()
-
             return Object.keys(options.meta.mappedSymbols)
                 .filter(ms => (options.meta.mappedSymbols[ms]._kind === 'import' || options.meta.mappedSymbols[ms]._kind === 'class'))
                 .filter(ms => ms.startsWith(lastName))
@@ -368,7 +365,7 @@ export class MixinCompletionProvider implements CompletionProvider {
 
 export class NamedCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isNamedValueLine && options.resolvedImport) {
+        if (options.isNamedValueLine && options.resolvedImport && options.resolvedImport.source.endsWith('.st.css')) {
 
             let valueStart = options.wholeLine.indexOf(':') + 1;
             let value = options.wholeLine.slice(valueStart);
