@@ -6,7 +6,7 @@
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
-      "args": ["/home/wix/projects/CSS-in-a-Components-World-YGLF17/app","--extensionDevelopmentPath=${workspaceRoot}"],
+      "args": ["${workspaceRoot}/test/demo","--extensionDevelopmentPath=${workspaceRoot}"],
       "stopOnEntry": false,
       "sourceMaps": true,
       "preLaunchTask": "npm"

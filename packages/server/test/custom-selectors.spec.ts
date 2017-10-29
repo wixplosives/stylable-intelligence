@@ -8,6 +8,10 @@ describe('Custom Selectors', function () {
 
         const str1 = ':--popo';
         const str2 = ':--pongo';
+        const str3 = '::momo';
+        const str4 = ':rooroo';
+        const str5 = ':state';
+        const str6 = ':otherState';
         const createComp = (str: string, rng: ProviderRange, path: string) => asserters.classCompletion(str, rng, true);
 
         [str1, str2].forEach((str, j, a) => {
@@ -50,6 +54,52 @@ describe('Custom Selectors', function () {
                     });
                 });
 
+            });
+        });
+
+        [str3, str4].forEach((str, j, a) => {
+            str.split('').forEach((c, i) => {
+                let prefix = str.slice(0, i);
+                it('should have relevant states and pseudo-elements when extending root class, with prefix ' + prefix + ' ', function () {
+                    let rng = createRange(16, 8, 16, 8 + i);
+                    return asserters.getCompletions('custom-selectors/local-selector-inner-2.st.css', prefix).then((asserter) => {
+                        let exp: Partial<Completion>[] = [];
+                        let notExp: Partial<Completion>[] = [];
+
+                        exp.push(createComp(a[j], rng, 'Local file'));
+                        if (prefix.length <= 1) {
+                            exp.push(createComp(a[1 - j], rng, 'Local file'));
+                        } else {
+                            notExp.push(createComp(a[1 - j], rng, 'Local file'));
+                        }
+
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
+                    });
+                })
+            });
+        });
+
+        [str5, str6].forEach((str, j, a) => {
+            str.split('').forEach((c, i) => {
+                let prefix = str.slice(0, i);
+                it('should have relevant states when extending local class, with prefix ' + prefix + ' ', function () {
+                    let rng = createRange(16, 8, 16, 8 + i);
+                    return asserters.getCompletions('custom-selectors/local-selector-inner.st.css', prefix).then((asserter) => {
+                        let exp: Partial<Completion>[] = [];
+                        let notExp: Partial<Completion>[] = [];
+
+                        exp.push(createComp(a[j], rng, 'Local file'));
+                        if (prefix.length <= 1) {
+                            exp.push(createComp(a[1 - j], rng, 'Local file'));
+                        } else {
+                            notExp.push(createComp(a[1 - j], rng, 'Local file'));
+                        }
+
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
+                    });
+                })
             });
         });
 
@@ -296,4 +346,7 @@ describe('Custom Selectors', function () {
         });
     });
 
+    // describe('Nested Custom Selectors', function () {
+
+    // })
 });

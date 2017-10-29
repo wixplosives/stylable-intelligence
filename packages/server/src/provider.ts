@@ -199,7 +199,12 @@ export default class Provider {
 
         let resolved = currentSelector
             ? (Object.keys(meta.customSelectors).some(k => k === currentSelector) && meta.customSelectors[currentSelector] !== '')
-                ? this.styl.resolver.resolveExtends(meta, meta.customSelectors[currentSelector].match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0], currentSelector[0] === currentSelector[0].toUpperCase())
+                ? this.styl.resolver.resolveExtends(
+                    meta,
+                    meta.customSelectors[currentSelector].match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0],
+                    currentSelector.startsWith(':--')
+                        ? meta.customSelectors[currentSelector].match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0][0] === meta.customSelectors[currentSelector].match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0][0].toUpperCase()
+                        : currentSelector[0] === currentSelector[0].toUpperCase())
                 : this.styl.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase())
             : [];
 

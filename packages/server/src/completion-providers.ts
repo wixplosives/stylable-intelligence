@@ -406,7 +406,7 @@ export class NamedCompletionProvider implements CompletionProvider {
 
 export class PseudoElementCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isTopLevel && options.resolved.length > 0 && options.meta.imports.length > 0) {
+        if (options.isTopLevel && options.resolved.length > 0) {
             let pseudos = collectSelectorParts(
                 options.resolvedPseudo,
                 options.resolved,
@@ -526,7 +526,7 @@ export class ValueCompletionProvider implements CompletionProvider {
                 }
             })
             options.importVars.forEach(v => {
-                if (v.name.startsWith(inner) && options.meta.imports.some(imp => Object.keys(imp.named).some(key => key===v.name) ) ) {
+                if (v.name.startsWith(inner) && options.meta.imports.some(imp => Object.keys(imp.named).some(key => key === v.name))) {
                     comps.push(valueCompletion(v.name, v.from, v.value, new ProviderRange(
                         new ProviderPosition(options.position.line, options.position.character - inner.length),
                         options.position,
@@ -542,7 +542,7 @@ export class ValueCompletionProvider implements CompletionProvider {
 }
 
 function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, arr: CSSResolve[]) {
-    if (ind === 0) { return [] };
+    // if (ind === 0) { return [] };
     if (!t.symbol) { return [] };
     if (!(t.symbol as ClassSymbol)[valueMapping.root]) { return [] };
     return Object.keys((t.meta.classes) || [])
@@ -574,20 +574,24 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, a
                 return true;
             }
         })
-        .filter(s => {
-            return Array.isArray(options.target.focusChunk)
-                ? options.target.focusChunk.every((c: SelectorInternalChunk) => { return !c.name || c.name !== s })
-                : !(options.target.focusChunk as SelectorInternalChunk).name || (options.target.focusChunk as SelectorInternalChunk).name !== s;
-        })
         .map(s => [s, arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector) && (options.currentSelector !== 'root' || !options.customSelectorType))
             ? arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector))!.meta.imports[0].fromRelative
-            : arr.find(r => r.symbol.name === options.customSelectorType)!.meta.imports.find(i => i.defaultExport === options.customSelectorType)!.fromRelative])
+            : arr.find(r => r.symbol.name === options.customSelectorType)
+                ? arr.find(r => r.symbol.name === options.customSelectorType)!.meta.imports.find(i => i.defaultExport === options.customSelectorType)!.fromRelative
+                : 'Local file']
+
+        )
 }
 
 function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr: CSSResolve[]) {
     let lastState = '';
     if (/[^:]:(\w+):?$/.test(options.trimmedLine)) {
         lastState = options.trimmedLine.match(/[^:]:(\w+):?$/)![1];
+    } else if (/::(\w+):?$/.test(options.trimmedLine)) {
+        let lastPseudo = options.trimmedLine.match(/::(\w+):?$/)![1];
+        if (lastPseudo !== options.pseudo && lastPseudo !== options.customSelector.slice(3)) {
+            lastState = lastPseudo;
+        }
     }
 
     let existing = arr.reduce((acc: string[], cur) => {

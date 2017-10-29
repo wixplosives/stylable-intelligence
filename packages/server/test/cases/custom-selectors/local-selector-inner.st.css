@@ -7,11 +7,11 @@
 }
 
 .root {
-    -st-states: rooroo;
+    -st-states: rootoo;
 }
 
 @custom-selector :--bongo .gaga;
 
 @custom-selector :--pongo .root;
 
-:--bongo:
+:--bongo|
