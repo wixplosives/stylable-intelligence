@@ -1,105 +1,28 @@
-# stylable-intelligence
+# Stylable Intelligence 
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/wix/stylable-intelligence.svg)](https://greenkeeper.io/)
-[![Build Status](https://travis-ci.org/wix/stylable-intelligence.svg?branch=master)](https://travis-ci.org/wix/stylable-intelligence)
-[![Build Status](https://ci.appveyor.com/api/projects/status/6ky876hm9nycyu8m/branch/master?svg=true)](https://ci.appveyor.com/project/qballer/stylable-intelligence)
+## Overview
+Stylable Intelligence is an extension implementing the Language Server Protocol that provides IDE support for Stylable.
+It currently supports all code completions as well as all diagnostics provided by Stylable.
+Other Language Server features will be added in the near future.
+Stylable Intelligence is currently only supported in VSCode (version 1.16 and later). Support for JetBrains IDEs (WebStorm, IntelliJ) is planned.
 
-Stylable intelligence is the engine behind Stylable's different IDE plugins.
+## Installation
 
-## Capabilities
+### From VsCode Marketplace
+Search VsCode Extension Marketplace for 'Stylable Intelligence'.
+Install extension.
+Reload window when prompted by VsCode.
 
- - code completion
- - hover-hints
- - diagnostics
- - goto definition
- - find references
- - highlight occurances
- - rename symbols
+### From .vsix file
+In VsCode extension menu, choose 'Install from VSIX'.
+Double-click your .vsix file. 
+Reload window when prompted by VsCode.
 
+## Known Issues
 
-## Project Structure
-
-This project reflects usual langauage server-based extensions structure.
-
-The client is located in packages/client/. It is a VSCode extension that loads and registers the server. 
-
-The server is located in packages/server/. It is a language server according to the Laguage Server Protocol.
-
-The server is structurally independent from VSCode, and while its design is currently ifnluenced by VSCode implementation, it is subject to change.
-
-
-## inherent problems
-
-### source variance
-
-the css source format offers a lot of choice where to place spaces tabs and newlines
-
-```css
-
-.gaga : hover{
-
-}
-
-```
-
-```css
-
-.gaga:hover{}
-
-```
-
-
-```css
-
-.gaga:hover
-{}
-
-```
-
-are all equivanlant
-therefore
-```css
-
-.gaga : |
-
-
-
-```
-
-```css
-
-.gaga:|
-
-```
-should offer the same completions
-
-### invalid source
-in many cases when completions are triggered the source is broken (in the middle of typing) and generating an AST is impossible.
-2 ways of dealing with this are
-- keeping the last valid copy
-- trying to fix the file
-
-currently provider.provideCompletionItemsFromSrc fixes the file for some easily detected cases
-
-### corupted schema
-
-in some cases the of illigeal source the AST is generated but corrupted:
-
-```css
-    .gaga
-
-    .baga{
-
-    }
-
-```
-generates an AST with one selector `.gaga \n .baga'
-
-
-## Useful Resources
-- https://code.visualstudio.com/docs/extensionAPI/vscode-api (and other parts of API reference)
-- https://code.visualstudio.com/docs/extensions/example-language-server (and other extension authoring pages)
-- https://github.com/Microsoft/vscode-languageserver-node-example/ (simple example repo)
-- https://github.com/Microsoft/vscode-tslint/ (Working Lang Server, not very advanced)
-- https://github.com/Microsoft/vscode/issues/26096 (Completion sorting explanation)
-
+### Not supported yet (in rough order of priority):
+* Complex types (.classA.classB, custom selectors with several chinks)
+* Mixins and JS imports
+* Variants
+* Globals
+* Esoteric syntax (-st-compose, -st-theme, -st-root, -st-scoped)
