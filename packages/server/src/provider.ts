@@ -194,7 +194,7 @@ export default class Provider {
 
         let rev = chunkStrings.slice().reverse();
         pos -= Math.max(rev.findIndex(s => !/^:+/.test(s) || /^:--/.test(s)), 0)
-        let currentSelector = /^:+/.test(chunkStrings[pos]) ? chunkStrings[Math.max(pos - 1, 0)] : chunkStrings[pos]
+        let currentSelector = (/^:+/.test(chunkStrings[pos]) && !chunkStrings[pos].startsWith(':--')) ? chunkStrings[Math.max(pos - 1, 0)] : chunkStrings[pos]
         if (currentSelector && currentSelector.startsWith('.')) { currentSelector = currentSelector.slice(1) }
 
         let resolved = currentSelector
@@ -350,7 +350,12 @@ export default class Provider {
                 let customSelector = ':--' + pseudos[i];
                 let expanded = curMeta.customSelectors[customSelector];
                 let ps_exp = parseSelector(expanded, expanded.length)
-                let customSelectorType = Array.isArray(ps_exp.target.focusChunk) ? ps_exp.target.focusChunk[0].type : (ps_exp.target.focusChunk as any).type
+                let customSelectorType = Array.isArray(ps_exp.target.focusChunk)
+                    ? ps_exp.target.focusChunk[0].type
+                    : (ps_exp.target.focusChunk as any).type === '*'
+                        // ? (ps_exp.target.focusChunk as any).type
+                        ? curMeta.customSelectors[customSelector].match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0]
+                        : (ps_exp.target.focusChunk as any).type;
                 tmp = this.styl.resolver.resolveExtends(curMeta, customSelectorType, customSelectorType ? customSelectorType[0] === customSelectorType[0].toUpperCase() : false)
             } else {
                 tmp = this.styl.resolver.resolveExtends(curMeta, pseudos[i], false);
