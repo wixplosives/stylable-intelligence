@@ -4,7 +4,7 @@ import { createRange } from '../src/completion-providers';
 describe('completion unit test', function () {
     describe('root level', function () {
         it('should complete ONLY import and vars directive, root and existing classes at top level', function () {
-            return asserters.getCompletions('general/top-level-existing-classes.css').then((asserter) => {
+            return asserters.getCompletions('general/top-level-existing-classes.st.css').then((asserter) => {
                 asserter.suggested(
                     [
                         asserters.importDirectiveCompletion(createRange(3, 0, 3, 0)),
@@ -24,7 +24,7 @@ describe('completion unit test', function () {
         });
 
         it('should not complete broken classes at top level', function () {
-            return asserters.getCompletions('general/top-level-existing-classes-broken.css').then((asserter) => {
+            return asserters.getCompletions('general/top-level-existing-classes-broken.st.css').then((asserter) => {
                 asserter.suggested(
                     [
                         asserters.importDirectiveCompletion(createRange(3, 0, 3, 0)),
@@ -43,7 +43,7 @@ describe('completion unit test', function () {
         });
 
         it('should complete root and existing classes at top level after "."', function () {
-            return asserters.getCompletions('general/top-level-dot.css').then((asserter) => {
+            return asserters.getCompletions('general/top-level-dot.st.css').then((asserter) => {
                 asserter.suggested([
                     asserters.rootClassCompletion(createRange(0, 0, 0, 1)),
                     asserters.classCompletion('gaga', (createRange(0, 0, 0, 1))),
@@ -77,7 +77,7 @@ describe('completion unit test', function () {
         });
 
         it('should complete classes and tags, but not root, in non-initial selector chunks', function () {
-            return asserters.getCompletions('general/non-initial-chunk.css').then((asserter) => {
+            return asserters.getCompletions('general/non-initial-chunk.st.css').then((asserter) => {
                 asserter.suggested(
                     [
                         asserters.classCompletion('shlomo', (createRange(6, 6, 6, 6))),
@@ -92,7 +92,7 @@ describe('completion unit test', function () {
         });
 
         it('should not break when no completions to provide', function () {
-            return asserters.getCompletions('general/no-completions.css').then((asserter) => {
+            return asserters.getCompletions('general/no-completions.st.css').then((asserter) => {
                 asserter.exactSuggested([]);
             });
         });
@@ -102,19 +102,19 @@ describe('completion unit test', function () {
     describe('multiple files', function () {
 
         it('complete states for localy imported component', function () {
-            return asserters.getCompletions('states/locally-imported-component.css')
+            return asserters.getCompletions('states/locally-imported-component.st.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.stateCompletion('shmover', createRange(10, 5, 10, 6), './comp-to-import.css')
+                        asserters.stateCompletion('shmover', createRange(10, 5, 10, 6), './comp-to-import.st.css')
                     ]);
                 });
         });
 
         it('complete states for localy imported component (including local states)', function () {
-            return asserters.getCompletions('states/locally-imported-component-with-states.css')
+            return asserters.getCompletions('states/locally-imported-component-with-states.st.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.stateCompletion('shmover', createRange(11, 5, 11, 6), './comp-to-import.css'),
+                        asserters.stateCompletion('shmover', createRange(11, 5, 11, 6), './comp-to-import.st.css'),
                         asserters.stateCompletion('clover', createRange(11, 5, 11, 6)),
                     ]);
                 });
@@ -122,11 +122,11 @@ describe('completion unit test', function () {
 
 
         it('complete states for localy imported component ( recursive )', function () {
-            return asserters.getCompletions('states/locally-imported-component-recursive.css')
+            return asserters.getCompletions('states/locally-imported-component-recursive.st.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.stateCompletion('shmover', createRange(11, 11, 11, 12), './comp-to-import.css'),
-                        asserters.stateCompletion('hoover', createRange(11, 11, 11, 12), './mid-level-import.css'),
+                        asserters.stateCompletion('shmover', createRange(11, 11, 11, 12), './comp-to-import.st.css'),
+                        asserters.stateCompletion('hoover', createRange(11, 11, 11, 12), './mid-level-import.st.css'),
                         asserters.stateCompletion('clover', createRange(11, 11, 11, 12)),
                     ]);
                 });

@@ -1,6 +1,6 @@
 
 :import {
-    -st-from: "./import-from-here.css";
+    -st-from: "./import-from-here.st.css";
     -st-default: X;
     -st-named: shlomo;
     -st-theme: true;

@@ -12,7 +12,7 @@ describe('Global scope reference', function () {
         let prefix = str.slice(0, i);
         it('should be completed at top level, with prefix ' + prefix, function () {
             let rng = createRange(0, 0, 0, 0 + i);
-            return asserters.getCompletions('imports/top-level.css', prefix).then((asserter) => {
+            return asserters.getCompletions('imports/top-level.st.css', prefix).then((asserter) => {
                 let exp: Partial<Completion>[] = [];
 
                 exp.push(createComp(rng));

@@ -1,5 +1,5 @@
 :import{
-    -st-from: "./mid-level-import.css";
+    -st-from: "./comp-to-import.st.css";
     -st-default: Comp;
 
 }
@@ -9,4 +9,4 @@
     -st-states: clover;
 }
 
-.baga .gaga:|
+.gaga:|

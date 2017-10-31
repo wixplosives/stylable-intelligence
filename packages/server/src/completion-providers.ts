@@ -240,7 +240,7 @@ export class ValueDirectiveProvider implements CompletionProvider {
 
 export class GlobalCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isTopLevel) {
+        if (options.isTopLevel && !options.trimmedLine.endsWith('::')) {
             if (options.isLineStart) {
                 return [globalCompletion(
                     new ProviderRange(

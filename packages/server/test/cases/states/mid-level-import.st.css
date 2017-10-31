@@ -1,5 +1,5 @@
 :import{
-    -st-from: "./comp-to-import.css";
+    -st-from: "./comp-to-import.st.css";
     -st-default: Zag;
 }
 .root{
