@@ -1,5 +1,8 @@
 # Stylable Intelligence 
-
+[![Greenkeeper badge](https://badges.greenkeeper.io/wix/stylable-intelligence.svg)](https://greenkeeper.io/)
+[![Build Status](https://travis-ci.org/wix/stylable-intelligence.svg?branch=master)](https://travis-ci.org/wix/stylable-intelligence)
+[![Build Status](https://ci.appveyor.com/api/projects/status/6ky876hm9nycyu8m/branch/master?svg=true)](https://ci.appveyor.com/project/qballer/stylable-intelligence)
+ 
 ## Overview
 Stylable Intelligence is an extension implementing the Language Server Protocol that provides IDE support for Stylable.
 It currently supports most code completions as well as all diagnostics provided by Stylable.
