@@ -3,7 +3,9 @@
     -st-named: var1,var2;
 }
 
-:vars {
-    var3: value( va)
+.local {
+    color: red;
 }
+
+.local::
 
