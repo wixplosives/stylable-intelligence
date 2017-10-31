@@ -21,7 +21,7 @@ import {
     MixinCompletionProvider
 } from './completion-providers'
 import { Completion, } from './completion-types';
-import { parseSelector, } from './utils/selector-analyzer';
+import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
 import { Declaration } from 'postcss';
 
 
@@ -136,8 +136,7 @@ export default class Provider {
         this.providers.forEach(p => {
             options.isLineStart = p.text.some((s: string) => s.indexOf(currentLine.trim()) === 0)
             completions.push(...p.provide(options))
-        }
-        );
+        });
         return Promise.resolve(completions);
     }
 
@@ -193,7 +192,7 @@ export default class Provider {
         })
 
         let rev = chunkStrings.slice().reverse();
-        pos -= Math.max(rev.findIndex(s => !/^:+/.test(s) || /^:--/.test(s)), 0)
+        pos -= Math.max(rev.findIndex(s => !/^:+/.test(s) || (/^:--/.test(s))), 0)
         let currentSelector = (/^:+/.test(chunkStrings[pos]) && !chunkStrings[pos].startsWith(':--')) ? chunkStrings[Math.max(pos - 1, 0)] : chunkStrings[pos]
         if (currentSelector && currentSelector.startsWith('.')) { currentSelector = currentSelector.slice(1) }
 
@@ -239,6 +238,9 @@ export default class Provider {
         if (expanded) {
             let ps_exp = parseSelector(expanded, expanded.length)
             customSelectorType = Array.isArray(ps_exp.target.focusChunk) ? ps_exp.target.focusChunk[0].type : (ps_exp.target.focusChunk as any).type
+            if (customSelectorType === '*') {
+                customSelectorType = (ps_exp.selector[0] as SelectorChunk).classes[0];
+            }
         }
 
         let resolvedPseudo = pseudo

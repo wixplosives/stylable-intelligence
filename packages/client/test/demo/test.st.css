@@ -1,19 +1,9 @@
-.momo{
-    -st-states: anotherState,oneMoreState;
+:import {
+    -st-from: './import.st.css';
+    -st-named: var1,var2;
 }
 
-.gaga {
-    -st-states : state,otherState;
+:vars {
+    var3: value( va)
 }
 
-.root {
-    -st-states: rooroo;
-}
-
-@custom-selector :--bongo .gaga;
-
-@custom-selector :--pongo .root;
-
-/* :--pongo::pongo::momo| */
-
-:--pongo::bongo::gaga

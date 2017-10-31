@@ -66,10 +66,6 @@ export class ProviderRange {
     constructor(public start: ProviderPosition, public end: ProviderPosition) { }
 }
 
-export function createRange(startLine: number, startPos: number, endline: number, endPos: number) {
-    return new ProviderRange(new ProviderPosition(startLine, startPos), new ProviderPosition(endline, endPos));
-}
-
 const cssPseudoClasses = [
     'active',
     'any',
@@ -122,8 +118,9 @@ const cssPseudoClasses = [
 //     '::selection',
 // ]
 
-//Providers
-//Syntactic
+export function createRange(startLine: number, startPos: number, endline: number, endPos: number) {
+    return new ProviderRange(new ProviderPosition(startLine, startPos), new ProviderPosition(endline, endPos));
+}
 
 function createDirectiveRange(options: ProviderOptions): ProviderRange {
     return new ProviderRange(
@@ -140,6 +137,12 @@ function createDirectiveRange(options: ProviderOptions): ProviderRange {
 const importDeclarations: (keyof typeof importDirectives)[] = ['default', 'named', 'from', 'theme']
 const simpleRulesetDeclarations: (keyof typeof rulesetDirectives)[] = ['extends', 'states', 'variant', 'mixin']
 const topLevelDeclarations: (keyof typeof topLevelDirectives)[] = ['root', 'namespace', 'vars', 'import', 'customSelector']
+
+
+
+
+//Providers
+//Syntactic
 
 export class ImportInternalDirectivesProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
@@ -326,10 +329,6 @@ export class ExtendCompletionProvider implements CompletionProvider {
     }
     text: string[] = [''];
 }
-
-// class Mixin {
-//     constructor(public name: string, public from: string) {}
-// }
 
 export class MixinCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
@@ -518,7 +517,7 @@ export class ValueCompletionProvider implements CompletionProvider {
 
             let comps: Completion[] = [];
             options.meta.vars.forEach(v => {
-                if (v.name.startsWith(inner)) {
+                if (v.name.startsWith(inner) && !options.wholeLine.slice(0,options.wholeLine.indexOf(':')).includes(v.name) ) {
                     comps.push(valueCompletion(v.name, 'Local variable', v.value, new ProviderRange(
                         new ProviderPosition(options.position.line, options.position.character - inner.length),
                         options.position,
@@ -577,7 +576,9 @@ function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, a
         .map(s => [s, arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector) && (options.currentSelector !== 'root' || !options.customSelectorType))
             ? arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector))!.meta.imports[0].fromRelative
             : arr.find(r => r.symbol.name === options.customSelectorType)
-                ? arr.find(r => r.symbol.name === options.customSelectorType)!.meta.imports.find(i => i.defaultExport === options.customSelectorType)!.fromRelative
+                ? arr.find(r => r.symbol.name === options.customSelectorType)!.meta.imports.length > 0
+                    ? arr.find(r => r.symbol.name === options.customSelectorType)!.meta.imports.find(i => i.defaultExport === options.customSelectorType)!.fromRelative
+                    : 'Local file'
                 : 'Local file']
 
         )
