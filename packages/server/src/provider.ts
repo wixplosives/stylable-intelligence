@@ -131,21 +131,23 @@ export default class Provider {
         cursorLineIndex: number
     ): Thenable<Completion[]> {
         const completions: Completion[] = [];
-        let options = this.createProviderOptions(src, position, meta, fakes, currentLine, cursorLineIndex)
+        try {
+            let options = this.createProviderOptions(src, position, meta, fakes, currentLine, cursorLineIndex)
 
-        this.providers.forEach(p => {
-            options.isLineStart = p.text.some((s: string) => s.indexOf(currentLine.trim()) === 0)
-            completions.push(...p.provide(options))
-        });
+            this.providers.forEach(p => {
+                options.isLineStart = p.text.some((s: string) => s.indexOf(currentLine.trim()) === 0)
+                completions.push(...p.provide(options))
+            });
+        } catch(e) {}
 
-        let uniqs = new Map<string,Completion>();
+        let uniqs = new Map<string, Completion>();
         completions.forEach(comp => {
             if (!uniqs.has(comp.label)) {
                 uniqs.set(comp.label, comp);
             }
         })
 
-        let res: Completion[] =[];
+        let res: Completion[] = [];
         uniqs.forEach(v => res.push(v))
 
         return Promise.resolve(res);
