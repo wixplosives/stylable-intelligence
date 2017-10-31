@@ -137,7 +137,18 @@ export default class Provider {
             options.isLineStart = p.text.some((s: string) => s.indexOf(currentLine.trim()) === 0)
             completions.push(...p.provide(options))
         });
-        return Promise.resolve(completions);
+
+        let uniqs = new Map<string,Completion>();
+        completions.forEach(comp => {
+            if (!uniqs.has(comp.label)) {
+                uniqs.set(comp.label, comp);
+            }
+        })
+
+        let res: Completion[] =[];
+        uniqs.forEach(v => res.push(v))
+
+        return Promise.resolve(res);
     }
 
     private createProviderOptions(

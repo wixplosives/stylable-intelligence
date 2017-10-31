@@ -2,10 +2,6 @@
     color: black;
 }
 
-.momo{
-    -st-states: anotherState,oneMoreState;
-}
-
 .root {
     -st-states : state,otherState;
 }
@@ -14,3 +10,5 @@
     var1: red;
     var2: pink;
 }
+
+@custom-selector :--momo .root .momo;

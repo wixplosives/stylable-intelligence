@@ -1,11 +1,13 @@
 :import {
     -st-from: './import.st.css';
-    -st-named: var1,var2;
+    -st-default: Comp;
 }
 
 .local {
-    color: red;
+    -st-extends: Comp;
 }
 
-.local::
+.local
+
+
 
