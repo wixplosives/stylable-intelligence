@@ -33,7 +33,8 @@
     "homepage": "https://github.com/wix/stylable-intelligence#readme",
     "keywords": [
         "typescript",
-        "tdd"
+        "tdd",
+        "stylable"
     ],
     "browser": "dist/src/index.js",
     "scripts": {
