@@ -1,13 +1,12 @@
 :import {
-    -st-from: './import.st.css';
+    -st-from: './imporxt.st.css';
     -st-default: Comp;
 }
 
 .local {
-    -st-extends: Comp;
+    -st-extends: Com;
 }
 
-.local::momo
 
 
 

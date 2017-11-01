@@ -33,7 +33,7 @@ connection.onInitialize((params): InitializeResult => {
         capabilities: {
             textDocumentSync: documents.syncKind,
             completionProvider: {
-                triggerCharacters: ['.', '-', ':', '"']
+                triggerCharacters: ['.', '-', ':', '"',',']
             }
         }
     }
@@ -75,3 +75,4 @@ documents.onDidChangeContent(function(change){
     let diagnostics = createDiagnosis(change.document, processor);
     connection.sendDiagnostics({uri: change.document.uri, diagnostics: diagnostics})
 })
+

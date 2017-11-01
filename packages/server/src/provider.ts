@@ -368,7 +368,6 @@ export default class Provider {
                 let customSelectorType = Array.isArray(ps_exp.target.focusChunk)
                     ? ps_exp.target.focusChunk[0].type
                     : (ps_exp.target.focusChunk as any).type === '*'
-                        // ? (ps_exp.target.focusChunk as any).type
                         ? curMeta.customSelectors[customSelector].match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0]
                         : (ps_exp.target.focusChunk as any).type;
                 tmp = this.styl.resolver.resolveExtends(curMeta, customSelectorType, customSelectorType ? customSelectorType[0] === customSelectorType[0].toUpperCase() : false)
