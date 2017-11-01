@@ -9,6 +9,9 @@ import {
     IPCMessageWriter,
     TextDocuments,
     TextEdit,
+    // Location,
+    // Range,
+    // Position,
 } from 'vscode-languageserver';
 import { createProvider,
     //  createProcessor
@@ -34,7 +37,8 @@ connection.onInitialize((params): InitializeResult => {
             textDocumentSync: documents.syncKind,
             completionProvider: {
                 triggerCharacters: ['.', '-', ':', '"',',']
-            }
+            },
+            // definitionProvider : true
         }
     }
 });
@@ -76,3 +80,6 @@ documents.onDidChangeContent(function(change){
     connection.sendDiagnostics({uri: change.document.uri, diagnostics: diagnostics})
 })
 
+// connection.onDefinition((params): Thenable<Location> => {
+//     return Promise.resolve(Location.create('',Range.create(Position.create(0,0),Position.create(0,0)) ))
+// })
