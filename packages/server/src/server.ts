@@ -9,16 +9,17 @@ import {
     IPCMessageWriter,
     TextDocuments,
     TextEdit,
-    // Location,
+    Location,
     // Range,
     // Position,
 } from 'vscode-languageserver';
-import { createProvider,
+import {
+    createProvider,
     //  createProcessor
 } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
-import {createDiagnosis} from './diagnosis'
+import { createDiagnosis } from './diagnosis'
 let workspaceRoot: string;
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const documents: TextDocuments = new TextDocuments();
@@ -36,9 +37,9 @@ connection.onInitialize((params): InitializeResult => {
         capabilities: {
             textDocumentSync: documents.syncKind,
             completionProvider: {
-                triggerCharacters: ['.', '-', ':', '"',',']
+                triggerCharacters: ['.', '-', ':', '"', ',']
             },
-            // definitionProvider : true
+            definitionProvider : true
         }
     }
 });
@@ -48,7 +49,7 @@ connection.listen();
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
     // connection.sendNotification(OpenDocNotification.type, '/home/wix/projects/demo/test.css');
-    if (!params.textDocument.uri.endsWith('.st.css')) {return Promise.resolve([])}
+    if (!params.textDocument.uri.endsWith('.st.css')) { return Promise.resolve([]) }
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
     return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
@@ -62,7 +63,7 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
                 vsCodeCompletion.detail = com.detail;
                 vsCodeCompletion.textEdit = ted;
                 vsCodeCompletion.sortText = com.sortText;
-                vsCodeCompletion.filterText =  typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
+                vsCodeCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
                 if (com.additionalCompletions) {
                     vsCodeCompletion.command = {
                         title: "additional",
@@ -75,11 +76,16 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
         })
 })
 
-documents.onDidChangeContent(function(change){
+documents.onDidChangeContent(function (change) {
     let diagnostics = createDiagnosis(change.document, processor);
-    connection.sendDiagnostics({uri: change.document.uri, diagnostics: diagnostics})
+    connection.sendDiagnostics({ uri: change.document.uri, diagnostics: diagnostics })
 })
 
-// connection.onDefinition((params): Thenable<Location> => {
-//     return Promise.resolve(Location.create('',Range.create(Position.create(0,0),Position.create(0,0)) ))
-// })
+connection.onDefinition((params): Thenable<Location[]> => {
+    const doc = documents.get(params.textDocument.uri).getText();
+    const pos = params.position;
+    return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
+        .then((res) => {
+            return res.map(loc => Location.create(loc.uri, loc.range))
+        })
+})

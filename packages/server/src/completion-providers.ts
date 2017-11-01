@@ -66,6 +66,10 @@ export class ProviderRange {
     constructor(public start: ProviderPosition, public end: ProviderPosition) { }
 }
 
+export class ProviderLocation {
+    constructor(public uri: string, public range: ProviderRange) { }
+}
+
 const cssPseudoClasses = [
     'active',
     'any',
@@ -517,7 +521,7 @@ export class ValueCompletionProvider implements CompletionProvider {
 
             let comps: Completion[] = [];
             options.meta.vars.forEach(v => {
-                if (v.name.startsWith(inner) && !options.wholeLine.slice(0,options.wholeLine.indexOf(':')).includes(v.name) ) {
+                if (v.name.startsWith(inner) && !options.wholeLine.slice(0, options.wholeLine.indexOf(':')).includes(v.name)) {
                     comps.push(valueCompletion(v.name, 'Local variable', v.value, new ProviderRange(
                         new ProviderPosition(options.position.line, options.position.character - inner.length),
                         options.position,
