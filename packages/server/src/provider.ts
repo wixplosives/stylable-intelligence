@@ -1,4 +1,3 @@
-import { ProviderRange } from '../dist/src/completion-providers';
 import { CSSResolve, valueMapping } from 'stylable/dist/src';
 //must remain independent from vscode
 
@@ -19,7 +18,8 @@ import {
     NamedCompletionProvider,
     ValueDirectiveProvider,
     ValueCompletionProvider,
-    MixinCompletionProvider
+    MixinCompletionProvider,
+    ProviderRange
 } from './completion-providers'
 import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
