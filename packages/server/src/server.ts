@@ -1,4 +1,5 @@
 'use strict';
+// import { ProviderLocation } from './provider';
 import {
     CompletionItem,
     createConnection,

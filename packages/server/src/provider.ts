@@ -19,7 +19,7 @@ import {
     ValueDirectiveProvider,
     ValueCompletionProvider,
     MixinCompletionProvider,
-    ProviderLocation
+    ProviderRange,
 } from './completion-providers'
 import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
@@ -51,10 +51,7 @@ export default class Provider {
     ): Thenable<Completion[]> {
         let res = fixAndProcess(src, position, filePath);
         return this.provideCompletionItemsFromAst(src, position, res.processed.meta!, res.processed.fakes, res.currentLine, res.cursorLineIndex);
-
     }
-
-
 
     public provideCompletionItemsFromAst(
         src: string,
@@ -85,12 +82,6 @@ export default class Provider {
         uniqs.forEach(v => res.push(v))
 
         return Promise.resolve(res);
-    }
-
-    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string): Thenable<ProviderLocation[]> {
-        let res = fixAndProcess(src, position, filePath);
-        res;
-        return Promise.resolve([]);
     }
 
     private createProviderOptions(
@@ -233,11 +224,6 @@ export default class Provider {
             }
         }
 
-
-
-
-
-
         let isInValue: boolean = false;
 
         if (/value\(/.test(wholeLine)) {
@@ -346,6 +332,14 @@ export default class Provider {
         }
         return curRes;
     }
+
+    public getDefinitionLocation( src: string, position: ProviderPosition, filePath: string): Thenable<ProviderLocation[]> {
+        let res = fixAndProcess(src, position, filePath);
+        let end = res.currentLine.slice(res.cursorLineIndex).search(/[:, ;]/);
+        end;
+
+        return Promise.resolve([]);
+    }
 }
 
 function isIllegalLine(line: string): boolean {
@@ -353,11 +347,6 @@ function isIllegalLine(line: string): boolean {
 }
 
 const lineEndsRegexp = /({|}|;)/;
-
-
-function createFrom(filePath: string): string | undefined {
-    return filePath.indexOf('file://') === 0 ? decodeURIComponent(filePath.slice(7 + Number(process.platform === 'win32'))) : decodeURIComponent(filePath);
-}
 
 export function createMeta(src: string, path: string) {
     let meta: StylableMeta;
@@ -388,7 +377,11 @@ export function createMeta(src: string, path: string) {
     }
 }
 
-function fixAndProcess(src: string, position: ProviderPosition, filePath: string) {
+function createFrom(filePath: string): string | undefined {
+    return filePath.indexOf('file://') === 0 ? decodeURIComponent(filePath.slice(7 + Number(process.platform === 'win32'))) : decodeURIComponent(filePath);
+}
+
+function fixAndProcess(src: string, position: ProviderPosition, filePath: string, ) {
     let cursorLineIndex: number = position.character;
     let lines = src.split('\n');
     let currentLine = lines[position.line];
@@ -424,3 +417,6 @@ function fixAndProcess(src: string, position: ProviderPosition, filePath: string
     }
 }
 
+export class ProviderLocation {
+     constructor(public uri: string, public range: ProviderRange) {}
+}
