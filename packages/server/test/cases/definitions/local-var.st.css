@@ -1,5 +1,3 @@
-
-
 .local {
     color: red;
 }
@@ -10,8 +8,5 @@
 }
 
 .gaga {
-    color: value(one);
+    color: value(on|e);
 }
-
-
-div > .local

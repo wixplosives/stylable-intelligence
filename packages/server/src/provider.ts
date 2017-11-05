@@ -344,15 +344,19 @@ export default class Provider {
             res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(':'),
             res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(';'),
             res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(','),
+            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf('('),
         )
 
-        let end = res.currentLine.slice(res.cursorLineIndex).search(/[:, ;]|$/);
+        let end = res.currentLine.slice(res.cursorLineIndex).search(/[:, ;)]|$/);
         let word = res.currentLine.slice(start +1, res.cursorLineIndex + end);
 
         if (Object.keys(meta.mappedSymbols).find(sym => sym === word.replace('.',''))) {
             const symb = meta.mappedSymbols[word.replace('.','')];
             switch (symb._kind) {
                 case 'class': return Promise.resolve([
+                    new ProviderLocation(meta.source, this.findWord(word, src))
+                ]);
+                case 'var': return Promise.resolve([
                     new ProviderLocation(meta.source, this.findWord(word, src))
                 ]);
                 case 'import': return Promise.resolve([
