@@ -1,5 +1,5 @@
 'use strict';
-import { ProviderLocation } from './provider';
+// import { ProviderLocation } from './provider';
 import {
     CompletionItem,
     createConnection,
@@ -11,6 +11,9 @@ import {
     TextDocuments,
     TextEdit,
     Location,
+    Definition,
+    // Range,
+    // Position,
 } from 'vscode-languageserver';
 import {
     createProvider,
@@ -38,7 +41,7 @@ connection.onInitialize((params): InitializeResult => {
             completionProvider: {
                 triggerCharacters: ['.', '-', ':', '"', ',']
             },
-            definitionProvider: true
+            definitionProvider : true
         }
     }
 });
@@ -80,11 +83,11 @@ documents.onDidChangeContent(function (change) {
     connection.sendDiagnostics({ uri: change.document.uri, diagnostics: diagnostics })
 })
 
-connection.onDefinition((params): Thenable<Location[]> => {
+connection.onDefinition((params): Thenable<Definition> => {
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
     return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
         .then((res) => {
-            return res.map((loc: ProviderLocation) => Location.create(loc.uri, loc.range));
+            return res.map(loc => Location.create('file://' + loc.uri, loc.range))
         })
 })

@@ -6,7 +6,7 @@ import { TextDocument } from 'vscode-languageserver-types';
 import { createProvider } from '../src/provider-factory'
 import { Completion, snippet } from '../src/completion-types';
 import { ProviderPosition, ProviderRange } from '../src/completion-providers';
-import { createMeta } from '../src/provider';
+import { createMeta, ProviderLocation } from '../src/provider';
 import { pathFromPosition } from '../src/utils/postcss-ast-utils'
 import { NodeBase } from 'postcss';
 import { Provider } from '../src/index';
@@ -105,6 +105,16 @@ export function getPath(fileName: string): NodeBase[] {
     return pathFromPosition(proc.meta!.rawAst, new ProviderPosition(pos.line + 1, pos.character))
 }
 
+export function getDefinition(fileName: string): Thenable<ProviderLocation[]> {
+    const fullPath = path.join(__dirname, '/../test/cases/', fileName);
+    let src: string = fs.readFileSync(fullPath).toString();
+    let pos = getCaretPosition(src);
+    src = src.replace('|', "");
+    return provider.getDefinitionLocation(src, pos, fullPath).then((res) => {
+        return res;
+    })
+}
+
 const provider = createProvider({
     get(uri: string): TextDocument {
         if (process.platform === 'win32') {
@@ -165,7 +175,7 @@ export const variantDirectiveCompletion: (rng: ProviderRange) => Partial<Complet
     return { label: '-st-variant:', detail: 'Is a variant', sortText: 'a', insertText: '-st-variant: true;', range: rng };
 }
 export const globalCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
-    return new Completion(':global()', 'Target a global selector','a', ':global($0)', rng)
+    return new Completion(':global()', 'Target a global selector', 'a', ':global($0)', rng)
 }
 
 
