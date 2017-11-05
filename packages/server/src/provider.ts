@@ -5,25 +5,27 @@ import * as PostCss from 'postcss';
 import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable } from 'stylable';
 import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
 import {
-    ImportInternalDirectivesProvider,
-    RulesetInternalDirectivesProvider,
-    TopLevelDirectiveProvider,
-    GlobalCompletionProvider,
-    SelectorCompletionProvider,
+    createRange,
     ExtendCompletionProvider,
-    PseudoElementCompletionProvider,
-    StateCompletionProvider,
-    ProviderPosition,
-    ProviderOptions,
-    NamedCompletionProvider,
-    ValueDirectiveProvider,
-    ValueCompletionProvider,
+    GlobalCompletionProvider,
+    ImportInternalDirectivesProvider,
     MixinCompletionProvider,
+    NamedCompletionProvider,
+    ProviderOptions,
+    ProviderPosition,
     ProviderRange,
-} from './completion-providers'
+    PseudoElementCompletionProvider,
+    RulesetInternalDirectivesProvider,
+    SelectorCompletionProvider,
+    StateCompletionProvider,
+    TopLevelDirectiveProvider,
+    ValueCompletionProvider,
+    ValueDirectiveProvider,
+} from './completion-providers';
 import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
 import { Declaration } from 'postcss';
+import * as path from 'path';
 
 
 export default class Provider {
@@ -333,12 +335,52 @@ export default class Provider {
         return curRes;
     }
 
-    public getDefinitionLocation( src: string, position: ProviderPosition, filePath: string): Thenable<ProviderLocation[]> {
+    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string): Thenable<ProviderLocation[]> {
         let res = fixAndProcess(src, position, filePath);
-        let end = res.currentLine.slice(res.cursorLineIndex).search(/[:, ;]/);
-        end;
+        let meta = res.processed.meta;
+        if (!meta) return Promise.resolve([]);
+        let start = Math.max(
+            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(' '),
+            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(':'),
+            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(';'),
+            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(','),
+        )
 
-        return Promise.resolve([]);
+        let end = res.currentLine.slice(res.cursorLineIndex).search(/[:, ;]|$/);
+        let word = res.currentLine.slice(start +1, res.cursorLineIndex + end);
+
+        if (Object.keys(meta.mappedSymbols).find(sym => sym === word.replace('.',''))) {
+            const symb = meta.mappedSymbols[word.replace('.','')];
+            switch (symb._kind) {
+                case 'class': return Promise.resolve([
+                    new ProviderLocation(meta.source, this.findWord(word, src))
+                ]);
+                case 'import': return Promise.resolve([
+                    new ProviderLocation(
+                        path.join(
+                            path.dirname(meta.source),
+                            symb.import.fromRelative),
+                        new ProviderRange(
+                            new ProviderPosition(0, 0),
+                            new ProviderPosition(0, 0),
+                        )
+                    )
+                ]);
+            }
+            return Promise.resolve([]);
+        } else {
+            return Promise.resolve([]);
+        }
+    }
+
+    findWord(word: string, src: string): ProviderRange {
+        let split = src.split('\n');
+        let lineIndex = split.findIndex(l => l.trim().startsWith(word))
+        if (lineIndex === -1) {return createRange(0,0,0,0)};
+        let line = split[lineIndex];
+        return createRange(
+            lineIndex, line.indexOf(word), lineIndex, line.indexOf(word) + word.length
+        )
     }
 }
 
@@ -418,5 +460,5 @@ function fixAndProcess(src: string, position: ProviderPosition, filePath: string
 }
 
 export class ProviderLocation {
-     constructor(public uri: string, public range: ProviderRange) {}
+    constructor(public uri: string, public range: ProviderRange) { }
 }

@@ -1,9 +1,9 @@
-.shlomo {
-    color: black;
-}
-
 .root {
     -st-states : state,otherState;
+}
+
+.shlomo {
+    color: black;
 }
 
 :vars {

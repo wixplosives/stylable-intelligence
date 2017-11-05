@@ -1,12 +1,15 @@
 :import {
     -st-from: './import.st.css';
     -st-default: Comp;
+    -st-named: shlomo, var2;
 }
 
 .local {
+    color: red;
+}
+
+.gaga {
     -st-extends: Comp;
 }
 
-
-
-
+.local
