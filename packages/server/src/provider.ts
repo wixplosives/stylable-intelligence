@@ -1,4 +1,4 @@
-import { CSSResolve, valueMapping } from 'stylable/dist/src';
+import { CSSResolve, ImportSymbol, valueMapping } from 'stylable/dist/src';
 //must remain independent from vscode
 
 import * as PostCss from 'postcss';
@@ -348,39 +348,53 @@ export default class Provider {
         )
 
         let end = res.currentLine.slice(res.cursorLineIndex).search(/[:, ;)]|$/);
-        let word = res.currentLine.slice(start +1, res.cursorLineIndex + end);
+        let word = res.currentLine.slice(start + 1, res.cursorLineIndex + end);
+        let defs: ProviderLocation[] = [];
 
-        if (Object.keys(meta.mappedSymbols).find(sym => sym === word.replace('.',''))) {
-            const symb = meta.mappedSymbols[word.replace('.','')];
+        if (Object.keys(meta.mappedSymbols).find(sym => sym === word.replace('.', ''))) {
+            const symb = meta.mappedSymbols[word.replace('.', '')];
             switch (symb._kind) {
-                case 'class': return Promise.resolve([
-                    new ProviderLocation(meta.source, this.findWord(word, src))
-                ]);
-                case 'var': return Promise.resolve([
-                    new ProviderLocation(meta.source, this.findWord(word, src))
-                ]);
-                case 'import': return Promise.resolve([
-                    new ProviderLocation(
-                        path.join(
-                            path.dirname(meta.source),
-                            symb.import.fromRelative),
-                        new ProviderRange(
-                            new ProviderPosition(0, 0),
-                            new ProviderPosition(0, 0),
+                case 'class': {
+                    defs.push(
+                        new ProviderLocation(meta.source, this.findWord(word, src))
+                    );
+                    break;
+                }
+                case 'var': {
+                    defs.push(
+                        new ProviderLocation(meta.source, this.findWord(word, src))
+                    );
+                    break;
+                }
+                case 'import': {
+                    defs.push(
+                        new ProviderLocation(
+                            path.join(
+                                path.dirname(meta.source),
+                                (symb as ImportSymbol).import.fromRelative),
+                            new ProviderRange(
+                                new ProviderPosition(0, 0),
+                                new ProviderPosition(0, 0),
+                            )
                         )
-                    )
-                ]);
+                    );
+                    break;
+                }
             }
-            return Promise.resolve([]);
-        } else {
-            return Promise.resolve([]);
         }
+
+        return Promise.resolve(defs.filter(def => !this.inDef(position, def)));
+    }
+
+    inDef(position: ProviderPosition, def: ProviderLocation): boolean {
+        return (position.line > def.range.start.line || (position.line === def.range.start.line && position.character >= def.range.start.character))
+            && (position.line < def.range.end.line || (position.line === def.range.end.line && position.character <= def.range.end.character))
     }
 
     findWord(word: string, src: string): ProviderRange {
         let split = src.split('\n');
         let lineIndex = split.findIndex(l => l.trim().startsWith(word))
-        if (lineIndex === -1) {return createRange(0,0,0,0)};
+        if (lineIndex === -1) { return createRange(0, 0, 0, 0) };
         let line = split[lineIndex];
         return createRange(
             lineIndex, line.indexOf(word), lineIndex, line.indexOf(word) + word.length
