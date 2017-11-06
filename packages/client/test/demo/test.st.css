@@ -1,7 +1,6 @@
-
-
 .local {
     color: red;
+    -st-states: Nordrhein;
 }
 
 :vars {

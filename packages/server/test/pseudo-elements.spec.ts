@@ -97,7 +97,7 @@ describe('Pseudo-elements', function () {
                 let prefix = str.slice(0, i);
 
                 it('should complete pseudo-element ' + a[j] + ' after class with prefix: ' + prefix + ' ', function () {
-                    let rng = createRange(10, 5, 10, 5 + i);
+                    let rng = createRange(9, 5, 9, 5 + i);
 
                     return asserters.getCompletions('pseudo-elements/default-import-extended.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
