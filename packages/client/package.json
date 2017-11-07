@@ -27,7 +27,14 @@
         "id": "stylable",
         "aliases": ["Stylable"],
         "extensions": [".st.css"]
-      }]
+      }],
+      "grammars": [
+        {
+          "language": "stylable",
+          "scopeName": "source.stylable",
+          "path": "./src/stylable.tmLanguage.json"
+        }
+      ]
     },
     "activationEvents": [
       "onLanguage:stylable"
