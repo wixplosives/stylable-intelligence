@@ -1,8 +1,6 @@
-import { CSSResolve, ImportSymbol, valueMapping } from 'stylable/dist/src';
 //must remain independent from vscode
-
 import * as PostCss from 'postcss';
-import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable } from 'stylable';
+import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping } from 'stylable';
 import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
 import {
     createRange,
@@ -46,44 +44,28 @@ export default class Provider {
         new ValueCompletionProvider(),
     ]
 
-    public provideCompletionItemsFromSrc(
-        src: string,
-        position: ProviderPosition,
-        filePath: string,
-    ): Thenable<Completion[]> {
+    public provideCompletionItemsFromSrc(src: string, position: ProviderPosition, filePath: string, ): Thenable<Completion[]> {
         let res = fixAndProcess(src, position, filePath);
-        return this.provideCompletionItemsFromAst(src, position, res.processed.meta!, res.processed.fakes, res.currentLine, res.cursorLineIndex);
+        return this.provideCompletionItemsFromAst(src, res.currentLine, res.cursorLineIndex, position, res.processed.meta!, res.processed.fakes, );
     }
 
     public provideCompletionItemsFromAst(
         src: string,
+        currentLine: string,
+        cursorLineIndex: number,
         position: ProviderPosition,
         meta: StylableMeta,
         fakes: PostCss.Rule[],
-        currentLine: string,
-        cursorLineIndex: number
     ): Thenable<Completion[]> {
         const completions: Completion[] = [];
         try {
             let options = this.createProviderOptions(src, position, meta, fakes, currentLine, cursorLineIndex)
-
             this.providers.forEach(p => {
                 options.isLineStart = p.text.some((s: string) => s.indexOf(currentLine.trim()) === 0)
                 completions.push(...p.provide(options))
             });
         } catch (e) { }
-
-        let uniqs = new Map<string, Completion>();
-        completions.forEach(comp => {
-            if (!uniqs.has(comp.label)) {
-                uniqs.set(comp.label, comp);
-            }
-        })
-
-        let res: Completion[] = [];
-        uniqs.forEach(v => res.push(v))
-
-        return Promise.resolve(res);
+        return Promise.resolve(this.dedupe(completions));
     }
 
     private createProviderOptions(
@@ -333,6 +315,18 @@ export default class Provider {
             if (pseudo === chain[i]) { break; }
         }
         return curRes;
+    }
+
+    private dedupe(completions: Completion[]): Completion[] {
+        let uniqs = new Map<string, Completion>();
+        completions.forEach(comp => {
+            if (!uniqs.has(comp.label)) {
+                uniqs.set(comp.label, comp);
+            }
+        });
+        let res: Completion[] = [];
+        uniqs.forEach(v => res.push(v));
+        return res;
     }
 
     public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string): Thenable<ProviderLocation[]> {

@@ -1,6 +1,6 @@
 .local {
     color: red;
-    -st-states: Nordrhein;
+    -st-states: Nordrhein, Westfalen;
 }
 
 :vars {
@@ -12,5 +12,4 @@
     color: value(one);
 }
 
-
-div > .local
+.local:Westfalen
