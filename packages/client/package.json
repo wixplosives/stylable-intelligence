@@ -22,8 +22,15 @@
         "Snippets",
         "Other"
     ],
+    "contributes": {
+      "languages": [{
+        "id": "stylable",
+        "aliases": ["Stylable"],
+        "extensions": [".st.css"]
+      }]
+    },
     "activationEvents": [
-        "onLanguage:css"
+      "onLanguage:stylable"
     ],
     "main": "dist/src/extension.js",
     "files": [

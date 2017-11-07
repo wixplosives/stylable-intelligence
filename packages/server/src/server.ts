@@ -41,7 +41,7 @@ connection.onInitialize((params): InitializeResult => {
             completionProvider: {
                 triggerCharacters: ['.', '-', ':', '"', ',']
             },
-            definitionProvider : true
+            definitionProvider : true,
         }
     }
 });
@@ -51,7 +51,7 @@ connection.listen();
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
     // connection.sendNotification(OpenDocNotification.type, '/home/wix/projects/demo/test.css');
-    if (!params.textDocument.uri.endsWith('.st.css')) { return Promise.resolve([]) }
+    if ( !params.textDocument.uri.endsWith('.st.css')) { return Promise.resolve([]) }
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
     return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
