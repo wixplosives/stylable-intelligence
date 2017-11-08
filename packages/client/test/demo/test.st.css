@@ -8,8 +8,11 @@
     two: goldenrod;
 }
 
-.gaga {
-    color: value(one);
+.gaga .root {
+    color: bisquelk;
 }
 
-.local:Westfalen
+:import {
+    -st-from: "./import.st";
+}
+ .local {}
