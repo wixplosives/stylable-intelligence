@@ -3647,6 +3647,13 @@ vm-browserify@0.0.4:
   dependencies:
     indexof "0.0.1"
 
+vscode-css-languageservice@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/vscode-css-languageservice/-/vscode-css-languageservice-3.0.0.tgz#42f28a94e7d8c6f32d1ed6fc631ae5ccd21fe427"
+  dependencies:
+    vscode-languageserver-types "^3.4.0"
+    vscode-nls "^2.0.1"
+
 vscode-jsonrpc@^3.4.1:
   version "3.4.1"
   resolved "https://registry.yarnpkg.com/vscode-jsonrpc/-/vscode-jsonrpc-3.4.1.tgz#e2e0b9e121f71a2b5448058a34a3aef8376a5e91"
@@ -3674,6 +3681,10 @@ vscode-languageserver@^3.3.0:
   dependencies:
     vscode-languageserver-protocol "^3.4.1"
     vscode-uri "^1.0.1"
+
+vscode-nls@^2.0.1:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/vscode-nls/-/vscode-nls-2.0.2.tgz#808522380844b8ad153499af5c3b03921aea02da"
 
 vscode-uri@^1.0.1:
   version "1.0.1"

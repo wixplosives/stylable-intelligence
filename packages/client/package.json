@@ -1,98 +1,96 @@
 {
-    "name": "stylable-intelligence",
-    "displayName": "Stylable Intelligence",
-    "version": "0.0.26",
-    "description": "Code completion, reference detection, diagnostics and other features for Stylable CSS.",
-    "author": "Ory Henn (ory@wix.com)",
-    "publisher": "wix",
-    "icon": "images/logo.png",
-    "repository": {
-        "type": "git",
-        "url": "git@github.com:wix/stylable-intelligence.git"
-    },
-    "license": "SEE LICENSE IN LICENSE.txt",
-    "bugs": {
-        "url": "https://github.com/wix/stylable-intelligence/issues"
-    },
-    "engines": {
-        "vscode": "^1.16.0"
-    },
-    "categories": [
-        "Languages",
-        "Snippets",
-        "Other"
-    ],
-    "contributes": {
-      "languages": [{
-        "id": "stylable",
-        "aliases": ["Stylable"],
-        "extensions": [".st.css"]
-      }],
-      "grammars": [
-        {
-          "language": "stylable",
-          "scopeName": "source.stylable",
-          "path": "./src/stylable.tmLanguage.json"
-        }
-      ]
-    },
-    "activationEvents": [
-      "onLanguage:stylable"
-    ],
-    "main": "dist/src/extension.js",
-    "files": [
-        "dist/src"
-    ],
-    "testGlob": "./dist/test/**/*.spec.js?(x)",
-    "homepage": "https://github.com/wix/stylable-intelligence#readme",
-    "keywords": [
-        "typescript",
-        "tdd",
-        "stylable"
-    ],
-    "browser": "dist/src/index.js",
-    "scripts": {
-        "clear": "rimraf node_modules dist",
-        "vscode:prepublish": "rm -rf dist && yarn install && tsc -d -p ./tsconfig.publish.json && yarn install --prod",
-        "build": "tsc -d",
-        "compile": "tsc -watch -d",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "reset": "yarn clear && yarn install && yarn test",
-        "pretest": "rimraf dist && yarn build",
-        "test": "node ./run-test",
-        "test:node": "mocha --reporter mocha-env-reporter dist/test/*.test.js"
-    },
-    "devDependencies": {
-        "@types/chai": "~4.0.1",
-        "@types/glob": "^5.0.30",
-        "@types/lodash": "4.14.71",
-        "@types/mocha": "~2.2.41",
-        "@types/node": "^8.0.13",
-        "@types/sinon": "~2.3.1",
-        "@types/sinon-chai": "~2.7.28",
-        "chai": "~4.1.0",
-        "chai-subset": "~1.5.0",
-        "concurrently": "~3.5.0",
-        "mocha": "~3.4.2",
-        "mocha-env-reporter": "~2.0.4",
-        "mocha-loader": "~1.1.1",
-        "rimraf": "~2.6.1",
-        "sinon": "~2.3.5",
-        "sinon-chai": "~2.12.0",
-        "source-map-support": "~0.4.15",
-        "tslib": "~1.7.1",
-        "typescript": "~2.4.1"
-    },
-    "dependencies": {
-        "css-selector-tokenizer": "^0.7.0",
-        "glob": "^7.1.2",
-        "lodash": "4.17.4",
-        "postcss": "^6.0.7",
-        "postcss-nested": "^2.0.4",
-        "stylable": "^4.0.26",
-        "tslib": "~1.7.1",
-        "vscode": "1.1.5",
-        "vscode-languageclient": "^3.3.0",
-        "vscode-languageserver": "^3.3.0"
-    }
+  "name": "stylable-intelligence",
+  "displayName": "Stylable Intelligence",
+  "version": "0.0.26",
+  "description": "Code completion, reference detection, diagnostics and other features for Stylable CSS.",
+  "author": "Ory Henn (ory@wix.com)",
+  "publisher": "wix",
+  "icon": "images/logo.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wix/stylable-intelligence.git"
+  },
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "bugs": {
+    "url": "https://github.com/wix/stylable-intelligence/issues"
+  },
+  "engines": {
+    "vscode": "^1.16.0"
+  },
+  "categories": [
+    "Languages",
+    "Snippets",
+    "Other"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "stylable",
+      "aliases": ["Stylable"],
+      "extensions": [".st.css"]
+    }],
+    "grammars": [{
+      "language": "stylable",
+      "scopeName": "source.stylable",
+      "path": "./src/stylable.tmLanguage.json"
+    }]
+  },
+  "activationEvents": [
+    "onLanguage:stylable"
+  ],
+  "main": "dist/src/extension.js",
+  "files": [
+    "dist/src"
+  ],
+  "testGlob": "./dist/test/**/*.spec.js?(x)",
+  "homepage": "https://github.com/wix/stylable-intelligence#readme",
+  "keywords": [
+    "typescript",
+    "tdd",
+    "stylable"
+  ],
+  "browser": "dist/src/index.js",
+  "scripts": {
+    "clear": "rimraf node_modules dist",
+    "vscode:prepublish": "rm -rf dist && yarn install && tsc -d -p ./tsconfig.publish.json && yarn install --prod",
+    "build": "tsc -d",
+    "compile": "tsc -watch -d",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "reset": "yarn clear && yarn install && yarn test",
+    "pretest": "rimraf dist && yarn build",
+    "test": "node ./run-test",
+    "test:node": "mocha --reporter mocha-env-reporter dist/test/*.test.js"
+  },
+  "devDependencies": {
+    "@types/chai": "~4.0.1",
+    "@types/glob": "^5.0.30",
+    "@types/lodash": "4.14.71",
+    "@types/mocha": "~2.2.41",
+    "@types/node": "^8.0.13",
+    "@types/sinon": "~2.3.1",
+    "@types/sinon-chai": "~2.7.28",
+    "chai": "~4.1.0",
+    "chai-subset": "~1.5.0",
+    "concurrently": "~3.5.0",
+    "mocha": "~3.4.2",
+    "mocha-env-reporter": "~2.0.4",
+    "mocha-loader": "~1.1.1",
+    "rimraf": "~2.6.1",
+    "sinon": "~2.3.5",
+    "sinon-chai": "~2.12.0",
+    "source-map-support": "~0.4.15",
+    "tslib": "~1.7.1",
+    "typescript": "~2.4.1"
+  },
+  "dependencies": {
+    "css-selector-tokenizer": "^0.7.0",
+    "glob": "^7.1.2",
+    "lodash": "4.17.4",
+    "postcss": "^6.0.7",
+    "postcss-nested": "^2.0.4",
+    "stylable": "^4.0.26",
+    "tslib": "~1.7.1",
+    "vscode": "1.1.5",
+    "vscode-languageclient": "^3.3.0",
+    "vscode-languageserver": "^3.3.0"
+  }
 }

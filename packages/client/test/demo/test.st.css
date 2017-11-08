@@ -8,12 +8,11 @@
     two: goldenrod;
 }
 
-.gaga {
-    color: value(one);
+.gaga .root {
+    color: bisquelk;
 }
-
-.local
 
 :import {
-    -st-from: "";
+    -st-from: "./import.st";
 }
+ .local {}
