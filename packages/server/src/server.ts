@@ -89,7 +89,7 @@ documents.onDidChangeContent(function (change) {
         return diag;
     });
 
-    let diagnostics = createDiagnosis(change.document, processor).map(diag => { diag.source = 'Doron'; return diag; });
+    let diagnostics = createDiagnosis(change.document, processor).map(diag => { diag.source = 'stylable'; return diag; });
     connection.sendDiagnostics({ uri: change.document.uri, diagnostics: diagnostics.concat(cssDiags) })
 })
 
