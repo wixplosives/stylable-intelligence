@@ -4,6 +4,7 @@ import { createProvider, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import { createDiagnosis } from './diagnosis';
+let workspaceRoot: string;
 import * as VCL from 'vscode-css-languageservice';
 
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
@@ -16,6 +17,8 @@ const cssService = VCL.getCSSLanguageService();
 documents.listen(connection);
 
 connection.onInitialize((params): InitializeResult => {
+
+    workspaceRoot = params.rootUri!;
 
     return {
         capabilities: {
