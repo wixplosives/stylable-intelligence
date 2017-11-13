@@ -1,27 +1,11 @@
 'use strict';
-import {
-    CompletionItem,
-    createConnection,
-    IConnection,
-    InitializeResult,
-    InsertTextFormat,
-    IPCMessageReader,
-    IPCMessageWriter,
-    TextDocuments,
-    TextEdit,
-    Location,
-    Definition,
-} from 'vscode-languageserver';
-import {
-    createProvider,
-    //  createProcessor
-} from './provider-factory';
+import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, } from 'vscode-languageserver';
+import { createProvider, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import { createDiagnosis } from './diagnosis';
 import * as VCL from 'vscode-css-languageservice';
 
-let workspaceRoot: string;
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const documents: TextDocuments = new TextDocuments();
 
@@ -32,7 +16,6 @@ const cssService = VCL.getCSSLanguageService();
 documents.listen(connection);
 
 connection.onInitialize((params): InitializeResult => {
-    workspaceRoot = params.rootUri!;
 
     return {
         capabilities: {
@@ -49,7 +32,6 @@ connection.listen();
 
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
-    // connection.sendNotification(OpenDocNotification.type, '/home/wix/projects/demo/test.css');
     if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
 
     let cssCompsRaw = cssService.doComplete(documents.get(params.textDocument.uri), params.position, cssService.parseStylesheet(documents.get(params.textDocument.uri)))
