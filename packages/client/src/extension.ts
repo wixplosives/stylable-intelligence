@@ -5,12 +5,6 @@ import { ExtensionContext, workspace, TextDocument } from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, Executable  } from 'vscode-languageclient';
 import path = require('path');
 
-
-// namespace OpenDocNotification {
-//     export const type = new NotificationType<string, void>('stylable/openDocument');
-// }
-
-
 export function activate(context: ExtensionContext) {
 
     let serverModule = context.asAbsolutePath(path.join('server', 'src', 'server.js'));
@@ -23,7 +17,7 @@ export function activate(context: ExtensionContext) {
     }
 
     let clientOptions: LanguageClientOptions = {
-        documentSelector: ['css'],
+        documentSelector: [{language: 'stylable'}],
         diagnosticCollectionName: 'stylable'
     }
 
@@ -39,9 +33,6 @@ export function activate(context: ExtensionContext) {
         .then(() => workspace.findFiles('**/*.st.css'))
         .then((files) => Promise.all(files.map((file) => workspace.openTextDocument(file.fsPath))))
         .then(() => {
-            // client.onNotification(OpenDocNotification.type, (uri: string) => {
-            // })
-
             return client
         })
 

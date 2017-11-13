@@ -75,6 +75,18 @@ describe('Variables', function () {
                 });
             });
 
+            it('Variable being defined should not be completed, with prefix ' + prefix + ' ', function () {
+                return asserters.getCompletions('variables/inside-value-defined-var.st.css', prefix).then((asserter) => {
+                    asserter.suggested([
+                        asserters.valueCompletion(str1, createRange(6, 20, 6, 20 + i), 'red', './import.st.css'),
+                        asserters.valueCompletion(str2, createRange(6, 20, 6, 20 + i), 'blue', './import.st.css'),
+                    ]);
+                    asserter.notSuggested([
+                        asserters.valueCompletion('localvar', createRange(6, 20, 6, 20 + i), 'cyclic value', 'Local variable'),
+                    ])
+
+                });
+            });
         });
     });
 });

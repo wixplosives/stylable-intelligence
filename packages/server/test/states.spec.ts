@@ -17,7 +17,7 @@ describe('States', function () {
 
                 it('should complete available states from same file, with prefix ' + prefix + ' ', function () {
                     let rng = createRange(4, 5, 4, 5 + i);
-                    return asserters.getCompletions('states/class-with-states.css', prefix).then((asserter) => {
+                    return asserters.getCompletions('states/class-with-states.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
@@ -35,7 +35,7 @@ describe('States', function () {
 
                 it('should complete available states in complex selectors, with prefix ' + prefix + ' ', function () {
                     let rng = createRange(9, 19, 9, 19 + i);
-                    return asserters.getCompletions('states/complex-selectors.css', prefix).then((asserter) => {
+                    return asserters.getCompletions('states/complex-selectors.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
@@ -59,7 +59,7 @@ describe('States', function () {
 
                 it('should complete only unused states in complex selectors ending in state name, with prefix ' + prefix + ' ', function () {
                     let rng = createRange(9, 25, 9, 25 + i);
-                    return asserters.getCompletions('states/complex-selectors-with-states.css', prefix).then((asserter) => {
+                    return asserters.getCompletions('states/complex-selectors-with-states.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
@@ -78,7 +78,7 @@ describe('States', function () {
         });
 
         it('should not complete state value after :: ', function () {
-            return asserters.getCompletions('states/class-with-states-double-colon.css').then((asserter) => {
+            return asserters.getCompletions('states/class-with-states-double-colon.st.css').then((asserter) => {
                 asserter.notSuggested([
                     asserters.stateCompletion('hello', createRange(0, 0, 0, 0)),
                     asserters.stateCompletion('goodbye', createRange(0, 0, 0, 0))
@@ -119,7 +119,7 @@ describe('States', function () {
                 });
 
                 it('should complete state ' + str + ' value for local class extending default import, with prefix ' + prefix + ' ', function () {
-                    let rng = createRange(10, 5, 10, 5 + i);
+                    let rng = createRange(9, 5, 9, 5 + i);
                     return asserters.getCompletions('pseudo-elements/default-import-extended.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];

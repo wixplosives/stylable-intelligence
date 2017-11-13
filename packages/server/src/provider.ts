@@ -1,68 +1,29 @@
-import { CSSResolve, valueMapping } from 'stylable/dist/src';
 //must remain independent from vscode
-
 import * as PostCss from 'postcss';
-import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable } from 'stylable';
+import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping } from 'stylable';
 import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
 import {
-    ImportInternalDirectivesProvider,
-    RulesetInternalDirectivesProvider,
-    TopLevelDirectiveProvider,
-    GlobalCompletionProvider,
-    SelectorCompletionProvider,
+    createRange,
     ExtendCompletionProvider,
-    PseudoElementCompletionProvider,
-    StateCompletionProvider,
-    ProviderPosition,
-    ProviderOptions,
+    GlobalCompletionProvider,
+    ImportInternalDirectivesProvider,
+    MixinCompletionProvider,
     NamedCompletionProvider,
-    ValueDirectiveProvider,
+    ProviderOptions,
+    ProviderPosition,
+    ProviderRange,
+    PseudoElementCompletionProvider,
+    RulesetInternalDirectivesProvider,
+    SelectorCompletionProvider,
+    StateCompletionProvider,
+    TopLevelDirectiveProvider,
     ValueCompletionProvider,
-    MixinCompletionProvider
-} from './completion-providers'
+    ValueDirectiveProvider,
+} from './completion-providers';
 import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
 import { Declaration } from 'postcss';
-
-
-export function isIllegalLine(line: string): boolean {
-    return /^\s*[-\.:]+\s*$/.test(line)
-}
-
-const lineEndsRegexp = /({|}|;)/;
-
-export function createMeta(src: string, path: string) {
-    let meta: StylableMeta;
-    let fakes: PostCss.Rule[] = [];
-    try {
-        let ast: PostCss.Root = safeParse(src, { from: createFrom(path) })
-        ast.nodes && ast.nodes.forEach((node) => {
-            if (node.type === 'decl') {
-                let r = PostCss.rule({ selector: node.prop + ':' + node.value });
-                r.source = node.source;
-                node.replaceWith(r);
-                fakes.push(r)
-            }
-        })
-        if (ast.raws.after && ast.raws.after.trim()) {
-            let r = PostCss.rule({ selector: ast.raws.after.trim() })
-            ast.append(r);
-            fakes.push(r);
-        }
-
-        meta = stylableProcess(ast);
-    } catch (error) {
-        return { meta: null, fakes: fakes };
-    }
-    return {
-        meta: meta,
-        fakes: fakes
-    }
-}
-
-function createFrom(filePath: string): string | undefined {
-    return filePath.indexOf('file://') === 0 ? decodeURIComponent(filePath.slice(7 + Number(process.platform === 'win32'))) : decodeURIComponent(filePath);
-}
+import * as path from 'path';
 
 
 export default class Provider {
@@ -83,61 +44,28 @@ export default class Provider {
         new ValueCompletionProvider(),
     ]
 
-    public provideCompletionItemsFromSrc(
-        src: string,
-        position: ProviderPosition,
-        filePath: string,
-    ): Thenable<Completion[]> {
-        let cursorLineIndex: number = position.character;
-        let lines = src.split('\n');
-        let currentLine = lines[position.line];
-        let fixedSrc = src;
-        if (currentLine.match(lineEndsRegexp)) {
-            let currentLocation = 0;
-            let splitLine = currentLine.split(lineEndsRegexp);
-            for (var i = 0; i < splitLine.length; i += 2) {
-                currentLocation += splitLine[i].length + 1;
-                if (currentLocation >= position.character) {
-                    currentLine = splitLine[i];
-                    if (isIllegalLine(currentLine)) {
-                        splitLine[i] = '\n'
-                        lines.splice(position.line, 1, splitLine.join(''));
-                        fixedSrc = lines.join('\n');
-                    }
-                    break;
-                } else {
-                    cursorLineIndex -= splitLine[i].length + 1
-                }
-            }
-        }
-        else if (isIllegalLine(currentLine)) {
-            lines.splice(position.line, 1, "");
-            fixedSrc = lines.join('\n');
-        }
-
-        let processed = createMeta(fixedSrc, filePath);
-        return this.provideCompletionItemsFromAst(src, position, processed.meta!, processed.fakes, currentLine, cursorLineIndex);
-
+    public provideCompletionItemsFromSrc(src: string, position: ProviderPosition, filePath: string, ): Thenable<Completion[]> {
+        let res = fixAndProcess(src, position, filePath);
+        return this.provideCompletionItemsFromAst(src, res.currentLine, res.cursorLineIndex, position, res.processed.meta!, res.processed.fakes, );
     }
-
-
 
     public provideCompletionItemsFromAst(
         src: string,
+        currentLine: string,
+        cursorLineIndex: number,
         position: ProviderPosition,
         meta: StylableMeta,
         fakes: PostCss.Rule[],
-        currentLine: string,
-        cursorLineIndex: number
     ): Thenable<Completion[]> {
         const completions: Completion[] = [];
-        let options = this.createProviderOptions(src, position, meta, fakes, currentLine, cursorLineIndex)
-
-        this.providers.forEach(p => {
-            options.isLineStart = p.text.some((s: string) => s.indexOf(currentLine.trim()) === 0)
-            completions.push(...p.provide(options))
-        });
-        return Promise.resolve(completions);
+        try {
+            let options = this.createProviderOptions(src, position, meta, fakes, currentLine, cursorLineIndex)
+            this.providers.forEach(p => {
+                options.isLineStart = p.text.some((s: string) => s.indexOf(currentLine.trim()) === 0)
+                completions.push(...p.provide(options))
+            });
+        } catch (e) { }
+        return Promise.resolve(this.dedupe(completions));
     }
 
     private createProviderOptions(
@@ -280,11 +208,6 @@ export default class Provider {
             }
         }
 
-
-
-
-
-
         let isInValue: boolean = false;
 
         if (/value\(/.test(wholeLine)) {
@@ -339,7 +262,6 @@ export default class Provider {
         }
     }
 
-
     private isFinalPartValidPseudo(resolved: CSSResolve[], trimmedLine: string) {
         let prevMetas: StylableMeta[] = [resolved[resolved.length - 1].meta];
         let curMeta: StylableMeta = resolved[resolved.length - 1].meta;
@@ -355,7 +277,6 @@ export default class Provider {
                 let customSelectorType = Array.isArray(ps_exp.target.focusChunk)
                     ? ps_exp.target.focusChunk[0].type
                     : (ps_exp.target.focusChunk as any).type === '*'
-                        // ? (ps_exp.target.focusChunk as any).type
                         ? curMeta.customSelectors[customSelector].match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0]
                         : (ps_exp.target.focusChunk as any).type;
                 tmp = this.styl.resolver.resolveExtends(curMeta, customSelectorType, customSelectorType ? customSelectorType[0] === customSelectorType[0].toUpperCase() : false)
@@ -395,6 +316,161 @@ export default class Provider {
         }
         return curRes;
     }
+
+    private dedupe(completions: Completion[]): Completion[] {
+        let uniqs = new Map<string, Completion>();
+        completions.forEach(comp => {
+            if (!uniqs.has(comp.label)) {
+                uniqs.set(comp.label, comp);
+            }
+        });
+        let res: Completion[] = [];
+        uniqs.forEach(v => res.push(v));
+        return res;
+    }
+
+    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string): Thenable<ProviderLocation[]> {
+        let res = fixAndProcess(src, position, filePath);
+        let meta = res.processed.meta;
+        if (!meta) return Promise.resolve([]);
+        let start = Math.max(
+            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(' '),
+            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(':'),
+            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(';'),
+            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(','),
+            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf('('),
+        )
+
+        let end = res.currentLine.slice(res.cursorLineIndex).search(/[:, ;)]|$/);
+        let word = res.currentLine.slice(start + 1, res.cursorLineIndex + end);
+        let defs: ProviderLocation[] = [];
+
+        if (Object.keys(meta.mappedSymbols).find(sym => sym === word.replace('.', ''))) {
+            const symb = meta.mappedSymbols[word.replace('.', '')];
+            switch (symb._kind) {
+                case 'class': {
+                    defs.push(
+                        new ProviderLocation(meta.source, this.findWord(word, src))
+                    );
+                    break;
+                }
+                case 'var': {
+                    defs.push(
+                        new ProviderLocation(meta.source, this.findWord(word, src))
+                    );
+                    break;
+                }
+                case 'import': {
+                    defs.push(
+                        new ProviderLocation(
+                            path.join(
+                                path.dirname(meta.source),
+                                (symb as ImportSymbol).import.fromRelative),
+                            new ProviderRange(
+                                new ProviderPosition(0, 0),
+                                new ProviderPosition(0, 0),
+                            )
+                        )
+                    );
+                    break;
+                }
+            }
+        }
+
+        return Promise.resolve(defs.filter(def => !this.inDef(position, def)));
+    }
+
+    inDef(position: ProviderPosition, def: ProviderLocation): boolean {
+        return (position.line > def.range.start.line || (position.line === def.range.start.line && position.character >= def.range.start.character))
+            && (position.line < def.range.end.line || (position.line === def.range.end.line && position.character <= def.range.end.character))
+    }
+
+    findWord(word: string, src: string): ProviderRange {
+        let split = src.split('\n');
+        let lineIndex = split.findIndex(l => l.trim().startsWith(word))
+        if (lineIndex === -1) { return createRange(0, 0, 0, 0) };
+        let line = split[lineIndex];
+        return createRange(
+            lineIndex, line.indexOf(word), lineIndex, line.indexOf(word) + word.length
+        )
+    }
 }
 
+function isIllegalLine(line: string): boolean {
+    return /^\s*[-\.:]+\s*$/.test(line)
+}
 
+const lineEndsRegexp = /({|}|;)/;
+
+export function createMeta(src: string, path: string) {
+    let meta: StylableMeta;
+    let fakes: PostCss.Rule[] = [];
+    try {
+        let ast: PostCss.Root = safeParse(src, { from: createFrom(path) })
+        ast.nodes && ast.nodes.forEach((node) => {
+            if (node.type === 'decl') {
+                let r = PostCss.rule({ selector: node.prop + ':' + node.value });
+                r.source = node.source;
+                node.replaceWith(r);
+                fakes.push(r)
+            }
+        })
+        if (ast.raws.after && ast.raws.after.trim()) {
+            let r = PostCss.rule({ selector: ast.raws.after.trim() })
+            ast.append(r);
+            fakes.push(r);
+        }
+
+        meta = stylableProcess(ast);
+    } catch (error) {
+        return { meta: null, fakes: fakes };
+    }
+    return {
+        meta: meta,
+        fakes: fakes
+    }
+}
+
+function createFrom(filePath: string): string | undefined {
+    return filePath.indexOf('file://') === 0 ? decodeURIComponent(filePath.slice(7 + Number(process.platform === 'win32'))) : decodeURIComponent(filePath);
+}
+
+function fixAndProcess(src: string, position: ProviderPosition, filePath: string, ) {
+    let cursorLineIndex: number = position.character;
+    let lines = src.split('\n');
+    let currentLine = lines[position.line];
+    let fixedSrc = src;
+    if (currentLine.match(lineEndsRegexp)) {
+        let currentLocation = 0;
+        let splitLine = currentLine.split(lineEndsRegexp);
+        for (var i = 0; i < splitLine.length; i += 2) {
+            currentLocation += splitLine[i].length + 1;
+            if (currentLocation >= position.character) {
+                currentLine = splitLine[i];
+                if (isIllegalLine(currentLine)) {
+                    splitLine[i] = '\n'
+                    lines.splice(position.line, 1, splitLine.join(''));
+                    fixedSrc = lines.join('\n');
+                }
+                break;
+            } else {
+                cursorLineIndex -= splitLine[i].length + 1
+            }
+        }
+    }
+    else if (isIllegalLine(currentLine)) {
+        lines.splice(position.line, 1, "");
+        fixedSrc = lines.join('\n');
+    }
+
+    let processed = createMeta(fixedSrc, filePath);
+    return {
+        processed: processed,
+        currentLine: currentLine,
+        cursorLineIndex: cursorLineIndex,
+    }
+}
+
+export class ProviderLocation {
+    constructor(public uri: string, public range: ProviderRange) { }
+}

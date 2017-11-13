@@ -1,40 +1,32 @@
 'use strict';
-import {
-    CompletionItem,
-    createConnection,
-    IConnection,
-    InitializeResult,
-    InsertTextFormat,
-    IPCMessageReader,
-    IPCMessageWriter,
-    TextDocuments,
-    TextEdit,
-} from 'vscode-languageserver';
-import { createProvider,
-    //  createProcessor
-} from './provider-factory';
+import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, } from 'vscode-languageserver';
+import { createProvider, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
-import {createDiagnosis} from './diagnosis'
+import { createDiagnosis } from './diagnosis';
 let workspaceRoot: string;
+import * as VCL from 'vscode-css-languageservice';
+
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const documents: TextDocuments = new TextDocuments();
 
 const provider = createProvider(documents);
-// const processor = createProcessor(documents)
 const processor = provider.styl.fileProcessor;
+const cssService = VCL.getCSSLanguageService();
 
 documents.listen(connection);
 
 connection.onInitialize((params): InitializeResult => {
+
     workspaceRoot = params.rootUri!;
 
     return {
         capabilities: {
             textDocumentSync: documents.syncKind,
             completionProvider: {
-                triggerCharacters: ['.', '-', ':', '"']
-            }
+                triggerCharacters: ['.', '-', ':', '"', ',']
+            },
+            definitionProvider: true,
         }
     }
 });
@@ -43,8 +35,10 @@ connection.listen();
 
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
-    // connection.sendNotification(OpenDocNotification.type, '/home/wix/projects/demo/test.css');
-    if (!params.textDocument.uri.endsWith('.st.css')) {return Promise.resolve([])}
+    if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
+
+    let cssCompsRaw = cssService.doComplete(documents.get(params.textDocument.uri), params.position, cssService.parseStylesheet(documents.get(params.textDocument.uri)))
+
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
     return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
@@ -58,7 +52,7 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
                 vsCodeCompletion.detail = com.detail;
                 vsCodeCompletion.textEdit = ted;
                 vsCodeCompletion.sortText = com.sortText;
-                vsCodeCompletion.filterText =  typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
+                vsCodeCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
                 if (com.additionalCompletions) {
                     vsCodeCompletion.command = {
                         title: "additional",
@@ -67,11 +61,28 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
                     }
                 }
                 return vsCodeCompletion;
-            })
+            }).concat(cssCompsRaw.items)
         })
 })
 
-documents.onDidChangeContent(function(change){
-    let diagnostics = createDiagnosis(change.document, processor);
-    connection.sendDiagnostics({uri: change.document.uri, diagnostics: diagnostics})
+documents.onDidChangeContent(function (change) {
+
+    let cssDiags = cssService.doValidation(change.document, cssService.parseStylesheet(change.document)).map(diag => {
+        diag.code === 'emptyRules'
+            ? diag.source = 'css-ignore'
+            : diag.source = 'css';
+        return diag;
+    });
+
+    let diagnostics = createDiagnosis(change.document, processor).map(diag => { diag.source = 'stylable'; return diag; });
+    connection.sendDiagnostics({ uri: change.document.uri, diagnostics: diagnostics.concat(cssDiags) })
+})
+
+connection.onDefinition((params): Thenable<Definition> => {
+    const doc = documents.get(params.textDocument.uri).getText();
+    const pos = params.position;
+    return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
+        .then((res) => {
+            return res.map(loc => Location.create('file://' + loc.uri, loc.range))
+        })
 })

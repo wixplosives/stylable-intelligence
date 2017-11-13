@@ -18,19 +18,19 @@ export function createDiagnosis(doc: TextDocument, fp: FileProcessor<StylableMet
 
     file = decodeURIComponent(file);
 
-    let stylableDiagnostics = new Diagnostics()
     let transformer = new StylableTransformer({
-        diagnostics: stylableDiagnostics,
+        diagnostics: new Diagnostics(),
         fileProcessor: fp,
         requireModule: () => ({ "default": {} })
     })
 
     let docPostCSSRoot = safeParse(doc.getText(), { from: path.resolve(file) })
-    let meta = stylableProcess(docPostCSSRoot, stylableDiagnostics)
+    let meta = stylableProcess(docPostCSSRoot)
 
     fp.add(file, meta);
     transformer.transform(meta)
-    return stylableDiagnostics.reports.map(reportToDiagnostic)
+    return meta.diagnostics.reports.concat(meta.transformDiagnostics ? meta.transformDiagnostics.reports : [])
+        .map(reportToDiagnostic)
 }
 
 //stylable diagnostic to protocol diagnostic
@@ -48,7 +48,7 @@ function createRange(report: Report) {
         let lines: string[] = (source.input as any).css.split('\n')
         const searchStart = source.start!.line - 1
         const searchEnd = source.end!.line - 1
-        for (var i = searchStart; i < searchEnd; ++i) {
+        for (var i = searchStart; i <= searchEnd; ++i) {
             const wordIndex = lines[i].indexOf(report.options.word!)
             if (!!~wordIndex) {
                 start.line = i

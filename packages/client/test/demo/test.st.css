@@ -1,9 +1,18 @@
-:import {
-    -st-from: './import.st.css';
-    -st-named: var1,var2;
+.local {
+    color: red;
+    -st-states: Nordrhein, Westfalen;
 }
 
 :vars {
-    var3: value( va)
+    one: fuchsia;
+    two: goldenrod;
 }
 
+.gaga .root {
+    color: bisquelk;
+}
+
+:import {
+    -st-from: "./import.st";
+}
+ .local {}

@@ -1,14 +1,14 @@
 {
     "name": "stylable-intelligence",
     "displayName": "Stylable Intelligence",
-    "version": "0.0.21",
+    "version": "0.0.27",
     "description": "Code completion, reference detection, diagnostics and other features for Stylable CSS.",
     "author": "Ory Henn (ory@wix.com)",
     "publisher": "wix",
     "icon": "images/logo.png",
     "repository": {
         "type": "git",
-        "url": "git@github.com:wix/stylable-intelligence.git"
+        "url": "https://github.com/wix/stylable-intelligence.git"
     },
     "license": "SEE LICENSE IN LICENSE.txt",
     "bugs": {
@@ -22,8 +22,28 @@
         "Snippets",
         "Other"
     ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "stylable",
+                "aliases": [
+                    "Stylable"
+                ],
+                "extensions": [
+                    ".st.css"
+                ]
+            }
+        ],
+        "grammars": [
+            {
+                "language": "stylable",
+                "scopeName": "source.stylable",
+                "path": "./src/stylable.tmLanguage.json"
+            }
+        ]
+    },
     "activationEvents": [
-        "onLanguage:css"
+        "onLanguage:stylable"
     ],
     "main": "dist/src/extension.js",
     "files": [
@@ -33,7 +53,8 @@
     "homepage": "https://github.com/wix/stylable-intelligence#readme",
     "keywords": [
         "typescript",
-        "tdd"
+        "tdd",
+        "stylable"
     ],
     "browser": "dist/src/index.js",
     "scripts": {
@@ -48,9 +69,9 @@
         "test:node": "mocha --reporter mocha-env-reporter dist/test/*.test.js"
     },
     "devDependencies": {
+        "@types/chai": "~4.0.1",
         "@types/glob": "^5.0.30",
         "@types/lodash": "4.14.71",
-        "@types/chai": "~4.0.1",
         "@types/mocha": "~2.2.41",
         "@types/node": "^8.0.13",
         "@types/sinon": "~2.3.1",
@@ -69,14 +90,14 @@
         "typescript": "~2.4.1"
     },
     "dependencies": {
-        "glob": "^7.1.2",
-        "vscode": "1.1.5",
-        "tslib": "~1.7.1",
         "css-selector-tokenizer": "^0.7.0",
+        "glob": "^7.1.2",
         "lodash": "4.17.4",
         "postcss": "^6.0.7",
         "postcss-nested": "^2.0.4",
-        "stylable": "^4.0.4",
+        "stylable": "^4.0.26",
+        "tslib": "~1.7.1",
+        "vscode": "1.1.5",
         "vscode-languageclient": "^3.3.0",
         "vscode-languageserver": "^3.3.0"
     }

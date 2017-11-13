@@ -1,7 +1,7 @@
 @namespace "moshe";
 
 :import {
-    -st-from: "./import-from-here.css";
+    -st-from: "./import-from-here.st.css";
     -st-named: shlomo;
 }
 

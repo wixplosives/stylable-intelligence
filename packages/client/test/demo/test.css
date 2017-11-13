@@ -1,11 +1,18 @@
+.lokal {
+    color: red;
+    -st-states: Nordrhein, Westfalen;
+}
+
+:vars {
+    one: fuchsia;
+    two: goldenrod;
+}
+
+.gaga .root {
+    color: bisquelk;
+}
+
 :import {
-    -st-from: "./mid-import.st.css";
-    -st-named: bobo;
+    -st-from: "./import.st";
 }
-
-.gaga {
-    -st-extends: bobo;
-    -st-states: localState;
-}
-
-.gaga
+ .lokal {}
