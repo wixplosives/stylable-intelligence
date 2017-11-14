@@ -63,7 +63,7 @@
         "build": "tsc -d",
         "compile": "tsc -watch -d",
         
-        "postinstall": "node ./node_modules/vscode/bin/install & pwd",
+        "postinstall": "node ./node_modules/vscode/bin/install & chmod a+x .vscode-test/VSCode-linux-x64/resources/app/node_modules/vscode-ripgrep/bin/rg",
         "reset": "yarn clear && yarn install && yarn test",
         "pretest": "rimraf dist && yarn build",
         "test": "node ./run-test",
