@@ -61,7 +61,7 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
                     }
                 }
                 return vsCodeCompletion;
-            }).concat(cssCompsRaw.items)
+            }).concat((cssCompsRaw || {items:[]}).items)
         })
 })
 
