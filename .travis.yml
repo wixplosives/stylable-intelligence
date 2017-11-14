@@ -24,7 +24,7 @@ before_install:
     fi
 
 install:
-  - npm install
+  - sudo npm install
 
 script:
   - sudo npm test
