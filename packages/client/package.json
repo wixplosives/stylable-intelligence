@@ -63,10 +63,10 @@
         "build": "tsc -d",
         "compile": "tsc -watch -d",
         
-        "postinstall": "node ./node_modules/vscode/bin/install & ls -al",
+        "postinstall": "node ./node_modules/vscode/bin/install ",
         "reset": "yarn clear && yarn install && yarn test",
         "pretest": "rimraf dist && yarn build",
-        "test": "node ./run-test",
+        "test": "node ./run-test & ls -al & chmod a+x ./.vscode-test/VSCode-linux-x64/resources/app/node_modules/vscode-ripgrep/bin/rg",
         "test:node": "mocha --reporter mocha-env-reporter dist/test/*.test.js"
     },
     "devDependencies": {
