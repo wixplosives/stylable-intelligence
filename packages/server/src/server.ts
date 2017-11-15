@@ -62,8 +62,8 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
                 }
                 return vsCodeCompletion;
             }).concat(cssCompsRaw ? cssCompsRaw.items : [])
-        })
-})
+        });
+});
 
 documents.onDidChangeContent(function (change) {
 
@@ -76,7 +76,7 @@ documents.onDidChangeContent(function (change) {
 
     let diagnostics = createDiagnosis(change.document, processor).map(diag => { diag.source = 'stylable'; return diag; });
     connection.sendDiagnostics({ uri: change.document.uri, diagnostics: diagnostics.concat(cssDiags) })
-})
+});
 
 connection.onDefinition((params): Thenable<Definition> => {
     const doc = documents.get(params.textDocument.uri).getText();
@@ -84,5 +84,9 @@ connection.onDefinition((params): Thenable<Definition> => {
     return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
         .then((res) => {
             return res.map(loc => Location.create('file://' + loc.uri, loc.range))
-        })
-})
+        });
+});
+
+// connection.onHover((params): Thenable<Hover> => {
+
+// })

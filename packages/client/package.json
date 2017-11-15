@@ -54,7 +54,8 @@
     "keywords": [
         "typescript",
         "tdd",
-        "stylable"
+        "stylable",
+        "css"
     ],
     "browser": "dist/src/index.js",
     "scripts": {
