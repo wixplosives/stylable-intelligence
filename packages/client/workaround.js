@@ -52,7 +52,7 @@ console.log('Current working directory: ' + process.cwd());
 function runTestsWrapper() {
     console.log(testsFolder)
     if (process.platform === 'linux') {
-        exec('chmod -r a+x ' + testRunFolderAbsolute, runTests)
+        exec('chmod -r 755 ' + testRunFolderAbsolute, runTests)
     } else {
         runTests()
     }
