@@ -28,6 +28,7 @@ connection.onInitialize((params): InitializeResult => {
             },
             definitionProvider: true,
             hoverProvider: true,
+            referencesProvider: true,
         }
     }
 });
@@ -91,4 +92,10 @@ connection.onDefinition((params): Thenable<Definition> => {
 connection.onHover((params): Thenable<Hover> => {
     let hover = cssService.doHover(documents.get(params.textDocument.uri), params.position, cssService.parseStylesheet(documents.get(params.textDocument.uri)));
     return Promise.resolve(hover!) //Because Hover may be null, but not of null type - vscode code isn't strict that way.
+});
+
+connection.onReferences((params): Thenable<Location[]> => {
+    let refs = cssService.findReferences(documents.get(params.textDocument.uri), params.position, cssService.parseStylesheet(documents.get(params.textDocument.uri)))
+
+    return Promise.resolve(refs)
 })
