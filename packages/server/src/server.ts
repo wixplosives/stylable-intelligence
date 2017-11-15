@@ -1,5 +1,5 @@
 'use strict';
-import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover,} from 'vscode-languageserver';
+import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, DiagnosticSeverity } from 'vscode-languageserver';
 import { createProvider, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
@@ -70,9 +70,11 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
 documents.onDidChangeContent(function (change) {
 
     let cssDiags = cssService.doValidation(change.document, cssService.parseStylesheet(change.document)).map(diag => {
-        diag.code === 'emptyRules'
-            ? diag.source = 'css-ignore'
-            : diag.source = 'css';
+        diag.source = 'css';
+        if (diag.code === 'emptyRules') { diag.source = 'css-ignore'; diag.severity = DiagnosticSeverity.Information }
+        if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') { diag.source = 'css-ignore'; diag.severity = DiagnosticSeverity.Information }
+
+
         return diag;
     });
 
@@ -98,4 +100,9 @@ connection.onReferences((params): Thenable<Location[]> => {
     let refs = cssService.findReferences(documents.get(params.textDocument.uri), params.position, cssService.parseStylesheet(documents.get(params.textDocument.uri)))
 
     return Promise.resolve(refs)
-})
+});
+
+function readDocRange(doc: TextDocument, rng: Range): string {
+    let lines = doc.getText().split('\n');
+    return lines[rng.start.line].slice(rng.start.character, rng.end.character);
+}
