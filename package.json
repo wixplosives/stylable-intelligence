@@ -1,5 +1,5 @@
 {
-  
+
   "name": "stylable-intelligence",
   "version": "0.0.1",
   "description": "Stylable Language Services",
@@ -25,6 +25,8 @@
   },
   "scripts": {
     "postinstall": "./node_modules/.bin/lerna exec npm install",
-    "test": "./node_modules/.bin/lerna run test"
+    "test": "./node_modules/.bin/lerna run test",
+    "build": "echo Hi Alex",
+    "test:node": "npm run test"
   }
 }
