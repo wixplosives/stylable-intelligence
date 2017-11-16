@@ -71,8 +71,12 @@ documents.onDidChangeContent(function (change) {
 
     let cssDiags = cssService.doValidation(change.document, cssService.parseStylesheet(change.document)).map(diag => {
         diag.source = 'css';
-        if (diag.code === 'emptyRules') { diag.source = 'css-ignore'; diag.severity = DiagnosticSeverity.Information }
-        if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') { diag.source = 'css-ignore'; diag.severity = DiagnosticSeverity.Information }
+        if (diag.code === 'emptyRules') {
+        diag.source = 'css-ignore'; diag.severity = DiagnosticSeverity.Information
+        }
+        if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') {
+            diag.source = 'css-ignore'; diag.severity = DiagnosticSeverity.Information
+        }
 
 
         return diag;
