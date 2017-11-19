@@ -25,6 +25,9 @@
   },
   "scripts": {
     "postinstall": "./node_modules/.bin/lerna exec npm install",
-    "test": "./node_modules/.bin/lerna run test"
+    "test": "./node_modules/.bin/lerna run test",
+    "build": "echo build special",
+    "test:ci": "test"
+
   }
 }
