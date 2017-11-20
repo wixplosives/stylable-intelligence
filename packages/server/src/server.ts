@@ -46,23 +46,23 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
     return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
         .then((res) => {
             return res.map((com: Completion) => {
-                let vsCodeCompletion = CompletionItem.create(com.label);
+                let lspCompletion = CompletionItem.create(com.label);
                 let ted: TextEdit = TextEdit.replace(
                     com.range ? com.range : new ProviderRange(new ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos),
                     typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
-                vsCodeCompletion.insertTextFormat = InsertTextFormat.Snippet;
-                vsCodeCompletion.detail = com.detail;
-                vsCodeCompletion.textEdit = ted;
-                vsCodeCompletion.sortText = com.sortText;
-                vsCodeCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
+                lspCompletion.insertTextFormat = InsertTextFormat.Snippet;
+                lspCompletion.detail = com.detail;
+                lspCompletion.textEdit = ted;
+                lspCompletion.sortText = com.sortText;
+                lspCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
                 if (com.additionalCompletions) {
-                    vsCodeCompletion.command = {
+                    lspCompletion.command = {
                         title: "additional",
                         command: 'editorconfig._triggerSuggestAfterDelay',
                         arguments: []
                     }
                 }
-                return vsCodeCompletion;
+                return lspCompletion;
             }).concat(cssCompsRaw ? cssCompsRaw.items : [])
         });
 });
@@ -85,6 +85,7 @@ documents.onDidChangeContent(function (change) {
     let diagnostics = createDiagnosis(change.document, processor).map(diag => { diag.source = 'stylable'; return diag; });
     connection.sendDiagnostics({ uri: change.document.uri, diagnostics: diagnostics.concat(cssDiags) })
 });
+
 
 connection.onDefinition((params): Thenable<Definition> => {
     const doc = documents.get(params.textDocument.uri).getText();
