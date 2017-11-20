@@ -1,10 +1,11 @@
-sudo: false
-
 language: node_js
 
+sudo: false
+
 node_js:
-  - "7"
-  - "6"
+  - 9
+  - 8
+  - 6
 
 os:
   - linux
@@ -21,8 +22,5 @@ before_install:
       sleep 3;
     fi
 
-install:
-  - npm install
-
-script:
-  - npm test
+cache:
+  yarn: true
