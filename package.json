@@ -19,13 +19,13 @@
     "tdd"
   ],
   "devDependencies": {
-    "lerna": "^2.0.0",
-    "typescript": "~2.4.1",
-    "vsce": "^1.30.0"
+    "lerna": "^2.5.1",
+    "typescript": "~2.6.1",
+    "vsce": "^1.33.2"
   },
   "scripts": {
-    "postinstall": "./node_modules/.bin/lerna exec npm install",
-    "test": "./node_modules/.bin/lerna run test",
+    "postinstall": "lerna exec yarn -- --mutex network",
+    "test": "lerna run test",
     "build": "echo Hi Alex",
     "test:node": "npm run test"
   }

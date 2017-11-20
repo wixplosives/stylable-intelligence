@@ -19,6 +19,7 @@ documents.listen(connection);
 connection.onInitialize((params): InitializeResult => {
 
     workspaceRoot = params.rootUri!;
+    workspaceRoot;
 
     return {
         capabilities: {
