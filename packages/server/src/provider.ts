@@ -437,7 +437,7 @@ function createFrom(filePath: string): string | undefined {
 
 function fixAndProcess(src: string, position: ProviderPosition, filePath: string, ) {
     let cursorLineIndex: number = position.character;
-    let lines = src.split('\n');
+    let lines = src.replace(/\r\n/g, '\n').split('\n');
     let currentLine = lines[position.line];
     let fixedSrc = src;
     if (currentLine.match(lineEndsRegexp)) {

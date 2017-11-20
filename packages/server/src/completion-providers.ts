@@ -610,7 +610,7 @@ function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr
     return candidates
         .filter(s => {
             if (Array.isArray(options.target.focusChunk)
-                ? options.target.focusChunk.some((c: SelectorInternalChunk) => c.states.some(state => state === s))
+                ? options.target.focusChunk.some(c => c.states.some(state => state === s))
                 : (options.target.focusChunk as SelectorInternalChunk).states.some(state => state === s)) {
                 return false;
             } else if (s.slice(0, -1).startsWith(lastState)) {
