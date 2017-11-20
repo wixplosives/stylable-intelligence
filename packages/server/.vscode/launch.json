@@ -14,7 +14,7 @@
       "name": "Run Tests",
       "request": "launch",
       "type": "node",
-      "program": "${workspaceRoot}/node_modules/.bin/_mocha",
+      "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
       "stopOnEntry": false,
       "args": ["--reporter", "mocha-env-reporter","../client/server/test/**/*.spec.js"],
       "cwd": "${workspaceRoot}",
