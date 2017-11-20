@@ -24,7 +24,7 @@
     "vsce": "^1.33.2"
   },
   "scripts": {
-    "postinstall": "lerna exec yarn --mutex network",
+    "postinstall": "lerna exec yarn -- --mutex network",
     "test": "lerna run test",
     "build": "echo Hi Alex",
     "test:node": "npm run test"
