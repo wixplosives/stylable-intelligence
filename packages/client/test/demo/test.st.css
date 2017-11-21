@@ -1,18 +1,11 @@
-.local {
-    color: red;
-    -st-states: Nordrhein, Westfalen;
+:import{
+    -st-from:"./import.st.css";
+    -st-default:Comp;
 }
 
-:vars {
-    one: fuchsia;
-    two: goldenrod;
+.gaga{
+    -st-extends:Comp;
+    -st-states:bover;
 }
 
-.gaga .root {
-    color: bisquelk;
-}
-
-:import {
-    -st-from: "./import.st";
-}
- .local {}
+.gaga:

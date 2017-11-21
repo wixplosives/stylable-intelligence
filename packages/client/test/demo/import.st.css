@@ -1,14 +1,3 @@
-.root {
-    -st-states : state,otherState;
+.root{
+    -st-states:shmover;
 }
-
-.shlomo {
-    color: black;
-}
-
-:vars {
-    var1: red;
-    var2: pink;
-}
-
-@custom-selector :--momo .root .momo;
