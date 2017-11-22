@@ -6,8 +6,15 @@
 .gaga{
     -st-extends:Comp;
     -st-states:bover;
+    border: solid;
 }
 
 :vars {
     color1: red;
+}
+
+@custom-selector :--oryory div > Comp;
+
+:--oryory div {
+    color: red;
 }

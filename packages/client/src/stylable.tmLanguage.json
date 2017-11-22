@@ -8,7 +8,7 @@
 	],
 	"patterns": [
     {
-      "match": ":vars|:import",
+      "match": ":vars|:import|@custom-selector",
       "name": "keyword.control.top-level.stylable"
     },
     {
