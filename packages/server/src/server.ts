@@ -4,7 +4,6 @@ import { createProvider, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import { createDiagnosis } from './diagnosis';
-let workspaceRoot: string;
 import * as VCL from 'vscode-css-languageservice';
 
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
@@ -17,10 +16,6 @@ const cssService = VCL.getCSSLanguageService();
 documents.listen(connection);
 
 connection.onInitialize((params): InitializeResult => {
-
-    workspaceRoot = params.rootUri!;
-    workspaceRoot;
-
     return {
         capabilities: {
             textDocumentSync: documents.syncKind,
@@ -35,7 +30,6 @@ connection.onInitialize((params): InitializeResult => {
 });
 
 connection.listen();
-
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
     if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }

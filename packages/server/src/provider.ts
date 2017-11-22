@@ -339,10 +339,11 @@ export default class Provider {
             res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(';'),
             res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(','),
             res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf('('),
+            0
         )
 
         let end = res.currentLine.slice(res.cursorLineIndex).search(/[:, ;)]|$/);
-        let word = res.currentLine.slice(start + 1, res.cursorLineIndex + end);
+        let word = res.currentLine.slice(start === 0 ? start : start + 1 , res.cursorLineIndex + end);
         let defs: ProviderLocation[] = [];
 
         if (Object.keys(meta.mappedSymbols).find(sym => sym === word.replace('.', ''))) {
