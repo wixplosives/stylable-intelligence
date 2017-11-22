@@ -1,0 +1,2 @@
+buildcmd: "build"
+testcmd: "test:ci"

@@ -63,7 +63,8 @@
         "vscode:prepublish": "rm -rf dist && yarn install && tsc -d -p ./tsconfig.publish.json && yarn install --prod",
         "build": "tsc -d",
         "compile": "tsc -watch -d",
-        "postinstall": "node ./node_modules/vscode/bin/install",
+        
+        "postinstall": "node ./node_modules/vscode/bin/install ",
         "reset": "yarn clear && yarn install && yarn test",
         "pretest": "rimraf dist && yarn build",
         "test": "node ./run-test",
