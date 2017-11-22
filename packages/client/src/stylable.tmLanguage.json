@@ -7,7 +7,11 @@
 		".st.css"
 	],
 	"patterns": [
-		{
+    {
+      "match": ":vars|:import",
+      "name": "keyword.control.top-level.stylable"
+    },
+    {
 			"include": "#comment-block"
 		},
 		{
@@ -1459,7 +1463,11 @@
 				{
 					"match": "(?x) (?<![\\w-])\n--\n(?:[-a-zA-Z_]    | [^\\x00-\\x7F])     # First letter\n(?:[-a-zA-Z0-9_] | [^\\x00-\\x7F]      # Remainder of identifier\n  |\\\\(?:[0-9a-fA-F]{1,6}|.)\n)*",
 					"name": "variable.css"
-				},
+        },
+        {
+          "match": "-st-states|-st-extends|-st-compose|-st-mixin|-st-from|-st-default|-st-named|-st-theme|-st-global",
+          "name": "keyword.control.directive.stylable"
+        },
 				{
 					"begin": "(?<![-a-zA-Z])(?=[-a-zA-Z])",
 					"end": "$|(?![-a-zA-Z])",
