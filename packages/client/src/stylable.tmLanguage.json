@@ -1466,7 +1466,7 @@
         },
         {
           "match": "-st-states|-st-extends|-st-compose|-st-mixin|-st-from|-st-default|-st-named|-st-theme|-st-global",
-          "name": "keyword.control.directive.stylable"
+          "name": "keyword.other.directive.stylable"
         },
 				{
 					"begin": "(?<![-a-zA-Z])(?=[-a-zA-Z])",

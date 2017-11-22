@@ -15,6 +15,9 @@
 
 @custom-selector :--oryory div > Comp;
 
+@custom-selector :--ogiogi div > Comp;
+
 :--oryory div {
     color: red;
 }
+
