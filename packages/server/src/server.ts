@@ -1,5 +1,5 @@
 'use strict';
-import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, DiagnosticSeverity, Position } from 'vscode-languageserver';
+import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position } from 'vscode-languageserver';
 import { createProvider, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
@@ -70,25 +70,17 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
 
 documents.onDidChangeContent(function (change) {
 
-    let cssDiags = cssService.doValidation(change.document, cssService.parseStylesheet(change.document)).map(diag => {
-        diag.source = 'css';
-        if (diag.code === 'emptyRules') {
-            diag.source = 'css-ignore'; diag.severity = DiagnosticSeverity.Information
-        }
-        if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') {
-            diag.source = 'css-ignore'; diag.severity = DiagnosticSeverity.Information
-        }
-        if (diag.code === 'css-lcurlyexpected' && readDocRange(
-            change.document,
-            Range.create(
-                Position.create(diag.range.start.line, 0),
-                diag.range.end
-            )).startsWith('@custom-selector')
-        ) {
-            diag.source = 'css-ignore'; diag.severity = DiagnosticSeverity.Information
-        }
+    let cssDiags = cssService.doValidation(change.document, cssService.parseStylesheet(change.document))
+        .filter(diag => {
+            if (diag.code === 'emptyRules') { return false; }
+            if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') { return false; }
+            if (diag.code === 'css-lcurlyexpected' && readDocRange(change.document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) { return false; }
+            return true;
+        })
+        .map(diag => {
+            diag.source = 'css';
             return diag;
-    });
+        });
 
     let diagnostics = createDiagnosis(change.document, processor).map(diag => { diag.source = 'stylable'; return diag; });
     connection.sendDiagnostics({ uri: change.document.uri, diagnostics: diagnostics.concat(cssDiags) })
