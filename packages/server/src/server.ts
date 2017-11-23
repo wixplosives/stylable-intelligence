@@ -69,6 +69,9 @@ documents.onDidChangeContent(function (change) {
             if (diag.code === 'emptyRules') { return false; }
             if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') { return false; }
             if (diag.code === 'css-lcurlyexpected' && readDocRange(change.document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) { return false; }
+            if (diag.code === 'unknownProperties' ) {
+                return false;
+            }
             return true;
         })
         .map(diag => {

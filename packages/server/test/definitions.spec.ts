@@ -31,5 +31,9 @@ describe("Definitions", function () {
                 expect(def.range).to.eql(createRange(0, 0, 0, 6))
             });
         });
+
+        //Custom selector definition
+        //Definition when usage is above definition
+        //
     });
 });
