@@ -20,7 +20,7 @@ export function activate(context: ExtensionContext) {
 
     let clientOptions: LanguageClientOptions = {
         documentSelector: [{ language: 'stylable' }],
-        diagnosticCollectionName: 'stylable'
+        diagnosticCollectionName: 'stylable',
     }
 
     let client = new LanguageClient('stylable', serverOptions, clientOptions);
