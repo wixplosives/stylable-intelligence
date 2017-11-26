@@ -41,8 +41,8 @@
   resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-4.0.0.tgz#9a93ffa4ee1329e85166278a5ed99f81dc4c8362"
 
 ajv@^5.1.0:
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.3.0.tgz#4414ff74a50879c208ee5fdc826e32c303549eda"
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.4.0.tgz#32d1cf08dbc80c432f426f12e10b2511f6b46474"
   dependencies:
     co "^4.6.0"
     fast-deep-equal "^1.0.0"
@@ -246,8 +246,8 @@ caniuse-api@^1.5.2:
     lodash.uniq "^4.5.0"
 
 caniuse-db@^1.0.30000529, caniuse-db@^1.0.30000634, caniuse-db@^1.0.30000639:
-  version "1.0.30000766"
-  resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000766.tgz#4c911aa3747f01388452fa4b927b78fcf1430680"
+  version "1.0.30000770"
+  resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000770.tgz#cf68ae1cb8a82f6d3c35df41c62dc6973e470244"
 
 caseless@~0.11.0:
   version "0.11.0"
@@ -403,8 +403,8 @@ concat-map@0.0.1:
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
 
 concurrently@~3.5.0:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/concurrently/-/concurrently-3.5.0.tgz#8cf1b7707a6916a78a4ff5b77bb04dec54b379b2"
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/concurrently/-/concurrently-3.5.1.tgz#ee8b60018bbe86b02df13e5249453c6ececd2521"
   dependencies:
     chalk "0.5.1"
     commander "2.6.0"
@@ -416,8 +416,8 @@ concurrently@~3.5.0:
     tree-kill "^1.1.0"
 
 convert-source-map@^1.1.1:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-1.5.0.tgz#9acd70851c6d5dfdd93d9282e5edf94a03ff46b5"
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-1.5.1.tgz#b8278097b9bc229365de5c62cf5fcaed8b5599e5"
 
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
@@ -1453,8 +1453,8 @@ lolex@^1.6.0:
   resolved "https://registry.yarnpkg.com/lolex/-/lolex-1.6.0.tgz#3a9a0283452a47d7439e72731b9e07d7386e49f6"
 
 lolex@^2.2.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/lolex/-/lolex-2.3.0.tgz#d6bad0f0aa5caebffcfebb09fb2caa89baaff51c"
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/lolex/-/lolex-2.3.1.tgz#3d2319894471ea0950ef64692ead2a5318cff362"
 
 macaddress@^0.2.8:
   version "0.2.8"
@@ -1832,8 +1832,8 @@ postcss-minify-selectors@^2.0.4:
     postcss-selector-parser "^2.0.0"
 
 postcss-modules-extract-imports@^1.0.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/postcss-modules-extract-imports/-/postcss-modules-extract-imports-1.1.0.tgz#b614c9720be6816eaee35fb3a5faa1dba6a05ddb"
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/postcss-modules-extract-imports/-/postcss-modules-extract-imports-1.2.0.tgz#66140ecece38ef06bf0d3e355d69bf59d141ea85"
   dependencies:
     postcss "^6.0.1"
 
@@ -2278,8 +2278,8 @@ sparkles@^1.0.0:
   resolved "https://registry.yarnpkg.com/sparkles/-/sparkles-1.0.0.tgz#1acbbfb592436d10bbe8f785b7cc6f82815012c3"
 
 spawn-command@^0.0.2-1:
-  version "0.0.2-1"
-  resolved "https://registry.yarnpkg.com/spawn-command/-/spawn-command-0.0.2-1.tgz#62f5e9466981c1b796dc5929937e11c9c6921bd0"
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/spawn-command/-/spawn-command-0.0.2.tgz#9544e1a43ca045f8531aac1a48cb29bdae62338e"
 
 split@0.3:
   version "0.3.3"
@@ -2667,9 +2667,9 @@ vscode-uri@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/vscode-uri/-/vscode-uri-1.0.1.tgz#11a86befeac3c4aa3ec08623651a3c81a6d0bbc8"
 
-vscode@1.1.7:
-  version "1.1.7"
-  resolved "https://registry.yarnpkg.com/vscode/-/vscode-1.1.7.tgz#a2c361026e099acedaa134ff2a9f03c25b7d30b3"
+vscode@^1.1.8:
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/vscode/-/vscode-1.1.8.tgz#80ae77d4d27d461e7ed1f3caab25eef4fdd3144e"
   dependencies:
     glob "^7.1.2"
     gulp-chmod "^2.0.0"
