@@ -6,9 +6,10 @@
   "publisher": "Nadav Abraami (nadav@wix.com)",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
+  "enableProposedApi": true,
   "engines": {
     "node": "*",
-    "vscode": "^1.16.0"
+    "vscode": "1.18.x"
   },
   "repository": {
     "type": "git",

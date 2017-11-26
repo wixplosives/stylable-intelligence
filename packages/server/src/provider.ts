@@ -24,6 +24,7 @@ import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
 import { Declaration } from 'postcss';
 import * as path from 'path';
+import { Position } from 'vscode-languageserver/lib/main';
 
 
 export default class Provider {
@@ -343,7 +344,7 @@ export default class Provider {
         )
 
         let end = res.currentLine.slice(res.cursorLineIndex).search(/[:, ;)]|$/);
-        let word = res.currentLine.slice(start === 0 ? start : start + 1 , res.cursorLineIndex + end);
+        let word = res.currentLine.slice(start === 0 ? start : start + 1, res.cursorLineIndex + end);
         let defs: ProviderLocation[] = [];
 
         if (Object.keys(meta.mappedSymbols).find(sym => sym === word.replace('.', ''))) {
@@ -351,13 +352,13 @@ export default class Provider {
             switch (symb._kind) {
                 case 'class': {
                     defs.push(
-                        new ProviderLocation(meta.source, this.findWord(word, src))
+                        new ProviderLocation(meta.source, this.findWord(word, src, position))
                     );
                     break;
                 }
                 case 'var': {
                     defs.push(
-                        new ProviderLocation(meta.source, this.findWord(word, src))
+                        new ProviderLocation(meta.source, this.findWord(word, src, position))
                     );
                     break;
                 }
@@ -376,6 +377,10 @@ export default class Provider {
                     break;
                 }
             }
+        } else if (Object.keys(meta.customSelectors).find(sym => sym === word)) {
+            defs.push(
+                new ProviderLocation(meta.source, this.findWord(word, src, position))
+            );
         }
 
         return Promise.resolve(defs.filter(def => !this.inDef(position, def)));
@@ -386,10 +391,11 @@ export default class Provider {
             && (position.line < def.range.end.line || (position.line === def.range.end.line && position.character <= def.range.end.character))
     }
 
-    findWord(word: string, src: string): ProviderRange {
+    findWord(word: string, src: string, position: Position): ProviderRange {
         let split = src.split('\n');
         let lineIndex = split.findIndex(l => l.trim().startsWith(word))
-        if (lineIndex === -1) { return createRange(0, 0, 0, 0) };
+        if (lineIndex === -1 || lineIndex === position.line) { lineIndex = split.findIndex(l => l.trim().indexOf(word) !== -1) }
+        if (lineIndex === -1 || lineIndex === position.line) { return createRange(0, 0, 0, 0) };
         let line = split[lineIndex];
         return createRange(
             lineIndex, line.indexOf(word), lineIndex, line.indexOf(word) + word.length

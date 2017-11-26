@@ -1,10 +1,12 @@
 'use strict';
-import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position } from 'vscode-languageserver';
+import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities } from 'vscode-languageserver';
 import { createProvider, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import { createDiagnosis } from './diagnosis';
 import * as VCL from 'vscode-css-languageservice';
+import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
+
 
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const documents: TextDocuments = new TextDocuments();
@@ -17,7 +19,7 @@ documents.listen(connection);
 
 connection.onInitialize((params): InitializeResult => {
     return {
-        capabilities: {
+        capabilities: ({
             textDocumentSync: documents.syncKind,
             completionProvider: {
                 triggerCharacters: ['.', '-', ':', '"', ',']
@@ -25,7 +27,8 @@ connection.onInitialize((params): InitializeResult => {
             definitionProvider: true,
             hoverProvider: true,
             referencesProvider: true,
-        }
+            colorProvider: true
+        } as CPServerCapabilities & ServerCapabilities)
     }
 });
 
@@ -69,6 +72,9 @@ documents.onDidChangeContent(function (change) {
             if (diag.code === 'emptyRules') { return false; }
             if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') { return false; }
             if (diag.code === 'css-lcurlyexpected' && readDocRange(change.document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) { return false; }
+            if (diag.code === 'unknownProperties' ) {
+                return false;
+            }
             return true;
         })
         .map(diag => {
@@ -99,6 +105,21 @@ connection.onReferences((params): Thenable<Location[]> => {
     let refs = cssService.findReferences(documents.get(params.textDocument.uri), params.position, cssService.parseStylesheet(documents.get(params.textDocument.uri)))
 
     return Promise.resolve(refs)
+});
+
+connection.onRequest(DocumentColorRequest.type, params => {
+    const document = documents.get(params.textDocument.uri);
+    const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
+    const colors = cssService.findDocumentColors(document, stylesheet)
+	return colors;
+});
+
+connection.onRequest(ColorPresentationRequest.type, params => {
+    const document = documents.get(params.textDocument.uri);
+    const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
+    const colors = cssService.getColorPresentations(document, stylesheet, params.color, params.range)
+	return colors;
+
 });
 
 function readDocRange(doc: TextDocument, rng: Range): string {

@@ -15,7 +15,7 @@
         "url": "https://github.com/wix/stylable-intelligence/issues"
     },
     "engines": {
-        "vscode": "^1.16.0"
+        "vscode": "1.18.x"
     },
     "categories": [
         "Languages",
@@ -45,6 +45,7 @@
     "activationEvents": [
         "onLanguage:stylable"
     ],
+    "enableProposedApi": true,
     "main": "dist/src/extension.js",
     "files": [
         "dist/src"
@@ -98,7 +99,7 @@
         "postcss-nested": "^2.1.2",
         "stylable": "^4.0.26",
         "tslib": "~1.8.0",
-        "vscode": "1.1.7",
+        "vscode": "^1.1.8",
         "vscode-languageclient": "^3.5.0",
         "vscode-languageserver": "^3.5.0"
     }

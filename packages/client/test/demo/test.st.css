@@ -1,12 +1,25 @@
-.local {
-    color: red;
+
+:import {
+    -st-from:"./import.st.css";
+    -st-default:Comp;
+}
+
+.gaga{
+    -st-extends:Comp;
+    -st-states:bover;
+    border: solid;
 }
 
 :vars {
-    one: fuchsia;
-    two: goldenrod;
+    color1: red;
 }
 
-.gaga {
-    color: value(one);
+@custom-selector :--oryory div > Comp;
+
+@custom-selector :--ogiogi div > Comp;
+
+.oryory div {
+    color: rgba(255, 0, 0, 0.5);
 }
+
+
