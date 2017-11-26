@@ -5,7 +5,7 @@ import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import { createDiagnosis } from './diagnosis';
 import * as VCL from 'vscode-css-languageservice';
-import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
+import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
 
 
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
@@ -108,9 +108,18 @@ connection.onReferences((params): Thenable<Location[]> => {
 });
 
 connection.onRequest(DocumentColorRequest.type, params => {
-    let document = documents.get(params.textDocument.uri);
-    document;
-	return [];
+    const document = documents.get(params.textDocument.uri);
+    const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
+    const colors = cssService.findDocumentColors(document, stylesheet)
+	return colors;
+});
+
+connection.onRequest(ColorPresentationRequest.type, params => {
+    const document = documents.get(params.textDocument.uri);
+    const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
+    const colors = cssService.getColorPresentations(document, stylesheet, params.color, params.range)
+	return colors;
+
 });
 
 function readDocRange(doc: TextDocument, rng: Range): string {

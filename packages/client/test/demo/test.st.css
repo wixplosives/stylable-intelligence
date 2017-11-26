@@ -19,7 +19,7 @@
 @custom-selector :--ogiogi div > Comp;
 
 .oryory div {
-    color: red;
+    color: rgba(255, 0, 0, 0.5);
 }
 
-Comp
+
