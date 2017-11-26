@@ -1,7 +1,7 @@
 {
     "name": "stylable-intelligence",
     "displayName": "Stylable Intelligence",
-    "version": "0.0.30",
+    "version": "0.0.31",
     "description": "Code completion, reference detection, diagnostics and other features for Stylable CSS.",
     "author": "Ory Henn (ory@wix.com)",
     "publisher": "wix",
@@ -45,7 +45,6 @@
     "activationEvents": [
         "onLanguage:stylable"
     ],
-    "enableProposedApi": true,
     "main": "dist/src/extension.js",
     "files": [
         "dist/src"
