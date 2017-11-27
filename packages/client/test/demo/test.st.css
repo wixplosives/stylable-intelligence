@@ -10,7 +10,7 @@
 }
 
 :vars {
-    color1: red;
+    color1: rgba(0, 255, 51, 0.638);
 }
 
 @custom-selector :--oryory div > Comp;
