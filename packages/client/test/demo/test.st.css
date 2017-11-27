@@ -1,4 +1,3 @@
-
 :import {
     -st-from:"./import.st.css";
     -st-default:Comp;
@@ -18,7 +17,7 @@
 
 @custom-selector :--ogiogi div > Comp;
 
-.oryory div {
+:--oryory div {
     color: rgba(255, 0, 0, 0.5);
 }
 

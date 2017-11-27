@@ -1,7 +1,7 @@
 {
     "name": "stylable-intelligence",
     "displayName": "Stylable Intelligence",
-    "version": "0.0.31",
+    "version": "0.0.32",
     "description": "Code completion, reference detection, diagnostics and other features for Stylable CSS.",
     "author": "Ory Henn (ory@wix.com)",
     "publisher": "wix",
@@ -31,7 +31,8 @@
                 ],
                 "extensions": [
                     ".st.css"
-                ]
+                ],
+                "configuration": "./language-configuration.json"
             }
         ],
         "grammars": [
