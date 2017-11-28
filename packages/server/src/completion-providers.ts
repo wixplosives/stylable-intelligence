@@ -21,7 +21,8 @@ import {
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
-import * as ts from 'typescript';
+// import * as ts from 'typescript';
+// import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName } from 'typescript';
 
 
 
@@ -294,15 +295,17 @@ export class SelectorCompletionProvider implements CompletionProvider {
                 .map(c => classCompletion(c, (createDirectiveRange(options)))));
             comps.push(...Object.keys(options.meta.customSelectors)
                 .map(c => classCompletion(c, (createDirectiveRange(options)), true)));
-            let moreComps = options.meta.imports.reduce((acc: Completion[], imp) => {
-                if (acc.every(comp => comp.label !== imp.defaultExport)) { acc.push(classCompletion(imp.defaultExport, createDirectiveRange(options), true)) };
-                Object.keys(imp.named).forEach(exp => {
-                    if (acc.every(comp => comp.label.replace('.', '') !== imp.named[exp])) {
-                        acc.push(classCompletion(imp.named[exp], (createDirectiveRange(options))))
-                    }
-                });
-                return acc;
-            }, comps)
+            let moreComps = options.meta.imports
+            .filter(imp => imp.fromRelative.endsWith('st.css'))
+            .reduce((acc: Completion[], imp) => {
+                    if (acc.every(comp => comp.label !== imp.defaultExport)) { acc.push(classCompletion(imp.defaultExport, createDirectiveRange(options), true)) };
+                    Object.keys(imp.named).forEach(exp => {
+                        if (acc.every(comp => comp.label.replace('.', '') !== imp.named[exp])) {
+                            acc.push(classCompletion(imp.named[exp], (createDirectiveRange(options))))
+                        }
+                    });
+                    return acc;
+                }, comps)
             return moreComps.filter(c => c.label.startsWith(options.trimmedLine));
         } else {
             return [];
@@ -371,25 +374,31 @@ export class CssMixinCompletionProvider implements CompletionProvider {
 export class JsMixinCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts'))) {
-            const compilerOptions: ts.CompilerOptions = {
-                "jsx": ts.JsxEmit.React,
-                "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
-                "module": ts.ModuleKind.CommonJS,
-                "target": ts.ScriptTarget.ES5,
-                "strict": false,
-                "importHelpers": false,
-                "noImplicitReturns": false,
-                "strictNullChecks": false,
-                "sourceMap": false,
-                "outDir": "dist",
-                "typeRoots": ["./node_modules/@types"]
-            };
-            let program = ts.createProgram(['/home/wix/projects/stylable-intelligence/packages/client/test/demo/my-mixins.ts'], compilerOptions);
-            let tc = program.getTypeChecker();
-            let sf = program.getSourceFiles()[13];
-            let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function)[0];
-            mix;
-            // tc.getResolvedSignature(mix)
+            // const compilerOptions: ts.CompilerOptions = {
+            //     "jsx": ts.JsxEmit.React,
+            //     "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
+            //     "module": ts.ModuleKind.CommonJS,
+            //     "target": ts.ScriptTarget.ES5,
+            //     "strict": false,
+            //     "importHelpers": false,
+            //     "noImplicitReturns": false,
+            //     "strictNullChecks": false,
+            //     "sourceMap": false,
+            //     "outDir": "dist",
+            //     "typeRoots": ["./node_modules/@types"]
+            // };
+            // let program = ts.createProgram(['/home/wix/projects/stylable-intelligence/packages/client/test/demo/my-mixins.ts'], compilerOptions);
+            // let tc = program.getTypeChecker();
+            // let sf = program.getSourceFiles()[13];
+            // let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function)[0];
+            // let sig = tc.getSignatureFromDeclaration(mix.declarations![0] as SignatureDeclaration);
+            // let ptypes = sig!.parameters.map(p => {
+            //     return ((p.valueDeclaration as ParameterDeclaration).type! as TypeReferenceNode).typeName
+            //         ? (((p.valueDeclaration as ParameterDeclaration).type! as TypeReferenceNode)!.typeName as QualifiedName).right.text
+            //         : 'enum';
+            // });
+            // let rtype = ((sig!.declaration.type! as TypeReferenceNode).typeName as QualifiedName).right.text;
+            // ptypes;rtype;
 
             return [];
         } else {
