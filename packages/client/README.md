@@ -36,3 +36,6 @@ Reload window when prompted by VsCode.
 * Mixins and JS imports - WIP
 * Variants
 * Esoteric syntax (-st-compose, -st-theme, -st-root, -st-global)
+* Find References
+* Rename/Refactor
+
