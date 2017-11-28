@@ -1,14 +1,15 @@
 # Stylable Intelligence 
-[![Greenkeeper badge](https://badges.greenkeeper.io/wix/stylable-intelligence.svg)](https://greenkeeper.io/)
 [![Build Status](https://travis-ci.org/wix/stylable-intelligence.svg?branch=master)](https://travis-ci.org/wix/stylable-intelligence)
 [![Build Status](https://ci.appveyor.com/api/projects/status/6ky876hm9nycyu8m/branch/master?svg=true)](https://ci.appveyor.com/project/qballer/stylable-intelligence)
  
 ## Overview
 Stylable Intelligence is an extension implementing the Language Server Protocol that provides IDE support for Stylable.
 
-Stylable Intelligence is currently only supported in VSCode (version 1.16 and later). Support for JetBrains IDEs (WebStorm, IntelliJ) is planned.
+Stylable Intelligence is currently only supported in VSCode (version 1.18.0 and later). Support for JetBrains IDEs (WebStorm, IntelliJ) is planned.
 
-Currently supported: Code Completions, Diagnostics, Go to Definition.
+Currently supported: Code Completions, Diagnostics, Go to Definition, Syntax Highlighting
+
+All CSS language support functionality is also supported (hover hints, inline color picker, etc.). Some CSS diagnostics no longer apply in Stylable and are filtered out.
 
 Other Language Server features will be added in the near future.
 
@@ -32,11 +33,6 @@ Reload window when prompted by VsCode.
 ## Known Issues
 
 ### Not supported yet (in rough order of priority):
-* Mixins and JS imports
+* Mixins and JS imports - WIP
 * Variants
 * Esoteric syntax (-st-compose, -st-theme, -st-root, -st-global)
-
-### Buggy areas
-* Inner parts of nested custom selectors
-* Aliased imports
-* Imported values spanning multiple lines
