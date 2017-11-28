@@ -1,24 +1,11 @@
-:import {
-    -st-from:"./import.st.css";
-    -st-default:Comp;
+:import{
+    -st-from: "./my-mixins.ts";
+    -st-named: expandOnHover;
 }
 
-.gaga{
-    -st-extends:Comp;
-    -st-states:bover;
-    border: solid;
+.myClass{
+    -st-mixin: expandOnHover(200,2);
 }
 
-:vars {
-    color1: rgba(0, 255, 51, 0.638);
-}
-
-@custom-selector :--oryory div > Comp;
-
-@custom-selector :--ogiogi div > Comp;
-
-:--oryory div {
-    color: rgba(255, 0, 0, 0.5);
-}
 
 

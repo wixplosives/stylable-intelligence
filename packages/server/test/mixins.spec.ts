@@ -3,11 +3,10 @@ import { createRange, ProviderRange } from '../src/completion-providers';
 import { Completion } from '../src/completion-types';
 
 
-describe('Mixin values', function () {
+describe('Mixins', function () {
 
-
-    describe('local and imported classes', function () {
-        const createComp = (str: string, rng: ProviderRange, path: string) => asserters.mixinCompletion(str, rng, path);
+    describe('CSS Mixins', function () {
+        const createComp = (str: string, rng: ProviderRange, path: string) => asserters.cssMixinCompletion(str, rng, path);
 
         const str1 = 'momo';
         const from1 = './recursive-import-1.st.css'
@@ -24,7 +23,7 @@ describe('Mixin values', function () {
             str.split('').forEach((c, i) => {
                 let prefix = str.slice(0, i);
 
-                it('should complete local and imported classes, with prefix ' + prefix, function () {
+                it('should be completed from local and imported classes, with prefix ' + prefix, function () {
                     let rng = createRange(15, 15, 15, 15 + i);
                     return asserters.getCompletions('pseudo-elements/recursive-import-3-mixin.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
@@ -119,7 +118,7 @@ describe('Mixin values', function () {
         [str1, str2].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
                 let prefix = str.slice(0, i);
-                it.skip('should complete imported JS mixins, with prefix ' + prefix, function () {
+                it('should complete imported JS mixins, with prefix ' + prefix, function () {
                     let rng = createRange(2, 15, 2, 15 + i);
                     return asserters.getCompletions('mixins/imported-mixins.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];

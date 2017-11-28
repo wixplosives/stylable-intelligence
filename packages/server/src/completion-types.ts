@@ -84,7 +84,11 @@ export function namedCompletion(symbolName: string, rng: ProviderRange, from: st
     return new Completion(symbolName, 'from: ' + from + '\n' + 'Value: ' + value, 'a', new snippet(symbolName), rng)
 }
 
-export function mixinCompletion(symbolName: string, rng: ProviderRange, from: string) {
+export function cssMixinCompletion(symbolName: string, rng: ProviderRange, from: string) {
+    return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName), rng)
+}
+
+export function jsMixinCompletion(symbolName: string, rng: ProviderRange, from: string) {
     return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName), rng)
 }
 

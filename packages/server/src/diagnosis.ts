@@ -21,7 +21,10 @@ export function createDiagnosis(doc: TextDocument, fp: FileProcessor<StylableMet
     let transformer = new StylableTransformer({
         diagnostics: new Diagnostics(),
         fileProcessor: fp,
-        requireModule: () => ({ "default": {} })
+        requireModule: (path) => {
+            console.log(path)
+            return require(path);
+        }
     })
 
     let docPostCSSRoot = safeParse(doc.getText(), { from: path.resolve(file) })

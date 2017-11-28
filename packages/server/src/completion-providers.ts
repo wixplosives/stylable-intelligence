@@ -7,7 +7,7 @@ import {
     globalCompletion,
     importDirectives,
     importInternalDirective,
-    mixinCompletion,
+    cssMixinCompletion,
     namedCompletion,
     pseudoElementCompletion,
     rulesetDirectives,
@@ -21,6 +21,7 @@ import {
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
+
 
 
 export interface ProviderOptions {
@@ -334,7 +335,7 @@ export class ExtendCompletionProvider implements CompletionProvider {
     text: string[] = [''];
 }
 
-export class MixinCompletionProvider implements CompletionProvider {
+export class CssMixinCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.trimmedLine.startsWith(valueMapping.mixin + ':')) {
             let valueStart = options.wholeLine.indexOf(':') + 1;
@@ -349,7 +350,7 @@ export class MixinCompletionProvider implements CompletionProvider {
                 .filter(ms => ms.startsWith(lastName))
                 .filter(ms => names.indexOf(ms) === -1)
                 .map(ms => {
-                    return mixinCompletion(
+                    return cssMixinCompletion(
                         ms,
                         new ProviderRange(
                             new ProviderPosition(options.position.line, options.position.character - lastName.length),
@@ -362,6 +363,15 @@ export class MixinCompletionProvider implements CompletionProvider {
             return [];
         }
 
+    }
+    text: string[] = [''];
+}
+
+export class JsMixinCompletionProvider implements CompletionProvider {
+
+
+    provide(options: ProviderOptions): Completion[] {
+        return [];
     }
     text: string[] = [''];
 }
