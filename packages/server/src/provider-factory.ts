@@ -11,7 +11,7 @@ import { htap } from 'htap';
 
 
 export function createProvider(docs: MinimalDocs, withFilePrefix: boolean = true): Provider {
-    const styl = new Stylable('/', createFs(docs, withFilePrefix), require)
+    const styl = new Stylable('/', createFs(docs, withFilePrefix), () => ({ default: {} }))
     return new Provider(styl)
 }
 

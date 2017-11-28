@@ -31,7 +31,9 @@ export function createDiagnosis(doc: TextDocument, fp: FileProcessor<StylableMet
     let meta = stylableProcess(docPostCSSRoot)
 
     fp.add(file, meta);
-    transformer.transform(meta)
+    try {
+        transformer.transform(meta)
+    } catch(e) {}
     return meta.diagnostics.reports.concat(meta.transformDiagnostics ? meta.transformDiagnostics.reports : [])
         .map(reportToDiagnostic)
 }
