@@ -21,6 +21,7 @@ import {
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
+import * as ts from 'typescript';
 
 
 
@@ -368,10 +369,32 @@ export class CssMixinCompletionProvider implements CompletionProvider {
 }
 
 export class JsMixinCompletionProvider implements CompletionProvider {
-
-
     provide(options: ProviderOptions): Completion[] {
-        return [];
+        if (options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts'))) {
+            const compilerOptions: ts.CompilerOptions = {
+                "jsx": ts.JsxEmit.React,
+                "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
+                "module": ts.ModuleKind.CommonJS,
+                "target": ts.ScriptTarget.ES5,
+                "strict": false,
+                "importHelpers": false,
+                "noImplicitReturns": false,
+                "strictNullChecks": false,
+                "sourceMap": false,
+                "outDir": "dist",
+                "typeRoots": ["./node_modules/@types"]
+            };
+            let program = ts.createProgram(['/home/wix/projects/stylable-intelligence/packages/client/test/demo/my-mixins.ts'], compilerOptions);
+            let tc = program.getTypeChecker();
+            let sf = program.getSourceFiles()[13];
+            let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function)[0];
+            mix;
+            // tc.getResolvedSignature(mix)
+
+            return [];
+        } else {
+            return [];
+        }
     }
     text: string[] = [''];
 }

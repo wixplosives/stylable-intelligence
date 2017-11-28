@@ -64,6 +64,9 @@ export function activate(context: ExtensionContext) {
                 }
             }));
         })
+        // .then(_ => {
+        //     context.subscriptions.push(languages.registerDocumentFormattingEditProvider())
+        // })
         .then(() => workspace.findFiles('**/*.st.css', ''))
         .then((files) => Promise.all(files.map((file) => workspace.openTextDocument(file.fsPath))))
         .then(() => {
