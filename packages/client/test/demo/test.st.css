@@ -4,6 +4,6 @@
 }
 
 .myClass{
-    -st-mixin: ;
+    -st-mixin: expandOnHover;
 }
 

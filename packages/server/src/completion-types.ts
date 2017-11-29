@@ -3,7 +3,7 @@ import { valueMapping } from 'stylable'
 
 export class Completion {
     constructor(public label: string, public detail: string = "", public sortText: string = 'd', public insertText: string | snippet = label,
-        public range: ProviderRange, public additionalCompletions: boolean = false) {
+        public range: ProviderRange, public additionalCompletions: boolean = false, public triggerSignature: boolean = false) {
     }
 }
 
@@ -89,7 +89,7 @@ export function cssMixinCompletion(symbolName: string, rng: ProviderRange, from:
 }
 
 export function tsMixinCompletion(symbolName: string, rng: ProviderRange, from: string) {
-    return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName), rng, true)
+    return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName+"($0)"), rng, false, true)
 }
 
 export function pseudoElementCompletion(elementName: string, from: string, rng: ProviderRange) {

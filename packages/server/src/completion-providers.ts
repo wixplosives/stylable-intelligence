@@ -22,8 +22,8 @@ import {
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
-import * as ts from 'typescript';
-import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName } from 'typescript';
+// import * as ts from 'typescript';
+// import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName } from 'typescript';
 
 
 
