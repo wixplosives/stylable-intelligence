@@ -1,4 +1,11 @@
-:import {
-    -st-from: './js-mixins.js';
-    -st-named: |
+:import{
+    -st-from: "./my-mixins.ts";
+    -st-named: expandOnHover;
 }
+
+.myClass{
+    -st-mixin: |
+}
+
+
+

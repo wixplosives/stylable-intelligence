@@ -56,7 +56,7 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
                 if (com.additionalCompletions) {
                     lspCompletion.command = {
                         title: "additional",
-                        command: 'editorconfig._triggerSuggestAfterDelay',
+                        command: 'editor.action.triggerSuggest',
                         arguments: []
                     }
                 }

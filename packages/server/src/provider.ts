@@ -19,7 +19,7 @@ import {
     TopLevelDirectiveProvider,
     ValueCompletionProvider,
     ValueDirectiveProvider,
-    JsMixinCompletionProvider,
+    TsMixinCompletionProvider,
 } from './completion-providers';
 import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
@@ -40,7 +40,7 @@ export default class Provider {
         new SelectorCompletionProvider(),
         new ExtendCompletionProvider(),
         new CssMixinCompletionProvider(),
-        new JsMixinCompletionProvider(),
+        new TsMixinCompletionProvider(),
         new NamedCompletionProvider(),
         new StateCompletionProvider(),
         new PseudoElementCompletionProvider(),

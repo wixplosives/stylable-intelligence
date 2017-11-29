@@ -47,7 +47,7 @@ export function importInternalDirective(type: keyof typeof importDirectives, rng
 export function rulesetInternalDirective(type: keyof typeof rulesetDirectives, rng: ProviderRange) {
     switch (rulesetDirectives[type]) {
         case valueMapping.extends: return new Completion(valueMapping.extends + ':', 'Extend an external component', 'a', new snippet('-st-extends: $1;'), rng, true);
-        case valueMapping.mixin: return new Completion(valueMapping.mixin + ':', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'), rng);
+        case valueMapping.mixin: return new Completion(valueMapping.mixin + ':', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'), rng, true);
         case valueMapping.states: return new Completion(valueMapping.states + ':', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'), rng);
         case valueMapping.variant: return new Completion(valueMapping.variant + ':', 'Is a variant', 'a', new snippet('-st-variant: true;'), rng);
     }
@@ -88,8 +88,8 @@ export function cssMixinCompletion(symbolName: string, rng: ProviderRange, from:
     return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName), rng)
 }
 
-export function jsMixinCompletion(symbolName: string, rng: ProviderRange, from: string) {
-    return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName), rng)
+export function tsMixinCompletion(symbolName: string, rng: ProviderRange, from: string) {
+    return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName), rng, true)
 }
 
 export function pseudoElementCompletion(elementName: string, from: string, rng: ProviderRange) {

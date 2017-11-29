@@ -17,12 +17,13 @@ import {
     topLevelDirectives,
     valueCompletion,
     valueDirective,
+    tsMixinCompletion,
 } from './completion-types';
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
-// import * as ts from 'typescript';
-// import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName } from 'typescript';
+import * as ts from 'typescript';
+import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName } from 'typescript';
 
 
 
@@ -296,8 +297,8 @@ export class SelectorCompletionProvider implements CompletionProvider {
             comps.push(...Object.keys(options.meta.customSelectors)
                 .map(c => classCompletion(c, (createDirectiveRange(options)), true)));
             let moreComps = options.meta.imports
-            .filter(imp => imp.fromRelative.endsWith('st.css'))
-            .reduce((acc: Completion[], imp) => {
+                .filter(imp => imp.fromRelative.endsWith('st.css'))
+                .reduce((acc: Completion[], imp) => {
                     if (acc.every(comp => comp.label !== imp.defaultExport)) { acc.push(classCompletion(imp.defaultExport, createDirectiveRange(options), true)) };
                     Object.keys(imp.named).forEach(exp => {
                         if (acc.every(comp => comp.label.replace('.', '') !== imp.named[exp])) {
@@ -350,7 +351,7 @@ export class CssMixinCompletionProvider implements CompletionProvider {
                 : names.reverse()[0] || '';
 
             return Object.keys(options.meta.mappedSymbols)
-                .filter(ms => (options.meta.mappedSymbols[ms]._kind === 'import' || options.meta.mappedSymbols[ms]._kind === 'class'))
+                .filter(ms => ((options.meta.mappedSymbols[ms]._kind === 'import' && (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('st.css')) || options.meta.mappedSymbols[ms]._kind === 'class'))
                 .filter(ms => ms.startsWith(lastName))
                 .filter(ms => names.indexOf(ms) === -1)
                 .map(ms => {
@@ -371,9 +372,31 @@ export class CssMixinCompletionProvider implements CompletionProvider {
     text: string[] = [''];
 }
 
-export class JsMixinCompletionProvider implements CompletionProvider {
+export class TsMixinCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts'))) {
+        if (options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts')) && options.trimmedLine.startsWith(valueMapping.mixin + ':')) {
+            let valueStart = options.wholeLine.indexOf(':') + 1;
+            let value = options.wholeLine.slice(valueStart);
+            let names = value.split(',').map(x => x.trim()).filter(x => x !== '');
+            let lastName = /,\s*$/.test(options.wholeLine)
+                ? ''
+                : names.reverse()[0] || '';
+
+                return Object.keys(options.meta.mappedSymbols)
+                .filter(ms => ((options.meta.mappedSymbols[ms]._kind === 'import' && (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts'))))
+                .filter(ms => ms.startsWith(lastName))
+                .filter(ms => names.indexOf(ms) === -1)
+                .map(ms => {
+                    return tsMixinCompletion(
+                        ms,
+                        new ProviderRange(
+                            new ProviderPosition(options.position.line, options.position.character - lastName.length),
+                            options.position
+                        ),
+                        (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative
+                    )
+                });
+
             // const compilerOptions: ts.CompilerOptions = {
             //     "jsx": ts.JsxEmit.React,
             //     "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
@@ -400,7 +423,7 @@ export class JsMixinCompletionProvider implements CompletionProvider {
             // let rtype = ((sig!.declaration.type! as TypeReferenceNode).typeName as QualifiedName).right.text;
             // ptypes;rtype;
 
-            return [];
+            // return [];
         } else {
             return [];
         }

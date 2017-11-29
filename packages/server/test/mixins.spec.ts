@@ -108,7 +108,7 @@ describe('Mixins', function () {
         });
     });
 
-    xdescribe('JS imports', function () {
+    xdescribe('TS imports', function () {
 
         const str1 = 'aMixin';
         const str2 = 'aBareMixin';

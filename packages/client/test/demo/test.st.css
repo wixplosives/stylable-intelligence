@@ -4,9 +4,6 @@
 }
 
 .myClass{
-    -st-mixin: expandOnHover(200,2);
+    -st-mixin: ;
 }
-
-.gaga
-
 

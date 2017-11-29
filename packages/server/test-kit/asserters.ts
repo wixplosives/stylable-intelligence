@@ -192,8 +192,8 @@ export const namedCompletion: (typeName: string, rng: ProviderRange, from: strin
 export const cssMixinCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
     return new Completion(symbolName, 'from: ' + from + '\n', 'a', symbolName, rng)
 }
-export const jsMixinCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
-    return new Completion(symbolName, 'from: ' + from + '\n', 'a', symbolName, rng)
+export const tsMixinCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
+    return new Completion(symbolName, 'from: ' + from + '\n', 'a', symbolName, rng, true)
 }
 export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (stateName, rng, from = 'Local file') => {
     return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName, range: rng }
