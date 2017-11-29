@@ -4,5 +4,3 @@ export function expandOnHover(durationMS: stype.snumber<0,200>, animationCurve: 
     return "transition:\"all \"+durationMS+\"ms \"+animationCurve";
 }
 
-
-let a = expandOnHover()
