@@ -1,5 +1,5 @@
 'use strict';
-import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities } from 'vscode-languageserver';
+import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, SignatureHelp } from 'vscode-languageserver';
 import { createProvider, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
@@ -27,7 +27,13 @@ connection.onInitialize((params): InitializeResult => {
             definitionProvider: true,
             hoverProvider: true,
             referencesProvider: true,
-            colorProvider: true
+            colorProvider: true,
+            signatureHelpProvider: {
+                triggerCharacters: [
+                    '(',
+                    ','
+                ]
+            }
         } as CPServerCapabilities & ServerCapabilities)
     }
 });
@@ -59,6 +65,12 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
                         command: 'editor.action.triggerSuggest',
                         arguments: []
                     }
+                } else if (com.triggerSignature) {
+                    lspCompletion.command = {
+                        title: "additional",
+                        command: 'editor.action.triggerParameterHints',
+                        arguments: []
+                    }
                 }
                 return lspCompletion;
             }).concat(cssCompsRaw ? cssCompsRaw.items : [])
@@ -72,7 +84,7 @@ documents.onDidChangeContent(function (change) {
             if (diag.code === 'emptyRules') { return false; }
             if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') { return false; }
             if (diag.code === 'css-lcurlyexpected' && readDocRange(change.document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) { return false; }
-            if (diag.code === 'unknownProperties' ) {
+            if (diag.code === 'unknownProperties') {
                 return false;
             }
             return true;
@@ -111,16 +123,21 @@ connection.onRequest(DocumentColorRequest.type, params => {
     const document = documents.get(params.textDocument.uri);
     const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
     const colors = cssService.findDocumentColors(document, stylesheet)
-	return colors;
+    return colors;
 });
 
 connection.onRequest(ColorPresentationRequest.type, params => {
     const document = documents.get(params.textDocument.uri);
     const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
     const colors = cssService.getColorPresentations(document, stylesheet, params.color, params.range)
-	return colors;
+    return colors;
 
 });
+
+connection.onSignatureHelp((params): SignatureHelp => {
+    let sig = provider.getSignatureHelp(documents.get(params.textDocument.uri).getText(), params.position, params.textDocument.uri)
+    return sig!;
+})
 
 function readDocRange(doc: TextDocument, rng: Range): string {
     let lines = doc.getText().split('\n');

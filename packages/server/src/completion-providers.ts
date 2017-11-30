@@ -22,8 +22,6 @@ import {
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
-// import * as ts from 'typescript';
-// import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName } from 'typescript';
 
 
 
@@ -397,33 +395,6 @@ export class TsMixinCompletionProvider implements CompletionProvider {
                     )
                 });
 
-            // const compilerOptions: ts.CompilerOptions = {
-            //     "jsx": ts.JsxEmit.React,
-            //     "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
-            //     "module": ts.ModuleKind.CommonJS,
-            //     "target": ts.ScriptTarget.ES5,
-            //     "strict": false,
-            //     "importHelpers": false,
-            //     "noImplicitReturns": false,
-            //     "strictNullChecks": false,
-            //     "sourceMap": false,
-            //     "outDir": "dist",
-            //     "typeRoots": ["./node_modules/@types"]
-            // };
-            // let program = ts.createProgram(['/home/wix/projects/stylable-intelligence/packages/client/test/demo/my-mixins.ts'], compilerOptions);
-            // let tc = program.getTypeChecker();
-            // let sf = program.getSourceFiles()[13];
-            // let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function)[0];
-            // let sig = tc.getSignatureFromDeclaration(mix.declarations![0] as SignatureDeclaration);
-            // let ptypes = sig!.parameters.map(p => {
-            //     return ((p.valueDeclaration as ParameterDeclaration).type! as TypeReferenceNode).typeName
-            //         ? (((p.valueDeclaration as ParameterDeclaration).type! as TypeReferenceNode)!.typeName as QualifiedName).right.text
-            //         : 'enum';
-            // });
-            // let rtype = ((sig!.declaration.type! as TypeReferenceNode).typeName as QualifiedName).right.text;
-            // ptypes;rtype;
-
-            // return [];
         } else {
             return [];
         }

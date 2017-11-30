@@ -25,13 +25,15 @@ import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
 import { Declaration } from 'postcss';
 import * as path from 'path';
-import { Position } from 'vscode-languageserver/lib/main';
+import { Position, TextDocumentPositionParams, SignatureHelp, SignatureInformation, ParameterInformation } from 'vscode-languageserver';
+import * as ts from 'typescript';
+import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName } from 'typescript';
 
 
 export default class Provider {
     constructor(public styl: Stylable) { }
 
-    providers = [
+    public providers = [
         new RulesetInternalDirectivesProvider(),
         new ImportInternalDirectivesProvider(),
         new TopLevelDirectiveProvider(),
@@ -403,7 +405,72 @@ export default class Provider {
             lineIndex, line.indexOf(word), lineIndex, line.indexOf(word) + word.length
         )
     }
+
+    getSignatureHelp(src: string, pos: Position, filePath: string): SignatureHelp | null {
+        let res = fixAndProcess(src, pos, filePath);
+        let meta = res.processed.meta;
+        if (!meta) return null;
+
+        let split = src.split('\n');
+        let line = split[pos.line];
+
+        if (line.trim().startsWith(valueMapping.mixin)) {
+            let value = line.trim().slice(valueMapping.mixin.length + 1).trim();
+            let mixin = /(\w*)\(([\w'" ]+,?)*/g.exec(value)![1];
+            let pv = line.slice(0, pos.character).trim().slice('-st-mixin'.length + 1).trim().slice(mixin.length).slice(1).trim();
+            let activeParam = pv.indexOf(',') === -1 ? 0 : pv.match(/,/g)!.length;
+
+            return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
+        } else {
+            return null;
+        }
+    }
+
+    getSignatureForTsMixin(mixin: string, activeParam: number, filePath: string): SignatureHelp | null {
+        const compilerOptions: ts.CompilerOptions = {
+            "jsx": ts.JsxEmit.React,
+            "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
+            "module": ts.ModuleKind.CommonJS,
+            "target": ts.ScriptTarget.ES5,
+            "strict": false,
+            "importHelpers": false,
+            "noImplicitReturns": false,
+            "strictNullChecks": false,
+            "sourceMap": false,
+            "outDir": "dist",
+            "typeRoots": ["./node_modules/@types"]
+        };
+        let program = ts.createProgram([filePath], compilerOptions);
+        let tc = program.getTypeChecker();
+        let sf = program.getSourceFile(filePath);
+        let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function)[0];
+        let sig = tc.getSignatureFromDeclaration(mix.declarations![0] as SignatureDeclaration);
+        let ptypes = sig!.parameters.map(p => {
+            return ((p.valueDeclaration as ParameterDeclaration).type! as TypeReferenceNode).typeName
+                ? (((p.valueDeclaration as ParameterDeclaration).type! as TypeReferenceNode)!.typeName as QualifiedName).right.text + ': ' + p.name
+                : 'enum' + ': ' + p.name;
+        });
+        let rtype = ((sig!.declaration.type! as TypeReferenceNode).typeName as QualifiedName).right.text;
+
+
+        let parameters: ParameterInformation[] = ptypes.map(pt => {
+            return ParameterInformation.create(pt)
+        });
+
+        let sigInfo: SignatureInformation = {
+            label: mixin + '(' + ptypes.join(', ') + '): ' + rtype,
+            parameters
+        }
+
+        return {
+            activeParameter: activeParam,
+            activeSignature: 0,
+            signatures: [sigInfo]
+        } as SignatureHelp
+    }
 }
+
+
 
 function isIllegalLine(line: string): boolean {
     return /^\s*[-\.:]+\s*$/.test(line)

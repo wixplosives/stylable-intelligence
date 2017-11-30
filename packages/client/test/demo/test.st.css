@@ -1,9 +1,11 @@
-:import{
-    -st-from: "./my-mixins.ts";
-    -st-named: expandOnHover;
+:import {
+    -st-from: "./import.st.css";
+    -st-named: lala;
 }
 
-.myClass{
-    -st-mixin: expandOnHover;
+.local {
+    -st-extends: lala;
+    -st-states: ima,aba;
 }
 
+.local:hover:
