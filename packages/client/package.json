@@ -97,7 +97,7 @@
         "lodash": "4.17.4",
         "postcss": "^6.0.14",
         "postcss-nested": "^2.1.2",
-        "stylable": "^4.0.26",
+        "stylable": "^5.0.0",
         "tslib": "~1.8.0",
         "vscode": "^1.1.8",
         "vscode-languageclient": "^3.5.0",

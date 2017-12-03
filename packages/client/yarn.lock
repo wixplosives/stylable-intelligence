@@ -1220,8 +1220,8 @@ isstream@~0.1.2:
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
 
 js-base64@^2.1.9:
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/js-base64/-/js-base64-2.3.2.tgz#a79a923666372b580f8e27f51845c6f7e8fbfbaf"
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/js-base64/-/js-base64-2.4.0.tgz#9e566fee624751a1d720c966cd6226d29d4025aa"
 
 js-yaml@~3.7.0:
   version "3.7.0"
@@ -2372,9 +2372,9 @@ strip-bom@^2.0.0:
   dependencies:
     is-utf8 "^0.2.0"
 
-stylable@^4.0.26:
-  version "4.0.26"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-4.0.26.tgz#593736256e45babb0d9c9d07e73d3186b19d2b8d"
+stylable@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.0.0.tgz#b479fd0922da939e6edfd3c9591ae91983d025a5"
   dependencies:
     css-selector-tokenizer "^0.7.0"
     deindent "^0.1.0"
@@ -2668,8 +2668,8 @@ vscode-uri@^1.0.1:
   resolved "https://registry.yarnpkg.com/vscode-uri/-/vscode-uri-1.0.1.tgz#11a86befeac3c4aa3ec08623651a3c81a6d0bbc8"
 
 vscode@^1.1.8:
-  version "1.1.8"
-  resolved "https://registry.yarnpkg.com/vscode/-/vscode-1.1.8.tgz#80ae77d4d27d461e7ed1f3caab25eef4fdd3144e"
+  version "1.1.9"
+  resolved "https://registry.yarnpkg.com/vscode/-/vscode-1.1.9.tgz#17cee88fe628cd0b53ccd67d3c6783c86637b074"
   dependencies:
     glob "^7.1.2"
     gulp-chmod "^2.0.0"

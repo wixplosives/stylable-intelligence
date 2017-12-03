@@ -27,7 +27,7 @@ import { Declaration } from 'postcss';
 import * as path from 'path';
 import { Position, TextDocumentPositionParams, SignatureHelp, SignatureInformation, ParameterInformation } from 'vscode-languageserver';
 import * as ts from 'typescript';
-import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName } from 'typescript';
+import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName, Identifier } from 'typescript';
 
 
 export default class Provider {
@@ -446,12 +446,15 @@ export default class Provider {
         let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function)[0];
         let sig = tc.getSignatureFromDeclaration(mix.declarations![0] as SignatureDeclaration);
         let ptypes = sig!.parameters.map(p => {
-            return ((p.valueDeclaration as ParameterDeclaration).type! as TypeReferenceNode).typeName
-                ? (((p.valueDeclaration as ParameterDeclaration).type! as TypeReferenceNode)!.typeName as QualifiedName).right.text + ': ' + p.name
-                : 'enum' + ': ' + p.name;
+            return ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
+                // ? (((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).typeName as Identifier).text
+                //     ? p.name + ': ' + (((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).typeName as Identifier).text
+                //     : p.name + ': ' + (((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).typeName as QualifiedName).left.getFullText() +
+                //     '.' + (((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).typeName as QualifiedName).right.text
+                // : p.name + ': ' + 'enum';
         });
-        let rtype = ((sig!.declaration.type! as TypeReferenceNode).typeName as QualifiedName).right.text;
-
+        // let rtype = ((sig!.declaration.type! as TypeReferenceNode).typeName as Identifier).text;
+        let rtype = ((sig!.declaration.type as TypeReferenceNode).typeName as Identifier).getFullText()
 
         let parameters: ParameterInformation[] = ptypes.map(pt => {
             return ParameterInformation.create(pt)
