@@ -10,6 +10,7 @@ import { createMeta, ProviderLocation } from '../src/provider';
 import { pathFromPosition } from '../src/utils/postcss-ast-utils'
 import { NodeBase } from 'postcss';
 import { Provider } from '../src/index';
+import { SignatureHelp } from 'vscode-languageserver/lib/main';
 
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
@@ -115,6 +116,15 @@ export function getDefinition(fileName: string): Thenable<ProviderLocation[]> {
     })
 }
 
+export function getSignatureHelp(fileName: string, prefix: string): SignatureHelp | null {
+    const fullPath = path.join(__dirname, '/../test/cases/', fileName);
+    let src: string = fs.readFileSync(fullPath).toString();
+    let pos = getCaretPosition(src);
+    src = src.replace('|', prefix);
+    pos.character += prefix.length;
+    return provider.getSignatureHelp(src, pos, fullPath);
+}
+
 const provider = createProvider({
     get(uri: string): TextDocument {
         if (process.platform === 'win32') {
@@ -193,7 +203,7 @@ export const cssMixinCompletion: (symbolName: string, rng: ProviderRange, from: 
     return new Completion(symbolName, 'from: ' + from + '\n', 'a', symbolName, rng)
 }
 export const tsMixinCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
-    return new Completion(symbolName, 'from: ' + from + '\n', 'a', symbolName, rng, true)
+    return new Completion(symbolName, 'from: ' + from + '\n', 'a', symbolName + "($0)", rng, false, true)
 }
 export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (stateName, rng, from = 'Local file') => {
     return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName, range: rng }

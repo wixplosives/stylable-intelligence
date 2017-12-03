@@ -1,8 +1,8 @@
 :import {
     -st-from: "./my-mixins.ts";
-    -st-named: expandOnHover;
+    -st-named: paramlessMixin, paramfulMixin;
 }
 
 .myClass {
-    -st-mixin: expandOnHover('54','lala','b');
+    -st-mixin: paramfulMixin('54'
 }

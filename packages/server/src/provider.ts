@@ -417,7 +417,7 @@ export default class Provider {
         if (line.trim().startsWith(valueMapping.mixin)) {
             let value = line.trim().slice(valueMapping.mixin.length + 1).trim();
             let mixin = /(\w*)\(([\w'" ]+,?)*/g.exec(value)![1];
-            let pv = line.slice(0, pos.character).trim().slice('-st-mixin'.length + 1).trim().slice(mixin.length).slice(1).trim();
+            let pv = line.slice(0, pos.character).trim().slice('-st-mixin'.length + 1).trim().slice(mixin.length).slice(1). trim();
             let activeParam = pv.indexOf(',') === -1 ? 0 : pv.match(/,/g)!.length;
 
             return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
@@ -426,7 +426,7 @@ export default class Provider {
         }
     }
 
-    getSignatureForTsMixin(mixin: string, activeParam: number, filePath: string): SignatureHelp | null {
+        getSignatureForTsMixin(mixin: string, activeParam: number, filePath: string): SignatureHelp | null {
         const compilerOptions: ts.CompilerOptions = {
             "jsx": ts.JsxEmit.React,
             "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
@@ -443,18 +443,13 @@ export default class Provider {
         let program = ts.createProgram([filePath], compilerOptions);
         let tc = program.getTypeChecker();
         let sf = program.getSourceFile(filePath);
-        let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function)[0];
-        let sig = tc.getSignatureFromDeclaration(mix.declarations![0] as SignatureDeclaration);
+        let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function).find(f => f.name === mixin);
+        let sig = tc.getSignatureFromDeclaration(mix!.declarations![0] as SignatureDeclaration);
+
         let ptypes = sig!.parameters.map(p => {
-            return ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
-                // ? (((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).typeName as Identifier).text
-                //     ? p.name + ': ' + (((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).typeName as Identifier).text
-                //     : p.name + ': ' + (((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).typeName as QualifiedName).left.getFullText() +
-                //     '.' + (((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).typeName as QualifiedName).right.text
-                // : p.name + ': ' + 'enum';
+            return p.name + ":" + ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
         });
-        // let rtype = ((sig!.declaration.type! as TypeReferenceNode).typeName as Identifier).text;
-        let rtype = ((sig!.declaration.type as TypeReferenceNode).typeName as Identifier).getFullText()
+        let rtype = sig!.declaration.type ? ((sig!.declaration.type as TypeReferenceNode).typeName as Identifier).getFullText() : "";
 
         let parameters: ParameterInformation[] = ptypes.map(pt => {
             return ParameterInformation.create(pt)

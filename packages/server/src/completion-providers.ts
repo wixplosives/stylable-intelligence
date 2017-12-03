@@ -373,17 +373,28 @@ export class CssMixinCompletionProvider implements CompletionProvider {
 export class TsMixinCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts')) && options.trimmedLine.startsWith(valueMapping.mixin + ':')) {
+            if (options.wholeLine.lastIndexOf('(') > options.wholeLine.lastIndexOf(')')) { return [] }
+
+
             let valueStart = options.wholeLine.indexOf(':') + 1;
             let value = options.wholeLine.slice(valueStart);
-            let names = value.split(',').map(x => x.trim()).filter(x => x !== '');
+            let regs = value.trim().match(/((\w+)(\([\w"' ,]*\),))+/g);
+            let names: string[] = [];
+            if (regs) { names = regs.map(r => r.slice(0, r.indexOf('('))) }
+            if (value.indexOf(',') !== -1) {
+                names.push(value.slice(value.lastIndexOf(',') + 1).trim());
+            } else {
+                names.push(value.trim())
+            }
+
             let lastName = /,\s*$/.test(options.wholeLine)
                 ? ''
-                : names.reverse()[0] || '';
+                : (names || []).reverse()[0] || '';
 
-                return Object.keys(options.meta.mappedSymbols)
+            return Object.keys(options.meta.mappedSymbols)
                 .filter(ms => ((options.meta.mappedSymbols[ms]._kind === 'import' && (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts'))))
                 .filter(ms => ms.startsWith(lastName))
-                .filter(ms => names.indexOf(ms) === -1)
+                .filter(ms => !names || names.indexOf(ms) === -1)
                 .map(ms => {
                     return tsMixinCompletion(
                         ms,

@@ -1,12 +1,15 @@
-export type scssfrag = string;
-export type sstring = string;
-export type snumber<
-    min extends number | null = null,
-    max extends number | null = null,
-    mults extends number | null = null> = string;
+import {stNumber, stString as lalaString} from 'stylable';
+import * as styl from 'stylable';
 
+export function paramfulMixin(
+    numParam: stNumber<0,200>,
+    strParam: styl.stString,
+    aliasedParam: lalaString,
+    enumParam: 'a'|'b'
+): styl.stCssFrag    {
+    return "color: red";
+}
 
-
-export function expandOnHover(durationMS: snumber<0,200>, animationCurve: sstring, gaga: 'a'|'b'): scssfrag    {
-    return "transition:\"all \"+durationMS+\"ms \"+animationCurve";
+export function paramlessMixin(): styl.stCssFrag {
+    return "color: goldenrod"
 }
