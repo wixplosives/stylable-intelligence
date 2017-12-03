@@ -18,6 +18,7 @@ const cssService = VCL.getCSSLanguageService();
 documents.listen(connection);
 
 connection.onInitialize((params): InitializeResult => {
+    console.log("#############################################################################Init")
     return {
         capabilities: ({
             textDocumentSync: documents.syncKind,
@@ -35,7 +36,7 @@ connection.onInitialize((params): InitializeResult => {
 connection.listen();
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
-    if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
+    if (!params.textDocument.uri.endsWith('.stcss') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
 
     let cssCompsRaw = cssService.doComplete(documents.get(params.textDocument.uri), params.position, cssService.parseStylesheet(documents.get(params.textDocument.uri)))
 

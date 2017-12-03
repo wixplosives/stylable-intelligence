@@ -64,7 +64,7 @@ export function activate(context: ExtensionContext) {
                 }
             }));
         })
-        .then(() => workspace.findFiles('**/*.st.css', ''))
+        .then(() => workspace.findFiles('**/*.stcss', ''))
         .then((files) => Promise.all(files.map((file) => workspace.openTextDocument(file.fsPath))))
         .then(() => {
             return client

@@ -7,7 +7,7 @@ import { safeParse, Diagnostics, process as stylableProcess, StylableTransformer
 import { Diagnostic as Report } from 'stylable/src/diagnostics'
 
 export function createDiagnosis(doc: TextDocument, fp: FileProcessor<StylableMeta>): Diagnostic[] {
-    if (!doc.uri.endsWith('.st.css')) { return [] };
+    if (!doc.uri.endsWith('.stcss')) { return [] };
 
     let file: string;
     if (process.platform === 'win32') {
