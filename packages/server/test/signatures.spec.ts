@@ -29,8 +29,28 @@ describe('Signature Help', function () {
 
                 expect(sig).to.not.be.null;
                 expect(sig).to.deep.equal(exp)
-            })
-        })
-    })
-})
+            });
+        });
+    });
+
+    describe('TS Paramless Mixin', function () {
+        it('Provides signature help with no parameters', function () {
+            let filePath = 'mixins/imported-mixins-paramless-signature.st.css'
+
+            let sig = getSignatureHelp(filePath, '')
+
+            let exp: SignatureHelp = {
+                activeSignature: 0,
+                activeParameter: 0,
+                signatures: [SignatureInformation.create(
+                    "paramlessMixin():  styl.stCssFrag",
+                    undefined,
+                )]
+            }
+
+            expect(sig).to.not.be.null;
+            expect(sig).to.deep.equal(exp)
+        });
+    });
+});
 
