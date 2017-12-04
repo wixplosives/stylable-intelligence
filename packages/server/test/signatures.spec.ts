@@ -29,9 +29,9 @@ describe('Signature Help', function () {
 
                 expect(sig).to.not.be.null;
                 expect(sig).to.deep.equal(exp)
-            });
+            }).timeout(5000);
         });
-    });
+    }) ;
 
     describe('TS Paramless Mixin', function () {
         it('Provides signature help with no parameters', function () {
@@ -50,7 +50,7 @@ describe('Signature Help', function () {
 
             expect(sig).to.not.be.null;
             expect(sig).to.deep.equal(exp)
-        });
+        }).timeout(5000);
     });
 });
 
