@@ -17,7 +17,7 @@ import {
     topLevelDirectives,
     valueCompletion,
     valueDirective,
-    tsMixinCompletion,
+    codeMixinCompletion,
 } from './completion-types';
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
@@ -370,9 +370,9 @@ export class CssMixinCompletionProvider implements CompletionProvider {
     text: string[] = [''];
 }
 
-export class TsMixinCompletionProvider implements CompletionProvider {
+export class CodeMixinCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
-        if (options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts')) && options.trimmedLine.startsWith(valueMapping.mixin + ':')) {
+        if (options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) && options.trimmedLine.startsWith(valueMapping.mixin + ':')) {
             if (options.wholeLine.lastIndexOf('(') > options.wholeLine.lastIndexOf(')')) { return [] }
 
 
@@ -392,11 +392,14 @@ export class TsMixinCompletionProvider implements CompletionProvider {
                 : (names || []).reverse()[0] || '';
 
             return Object.keys(options.meta.mappedSymbols)
-                .filter(ms => ((options.meta.mappedSymbols[ms]._kind === 'import' && (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts'))))
+                .filter(ms => ((options.meta.mappedSymbols[ms]._kind === 'import'
+                    && ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts')
+                        || (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.js'))
+                )))
                 .filter(ms => ms.startsWith(lastName))
                 .filter(ms => !names || names.indexOf(ms) === -1)
                 .map(ms => {
-                    return tsMixinCompletion(
+                    return codeMixinCompletion(
                         ms,
                         new ProviderRange(
                             new ProviderPosition(options.position.line, options.position.character - lastName.length),
@@ -405,7 +408,6 @@ export class TsMixinCompletionProvider implements CompletionProvider {
                         (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative
                     )
                 });
-
         } else {
             return [];
         }

@@ -19,7 +19,7 @@ import {
     TopLevelDirectiveProvider,
     ValueCompletionProvider,
     ValueDirectiveProvider,
-    TsMixinCompletionProvider,
+    CodeMixinCompletionProvider,
 } from './completion-providers';
 import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
@@ -42,7 +42,7 @@ export default class Provider {
         new SelectorCompletionProvider(),
         new ExtendCompletionProvider(),
         new CssMixinCompletionProvider(),
-        new TsMixinCompletionProvider(),
+        new CodeMixinCompletionProvider(),
         new NamedCompletionProvider(),
         new StateCompletionProvider(),
         new PseudoElementCompletionProvider(),
@@ -420,7 +420,13 @@ export default class Provider {
             let pv = line.slice(0, pos.character).trim().slice('-st-mixin'.length + 1).trim().slice(mixin.length).slice(1).trim();
             let activeParam = pv.indexOf(',') === -1 ? 0 : pv.match(/,/g)!.length;
 
-            return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
+            if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
+                return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
+            } else if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.js')) {
+                return this.getSignatureForJsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
+            } else {
+                return null;
+            }
         } else {
             return null;
         }
@@ -455,14 +461,7 @@ export default class Provider {
 
         let parameters: ParameterInformation[] = sig!.parameters.map(pt => {
             let label = pt.name + ":" + ((pt.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText();
-            return ParameterInformation.create(
-                label,
-                // ((pt.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).typeArguments
-                //     ? ((pt.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).typeArguments!
-                //         .map(arg => (arg as LiteralTypeNode).literal.getText())
-                //         .join(',')
-                //     : undefined
-            )
+            return ParameterInformation.create(label)
         });
 
         let sigInfo: SignatureInformation = {
@@ -475,6 +474,10 @@ export default class Provider {
             activeSignature: 0,
             signatures: [sigInfo]
         } as SignatureHelp
+    }
+
+    getSignatureForJsMixin(mixin: string, activeParam: number, filePath: string): SignatureHelp | null {
+        return null;
     }
 }
 
