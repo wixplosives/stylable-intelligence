@@ -15,9 +15,9 @@ const provider = createProvider(documents);
 const processor = provider.styl.fileProcessor;
 const cssService = VCL.getCSSLanguageService();
 
-documents.listen(connection);
 
 connection.onInitialize((params): InitializeResult => {
+    
     console.log("#############################################################################Init")
     return {
         capabilities: ({
@@ -32,8 +32,6 @@ connection.onInitialize((params): InitializeResult => {
         } as CPServerCapabilities & ServerCapabilities)
     }
 });
-
-connection.listen();
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
     if (!params.textDocument.uri.endsWith('.stcss') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
@@ -73,7 +71,7 @@ documents.onDidChangeContent(function (change) {
             if (diag.code === 'emptyRules') { return false; }
             if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') { return false; }
             if (diag.code === 'css-lcurlyexpected' && readDocRange(change.document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) { return false; }
-            if (diag.code === 'unknownProperties' ) {
+            if (diag.code === 'unknownProperties') {
                 return false;
             }
             return true;
@@ -112,14 +110,14 @@ connection.onRequest(DocumentColorRequest.type, params => {
     const document = documents.get(params.textDocument.uri);
     const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
     const colors = cssService.findDocumentColors(document, stylesheet)
-	return colors;
+    return colors;
 });
 
 connection.onRequest(ColorPresentationRequest.type, params => {
     const document = documents.get(params.textDocument.uri);
     const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
     const colors = cssService.getColorPresentations(document, stylesheet, params.color, params.range)
-	return colors;
+    return colors;
 
 });
 
@@ -127,3 +125,6 @@ function readDocRange(doc: TextDocument, rng: Range): string {
     let lines = doc.getText().split('\n');
     return lines[rng.start.line].slice(rng.start.character, rng.end.character);
 }
+documents.listen(connection);
+connection.listen();
+

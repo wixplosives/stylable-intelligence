@@ -10,6 +10,7 @@
     "node": "*",
     "vscode": "1.18.x"
   },
+  "bin": "./dist/src/cli.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/wixplosives/stylable-intelligence/"
