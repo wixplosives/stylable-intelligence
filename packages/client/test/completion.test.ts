@@ -41,14 +41,14 @@ suite("Extension Tests", () => {
         const testCases: [vscode.Position, string[]][] = [
             [new vscode.Position(0, 0), [':import', '.root', ':vars', '.gaga', '@namespace']]
         ];
-        return testCompletion('simple-completion.st.css', testCases);
+        return testCompletion('simple-completion.stcss', testCases);
     });
 
     test("advanced completion", () => {
         const testCases: [vscode.Position, string[]][] = [
             [new vscode.Position(10, 6), [':shmover', ':bover']]
         ];
-        return testCompletion('advanced-completion.st.css', testCases);
+        return testCompletion('advanced-completion.stcss', testCases);
     });
 
 

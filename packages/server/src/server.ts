@@ -1,24 +1,32 @@
 'use strict';
-import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities } from 'vscode-languageserver';
+import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, CompletionItemKind } from 'vscode-languageserver';
 import { createProvider, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import { createDiagnosis } from './diagnosis';
 import * as VCL from 'vscode-css-languageservice';
 import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
+import * as fs from 'fs';
+import * as os from 'os';
 
-
-const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
+const connection: IConnection = createConnection(process.stdin, process.stdout);
+// const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const documents: TextDocuments = new TextDocuments();
 
 const provider = createProvider(documents);
 const processor = provider.styl.fileProcessor;
 const cssService = VCL.getCSSLanguageService();
 
+fs.appendFileSync(os.tmpdir() + '/lsp.log', 'hello\n')
+
+documents.listen(connection);
 
 connection.onInitialize((params): InitializeResult => {
-    
+
+    fs.appendFileSync(os.tmpdir() + '/lsp.log', 'initialize\n')
     console.log("#############################################################################Init")
+    console.log(os.tmpdir())
+
     return {
         capabilities: ({
             textDocumentSync: documents.syncKind,
@@ -49,6 +57,7 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
                     typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
                 lspCompletion.insertTextFormat = InsertTextFormat.Snippet;
                 lspCompletion.detail = com.detail;
+                lspCompletion.kind = CompletionItemKind.Class;
                 lspCompletion.textEdit = ted;
                 lspCompletion.sortText = com.sortText;
                 lspCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
@@ -125,6 +134,5 @@ function readDocRange(doc: TextDocument, rng: Range): string {
     let lines = doc.getText().split('\n');
     return lines[rng.start.line].slice(rng.start.character, rng.end.character);
 }
-documents.listen(connection);
 connection.listen();
 

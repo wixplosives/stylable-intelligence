@@ -30,7 +30,7 @@
                     "Stylable"
                 ],
                 "extensions": [
-                    ".st.css"
+                    ".stcss"
                 ],
                 "configuration": "./language-configuration.json"
             }

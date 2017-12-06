@@ -1,3 +1,12 @@
-.root{
-    -st-states:shmover;
+.shlomo {
+    color: red;
+}
+
+.momo {
+    color: blue;
+}
+
+:vars {
+    poopy: brown;
+    shmoopy: pink;
 }
