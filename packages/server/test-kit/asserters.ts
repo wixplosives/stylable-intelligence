@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { TextDocument } from 'vscode-languageserver-types';
 
-import { createProvider } from '../src/provider-factory'
+import { createProvider, MinimalDocs } from '../src/provider-factory'
 import { Completion, snippet } from '../src/completion-types';
 import { ProviderPosition, ProviderRange } from '../src/completion-providers';
 import { createMeta, ProviderLocation } from '../src/provider';
@@ -122,21 +122,24 @@ export function getSignatureHelp(fileName: string, prefix: string): SignatureHel
     let pos = getCaretPosition(src);
     src = src.replace('|', prefix);
     pos.character += prefix.length;
-    return provider.getSignatureHelp(src, pos, fullPath);
+    return provider.getSignatureHelp(src, pos, fullPath, minDocs);
 }
 
-const provider = createProvider({
+const minDocs: MinimalDocs = {
     get(uri: string): TextDocument {
         if (process.platform === 'win32') {
-            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(8)).toString())
-        } else {
-            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(7)).toString())
+            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(8)).toString());
+        }
+        else {
+            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(7)).toString());
         }
     },
     keys(): string[] {
-        return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'))
+        return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'));
     }
-});
+};
+
+const provider = createProvider(minDocs);
 
 
 

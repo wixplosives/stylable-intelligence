@@ -1,4 +1,5 @@
 //must remain independent from vscode
+import { MinimalDocs } from './provider-factory';
 import * as PostCss from 'postcss';
 import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping } from 'stylable';
 import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
@@ -25,7 +26,7 @@ import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
 import { Declaration } from 'postcss';
 import * as path from 'path';
-import { Position, TextDocumentPositionParams, SignatureHelp, SignatureInformation, ParameterInformation } from 'vscode-languageserver';
+import { Position, TextDocumentPositionParams, SignatureHelp, SignatureInformation, ParameterInformation, TextDocuments } from 'vscode-languageserver';
 import * as ts from 'typescript';
 import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName, Identifier, LiteralTypeNode } from 'typescript';
 
@@ -406,7 +407,7 @@ export default class Provider {
         )
     }
 
-    getSignatureHelp(src: string, pos: Position, filePath: string): SignatureHelp | null {
+    getSignatureHelp(src: string, pos: Position, filePath: string, documents: MinimalDocs): SignatureHelp | null {
         let res = fixAndProcess(src, pos, filePath);
         let meta = res.processed.meta;
         if (!meta) return null;
@@ -423,13 +424,17 @@ export default class Provider {
             if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
                 return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
             } else if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.js')) {
-                return this.getSignatureForJsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
+                return this.getSignatureForJsMixin(mixin, activeParam, documents.get((meta.mappedSymbols[mixin]! as ImportSymbol).import.from).getText() );
             } else {
                 return null;
             }
         } else {
             return null;
         }
+    }
+
+    getSignatureForJsMixin(mixin: string, activeParam: number, filePath: string): SignatureHelp | null {
+        return null;
     }
 
     getSignatureForTsMixin(mixin: string, activeParam: number, filePath: string): SignatureHelp | null {
@@ -476,9 +481,7 @@ export default class Provider {
         } as SignatureHelp
     }
 
-    getSignatureForJsMixin(mixin: string, activeParam: number, filePath: string): SignatureHelp | null {
-        return null;
-    }
+
 }
 
 

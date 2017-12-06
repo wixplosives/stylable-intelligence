@@ -135,7 +135,7 @@ connection.onRequest(ColorPresentationRequest.type, params => {
 });
 
 connection.onSignatureHelp((params): SignatureHelp => {
-    let sig = provider.getSignatureHelp(documents.get(params.textDocument.uri).getText(), params.position, params.textDocument.uri)
+    let sig = provider.getSignatureHelp(documents.get(params.textDocument.uri).getText(), params.position, params.textDocument.uri, documents)
     return sig!;
 })
 

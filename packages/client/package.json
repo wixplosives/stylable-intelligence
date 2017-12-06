@@ -54,7 +54,6 @@
     "homepage": "https://github.com/wix/stylable-intelligence#readme",
     "keywords": [
         "typescript",
-        "tdd",
         "stylable",
         "css"
     ],
