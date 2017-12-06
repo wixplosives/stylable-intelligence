@@ -1,5 +1,8 @@
 'use strict';
-import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, CompletionItemKind } from 'vscode-languageserver';
+import {
+    CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, CompletionItemKind
+    , IPCMessageReader, IPCMessageWriter
+} from 'vscode-languageserver';
 import { createProvider, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
@@ -9,8 +12,13 @@ import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, Color
 import * as fs from 'fs';
 import * as os from 'os';
 
-const connection: IConnection = createConnection(process.stdin, process.stdout);
-// const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
+
+
+let runMode = process.argv[2] || 'jetbrains';
+
+const connection: IConnection = runMode !== 'jetbrains'
+    ? createConnection(new IPCMessageReader(process), new IPCMessageWriter(process))
+    : createConnection(process.stdin, process.stdout)
 const documents: TextDocuments = new TextDocuments();
 
 const provider = createProvider(documents);

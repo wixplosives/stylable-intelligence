@@ -6,16 +6,17 @@ import { ExtensionContext, workspace, TextDocument, languages, ColorInformation,
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, Executable } from 'vscode-languageclient';
 import path = require('path');
 import { DocumentColorRequest, DocumentColorParams, ColorPresentationRequest, ColorPresentationParams } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
+import { ExecutableOptions } from 'vscode-languageclient/lib/client';
 
 export function activate(context: ExtensionContext) {
 
-    let serverModule = context.asAbsolutePath(path.join('server', 'src', 'server.js'));
+    let serverModule = context.asAbsolutePath(path.join('server', 'src', 'cli.js'));
     let debugOptions = { execArgv: ['--inspect'] };
 
 
     let serverOptions: ServerOptions = {
-        run: { module: serverModule, transport: TransportKind.ipc },
-        debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions, runtime: 'node' }
+        run: { module: serverModule, transport: TransportKind.ipc, args: ['vscode'], options: ({ stdio: 'inherit' } as ExecutableOptions) },
+        debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions, runtime: 'node', args: ['vscode'] }
     }
 
     let clientOptions: LanguageClientOptions = {
