@@ -514,7 +514,7 @@ export default class Provider {
             formattedLines.splice(summaryStart, summaryLines.length)
         }
 
-        let params: [string, string][] = [];
+        let params: [string, string, string][] = [];
         while (formattedLines.find(l => l.startsWith('@param'))) {
             const paramStart: number = formattedLines.findIndex(l => l.startsWith('@param'));
             const paramEnd: number = formattedLines.slice(paramStart + 1).findIndex(l => l.startsWith('@')) === -1
@@ -523,8 +523,12 @@ export default class Provider {
 
             const paramLines = formattedLines.slice(paramStart, paramEnd + 1);
             formattedLines.splice(paramStart, paramLines.length);
-            if (/@param *{([ \w<>,'"|]*)} *(\w*)/.exec(paramLines[0])) {
-                params.push([/@param *{([ \w<>,'"|]*)} *(\w*)/.exec(paramLines[0])![1], /@param *{([ \w<>,'"|]*)} *(\w*)/.exec(paramLines[0])![2]])
+            if (/@param *{([ \w<>,'"|]*)} *(\w*)(.*)/.exec(paramLines[0])) {
+                params.push([
+                    /@param *{([ \w<>,'"|]*)} *(\w*)(.*)/.exec(paramLines[0])![1],
+                    /@param *{([ \w<>,'"|]*)} *(\w*)(.*)/.exec(paramLines[0])![2],
+                    /@param *{([ \w<>,'"|]*)} *(\w*)(.*)/.exec(paramLines[0])![3],
+                ])
             }
         }
 
@@ -542,10 +546,11 @@ export default class Provider {
             descLines = formattedLines.slice(0, formattedLines.findIndex(l => l.startsWith('@')) + 1)
         }
 
-        let parameters: ParameterInformation[] = params.map(p => ParameterInformation.create(p[1] + ': ' + p[0]))
+        let parameters: ParameterInformation[] = params.map(p => ParameterInformation.create(p[1] + ': ' + p[0], p[2].trim()))
 
         let sigInfo: SignatureInformation = {
             label: mixin + '(' + parameters.map(p => p.label).join(', ') + '): ' + returnType,
+            documentation: descLines.join('\n'),
             parameters
         }
         return {

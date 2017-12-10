@@ -9,6 +9,6 @@
 }
 
 .myClass {
-    -st-mixin: aMixin('as','45','a')
+    -st-mixin: aMixin('l',)
 }
 
