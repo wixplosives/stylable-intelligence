@@ -1,5 +1,5 @@
 :import {
-    -st-from: "./my-mixins.ts";
+    -st-from: "./my-mixins.ts"; /* "jkdj */
     -st-named: paramlessMixin, paramfulMixin;
 }
 
@@ -9,5 +9,6 @@
 }
 
 .myClass {
-    -st-mixin: aMixin()
+    -st-mixin: aMixin('as','45','a')
 }
+

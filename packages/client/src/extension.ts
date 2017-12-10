@@ -3,9 +3,14 @@
 import { connect } from 'tls';
 import { Trace } from 'vscode-jsonrpc'
 import { ExtensionContext, workspace, TextDocument, languages, ColorInformation, ColorPresentation, Color } from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, Executable } from 'vscode-languageclient';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, Executable, NotificationType } from 'vscode-languageclient';
 import path = require('path');
 import { DocumentColorRequest, DocumentColorParams, ColorPresentationRequest, ColorPresentationParams } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
+
+
+namespace OpenDocNotification {
+    export const type = new NotificationType<string, void>('stylable/openDocument');
+}
 
 export function activate(context: ExtensionContext) {
 
@@ -19,7 +24,7 @@ export function activate(context: ExtensionContext) {
     }
 
     let clientOptions: LanguageClientOptions = {
-        documentSelector: [{ language: 'stylable' }],
+        documentSelector: [{ language: 'stylable' },{ language: 'typescript' },{ language: 'javascript' },],
         diagnosticCollectionName: 'stylable',
     }
 
@@ -64,11 +69,9 @@ export function activate(context: ExtensionContext) {
                 }
             }));
         })
-        // .then(_ => {
-        //     context.subscriptions.push(languages.registerDocumentFormattingEditProvider())
-        // })
         .then(() => workspace.findFiles('**/*.st.css', ''))
         .then((files) => Promise.all(files.map((file) => workspace.openTextDocument(file.fsPath))))
+        .then(() => client.onNotification(OpenDocNotification.type, (uri: string) => workspace.openTextDocument(uri)))
         .then(() => {
             return client
         })

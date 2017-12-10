@@ -424,17 +424,13 @@ export default class Provider {
             if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
                 return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
             } else if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.js')) {
-                return this.getSignatureForJsMixin(mixin, activeParam, documents.get((meta.mappedSymbols[mixin]! as ImportSymbol).import.from).getText() );
+                return this.getSignatureForJsMixin(mixin, activeParam, documents.get('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from).getText());
             } else {
                 return null;
             }
         } else {
             return null;
         }
-    }
-
-    getSignatureForJsMixin(mixin: string, activeParam: number, filePath: string): SignatureHelp | null {
-        return null;
     }
 
     getSignatureForTsMixin(mixin: string, activeParam: number, filePath: string): SignatureHelp | null {
@@ -482,7 +478,85 @@ export default class Provider {
     }
 
 
+    getSignatureForJsMixin(mixin: string, activeParam: number, fileSrc: string): SignatureHelp | null {
+
+        let lines = fileSrc.split('\n');
+        let mixinLine: number = lines.findIndex(l => l.trim().startsWith('exports.' + mixin));
+        let docStartLine: number = lines.slice(0, mixinLine).lastIndexOf(lines.slice(0, mixinLine).reverse().find(l => l.trim().startsWith('/**'))!)
+        let docLines = lines.slice(docStartLine, mixinLine)
+        let formattedLines: string[] = [];
+
+        docLines.forEach(l => {
+            if (l.trim().startsWith('*/')) { return }
+            if (l.trim().startsWith('/**') && !!l.trim().slice(3).trim()) { formattedLines.push(l.trim().slice(3).trim()) }
+            if (l.trim().startsWith('*')) { formattedLines.push(l.trim().slice(1).trim()) }
+        })
+
+        const returnStart: number = formattedLines.findIndex(l => l.startsWith('@returns'));
+        const returnEnd: number = formattedLines.slice(returnStart + 1).findIndex(l => l.startsWith('@')) === -1
+            ? formattedLines.length - 1
+            : formattedLines.slice(returnStart + 1).findIndex(l => l.startsWith('@')) + returnStart;
+
+        const returnLines = formattedLines.slice(returnStart, returnEnd + 1);
+        formattedLines.splice(returnStart, returnLines.length)
+        const returnType = /@returns *{(\w+)}/.exec(returnLines[0])
+            ? /@returns *{(\w+)}/.exec(returnLines[0])![1]
+            : '';
+
+        const summaryStart: number = formattedLines.findIndex(l => l.startsWith('@summary'));
+        let summaryLines: string[] = [];
+        if (summaryStart !== -1) {
+            const summaryEnd: number = formattedLines.slice(summaryStart + 1).findIndex(l => l.startsWith('@')) === -1
+                ? formattedLines.length - 1
+                : formattedLines.slice(summaryStart + 1).findIndex(l => l.startsWith('@')) + summaryStart;
+
+            summaryLines = formattedLines.slice(summaryStart, summaryEnd + 1);
+            formattedLines.splice(summaryStart, summaryLines.length)
+        }
+
+        let params: [string, string][] = [];
+        while (formattedLines.find(l => l.startsWith('@param'))) {
+            const paramStart: number = formattedLines.findIndex(l => l.startsWith('@param'));
+            const paramEnd: number = formattedLines.slice(paramStart + 1).findIndex(l => l.startsWith('@')) === -1
+                ? formattedLines.length - 1
+                : formattedLines.slice(paramStart + 1).findIndex(l => l.startsWith('@')) + paramStart;
+
+            const paramLines = formattedLines.slice(paramStart, paramEnd + 1);
+            formattedLines.splice(paramStart, paramLines.length);
+            if (/@param *{([ \w<>,'"|]*)} *(\w*)/.exec(paramLines[0])) {
+                params.push([/@param *{([ \w<>,'"|]*)} *(\w*)/.exec(paramLines[0])![1], /@param *{([ \w<>,'"|]*)} *(\w*)/.exec(paramLines[0])![2]])
+            }
+        }
+
+        let descLines: string[] = [];
+        if (formattedLines.find(l => l.startsWith('@description'))) {
+            const descStart: number = formattedLines.findIndex(l => l.startsWith('@description'));
+            const descEnd: number = formattedLines.slice(descStart + 1).findIndex(l => l.startsWith('@')) === -1
+                ? formattedLines.length - 1
+                : formattedLines.slice(descStart + 1).findIndex(l => l.startsWith('@')) + descStart;
+
+            descLines = formattedLines.slice(descStart, descEnd + 1);
+        } else if (formattedLines.findIndex(l => l.startsWith('@')) === -1) {
+            descLines = formattedLines;
+        } else {
+            descLines = formattedLines.slice(0, formattedLines.findIndex(l => l.startsWith('@')) + 1)
+        }
+
+        let parameters: ParameterInformation[] = params.map(p => ParameterInformation.create(p[1] + ': ' + p[0]))
+
+        let sigInfo: SignatureInformation = {
+            label: mixin + '(' + parameters.map(p => p.label).join(', ') + '): ' + returnType,
+            parameters
+        }
+        return {
+            activeParameter: activeParam,
+            activeSignature: 0,
+            signatures: [sigInfo]
+        } as SignatureHelp
+    }
+
 }
+
 
 
 

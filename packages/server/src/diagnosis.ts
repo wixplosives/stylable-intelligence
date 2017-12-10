@@ -22,7 +22,7 @@ export function createDiagnosis(doc: TextDocument, fp: FileProcessor<StylableMet
         diagnostics: new Diagnostics(),
         fileProcessor: fp,
         requireModule: (path) => {
-            console.log(path)
+            // console.log(path)
             return require(path);
         }
     })
