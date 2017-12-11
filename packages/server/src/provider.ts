@@ -415,9 +415,14 @@ export default class Provider {
         let split = src.split('\n');
         let line = split[pos.line];
 
-        if (line.trim().startsWith(valueMapping.mixin)) {
-            let value = line.trim().slice(valueMapping.mixin.length + 1).trim();
-            let mixin = /(\w*)\(([\w'" ]+,?)*/g.exec(value)![1];
+        if (line.slice(0,pos.character).trim().startsWith(valueMapping.mixin)) {
+            let value = line.slice(0,pos.character).trim().slice(valueMapping.mixin.length + 1).trim();
+
+            let mixin = value.match(/\s*\w*\(([\w'" ]+,?)*\)?,?/g)!.reverse()[0].trim();
+            if (mixin.includes('(') && !mixin.includes(')')) {
+                mixin = mixin.slice(0,mixin.indexOf('('));
+            } else { return null;}
+            // let mixin = /(\w*)\(([\w'" ]+,?)*/g.exec(value)![1];
             let pv = line.slice(0, pos.character).trim().slice('-st-mixin'.length + 1).trim().slice(mixin.length).slice(1).trim();
             let activeParam = pv.indexOf(',') === -1 ? 0 : pv.match(/,/g)!.length;
 
