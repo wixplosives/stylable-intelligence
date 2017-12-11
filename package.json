@@ -1,5 +1,4 @@
 {
-
   "name": "stylable-intelligence",
   "version": "0.0.1",
   "description": "Stylable Language Services",
@@ -28,7 +27,10 @@
     "test": "lerna run test",
     "build": "echo Not Implemented",
     "test:node": "npm run test",
-    "test:ci" : "npm run test"
-
+    "test:ci": "npm run test"
+  },
+  "dependencies": {
+    "js-beautify": "^1.7.4",
+    "types": "js-beautify"
   }
 }

@@ -10,11 +10,12 @@ import * as VCL from 'vscode-css-languageservice';
 import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
 import { valueMapping } from 'stylable/dist/src/stylable-value-parsers';
 
+
 namespace OpenDocNotification {
     export const type = new NotificationType<string, void>('stylable/openDocument');
 }
 
-const connection: IConnection = createConnection();
+const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const documents: TextDocuments = new TextDocuments();
 
 const provider = createProvider(documents);
@@ -169,7 +170,7 @@ connection.onSignatureHelp((params): Thenable<SignatureHelp> => {
     }
 
     return waitForVals().then(() => {
-        console.log('why?!')
+        // console.log('why?!')
         let sig = provider.getSignatureHelp(src, params.position, params.textDocument.uri, documents);
         return Promise.resolve(sig!)
     })
