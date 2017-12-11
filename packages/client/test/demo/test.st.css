@@ -9,6 +9,6 @@
 }
 
 .myClass {
-    -st-mixin: aMixin('l',)
+    -st-mixin: paramfulMixin('45','ssss','lala','a'),
 }
 

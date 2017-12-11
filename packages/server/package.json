@@ -46,7 +46,6 @@
     "sinon": "~4.1.2",
     "sinon-chai": "~2.14.0",
     "source-map-support": "~0.5.0",
-    "typescript": "~2.6.1",
     "webpack": "~3.8.1",
     "webpack-dev-server": "~2.9.4"
   },
@@ -60,6 +59,7 @@
     "postcss-selector-parser": "^3.1.1",
     "stylable": "^5.0.0",
     "tslib": "~1.8.0",
+    "typescript": "^2.6.2",
     "vscode-css-languageservice": "^3.0.1",
     "vscode-languageclient": "^3.5.0",
     "vscode-languageserver": "^3.5.0"

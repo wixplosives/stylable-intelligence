@@ -1,7 +1,7 @@
 {
     "name": "stylable-intelligence",
     "displayName": "Stylable Intelligence",
-    "version": "0.0.34",
+    "version": "0.0.40",
     "description": "Code completion, reference detection, diagnostics and other features for Stylable CSS.",
     "author": "Ory Henn (ory@wix.com)",
     "publisher": "wix",
@@ -60,7 +60,7 @@
     "browser": "dist/src/index.js",
     "scripts": {
         "clear": "rimraf node_modules dist",
-        "vscode:prepublish": "rm -rf dist && yarn install && tsc -d -p ./tsconfig.publish.json && yarn install --prod",
+        "vscode:prepublish": "rm -rf dist && npm install && tsc -d -p ./tsconfig.publish.json && npm install --prod",
         "build": "tsc -d",
         "compile": "tsc -watch -d",
         "postinstall": "node ./node_modules/vscode/bin/install ",
@@ -80,7 +80,7 @@
         "chai": "~4.1.2",
         "chai-subset": "~1.6.0",
         "concurrently": "~3.5.0",
-        "mocha": "~4.0.1",
+        "mocha": "^3.0.0",
         "mocha-env-reporter": "~3.0.0",
         "mocha-loader": "~1.1.1",
         "rimraf": "~2.6.2",
@@ -88,7 +88,7 @@
         "sinon-chai": "~2.14.0",
         "source-map-support": "~0.5.0",
         "tslib": "~1.8.0",
-        "typescript": "~2.6.1"
+        "typescript": "^2.6.2"
     },
     "dependencies": {
         "css-selector-tokenizer": "^0.7.0",

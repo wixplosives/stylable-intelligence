@@ -3,6 +3,11 @@
     -st-named: paramlessMixin, paramfulMixin;
 }
 
+:import {
+    -st-from: "./my-mixins.js";
+    -st-named: aMixin, aBareMixin;
+}
+
 .myClass {
     -st-mixin: |
 }

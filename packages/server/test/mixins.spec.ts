@@ -108,27 +108,30 @@ describe('Mixins', function () {
         });
     });
 
-    describe('TS imports', function () {
+    describe('Code imports', function () {
 
         const str1 = 'paramfulMixin';
         const str2 = 'paramlessMixin';
-        const from = './my-mixins.ts';
-        const createComp = (str: string, rng: ProviderRange, value: string, path: string) => asserters.tsMixinCompletion(str, rng, path);
+        const str3 = 'aBareMixin';
+        const str4 = 'aMixin';
+        const tsFrom = './my-mixins.ts';
+        const jsFrom = './my-mixins.js';
+        const createComp = (str: string, rng: ProviderRange, value: string, path: string) => asserters.codeMixinCompletion(str, rng, path);
 
         [str1, str2].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
                 let prefix = str.slice(0, i);
                 it('should complete imported TS mixins, with prefix ' + prefix, function () {
-                    let rng = createRange(6, 15, 6, 15 + i);
+                    let rng = createRange(11, 15, 11, 15 + i);
                     return asserters.getCompletions('mixins/imported-mixins.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
                         if (i <= 5) {
-                            a.forEach((comp, k) => exp.push(createComp(a[k], rng, './my-mixins.ts', from)))
+                            a.forEach((comp, k) => exp.push(createComp(a[k], rng, './my-mixins.ts', tsFrom)))
                         } else {
-                            exp.push(createComp(str, rng, './my-mixins.ts', from));
-                            notExp.push(createComp(a[1 - j], rng, './my-mixins.ts', from))
+                            exp.push(createComp(str, rng, './my-mixins.ts', tsFrom));
+                            notExp.push(createComp(a[1 - j], rng, './my-mixins.ts', tsFrom))
                         }
 
                         asserter.suggested(exp);
@@ -137,16 +140,57 @@ describe('Mixins', function () {
                 });
 
                 it('should complete imported TS mixins after value, with prefix ' + prefix, function () {
-                    let rng = createRange(6, 46, 6, 46 + i);
+                    let rng = createRange(11, 46, 11, 46 + i);
                     return asserters.getCompletions('mixins/imported-mixins-single-value.st.css', prefix).then((asserter) => {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
                         if (str === str2 || i <= 5) {
-                            exp.push(createComp(str2, rng, './my-mixins.ts', from))
+                            exp.push(createComp(str2, rng, './my-mixins.ts', tsFrom))
                         }
-                        notExp.push(createComp(str1, rng, './my-mixins.ts', from))
+                        notExp.push(createComp(str1, rng, './my-mixins.ts', tsFrom))
 
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
+                    });
+                });
+
+            });
+        });
+
+        [str4, str3].forEach((str, j, a) => {
+            str.split('').forEach((c, i) => {
+                let prefix = str.slice(0, i);
+                it('should complete imported JS mixins, with prefix ' + prefix, function () {
+                    let rng = createRange(11, 15, 11, 15 + i);
+                    return asserters.getCompletions('mixins/imported-mixins.st.css', prefix).then((asserter) => {
+                        let exp: Partial<Completion>[] = [];
+                        let notExp: Partial<Completion>[] = [];
+
+                        if (i <= 1) {
+                            a.forEach((comp, k) => exp.push(createComp(a[k], rng, './my-mixins.js', jsFrom)))
+                        } else {
+                            exp.push(createComp(str, rng, './my-mixins.js', jsFrom));
+                            notExp.push(createComp(a[1 - j], rng, './my-mixins.js', jsFrom))
+                        }
+
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
+                    });
+                });
+
+                it('should complete imported JS mixins after value, with prefix ' + prefix, function () {
+                    let rng = createRange(11, 46, 11, 46 + i);
+                    return asserters.getCompletions('mixins/imported-mixins-single-value.st.css', prefix).then((asserter) => {
+                        let exp: Partial<Completion>[] = [];
+                        let notExp: Partial<Completion>[] = [];
+
+                        if (i <= 1) {
+                            a.forEach((comp, k) => exp.push(createComp(a[k], rng, './my-mixins.js', jsFrom)))
+                        } else {
+                            exp.push(createComp(str, rng, './my-mixins.js', jsFrom));
+                            notExp.push(createComp(a[1 - j], rng, './my-mixins.js', jsFrom))
+                        }
                         asserter.suggested(exp);
                         asserter.notSuggested(notExp);
                     });
@@ -160,8 +204,8 @@ describe('Mixins', function () {
                 let rng = createRange(0,0,0,0);
                 let notExp: Partial<Completion>[] = [];
 
-                notExp.push(createComp('paramlessMixin', rng, './my-mixins.ts', from))
-                notExp.push(createComp('paramfulMixin', rng, './my-mixins.ts', from))
+                notExp.push(createComp('paramlessMixin', rng, './my-mixins.ts', tsFrom))
+                notExp.push(createComp('paramfulMixin', rng, './my-mixins.ts', tsFrom))
 
                 asserter.notSuggested(notExp);
             });
