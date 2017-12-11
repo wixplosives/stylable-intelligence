@@ -1,4 +1,5 @@
 //must remain independent from vscode
+import { MinimalDocs } from './provider-factory';
 import * as PostCss from 'postcss';
 import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping } from 'stylable';
 import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
@@ -7,7 +8,7 @@ import {
     ExtendCompletionProvider,
     GlobalCompletionProvider,
     ImportInternalDirectivesProvider,
-    MixinCompletionProvider,
+    CssMixinCompletionProvider,
     NamedCompletionProvider,
     ProviderOptions,
     ProviderPosition,
@@ -19,18 +20,21 @@ import {
     TopLevelDirectiveProvider,
     ValueCompletionProvider,
     ValueDirectiveProvider,
+    CodeMixinCompletionProvider,
 } from './completion-providers';
 import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
 import { Declaration } from 'postcss';
 import * as path from 'path';
-import { Position } from 'vscode-languageserver/lib/main';
+import { Position, TextDocumentPositionParams, SignatureHelp, SignatureInformation, ParameterInformation, TextDocuments } from 'vscode-languageserver';
+import * as ts from 'typescript';
+import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName, Identifier, LiteralTypeNode } from 'typescript';
 
 
 export default class Provider {
     constructor(public styl: Stylable) { }
 
-    providers = [
+    public providers = [
         new RulesetInternalDirectivesProvider(),
         new ImportInternalDirectivesProvider(),
         new TopLevelDirectiveProvider(),
@@ -38,7 +42,8 @@ export default class Provider {
         new GlobalCompletionProvider(),
         new SelectorCompletionProvider(),
         new ExtendCompletionProvider(),
-        new MixinCompletionProvider(),
+        new CssMixinCompletionProvider(),
+        new CodeMixinCompletionProvider(),
         new NamedCompletionProvider(),
         new StateCompletionProvider(),
         new PseudoElementCompletionProvider(),
@@ -401,7 +406,167 @@ export default class Provider {
             lineIndex, line.indexOf(word), lineIndex, line.indexOf(word) + word.length
         )
     }
+
+    getSignatureHelp(src: string, pos: Position, filePath: string, documents: MinimalDocs): SignatureHelp | null {
+        let res = fixAndProcess(src, pos, filePath);
+        let meta = res.processed.meta;
+        if (!meta) return null;
+
+        let split = src.split('\n');
+        let line = split[pos.line];
+
+        if (line.slice(0, pos.character).trim().startsWith(valueMapping.mixin)) {
+            let value = line.slice(0, pos.character).trim().slice(valueMapping.mixin.length + 1).trim();
+            let mixin = value.match(/\s*\w*\(([\w'" ]+,?)*\)?,?/g)!.reverse()[0].trim();
+            if (mixin.includes('(') && !mixin.includes(')')) {
+                mixin = mixin.slice(0, mixin.indexOf('('));
+            } else { return null; }
+            let pv = line.slice(0, pos.character).trim().slice('-st-mixin'.length + 1).trim().slice(mixin.length).slice(1).trim();
+            let activeParam = pv.indexOf(',') === -1 ? 0 : pv.match(/,/g)!.length;
+
+            if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
+                return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
+            } else if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.js')) {
+                return this.getSignatureForJsMixin(mixin, activeParam, documents.get('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from).getText());
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    getSignatureForTsMixin(mixin: string, activeParam: number, filePath: string): SignatureHelp | null {
+        const compilerOptions: ts.CompilerOptions = {
+            "jsx": ts.JsxEmit.React,
+            "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
+            "module": ts.ModuleKind.CommonJS,
+            "target": ts.ScriptTarget.ES5,
+            "strict": false,
+            "importHelpers": false,
+            "noImplicitReturns": false,
+            "strictNullChecks": false,
+            "sourceMap": false,
+            "outDir": "dist",
+            "typeRoots": ["./node_modules/@types"]
+        };
+        let program = ts.createProgram([filePath], compilerOptions);
+        let tc = program.getTypeChecker();
+        let sf = program.getSourceFile(filePath);
+        let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function).find(f => f.name === mixin);
+        let sig = tc.getSignatureFromDeclaration(mix!.declarations![0] as SignatureDeclaration);
+
+        let ptypes = sig!.parameters.map(p => {
+            return p.name + ":" + ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
+        });
+        let rtype = sig!.declaration.type
+            ? ((sig!.declaration.type as TypeReferenceNode).typeName as Identifier).getFullText()
+            : "";
+
+        let parameters: ParameterInformation[] = sig!.parameters.map(pt => {
+            let label = pt.name + ":" + ((pt.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText();
+            return ParameterInformation.create(label)
+        });
+
+        let sigInfo: SignatureInformation = {
+            label: mixin + '(' + ptypes.join(', ') + '): ' + rtype,
+            parameters
+        }
+
+        return {
+            activeParameter: activeParam,
+            activeSignature: 0,
+            signatures: [sigInfo]
+        } as SignatureHelp
+    }
+
+
+    getSignatureForJsMixin(mixin: string, activeParam: number, fileSrc: string): SignatureHelp | null {
+
+        let lines = fileSrc.split('\n');
+        let mixinLine: number = lines.findIndex(l => l.trim().startsWith('exports.' + mixin));
+        let docStartLine: number = lines.slice(0, mixinLine).lastIndexOf(lines.slice(0, mixinLine).reverse().find(l => l.trim().startsWith('/**'))!)
+        let docLines = lines.slice(docStartLine, mixinLine)
+        let formattedLines: string[] = [];
+
+        docLines.forEach(l => {
+            if (l.trim().startsWith('*/')) { return }
+            if (l.trim().startsWith('/**') && !!l.trim().slice(3).trim()) { formattedLines.push(l.trim().slice(3).trim()) }
+            if (l.trim().startsWith('*')) { formattedLines.push(l.trim().slice(1).trim()) }
+        })
+
+        const returnStart: number = formattedLines.findIndex(l => l.startsWith('@returns'));
+        const returnEnd: number = formattedLines.slice(returnStart + 1).findIndex(l => l.startsWith('@')) === -1
+            ? formattedLines.length - 1
+            : formattedLines.slice(returnStart + 1).findIndex(l => l.startsWith('@')) + returnStart;
+
+        const returnLines = formattedLines.slice(returnStart, returnEnd + 1);
+        formattedLines.splice(returnStart, returnLines.length)
+        const returnType = /@returns *{(\w+)}/.exec(returnLines[0])
+            ? /@returns *{(\w+)}/.exec(returnLines[0])![1]
+            : '';
+
+        const summaryStart: number = formattedLines.findIndex(l => l.startsWith('@summary'));
+        let summaryLines: string[] = [];
+        if (summaryStart !== -1) {
+            const summaryEnd: number = formattedLines.slice(summaryStart + 1).findIndex(l => l.startsWith('@')) === -1
+                ? formattedLines.length - 1
+                : formattedLines.slice(summaryStart + 1).findIndex(l => l.startsWith('@')) + summaryStart;
+
+            summaryLines = formattedLines.slice(summaryStart, summaryEnd + 1);
+            formattedLines.splice(summaryStart, summaryLines.length)
+        }
+
+        let params: [string, string, string][] = [];
+        while (formattedLines.find(l => l.startsWith('@param'))) {
+            const paramStart: number = formattedLines.findIndex(l => l.startsWith('@param'));
+            const paramEnd: number = formattedLines.slice(paramStart + 1).findIndex(l => l.startsWith('@')) === -1
+                ? formattedLines.length - 1
+                : formattedLines.slice(paramStart + 1).findIndex(l => l.startsWith('@')) + paramStart;
+
+            const paramLines = formattedLines.slice(paramStart, paramEnd + 1);
+            formattedLines.splice(paramStart, paramLines.length);
+            if (/@param *{([ \w<>,'"|]*)} *(\w*)(.*)/.exec(paramLines[0])) {
+                params.push([
+                    /@param *{([ \w<>,'"|]*)} *(\w*)(.*)/.exec(paramLines[0])![1],
+                    /@param *{([ \w<>,'"|]*)} *(\w*)(.*)/.exec(paramLines[0])![2],
+                    /@param *{([ \w<>,'"|]*)} *(\w*)(.*)/.exec(paramLines[0])![3],
+                ])
+            }
+        }
+
+        let descLines: string[] = [];
+        if (formattedLines.find(l => l.startsWith('@description'))) {
+            const descStart: number = formattedLines.findIndex(l => l.startsWith('@description'));
+            const descEnd: number = formattedLines.slice(descStart + 1).findIndex(l => l.startsWith('@')) === -1
+                ? formattedLines.length - 1
+                : formattedLines.slice(descStart + 1).findIndex(l => l.startsWith('@')) + descStart;
+
+            descLines = formattedLines.slice(descStart, descEnd + 1);
+        } else if (formattedLines.findIndex(l => l.startsWith('@')) === -1) {
+            descLines = formattedLines;
+        } else {
+            descLines = formattedLines.slice(0, formattedLines.findIndex(l => l.startsWith('@')) + 1)
+        }
+
+        let parameters: ParameterInformation[] = params.map(p => ParameterInformation.create(p[1] + ': ' + p[0], p[2].trim()))
+
+        let sigInfo: SignatureInformation = {
+            label: mixin + '(' + parameters.map(p => p.label).join(', ') + '): ' + returnType,
+            documentation: descLines.join('\n'),
+            parameters
+        }
+        return {
+            activeParameter: activeParam,
+            activeSignature: 0,
+            signatures: [sigInfo]
+        } as SignatureHelp
+    }
+
 }
+
+
+
 
 function isIllegalLine(line: string): boolean {
     return /^\s*[-\.:]+\s*$/.test(line)

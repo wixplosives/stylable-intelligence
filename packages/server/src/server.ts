@@ -1,11 +1,19 @@
 'use strict';
-import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities } from 'vscode-languageserver';
+import { setInterval } from 'timers';
+import * as path from 'path';
+import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, SignatureHelp, NotificationType } from 'vscode-languageserver';
 import { createProvider, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import { createDiagnosis } from './diagnosis';
 import * as VCL from 'vscode-css-languageservice';
 import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
+import { valueMapping } from 'stylable/dist/src/stylable-value-parsers';
+
+
+namespace OpenDocNotification {
+    export const type = new NotificationType<string, void>('stylable/openDocument');
+}
 
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const documents: TextDocuments = new TextDocuments();
@@ -26,7 +34,13 @@ connection.onInitialize((params): InitializeResult => {
             definitionProvider: true,
             hoverProvider: true,
             referencesProvider: true,
-            colorProvider: true
+            colorProvider: true,
+            signatureHelpProvider: {
+                triggerCharacters: [
+                    '(',
+                    ','
+                ]
+            },
         } as CPServerCapabilities & ServerCapabilities)
     }
 });
@@ -55,7 +69,13 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
                 if (com.additionalCompletions) {
                     lspCompletion.command = {
                         title: "additional",
-                        command: 'editorconfig._triggerSuggestAfterDelay',
+                        command: 'editor.action.triggerSuggest',
+                        arguments: []
+                    }
+                } else if (com.triggerSignature) {
+                    lspCompletion.command = {
+                        title: "additional",
+                        command: 'editor.action.triggerParameterHints',
                         arguments: []
                     }
                 }
@@ -66,20 +86,23 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
 
 documents.onDidChangeContent(function (change) {
 
-    let cssDiags = cssService.doValidation(change.document, cssService.parseStylesheet(change.document))
-        .filter(diag => {
-            if (diag.code === 'emptyRules') { return false; }
-            if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') { return false; }
-            if (diag.code === 'css-lcurlyexpected' && readDocRange(change.document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) { return false; }
-            if (diag.code === 'unknownProperties' ) {
-                return false;
-            }
-            return true;
-        })
-        .map(diag => {
-            diag.source = 'css';
-            return diag;
-        });
+    let cssDiags =
+        change.document.uri.endsWith('.css')
+            ? cssService.doValidation(change.document, cssService.parseStylesheet(change.document))
+                .filter(diag => {
+                    if (diag.code === 'emptyRules') { return false; }
+                    if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') { return false; }
+                    if (diag.code === 'css-lcurlyexpected' && readDocRange(change.document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) { return false; }
+                    if (diag.code === 'unknownProperties') {
+                        return false;
+                    }
+                    return true;
+                })
+                .map(diag => {
+                    diag.source = 'css';
+                    return diag;
+                })
+            : [];
 
     let diagnostics = createDiagnosis(change.document, processor).map(diag => { diag.source = 'stylable'; return diag; });
     connection.sendDiagnostics({ uri: change.document.uri, diagnostics: diagnostics.concat(cssDiags) })
@@ -110,16 +133,48 @@ connection.onRequest(DocumentColorRequest.type, params => {
     const document = documents.get(params.textDocument.uri);
     const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
     const colors = cssService.findDocumentColors(document, stylesheet)
-	return colors;
+    return colors;
 });
 
 connection.onRequest(ColorPresentationRequest.type, params => {
     const document = documents.get(params.textDocument.uri);
     const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
     const colors = cssService.getColorPresentations(document, stylesheet, params.color, params.range)
-	return colors;
+    return colors;
 
 });
+
+
+connection.onSignatureHelp((params): Thenable<SignatureHelp> => {
+
+    const src: string = documents.get(params.textDocument.uri).getText();
+    let lines = src.split('\n').map(l => l.trim());
+    let vals: string[] = [];
+    lines.forEach(l => {
+        if (l.startsWith(valueMapping.from)) {
+            let val = path.join(path.dirname(params.textDocument.uri.slice(7)), l.slice('-st-from'.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim());
+            if (!documents.get(val)) { vals.push(val) };
+            connection.sendNotification(OpenDocNotification.type, val);
+        }
+    })
+
+    function waitForVals() {
+        return new Promise(resolve => {
+            setInterval(
+                () => {
+                    if (vals.every(val => { return !!documents.get('file://' + val) })) { resolve() }
+                },
+                100
+            )
+        })
+    }
+
+    return waitForVals().then(() => {
+        // console.log('why?!')
+        let sig = provider.getSignatureHelp(src, params.position, params.textDocument.uri, documents);
+        return Promise.resolve(sig!)
+    })
+})
 
 function readDocRange(doc: TextDocument, rng: Range): string {
     let lines = doc.getText().split('\n');

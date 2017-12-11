@@ -3,13 +3,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { TextDocument } from 'vscode-languageserver-types';
 
-import { createProvider } from '../src/provider-factory'
+import { createProvider, MinimalDocs } from '../src/provider-factory'
 import { Completion, snippet } from '../src/completion-types';
 import { ProviderPosition, ProviderRange } from '../src/completion-providers';
 import { createMeta, ProviderLocation } from '../src/provider';
 import { pathFromPosition } from '../src/utils/postcss-ast-utils'
 import { NodeBase } from 'postcss';
 import { Provider } from '../src/index';
+import { SignatureHelp } from 'vscode-languageserver/lib/main';
 
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
@@ -115,18 +116,30 @@ export function getDefinition(fileName: string): Thenable<ProviderLocation[]> {
     })
 }
 
-const provider = createProvider({
+export function getSignatureHelp(fileName: string, prefix: string): SignatureHelp | null {
+    const fullPath = path.join(__dirname, '/../test/cases/', fileName);
+    let src: string = fs.readFileSync(fullPath).toString();
+    let pos = getCaretPosition(src);
+    src = src.replace('|', prefix);
+    pos.character += prefix.length;
+    return provider.getSignatureHelp(src, pos, fullPath, minDocs);
+}
+
+const minDocs: MinimalDocs = {
     get(uri: string): TextDocument {
         if (process.platform === 'win32') {
-            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(8)).toString())
-        } else {
-            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(7)).toString())
+            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(8)).toString());
+        }
+        else {
+            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(7)).toString());
         }
     },
     keys(): string[] {
-        return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'))
+        return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'));
     }
-});
+};
+
+const provider = createProvider(minDocs);
 
 
 
@@ -189,8 +202,11 @@ export const extendsCompletion: (typeName: string, rng: ProviderRange, from: str
 export const namedCompletion: (typeName: string, rng: ProviderRange, from: string, value?: string) => Partial<Completion> = (typeName, rng, from, value?) => {
     return { label: typeName, sortText: 'a', insertText: typeName, detail: 'from: ' + from + '\n' + 'Value: ' + value, range: rng }
 }
-export const mixinCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
+export const cssMixinCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
     return new Completion(symbolName, 'from: ' + from + '\n', 'a', symbolName, rng)
+}
+export const tsMixinCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
+    return new Completion(symbolName, 'from: ' + from + '\n', 'a', symbolName + "($0)", rng, false, true)
 }
 export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (stateName, rng, from = 'Local file') => {
     return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName, range: rng }
