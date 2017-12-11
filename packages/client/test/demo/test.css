@@ -16,3 +16,6 @@
     -st-from: "./import.st";
 }
  /* .lokal {} */
+ .myClass {
+    -st-mixin: url('lala'), url('kaka')
+}

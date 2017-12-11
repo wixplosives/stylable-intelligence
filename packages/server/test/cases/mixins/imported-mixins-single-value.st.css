@@ -4,5 +4,5 @@
 }
 
 .myClass {
-    -st-mixin: |
+    -st-mixin: paramfulMixin('25','aaa','a'), |
 }

@@ -7,7 +7,7 @@ import {
     globalCompletion,
     importDirectives,
     importInternalDirective,
-    mixinCompletion,
+    cssMixinCompletion,
     namedCompletion,
     pseudoElementCompletion,
     rulesetDirectives,
@@ -17,10 +17,12 @@ import {
     topLevelDirectives,
     valueCompletion,
     valueDirective,
+    codeMixinCompletion,
 } from './completion-types';
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
+
 
 
 export interface ProviderOptions {
@@ -292,15 +294,17 @@ export class SelectorCompletionProvider implements CompletionProvider {
                 .map(c => classCompletion(c, (createDirectiveRange(options)))));
             comps.push(...Object.keys(options.meta.customSelectors)
                 .map(c => classCompletion(c, (createDirectiveRange(options)), true)));
-            let moreComps = options.meta.imports.reduce((acc: Completion[], imp) => {
-                if (acc.every(comp => comp.label !== imp.defaultExport)) { acc.push(classCompletion(imp.defaultExport, createDirectiveRange(options), true)) };
-                Object.keys(imp.named).forEach(exp => {
-                    if (acc.every(comp => comp.label.replace('.', '') !== imp.named[exp])) {
-                        acc.push(classCompletion(imp.named[exp], (createDirectiveRange(options))))
-                    }
-                });
-                return acc;
-            }, comps)
+            let moreComps = options.meta.imports
+                .filter(imp => imp.fromRelative.endsWith('st.css'))
+                .reduce((acc: Completion[], imp) => {
+                    if (acc.every(comp => comp.label !== imp.defaultExport)) { acc.push(classCompletion(imp.defaultExport, createDirectiveRange(options), true)) };
+                    Object.keys(imp.named).forEach(exp => {
+                        if (acc.every(comp => comp.label.replace('.', '') !== imp.named[exp])) {
+                            acc.push(classCompletion(imp.named[exp], (createDirectiveRange(options))))
+                        }
+                    });
+                    return acc;
+                }, comps)
             return moreComps.filter(c => c.label.startsWith(options.trimmedLine));
         } else {
             return [];
@@ -334,7 +338,7 @@ export class ExtendCompletionProvider implements CompletionProvider {
     text: string[] = [''];
 }
 
-export class MixinCompletionProvider implements CompletionProvider {
+export class CssMixinCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.trimmedLine.startsWith(valueMapping.mixin + ':')) {
             let valueStart = options.wholeLine.indexOf(':') + 1;
@@ -345,11 +349,11 @@ export class MixinCompletionProvider implements CompletionProvider {
                 : names.reverse()[0] || '';
 
             return Object.keys(options.meta.mappedSymbols)
-                .filter(ms => (options.meta.mappedSymbols[ms]._kind === 'import' || options.meta.mappedSymbols[ms]._kind === 'class'))
+                .filter(ms => ((options.meta.mappedSymbols[ms]._kind === 'import' && (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('st.css')) || options.meta.mappedSymbols[ms]._kind === 'class'))
                 .filter(ms => ms.startsWith(lastName))
                 .filter(ms => names.indexOf(ms) === -1)
                 .map(ms => {
-                    return mixinCompletion(
+                    return cssMixinCompletion(
                         ms,
                         new ProviderRange(
                             new ProviderPosition(options.position.line, options.position.character - lastName.length),
@@ -362,6 +366,51 @@ export class MixinCompletionProvider implements CompletionProvider {
             return [];
         }
 
+    }
+    text: string[] = [''];
+}
+
+export class CodeMixinCompletionProvider implements CompletionProvider {
+    provide(options: ProviderOptions): Completion[] {
+        if (options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) && options.trimmedLine.startsWith(valueMapping.mixin + ':')) {
+            if (options.wholeLine.lastIndexOf('(') > options.wholeLine.lastIndexOf(')')) { return [] }
+
+
+            let valueStart = options.wholeLine.indexOf(':') + 1;
+            let value = options.wholeLine.slice(valueStart);
+            let regs = value.trim().match(/((\w+)(\([\w"' ,]*\),))+/g);
+            let names: string[] = [];
+            if (regs) { names = regs.map(r => r.slice(0, r.indexOf('('))) }
+            if (value.indexOf(',') !== -1) {
+                names.push(value.slice(value.lastIndexOf(',') + 1).trim());
+            } else {
+                names.push(value.trim())
+            }
+
+            let lastName = /,\s*$/.test(options.wholeLine)
+                ? ''
+                : (names || []).reverse()[0] || '';
+
+            return Object.keys(options.meta.mappedSymbols)
+                .filter(ms => ((options.meta.mappedSymbols[ms]._kind === 'import'
+                    && ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts')
+                        || (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.js'))
+                )))
+                .filter(ms => ms.startsWith(lastName))
+                .filter(ms => !names || names.indexOf(ms) === -1)
+                .map(ms => {
+                    return codeMixinCompletion(
+                        ms,
+                        new ProviderRange(
+                            new ProviderPosition(options.position.line, options.position.character - lastName.length),
+                            options.position
+                        ),
+                        (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative
+                    )
+                });
+        } else {
+            return [];
+        }
     }
     text: string[] = [''];
 }

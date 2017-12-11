@@ -1,24 +1,14 @@
 :import {
-    -st-from:"./import.st.css";
-    -st-default:Comp;
+    -st-from: "./my-mixins.ts"; /* "jkdj */
+    -st-named: paramlessMixin, paramfulMixin;
 }
 
-.gaga{
-    -st-extends:Comp;
-    -st-states:bover;
-    border: solid;
+:import {
+    -st-from: "./my-mixins.js";
+    -st-named: aMixin, aBareMixin;
 }
 
-:vars {
-    color1: rgba(0, 255, 51, 0.638);
+.myClass {
+    -st-mixin: aMixin('l',)
 }
-
-@custom-selector :--oryory div > Comp;
-
-@custom-selector :--ogiogi div > Comp;
-
-:--oryory div {
-    color: rgba(255, 0, 0, 0.5);
-}
-
 
