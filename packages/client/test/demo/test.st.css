@@ -1,14 +1,7 @@
 :import {
-    -st-from: "./my-mixins.ts"; /* "jkdj */
-    -st-named: paramlessMixin, paramfulMixin;
-}
-
-:import {
-    -st-from: "./my-mixins.js";
-    -st-named: aMixin, aBareMixin;
+    -st-from: "./my-js-mixins.js"; /* "jkdj */
+    -st-named: aMixin, paramfulMixin;
 }
 
 .myClass {
-    -st-mixin: paramfulMixin('45','ssss','lala','a'),
-}
-
+    -st-mixin: aMixin('45',)

@@ -24,7 +24,7 @@ export function activate(context: ExtensionContext) {
     }
 
     let clientOptions: LanguageClientOptions = {
-        documentSelector: [{ language: 'stylable' },{ language: 'typescript' },{ language: 'javascript' },],
+        documentSelector: [{ language: 'stylable' }, { language: 'typescript' }, { language: 'javascript' },],
         diagnosticCollectionName: 'stylable',
     }
 
@@ -69,12 +69,21 @@ export function activate(context: ExtensionContext) {
                 }
             }));
         })
-        .then(() => workspace.findFiles('**/*.st.css', ''))
+        .then(() => workspace.findFiles('**/*.st.css', ))
         .then((files) => Promise.all(files.map((file) => workspace.openTextDocument(file.fsPath))))
-        .then(() => client.onNotification(OpenDocNotification.type, (uri: string) => workspace.openTextDocument(uri)))
+        .then(() => client.onNotification(OpenDocNotification.type, (uri: string) => workspace.openTextDocument(uri).then((doc) => {
+            console.log(doc.fileName)
+            if (doc.fileName.endsWith('.js')) {
+                workspace.findFiles('**/' + path.basename(doc.fileName).slice(0, -3) + '.d.ts').then((uris) => {
+                    uris.forEach(u => {
+                        console.log('opening: ' + u);
+                        workspace.openTextDocument(u);
+                    })
+                })
+            }
+        })))
         .then(() => {
             return client
         })
-
 }
 

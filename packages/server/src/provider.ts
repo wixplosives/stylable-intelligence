@@ -417,7 +417,12 @@ export default class Provider {
 
         if (line.slice(0, pos.character).trim().startsWith(valueMapping.mixin)) {
             let value = line.slice(0, pos.character).trim().slice(valueMapping.mixin.length + 1).trim();
-            let mixin = value.match(/\s*\w*\(([\w'" ]+,?)*\)?,?/g)!.reverse()[0].trim();
+            let mixin: string = '';
+            if (value.match(/\s*\w*\(([\w'" ]+,?)*\)?,?/g)) {
+                mixin = value.match(/\s*\w*\(([\w'" ]+,?)*\)?,?/g)!.reverse()[0].trim();
+            } else {
+                return null;
+            }
             if (mixin.includes('(') && !mixin.includes(')')) {
                 mixin = mixin.slice(0, mixin.indexOf('('));
             } else { return null; }
@@ -427,7 +432,11 @@ export default class Provider {
             if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
                 return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
             } else if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.js')) {
-                return this.getSignatureForJsMixin(mixin, activeParam, documents.get('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from).getText());
+                if (documents.keys().indexOf('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts')!==-1 ) {
+                    return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts');
+                } else {
+                    return this.getSignatureForJsMixin(mixin, activeParam, documents.get('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from).getText());
+                }
             } else {
                 return null;
             }
@@ -548,6 +557,7 @@ export default class Provider {
         } else {
             descLines = formattedLines.slice(0, formattedLines.findIndex(l => l.startsWith('@')) + 1)
         }
+        if (descLines[0] && descLines[0].startsWith('@description')) { descLines[0] = descLines[0].slice(12).trim() }
 
         let parameters: ParameterInformation[] = params.map(p => ParameterInformation.create(p[1] + ': ' + p[0], p[2].trim()))
 
