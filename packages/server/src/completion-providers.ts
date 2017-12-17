@@ -415,6 +415,51 @@ export class CodeMixinCompletionProvider implements CompletionProvider {
     text: string[] = [''];
 }
 
+export class FormatterCompletionProvider implements CompletionProvider {
+    provide(options: ProviderOptions): Completion[] {
+        if (!options.isTopLevel && options.wholeLine.includes(':') && options.wholeLine.indexOf(':') < options.position.character
+            && !options.trimmedLine.startsWith(valueMapping.mixin + ':')
+            && options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js'))) {
+            let valueStart = options.wholeLine.indexOf(':') + 1;
+            let value = options.wholeLine.slice(valueStart);
+            let regs = value.trim().match(/((\w+)(\([\w"' ,]*\),))+/g);
+            let names: string[] = [];
+            if (regs) { names = regs.map(r => r.slice(0, r.indexOf('('))) }
+            if (value.indexOf(',') !== -1) {
+                names.push(value.slice(value.lastIndexOf(',') + 1).trim());
+            } else {
+                names.push(value.trim())
+            }
+
+            let lastName = /,\s*$/.test(options.wholeLine)
+                ? ''
+                : (names || []).reverse()[0] || '';
+
+            return Object.keys(options.meta.mappedSymbols)
+                .filter(ms => ((options.meta.mappedSymbols[ms]._kind === 'import'
+                    && ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts')
+                        || (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.js'))
+                )))
+                .filter(ms => ms.startsWith(lastName))
+                .filter(ms => !names || names.indexOf(ms) === -1)
+                .map(ms => {
+                    return codeMixinCompletion(
+                        ms,
+                        new ProviderRange(
+                            new ProviderPosition(options.position.line, options.position.character - lastName.length),
+                            options.position
+                        ),
+                        (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative
+                    )
+                });
+
+        } else {
+            return [];
+        }
+    }
+    text: string[] = [''];
+}
+
 export class NamedCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.isNamedValueLine && options.resolvedImport) {

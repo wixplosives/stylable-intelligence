@@ -92,6 +92,10 @@ export function codeMixinCompletion(symbolName: string, rng: ProviderRange, from
     return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName+"($0)"), rng, false, true)
 }
 
+export function formatterCompletion(symbolName: string, rng: ProviderRange, from: string) {
+    return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName+"($0)"), rng, false, true)
+}
+
 export function pseudoElementCompletion(elementName: string, from: string, rng: ProviderRange) {
     return new Completion('::' + elementName, 'from: ' + from, 'a', '::' + elementName, rng)
 }

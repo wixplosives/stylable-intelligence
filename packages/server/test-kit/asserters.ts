@@ -118,7 +118,9 @@ export function getDefinition(fileName: string): Thenable<ProviderLocation[]> {
 
 export function getSignatureHelp(fileName: string, prefix: string): SignatureHelp | null {
     const fullPath = path.join(__dirname, '/../test/cases/', fileName);
+    console.log("fullpath: ", fullPath)
     let src: string = fs.readFileSync(fullPath).toString();
+    console.log("source read")
     let pos = getCaretPosition(src);
     src = src.replace('|', prefix);
     pos.character += prefix.length;
@@ -207,6 +209,9 @@ export const cssMixinCompletion: (symbolName: string, rng: ProviderRange, from: 
 }
 export const codeMixinCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
     return new Completion(symbolName, 'from: ' + from + '\n', 'a', symbolName + "($0)", rng, false, true)
+}
+export const formatterCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
+    return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName+"($0)"), rng, false, true)
 }
 export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (stateName, rng, from = 'Local file') => {
     return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName, range: rng }

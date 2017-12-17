@@ -1,8 +1,8 @@
 :import {
-    -st-from: "./my-js-mixins.js"; /* "jkdj */
-    -st-named: aMixin, paramfulMixin;
+    -st-from: "./my-formatter.js";
+    -st-named: lighten;
 }
 
 .myClass {
-    -st-mixin: aMixin('45','baga,vegam,lala',)
+    color: lighten(red, 0.7)
 }

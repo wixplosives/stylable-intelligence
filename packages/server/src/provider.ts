@@ -21,6 +21,7 @@ import {
     ValueCompletionProvider,
     ValueDirectiveProvider,
     CodeMixinCompletionProvider,
+    FormatterCompletionProvider,
 } from './completion-providers';
 import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
@@ -44,6 +45,7 @@ export default class Provider {
         new ExtendCompletionProvider(),
         new CssMixinCompletionProvider(),
         new CodeMixinCompletionProvider(),
+        new FormatterCompletionProvider(),
         new NamedCompletionProvider(),
         new StateCompletionProvider(),
         new PseudoElementCompletionProvider(),
