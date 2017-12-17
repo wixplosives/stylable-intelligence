@@ -427,12 +427,16 @@ export default class Provider {
                 mixin = mixin.slice(0, mixin.indexOf('('));
             } else { return null; }
             let pv = line.slice(0, pos.character).trim().slice('-st-mixin'.length + 1).trim().slice(mixin.length).slice(1).trim();
+            // let activeParam = pv.match(/((,\s*)?('|")[\w,\-\(\){}; ]*(\2))|,/g)
+            //     ? pv.match(/('|")[\w,\-\(\){}; ]*(\1,\s*)?/g)!.length - 1
+            //     : 0;
             let activeParam = pv.indexOf(',') === -1 ? 0 : pv.match(/,/g)!.length;
+
 
             if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
                 return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
             } else if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.js')) {
-                if (documents.keys().indexOf('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts')!==-1 ) {
+                if (documents.keys().indexOf('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts') !== -1) {
                     return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts');
                 } else {
                     return this.getSignatureForJsMixin(mixin, activeParam, documents.get('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from).getText());

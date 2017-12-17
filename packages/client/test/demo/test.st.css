@@ -4,4 +4,5 @@
 }
 
 .myClass {
-    -st-mixin: aMixin('45',)
+    -st-mixin: aMixin('45','baga,vegam,lala',)
+}

@@ -1,7 +1,7 @@
 'use strict';
 import { setInterval } from 'timers';
 import * as path from 'path';
-import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, SignatureHelp, NotificationType } from 'vscode-languageserver';
+import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, SignatureHelp, NotificationType, RequestType, RequestType0 } from 'vscode-languageserver';
 import { createProvider, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
@@ -12,8 +12,13 @@ import { valueMapping } from 'stylable/dist/src/stylable-value-parsers';
 
 
 namespace OpenDocNotification {
-    export const type = new NotificationType<string, void>('stylable/openDocument');
+    export const type = new NotificationType<string, void>('stylable/openDocumentNotification');
 }
+
+// namespace OpenDocRequest {
+//     export const type = new RequestType<string, string, void, void>('stylable/openDocumentRequest');
+// }
+
 
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const documents: TextDocuments = new TextDocuments();

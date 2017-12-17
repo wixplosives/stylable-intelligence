@@ -9,7 +9,7 @@ import { DocumentColorRequest, DocumentColorParams, ColorPresentationRequest, Co
 
 
 namespace OpenDocNotification {
-    export const type = new NotificationType<string, void>('stylable/openDocument');
+    export const type = new NotificationType<string, void>('stylable/openDocumentNotification');
 }
 
 export function activate(context: ExtensionContext) {
