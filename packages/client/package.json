@@ -15,7 +15,7 @@
         "url": "https://github.com/wix/stylable-intelligence/issues"
     },
     "engines": {
-        "vscode": "1.18.x"
+        "vscode": "^1.18.0"
     },
     "categories": [
         "Languages",
