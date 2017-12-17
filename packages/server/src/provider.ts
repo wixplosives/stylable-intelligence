@@ -442,7 +442,7 @@ export default class Provider {
                     return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts');
                 } else {
                     console.log("From: ", (meta.mappedSymbols[mixin]! as ImportSymbol).import.from)
-                    return this.getSignatureForJsMixin(mixin, activeParam, documents.get('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from).getText());
+                    return this.getSignatureForJsMixin(mixin, activeParam, documents.get((meta.mappedSymbols[mixin]! as ImportSymbol).import.from).getText());
                 }
             } else {
                 return null;
