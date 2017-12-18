@@ -5,5 +5,5 @@
 
 
 .myClass {
-    -st-mixin:
+    -st-mixin: aMixin()
 }
