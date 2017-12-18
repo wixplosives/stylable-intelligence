@@ -10,6 +10,6 @@ export default function paramfulMixin(
     return "color: red";
 }
 
-export  function paramlessMixin(): styl.stColor {
+export  function paramlessMixin(): styl.stCssFrag {
     return "color: goldenrod"
 }

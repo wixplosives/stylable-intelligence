@@ -115,6 +115,7 @@ describe('Mixins', function () {
         const str2 = 'paramlessMixin';
         const str3 = 'aBareMixin';
         const str4 = 'aMixin';
+        const badStr = 'notARealMixin'
         const tsFrom = './my-mixins.ts';
         const jsFrom = './my-mixins.js';
         const createComp = (str: string, rng: ProviderRange, path: string) => asserters.codeMixinCompletion(str, rng, path);
@@ -147,6 +148,7 @@ describe('Mixins', function () {
                                 notExp.push(createComp(a[1 - j], rng, tsFrom))
                                 notExp.push(createComp(str0, rng, tsFrom))
                             }
+                            notExp.push(createComp(badStr, rng, tsFrom))
 
                             asserter.suggested(exp);
                             asserter.notSuggested(notExp);

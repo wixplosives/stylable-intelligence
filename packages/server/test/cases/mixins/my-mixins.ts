@@ -17,3 +17,7 @@ export function paramlessMixin(): styl.stCssFrag {
 export default function defaultMixin(pct: stPercent): styl.stCssFrag {
     return "max-width: " + pct + "%"
 }
+
+export function notARealMixin(): styl.stColor {
+    return "goldenrod"
+}

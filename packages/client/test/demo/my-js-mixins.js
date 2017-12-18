@@ -23,3 +23,15 @@ exports.aMixin = function (strParam, numParam, enumParam) {
 exports.aBareMixin = function () {
 
 }
+
+
+/**
+ * A mixin with wrong type
+ * @param {stString} strParam A string param
+ * @param {stNumber<0,200>} numParam A num param
+ * @param {'a'|'b'} enumParam An enum param
+ * @returns {stColor}
+ */
+exports.aFakeMixin = function (strParam, numParam, enumParam) {
+
+}
