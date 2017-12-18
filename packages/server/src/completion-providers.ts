@@ -22,6 +22,8 @@ import {
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
+import { extractTsSignature } from './provider';
+import { TypeReferenceNode, Identifier } from 'typescript';
 
 
 
@@ -392,12 +394,29 @@ export class CodeMixinCompletionProvider implements CompletionProvider {
                 : (names || []).reverse()[0] || '';
 
             return Object.keys(options.meta.mappedSymbols)
-                .filter(ms => ((options.meta.mappedSymbols[ms]._kind === 'import'
-                    && ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts')
-                        || (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.js'))
-                )))
+                .filter(ms => options.meta.mappedSymbols[ms]._kind === 'import')
                 .filter(ms => ms.startsWith(lastName))
                 .filter(ms => !names || names.indexOf(ms) === -1)
+                .filter(ms => {
+                    if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.js')) { return true; }
+                    if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts')) {
+                        let sig = extractTsSignature((options.meta.mappedSymbols[ms] as ImportSymbol).import.from, ms, (options.meta.mappedSymbols[ms] as ImportSymbol).type === 'default')
+                        if (!sig) { return false; }
+                        let rtype = sig.declaration.type
+                            ? ((sig.declaration.type as TypeReferenceNode).typeName as Identifier).getText()
+                            : "";
+                        // if (rtype === 'stCssFrag') { return true; }
+                        if ( /(\w+.)?stCssFrag/.test(rtype.trim())) { return true; }
+                        return false;
+                    }
+
+                    return (
+                        (
+                            (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts')
+
+                        )
+                        || (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.js'))
+                })
                 .map(ms => {
                     return codeMixinCompletion(
                         ms,
@@ -694,7 +713,7 @@ function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr
     }
 
     let existing = arr.reduce((acc: string[], cur) => {
-        if ((cur.symbol as any)[valueMapping.states]) {
+        if ((cur.symbol as ClassSymbol)[valueMapping.states]) {
             Object.keys((cur.symbol as any)[valueMapping.states]).forEach(s => acc.push(s))
         }
         return acc;

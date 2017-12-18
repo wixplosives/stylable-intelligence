@@ -1,9 +1,9 @@
 :import {
     -st-from: "./my-mixins.ts";
-    -st-default: frmt;
-    -st-named: paramfulMixin;
+    -st-named: paramlessMixin, paramfulMixin;
 }
 
+
 .myClass {
-    -st-mixin: paramfulMixin();
+    -st-mixin: paramfulMixin('25','aaa','a'),
 }

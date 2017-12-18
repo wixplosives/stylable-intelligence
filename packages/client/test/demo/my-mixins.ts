@@ -1,4 +1,4 @@
-import {stNumber, stString as lalaString} from 'stylable';
+import { stNumber, stString as lalaString} from 'stylable';
 import * as styl from 'stylable';
 
 export default function paramfulMixin(
@@ -10,6 +10,6 @@ export default function paramfulMixin(
     return "color: red";
 }
 
-export  function paramlessMixin(): styl.stCssFrag {
+export  function paramlessMixin(): styl.stColor {
     return "color: goldenrod"
 }

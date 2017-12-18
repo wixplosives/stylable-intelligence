@@ -459,32 +459,7 @@ export default class Provider {
     }
 
     getSignatureForTsMixin(mixin: string, activeParam: number, filePath: string, isDefault: boolean): SignatureHelp | null {
-        const compilerOptions: ts.CompilerOptions = {
-            "jsx": ts.JsxEmit.React,
-            "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
-            "module": ts.ModuleKind.CommonJS,
-            "target": ts.ScriptTarget.ES5,
-            "strict": false,
-            "importHelpers": false,
-            "noImplicitReturns": false,
-            "strictNullChecks": false,
-            "sourceMap": false,
-            "outDir": "dist",
-            "typeRoots": ["./node_modules/@types"]
-        };
-        let program = ts.createProgram([filePath], compilerOptions);
-        let tc = program.getTypeChecker();
-        let sf = program.getSourceFile(filePath);
-        let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function).find(f => {
-            if (isDefault) {
-                return (f as any).exportSymbol && (f as any).exportSymbol.escapedName === 'default'
-            } else {
-                return (f as any).exportSymbol && (f as any).exportSymbol.escapedName === mixin
-            }
-        });
-        if (!mix) {return null}
-        let sig = tc.getSignatureFromDeclaration(mix!.declarations![0] as SignatureDeclaration);
-
+        let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault)
         let ptypes = sig!.parameters.map(p => {
             return p.name + ":" + ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
         });
@@ -508,6 +483,8 @@ export default class Provider {
             signatures: [sigInfo]
         } as SignatureHelp
     }
+
+
 
 
     getSignatureForJsMixin(mixin: string, activeParam: number, fileSrc: string): SignatureHelp | null {
@@ -675,4 +652,32 @@ function fixAndProcess(src: string, position: ProviderPosition, filePath: string
 
 export class ProviderLocation {
     constructor(public uri: string, public range: ProviderRange) { }
+}
+
+export function extractTsSignature(filePath: string, mixin: string, isDefault: boolean): ts.Signature | undefined {
+    const compilerOptions: ts.CompilerOptions = {
+        "jsx": ts.JsxEmit.React,
+        "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
+        "module": ts.ModuleKind.CommonJS,
+        "target": ts.ScriptTarget.ES5,
+        "strict": false,
+        "importHelpers": false,
+        "noImplicitReturns": false,
+        "strictNullChecks": false,
+        "sourceMap": false,
+        "outDir": "dist",
+        "typeRoots": ["./node_modules/@types"]
+    };
+    let program = ts.createProgram([filePath], compilerOptions);
+    let tc = program.getTypeChecker();
+    let sf = program.getSourceFile(filePath);
+    let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function).find(f => {
+        if (isDefault) {
+            return (f as any).exportSymbol && (f as any).exportSymbol.escapedName === 'default'
+        } else {
+            return (f as any).exportSymbol && (f as any).exportSymbol.escapedName === mixin
+        }
+    });
+    if (!mix) {return undefined}
+    return tc.getSignatureFromDeclaration(mix!.declarations![0] as SignatureDeclaration);
 }
