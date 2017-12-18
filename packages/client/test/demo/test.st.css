@@ -1,8 +1,9 @@
 :import {
-    -st-from: "./my-formatter.js";
-    -st-named: lighten;
+    -st-from: "./my-formatter.ts";
+    -st-default: frmt;
+    -st-named: lighten,darken;
 }
 
 .myClass {
-    color: lighten(red, 0.7)
+    color: lighten()
 }

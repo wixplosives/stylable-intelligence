@@ -1,7 +1,7 @@
 'use strict';
 import { setInterval } from 'timers';
 import * as path from 'path';
-import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, SignatureHelp, NotificationType, RequestType, RequestType0 } from 'vscode-languageserver';
+import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, SignatureHelp, NotificationType, RequestType, RequestType0, Command } from 'vscode-languageserver';
 import { createProvider, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
@@ -72,17 +72,20 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
                 lspCompletion.sortText = com.sortText;
                 lspCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
                 if (com.additionalCompletions) {
-                    lspCompletion.command = {
-                        title: "additional",
-                        command: 'editor.action.triggerSuggest',
-                        arguments: []
-                    }
+                    lspCompletion.command = Command.create("additional", "editor.action.triggerSuggest")
+                    // {
+                    //     title: "additional",
+                    //     command: 'editor.action.triggerSuggest',
+                    //     arguments: []
+                    // }
                 } else if (com.triggerSignature) {
-                    lspCompletion.command = {
-                        title: "additional",
-                        command: 'editor.action.triggerParameterHints',
-                        arguments: []
-                    }
+                    lspCompletion.command = Command.create("additional", "editor.action.triggerParameterHints")
+
+                    // lspCompletion.command = {
+                    //     title: "additional",
+                    //     command: 'editor.action.triggerParameterHints',
+                    //     arguments: []
+                    // }
                 }
                 return lspCompletion;
             }).concat(cssCompsRaw ? cssCompsRaw.items : [])
