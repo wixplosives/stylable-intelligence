@@ -5,9 +5,8 @@ import {stNumber, stColor} from "stylable";
 /**
  * Lighten - lightens a color by a percentage.
 */
-export function lighten(amount: stNumber, color: stColor): stColor {
+export default function lighten(amount: stNumber, color: stColor): stColor {
     return polishedLighten(parseInt(amount,10), color);
 }
-
 
 

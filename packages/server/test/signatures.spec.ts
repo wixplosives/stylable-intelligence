@@ -18,12 +18,12 @@ describe('Signature Help', function () {
                     activeSignature: 0,
                     activeParameter: prefix.match(/,/g) ? prefix.match(/,/g)!.length : 0,
                     signatures: [SignatureInformation.create(
-                        "paramfulMixin(numParam: stNumber<0,200>, strParam: styl.stString, aliasedParam: lalaString, enumParam: 'a'|'b'):  styl.stCssFrag",
+                        "paramfulMixin(numParam: stNumber<0, 200>, strParam: styl.stString, aliasedParam: lalaString, enumParam: 'a' | 'b'):  styl.stCssFrag",
                         undefined,
-                        ParameterInformation.create("numParam: stNumber<0,200>"),
+                        ParameterInformation.create("numParam: stNumber<0, 200>"),
                         ParameterInformation.create("strParam: styl.stString"),
                         ParameterInformation.create("aliasedParam: lalaString"),
-                        ParameterInformation.create("enumParam: 'a'|'b'"),
+                        ParameterInformation.create("enumParam: 'a' | 'b'"),
                     )]
                 }
 
@@ -51,6 +51,32 @@ describe('Signature Help', function () {
             expect(sig).to.not.be.null;
             expect(sig).to.deep.equal(exp)
         }).timeout(5000);
+    });
+
+    describe('TS Paramful Mixin - Default Import', function () {
+        let str = "'25','lala','b'";
+
+        str.split('').forEach((c, i) => {
+            let prefix = str.slice(0, i);
+            it('Provides signature help and identifies active parameter, with prefix ' + prefix, function () {
+                let filePath = 'mixins/imported-mixins-default-paramful-signature.st.css'
+
+                let sig = getSignatureHelp(filePath, prefix)
+
+                let exp: SignatureHelp = {
+                    activeSignature: 0,
+                    activeParameter: prefix.match(/,/g) ? prefix.match(/,/g)!.length : 0,
+                    signatures: [SignatureInformation.create(
+                        "mixin(pct: stPercent):  styl.stCssFrag",
+                        undefined,
+                        ParameterInformation.create("pct: stPercent"),
+                    )]
+                }
+
+                expect(sig).to.not.be.null;
+                expect(sig).to.deep.equal(exp)
+            }).timeout(5000);
+        });
     });
 
     describe('JS Paramful Mixin', function () {

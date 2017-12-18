@@ -1,6 +1,5 @@
 :import {
     -st-from: "./my-mixins.ts";
-    -st-named: paramlessMixin, paramfulMixin;
     -st-default: mixin;
 }
 
@@ -10,5 +9,5 @@
 }
 
 .myClass {
-    -st-mixin: |
+    -st-mixin: mixin(|)
 }

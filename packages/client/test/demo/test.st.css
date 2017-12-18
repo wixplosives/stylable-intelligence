@@ -1,9 +1,9 @@
 :import {
-    -st-from: "./my-formatter.ts";
+    -st-from: "./my-mixins.ts";
     -st-default: frmt;
-    -st-named: lighten,darken;
+    -st-named: paramfulMixin;
 }
 
 .myClass {
-    color: lighten()
+    -st-mixin: paramfulMixin();
 }
