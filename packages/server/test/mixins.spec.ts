@@ -153,7 +153,7 @@ describe('Mixins', function () {
                             asserter.suggested(exp);
                             asserter.notSuggested(notExp);
                         });
-                    });
+                    }).timeout(5000);
 
                     it('should complete imported TS mixins after value, with prefix ' + prefix, function () {
                         let rng = createRange(11, 46, 11, 46 + i);
@@ -171,7 +171,7 @@ describe('Mixins', function () {
                             asserter.suggested(exp);
                             asserter.notSuggested(notExp);
                         });
-                    });
+                    }).timeout(5000);
 
                 });
             });
@@ -198,7 +198,7 @@ describe('Mixins', function () {
                             asserter.suggested(exp);
                             asserter.notSuggested(notExp);
                         });
-                    });
+                    }).timeout(5000);
 
                     it('should complete imported JS mixins after value, with prefix ' + prefix, function () {
                         let rng = createRange(11, 46, 11, 46 + i);
@@ -215,7 +215,7 @@ describe('Mixins', function () {
                             asserter.suggested(exp);
                             asserter.notSuggested(notExp);
                         });
-                    });
+                    }).timeout(5000);
 
                 });
             });
