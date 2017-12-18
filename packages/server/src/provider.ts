@@ -454,7 +454,7 @@ export default class Provider {
                 console.log((meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
                 console.log(path.posix.normalize((meta.mappedSymbols[mixin]! as ImportSymbol).import.from));
 
-                return this.getSignatureForJsMixin(mixin, activeParam, documents.get('file://'+ path.posix.normalize((meta.mappedSymbols[mixin]! as ImportSymbol).import.from)).getText());
+                return this.getSignatureForJsMixin(mixin, activeParam, documents.get('file://'+ path.posix.resolve((meta.mappedSymbols[mixin]! as ImportSymbol).import.from)).getText());
             }
         } else {
             return null;
