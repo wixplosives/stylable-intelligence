@@ -452,9 +452,15 @@ export default class Provider {
                 return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts', (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default');
             } else {
                 console.log((meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
-                console.log(path.posix.normalize((meta.mappedSymbols[mixin]! as ImportSymbol).import.from));
-
-                return this.getSignatureForJsMixin(mixin, activeParam, documents.get('file://'+ path.posix.resolve((meta.mappedSymbols[mixin]! as ImportSymbol).import.from)).getText());
+                return this.getSignatureForJsMixin(
+                    mixin,
+                    activeParam,
+                    documents.get(
+                        ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.startsWith('/')
+                            ? ''
+                            : 'file://')
+                        + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from
+                    ).getText());
             }
         } else {
             return null;
@@ -681,6 +687,6 @@ export function extractTsSignature(filePath: string, mixin: string, isDefault: b
             return (f as any).exportSymbol && (f as any).exportSymbol.escapedName === mixin
         }
     });
-    if (!mix) {return undefined}
+    if (!mix) { return undefined }
     return tc.getSignatureFromDeclaration(mix!.declarations![0] as SignatureDeclaration);
 }
