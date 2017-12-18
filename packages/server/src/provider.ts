@@ -457,8 +457,8 @@ export default class Provider {
                     activeParam,
                     documents.get(
                         ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.startsWith('/')
-                            ? ''
-                            : 'file://')
+                            ? 'file://'
+                            : '')
                         + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from
                     ).getText());
             }
