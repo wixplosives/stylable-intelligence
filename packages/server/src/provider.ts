@@ -452,6 +452,8 @@ export default class Provider {
                 return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts', (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default');
             } else {
                 console.log((meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
+                console.log(path.posix.normalize((meta.mappedSymbols[mixin]! as ImportSymbol).import.from));
+
                 return this.getSignatureForJsMixin(mixin, activeParam, documents.get('file://'+ path.posix.normalize((meta.mappedSymbols[mixin]! as ImportSymbol).import.from)).getText());
             }
         } else {
