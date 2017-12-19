@@ -52,10 +52,12 @@ export default class Provider {
         new ValueCompletionProvider(),
     ]
 
-    public provideCompletionItemsFromSrc(src: string, position: ProviderPosition, filePath: string, docs: MinimalDocs): Thenable<Completion[]> {
-        let res = fixAndProcess(src, position, filePath);
-        return this.provideCompletionItemsFromAst(src, res.currentLine, res.cursorLineIndex, position, res.processed.meta!, res.processed.fakes, );
+    public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, docs: MinimalDocs): Thenable<Completion[]> {
+        let res = fixAndProcess(src, pos, fileName);
+
+        return this.provideCompletionItemsFromAst(src, res.currentLine, res.cursorLineIndex, pos, res.processed.meta!, res.processed.fakes, docs);
     }
+
 
     public provideCompletionItemsFromAst(
         src: string,
@@ -64,10 +66,11 @@ export default class Provider {
         position: ProviderPosition,
         meta: StylableMeta,
         fakes: PostCss.Rule[],
+        docs: MinimalDocs,
     ): Thenable<Completion[]> {
         const completions: Completion[] = [];
         try {
-            let options = this.createProviderOptions(src, position, meta, fakes, currentLine, cursorLineIndex)
+            let options = this.createProviderOptions(src, position, meta, fakes, currentLine, cursorLineIndex, docs)
             this.providers.forEach(p => {
                 options.isLineStart = p.text.some((s: string) => s.indexOf(currentLine.trim()) === 0)
                 completions.push(...p.provide(options))
@@ -82,7 +85,8 @@ export default class Provider {
         meta: StylableMeta,
         fakes: PostCss.Rule[],
         currentLine: string,
-        cursorLineIndex: number): ProviderOptions {
+        cursorLineIndex: number,
+        docs: MinimalDocs): ProviderOptions {
 
         const path = pathFromPosition(meta.rawAst, { line: position.line + 1, character: position.character });
         const lastPart: PostCss.NodeBase = path[path.length - 1];
@@ -241,6 +245,7 @@ export default class Provider {
 
         return {
             meta: meta,
+            docs: docs,
             lastRule: lastRule,
             trimmedLine: trimmedLine,
             wholeLine: wholeLine,
@@ -687,4 +692,31 @@ export function extractTsSignature(filePath: string, mixin: string, isDefault: b
     });
     if (!mix) { return undefined }
     return tc.getSignatureFromDeclaration(mix!.declarations![0] as SignatureDeclaration);
+}
+
+export function extractJsModifierRetrunType(mixin: string, activeParam: number, fileSrc: string): string {
+
+    let lines = fileSrc.split('\n');
+    let mixinLine: number = lines.findIndex(l => l.trim().startsWith('exports.' + mixin));
+    let docStartLine: number = lines.slice(0, mixinLine).lastIndexOf(lines.slice(0, mixinLine).reverse().find(l => l.trim().startsWith('/**'))!)
+    let docLines = lines.slice(docStartLine, mixinLine)
+    let formattedLines: string[] = [];
+
+    docLines.forEach(l => {
+        if (l.trim().startsWith('*/')) { return }
+        if (l.trim().startsWith('/**') && !!l.trim().slice(3).trim()) { formattedLines.push(l.trim().slice(3).trim()) }
+        if (l.trim().startsWith('*')) { formattedLines.push(l.trim().slice(1).trim()) }
+    })
+
+    const returnStart: number = formattedLines.findIndex(l => l.startsWith('@returns'));
+    const returnEnd: number = formattedLines.slice(returnStart + 1).findIndex(l => l.startsWith('@')) === -1
+        ? formattedLines.length - 1
+        : formattedLines.slice(returnStart + 1).findIndex(l => l.startsWith('@')) + returnStart;
+
+    const returnLines = formattedLines.slice(returnStart, returnEnd + 1);
+    formattedLines.splice(returnStart, returnLines.length)
+    const returnType = /@returns *{(\w+)}/.exec(returnLines[0])
+        ? /@returns *{(\w+)}/.exec(returnLines[0])![1]
+        : '';
+        return returnType;
 }

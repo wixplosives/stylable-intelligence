@@ -10,7 +10,7 @@ import { createMeta, ProviderLocation } from '../src/provider';
 import { pathFromPosition } from '../src/utils/postcss-ast-utils'
 import { NodeBase } from 'postcss';
 import { Provider } from '../src/index';
-import { SignatureHelp } from 'vscode-languageserver/lib/main';
+import { SignatureHelp, TextDocumentPositionParams, TextDocumentIdentifier } from 'vscode-languageserver';
 
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
@@ -87,6 +87,7 @@ function completionsIntenal(provider: Provider, fileName: string, src: string, p
     let pos = getCaretPosition(src);
     src = src.replace('|', prefix);
     pos.character += prefix.length;
+
     return provider.provideCompletionItemsFromSrc(src, pos, fileName, minDocs)
 }
 

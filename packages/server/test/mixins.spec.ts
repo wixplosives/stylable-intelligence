@@ -117,7 +117,7 @@ describe('Mixins', function () {
         const str4 = 'aMixin';
         const badStr = 'notARealMixin'
         const tsFrom = './my-mixins.ts';
-        const jsFrom = './my-mixins.js';
+        const jsFrom = './js-mixins.js';
         const createComp = (str: string, rng: ProviderRange, path: string) => asserters.codeMixinCompletion(str, rng, path);
 
         describe('TS mixins', function () {

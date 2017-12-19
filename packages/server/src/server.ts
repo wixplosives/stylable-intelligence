@@ -15,11 +15,6 @@ namespace OpenDocNotification {
     export const type = new NotificationType<string, void>('stylable/openDocumentNotification');
 }
 
-// namespace OpenDocRequest {
-//     export const type = new RequestType<string, string, void, void>('stylable/openDocumentRequest');
-// }
-
-
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const documents: TextDocuments = new TextDocuments();
 
@@ -54,31 +49,56 @@ connection.listen();
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
     if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
-
     let cssCompsRaw = cssService.doComplete(documents.get(params.textDocument.uri), params.position, cssService.parseStylesheet(documents.get(params.textDocument.uri)))
 
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
-    return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, documents)
-        .then((res) => {
-            return res.map((com: Completion) => {
-                let lspCompletion = CompletionItem.create(com.label);
-                let ted: TextEdit = TextEdit.replace(
-                    com.range ? com.range : new ProviderRange(new ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos),
-                    typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
-                lspCompletion.insertTextFormat = InsertTextFormat.Snippet;
-                lspCompletion.detail = com.detail;
-                lspCompletion.textEdit = ted;
-                lspCompletion.sortText = com.sortText;
-                lspCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
-                if (com.additionalCompletions) {
-                    lspCompletion.command = Command.create("additional", "editor.action.triggerSuggest")
-                } else if (com.triggerSignature) {
-                    lspCompletion.command = Command.create("additional", "editor.action.triggerParameterHints")
-                }
-                return lspCompletion;
-            }).concat(cssCompsRaw ? cssCompsRaw.items : [])
-        });
+
+    let lines = doc.split('\n').map(l => l.trim());
+    let vals: string[] = [];
+    lines.forEach(l => {
+        if (l.startsWith(valueMapping.from)) {
+            let val = path.join(path.dirname(params.textDocument.uri.slice(7)), l.slice('-st-from'.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim());
+            if (!documents.get(val)) { vals.push(val) };
+            connection.sendNotification(OpenDocNotification.type, val);
+        }
+    })
+
+    function waitForVals() {
+        return new Promise(resolve => {
+            setInterval(
+                () => {
+                    if (vals.every(val => { return !!documents.get('file://' + val) })) { resolve() }
+                },
+                100
+            )
+        })
+    }
+
+    return waitForVals().then(() => {
+
+        return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, documents)
+            .then((res) => {
+                return res.map((com: Completion) => {
+                    let lspCompletion = CompletionItem.create(com.label);
+                    let ted: TextEdit = TextEdit.replace(
+                        com.range ? com.range : new ProviderRange(new ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos),
+                        typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
+                    lspCompletion.insertTextFormat = InsertTextFormat.Snippet;
+                    lspCompletion.detail = com.detail;
+                    lspCompletion.textEdit = ted;
+                    lspCompletion.sortText = com.sortText;
+                    lspCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
+                    if (com.additionalCompletions) {
+                        lspCompletion.command = Command.create("additional", "editor.action.triggerSuggest")
+                    } else if (com.triggerSignature) {
+                        lspCompletion.command = Command.create("additional", "editor.action.triggerParameterHints")
+                    }
+                    return lspCompletion;
+                }).concat(cssCompsRaw ? cssCompsRaw.items : [])
+            });
+    })
+
 });
 
 documents.onDidChangeContent(function (change) {

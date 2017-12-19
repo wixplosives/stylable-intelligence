@@ -22,13 +22,15 @@ import {
 import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
-import Provider, { extractTsSignature } from './provider';
+import Provider, { extractTsSignature, extractJsModifierRetrunType } from './provider';
 import { TypeReferenceNode, Identifier } from 'typescript';
+import { MinimalDocs } from '../dist/src/provider-factory';
 
 
 
 export interface ProviderOptions {
     meta: StylableMeta,
+    docs: MinimalDocs,
     lastRule: SRule | null,
     trimmedLine: string,
     wholeLine: string,
@@ -408,7 +410,10 @@ export class CodeMixinCompletionProvider implements CompletionProvider {
                         return false;
                     }
                     if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.js')) {
-                        return true;
+                        if (extractJsModifierRetrunType(ms, 0, options.docs.get('file://' + (options.meta.mappedSymbols[ms] as ImportSymbol).import.from).getText()) === 'stCssFrag')
+                        {
+                            return true;
+                        }
                     }
                     return false;
                 })
@@ -464,7 +469,10 @@ export class FormatterCompletionProvider implements CompletionProvider {
                         return true;
                     }
                     if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.js')) {
-                        return true;
+                        if (extractJsModifierRetrunType(ms, 0, options.docs.get('file://' + (options.meta.mappedSymbols[ms] as ImportSymbol).import.from).getText()) !== 'stCssFrag')
+                        {
+                            return true;
+                        }
                     }
                     return false;
                 })
