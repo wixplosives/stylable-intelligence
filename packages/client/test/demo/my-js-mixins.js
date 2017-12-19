@@ -32,6 +32,6 @@ exports.aBareMixin = function () {
  * @param {'a'|'b'} enumParam An enum param
  * @returns {stColor}
  */
-exports.aFakeMixin = function (strParam, numParam, enumParam) {
+exports.aFormatter = function (strParam, numParam, enumParam) {
 
 }

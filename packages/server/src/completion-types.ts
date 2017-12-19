@@ -1,7 +1,8 @@
 import { ProviderRange } from './completion-providers';
 import { valueMapping } from 'stylable'
 
-export class Completion {
+export class
+Completion {
     constructor(public label: string, public detail: string = "", public sortText: string = 'd', public insertText: string | snippet = label,
         public range: ProviderRange, public additionalCompletions: boolean = false, public triggerSignature: boolean = false) {
     }
@@ -85,15 +86,15 @@ export function namedCompletion(symbolName: string, rng: ProviderRange, from: st
 }
 
 export function cssMixinCompletion(symbolName: string, rng: ProviderRange, from: string) {
-    return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName), rng)
+    return new Completion(symbolName, 'from: ' + from, 'a', new snippet(symbolName), rng)
 }
 
 export function codeMixinCompletion(symbolName: string, rng: ProviderRange, from: string) {
-    return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName+"($0)"), rng, false, true)
+    return new Completion(symbolName, 'from: ' + from, 'a', new snippet(symbolName+"($0)"), rng, false, true)
 }
 
 export function formatterCompletion(symbolName: string, rng: ProviderRange, from: string) {
-    return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName+"($0)"), rng, false, true)
+    return new Completion(symbolName, 'from: ' + from, 'a', new snippet(symbolName+"($0)"), rng, false, true)
 }
 
 export function pseudoElementCompletion(elementName: string, from: string, rng: ProviderRange) {
