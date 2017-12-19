@@ -1,9 +1,9 @@
 :import {
-    -st-from: "./my-js-mixins.js";
-    -st-named: aMixin, aBareMixin, aFormatter;
+    -st-from: "./my-mixins.ts";
+    -st-named: paramfulMixin, paramlessMixin, aFormatter
 }
 
 
 .myClass {
-    -st-mixin: a
+    color: aFormatter()
 }

@@ -87,7 +87,7 @@ function completionsIntenal(provider: Provider, fileName: string, src: string, p
     let pos = getCaretPosition(src);
     src = src.replace('|', prefix);
     pos.character += prefix.length;
-    return provider.provideCompletionItemsFromSrc(src, pos, fileName)
+    return provider.provideCompletionItemsFromSrc(src, pos, fileName, minDocs)
 }
 
 export function getCaretPosition(src: string) {
@@ -206,13 +206,13 @@ export const namedCompletion: (typeName: string, rng: ProviderRange, from: strin
     return { label: typeName, sortText: 'a', insertText: typeName, detail: 'from: ' + from + '\n' + 'Value: ' + value, range: rng }
 }
 export const cssMixinCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
-    return new Completion(symbolName, 'from: ' + from + '\n', 'a', symbolName, rng)
+    return new Completion(symbolName, 'from: ' + from , 'a', symbolName, rng)
 }
 export const codeMixinCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
-    return new Completion(symbolName, 'from: ' + from + '\n', 'a', symbolName + "($0)", rng, false, true)
+    return new Completion(symbolName, 'from: ' + from , 'a', symbolName + "($0)", rng, false, true)
 }
 export const formatterCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
-    return new Completion(symbolName, 'from: ' + from + '\n', 'a', new snippet(symbolName + "($0)"), rng, false, true)
+    return new Completion(symbolName, 'from: ' + from , 'a', new snippet(symbolName + "($0)"), rng, false, true)
 }
 export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (stateName, rng, from = 'Local file') => {
     return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName, range: rng }

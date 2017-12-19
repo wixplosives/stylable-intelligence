@@ -52,7 +52,7 @@ export default class Provider {
         new ValueCompletionProvider(),
     ]
 
-    public provideCompletionItemsFromSrc(src: string, position: ProviderPosition, filePath: string, ): Thenable<Completion[]> {
+    public provideCompletionItemsFromSrc(src: string, position: ProviderPosition, filePath: string, docs: MinimalDocs): Thenable<Completion[]> {
         let res = fixAndProcess(src, position, filePath);
         return this.provideCompletionItemsFromAst(src, res.currentLine, res.cursorLineIndex, position, res.processed.meta!, res.processed.fakes, );
     }
@@ -446,13 +446,13 @@ export default class Provider {
 
 
         if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
-            return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default');
+            return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default');
         } else if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.js')) {
             if (documents.keys().indexOf('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts') !== -1) {
-                return this.getSignatureForTsMixin(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts', (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default');
+                return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts', (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default');
             } else {
                 console.log((meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
-                return this.getSignatureForJsMixin(
+                return this.getSignatureForJsModifier(
                     mixin,
                     activeParam,
                     documents.get(
@@ -467,7 +467,7 @@ export default class Provider {
         }
     }
 
-    getSignatureForTsMixin(mixin: string, activeParam: number, filePath: string, isDefault: boolean): SignatureHelp | null {
+    getSignatureForTsModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean): SignatureHelp | null {
         let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault)
         let ptypes = sig!.parameters.map(p => {
             return p.name + ":" + ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
@@ -496,7 +496,7 @@ export default class Provider {
 
 
 
-    getSignatureForJsMixin(mixin: string, activeParam: number, fileSrc: string): SignatureHelp | null {
+    getSignatureForJsModifier(mixin: string, activeParam: number, fileSrc: string): SignatureHelp | null {
 
         let lines = fileSrc.split('\n');
         let mixinLine: number = lines.findIndex(l => l.trim().startsWith('exports.' + mixin));
@@ -580,8 +580,6 @@ export default class Provider {
     }
 
 }
-
-
 
 
 function isIllegalLine(line: string): boolean {

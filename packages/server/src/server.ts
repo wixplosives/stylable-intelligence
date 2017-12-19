@@ -59,7 +59,7 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
 
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
-    return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
+    return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, documents)
         .then((res) => {
             return res.map((com: Completion) => {
                 let lspCompletion = CompletionItem.create(com.label);

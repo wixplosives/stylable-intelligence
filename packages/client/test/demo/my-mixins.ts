@@ -1,7 +1,7 @@
 import { stNumber, stString as lalaString} from 'stylable';
 import * as styl from 'stylable';
 
-export default function paramfulMixin(
+export function paramfulMixin(
     numParam: stNumber<0,200>,
     strParam: styl.stString,
     aliasedParam: lalaString,
@@ -12,4 +12,13 @@ export default function paramfulMixin(
 
 export  function paramlessMixin(): styl.stCssFrag {
     return "color: goldenrod"
+}
+
+export function aFormatter(
+    numParam: stNumber<0,200>,
+    strParam: styl.stString,
+    aliasedParam: lalaString,
+    enumParam: 'a'|'b'
+): styl.stColor    {
+    return "red";
 }
