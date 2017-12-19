@@ -24,7 +24,7 @@ import * as PostCss from 'postcss';
 import * as path from 'path';
 import Provider, { extractTsSignature, extractJsModifierRetrunType } from './provider';
 import { TypeReferenceNode, Identifier } from 'typescript';
-import { MinimalDocs } from '../dist/src/provider-factory';
+import { MinimalDocs } from './provider-factory';
 
 
 
