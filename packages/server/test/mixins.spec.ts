@@ -125,7 +125,7 @@ describe('Mixins', function () {
             [str0, str1, str2].forEach((str, j, a) => {
                 str.split('').forEach((c, i) => {
                     let prefix = str.slice(0, i);
-                    it('should complete imported TS mixins, with prefix ' + prefix, function () {
+                    it('should complete imported TS mixins, but not formatters, with prefix ' + prefix, function () {
                         let rng = createRange(12, 15, 12, 15 + i);
                         return asserters.getCompletions('mixins/imported-mixins.st.css', prefix).then((asserter) => {
                             let exp: Partial<Completion>[] = [];
