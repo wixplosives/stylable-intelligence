@@ -5,6 +5,6 @@
 
 
 .myClass {
-    -st-mixin: aMixin('l,(a',45,);
+    -st-mixin: aMixin('l,(a',45,) ;
 }
 

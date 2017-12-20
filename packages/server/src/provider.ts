@@ -1,7 +1,7 @@
 //must remain independent from vscode
 import { MinimalDocs } from './provider-factory';
 import * as PostCss from 'postcss';
-const psv = require('postcss-value-parser');
+const pvp = require('postcss-value-parser');
 import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping } from 'stylable';
 import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
 import {
@@ -422,33 +422,20 @@ export default class Provider {
 
         let split = src.split('\n');
         let line = split[pos.line];
-        let mixin: string = '';
         let value: string = '';
 
 
         if (line.slice(0, pos.character).trim().startsWith(valueMapping.mixin)) {
             value = line.slice(0, pos.character).trim().slice(valueMapping.mixin.length + 1).trim();
-            if (value.match(/\s*\w*\(([\w'" ]+,?)*\)?,?/g)) {
-                mixin = value.match(/\s*\w*\(([\w'" ]+,?)*\)?,?/g)!.reverse()[0].trim();
-            } else {
-                return null;
-            }
         } else if (line.slice(0, pos.character).trim().includes(':')) {
             value = line.slice(0, pos.character).trim().slice(line.slice(0, pos.character).trim().indexOf(':') + 1).trim();
-            if (value.match(/\s*\w*\(([\w'" ]+,?)*\)?,?/g)) {
-                mixin = value.match(/\s*\w*\(([\w'" ]+,?)*\)?,?/g)!.reverse()[0].trim();
-            } else {
-                return null;
-            }
         }
-        if (mixin.includes('(') && !mixin.includes(')')) {
-            mixin = mixin.slice(0, mixin.indexOf('('));
-        } else {
-            return null;
-        }
-        let pv = value.slice(mixin.length).slice(1).trim();
-        let activeParam = pv.indexOf(',') === -1 ? 0 : pv.match(/,/g)!.length;
-
+        let parsed = pvp(value);
+        let mixin = '';
+        if (parsed.nodes.reverse()[0].type === 'function' && !!parsed.nodes.reverse()[0].unclosed) {
+            mixin = parsed.nodes.reverse()[0].value;
+        } else { return null };
+        let activeParam = parsed.nodes.reverse()[0].nodes.reduce((acc:number,cur:any) => {return (cur.type === 'div' ? acc+1 : acc) },0);
 
         if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
             return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default');
