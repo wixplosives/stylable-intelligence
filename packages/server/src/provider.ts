@@ -432,8 +432,10 @@ export default class Provider {
         }
         let parsed = pvp(value);
         let mixin = '';
-        if (parsed.nodes.reverse()[0].type === 'function' && !!parsed.nodes.reverse()[0].unclosed) {
-            mixin = parsed.nodes.reverse()[0].value;
+
+        const rev = parsed.nodes.reverse()[0];
+        if (rev.type === 'function' && !!rev.unclosed) {
+            mixin = rev.value;
         } else { return null };
         let activeParam = parsed.nodes.reverse()[0].nodes.reduce((acc:number,cur:any) => {return (cur.type === 'div' ? acc+1 : acc) },0);
 

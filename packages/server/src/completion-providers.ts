@@ -25,6 +25,7 @@ import * as path from 'path';
 import Provider, { extractTsSignature, extractJsModifierRetrunType } from './provider';
 import { TypeReferenceNode, Identifier } from 'typescript';
 import { MinimalDocs } from './provider-factory';
+const pvp = require('postcss-value-parser');
 
 
 
@@ -381,24 +382,19 @@ export class CodeMixinCompletionProvider implements CompletionProvider {
 
 
             let valueStart = options.wholeLine.indexOf(':') + 1;
-            let value = options.wholeLine.slice(valueStart);
-            let regs = value.trim().match(/((\w+)(\([\w"' ,]*\),))+/g);
-            let names: string[] = [];
-            if (regs) { names = regs.map(r => r.slice(0, r.indexOf('('))) }
-            if (value.indexOf(',') !== -1) {
-                names.push(value.slice(value.lastIndexOf(',') + 1).trim());
-            } else {
-                names.push(value.trim())
-            }
+            let value = options.wholeLine.slice(valueStart, options.position.character);
 
-            let lastName = /,\s*$/.test(options.wholeLine)
-                ? ''
-                : (names || []).reverse()[0] || '';
+            let parsed = pvp(value.trim());
+
+            let names: string[] = parsed.nodes.filter((n: any) => n.type === 'function').map((n: any) => n.value);
+            const rev = parsed.nodes.reverse();
+
+            let lastName: string = (parsed.nodes.length > 0 && rev[0].type === 'word') ? rev[0].value : '';
 
             return Object.keys(options.meta.mappedSymbols)
                 .filter(ms => options.meta.mappedSymbols[ms]._kind === 'import')
                 .filter(ms => ms.startsWith(lastName))
-                .filter(ms => !names || names.indexOf(ms) === -1)
+                .filter(ms => names.length===0 || names.indexOf(ms) === -1)
                 .filter(ms => {
                     if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts')) {
                         let sig = extractTsSignature((options.meta.mappedSymbols[ms] as ImportSymbol).import.from, ms, (options.meta.mappedSymbols[ms] as ImportSymbol).type === 'default')
@@ -410,8 +406,7 @@ export class CodeMixinCompletionProvider implements CompletionProvider {
                         return false;
                     }
                     if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.js')) {
-                        if (extractJsModifierRetrunType(ms, 0, options.docs.get('file://' + (options.meta.mappedSymbols[ms] as ImportSymbol).import.from).getText()) === 'stCssFrag')
-                        {
+                        if (extractJsModifierRetrunType(ms, 0, options.docs.get('file://' + (options.meta.mappedSymbols[ms] as ImportSymbol).import.from).getText()) === 'stCssFrag') {
                             return true;
                         }
                     }
@@ -441,18 +436,26 @@ export class FormatterCompletionProvider implements CompletionProvider {
             && options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js'))) {
             let valueStart = options.wholeLine.indexOf(':') + 1;
             let value = options.wholeLine.slice(valueStart);
-            let regs = value.trim().match(/((\w+)(\([\w"' ,]*\),))+/g);
-            let names: string[] = [];
-            if (regs) { names = regs.map(r => r.slice(0, r.indexOf('('))) }
-            if (value.indexOf(',') !== -1) {
-                names.push(value.slice(value.lastIndexOf(',') + 1).trim());
-            } else {
-                names.push(value.trim())
-            }
 
-            let lastName = /,\s*$/.test(options.wholeLine)
-                ? ''
-                : (names || []).reverse()[0] || '';
+            let parsed = pvp(value.trim());
+
+            let names: string[] = parsed.nodes.filter((n: any) => n.type === 'function').map((n: any) => n.value);
+            const rev = parsed.nodes.reverse();
+
+            let lastName: string = (parsed.nodes.length > 0 && rev[0].type === 'word') ? rev[0].value : '';
+
+            // let regs = value.trim().match(/((\w+)(\([\w"' ,]*\),))+/g);
+            // let names: string[] = [];
+            // if (regs) { names = regs.map(r => r.slice(0, r.indexOf('('))) }
+            // if (value.indexOf(',') !== -1) {
+            //     names.push(value.slice(value.lastIndexOf(',') + 1).trim());
+            // } else {
+            //     names.push(value.trim())
+            // }
+
+            // let lastName = /,\s*$/.test(options.wholeLine)
+            //     ? ''
+            //     : (names || []).reverse()[0] || '';
 
             return Object.keys(options.meta.mappedSymbols)
                 .filter(ms => (options.meta.mappedSymbols[ms]._kind === 'import'))
@@ -469,8 +472,7 @@ export class FormatterCompletionProvider implements CompletionProvider {
                         return true;
                     }
                     if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.js')) {
-                        if (extractJsModifierRetrunType(ms, 0, options.docs.get('file://' + (options.meta.mappedSymbols[ms] as ImportSymbol).import.from).getText()) !== 'stCssFrag')
-                        {
+                        if (extractJsModifierRetrunType(ms, 0, options.docs.get('file://' + (options.meta.mappedSymbols[ms] as ImportSymbol).import.from).getText()) !== 'stCssFrag') {
                             return true;
                         }
                     }

@@ -24,14 +24,13 @@ exports.aBareMixin = function () {
 
 }
 
-
 /**
- * A mixin with wrong type
- * @param {stString} strParam A string param
- * @param {stNumber<0,200>} numParam A num param
- * @param {'a'|'b'} enumParam An enum param
- * @returns {stColor}
+ * @description A mixin with no params
+ * @summary noParamMixin
+ * baga bgaa
+ * @returns {stColor} lalala
  */
-exports.aFormatter = function (strParam, numParam, enumParam) {
+
+exports.aFormatter = function () {
 
 }
