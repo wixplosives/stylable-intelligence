@@ -6,7 +6,7 @@
 
 :import {
     -st-from: "./js-mixins.js";
-    -st-named: aMixin, aBareMixin;
+    -st-named: aMixin, aBareMixin, aFormatter;
 }
 
 .myClass {

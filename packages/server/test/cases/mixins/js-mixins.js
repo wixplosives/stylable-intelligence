@@ -23,3 +23,14 @@ exports.aMixin = function (strParam, numParam, enumParam) {
 exports.aBareMixin = function () {
 
 }
+
+/**
+ * @description A mixin with no params
+ * @summary noParamMixin
+ * baga bgaa
+ * @returns {stColor} lalala
+ */
+
+exports.aFormatter = function () {
+
+}

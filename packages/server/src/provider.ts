@@ -1,6 +1,7 @@
 //must remain independent from vscode
 import { MinimalDocs } from './provider-factory';
 import * as PostCss from 'postcss';
+const psv = require('postcss-value-parser');
 import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping } from 'stylable';
 import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
 import {
@@ -421,10 +422,9 @@ export default class Provider {
 
         let split = src.split('\n');
         let line = split[pos.line];
-
-
         let mixin: string = '';
         let value: string = '';
+
 
         if (line.slice(0, pos.character).trim().startsWith(valueMapping.mixin)) {
             value = line.slice(0, pos.character).trim().slice(valueMapping.mixin.length + 1).trim();
@@ -718,5 +718,6 @@ export function extractJsModifierRetrunType(mixin: string, activeParam: number, 
     const returnType = /@returns *{(\w+)}/.exec(returnLines[0])
         ? /@returns *{(\w+)}/.exec(returnLines[0])![1]
         : '';
-        return returnType;
+    return returnType;
 }
+

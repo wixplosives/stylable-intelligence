@@ -116,6 +116,7 @@ describe('Mixins', function () {
         const str3 = 'aBareMixin';
         const str4 = 'aMixin';
         const badStr = 'notARealMixin'
+        const badJsStr = 'aFormatter'
         const tsFrom = './my-mixins.ts';
         const jsFrom = './js-mixins.js';
         const createComp = (str: string, rng: ProviderRange, path: string) => asserters.codeMixinCompletion(str, rng, path);
@@ -182,7 +183,7 @@ describe('Mixins', function () {
             [str3, str4].forEach((str, j, a) => {
                 str.split('').forEach((c, i) => {
                     let prefix = str.slice(0, i);
-                    it('should complete imported JS mixins, with prefix ' + prefix, function () {
+                    it('should complete imported JS mixins, but not formatters, with prefix ' + prefix, function () {
                         let rng = createRange(12, 15, 12, 15 + i);
                         return asserters.getCompletions('mixins/imported-mixins.st.css', prefix).then((asserter) => {
                             let exp: Partial<Completion>[] = [];
@@ -194,6 +195,7 @@ describe('Mixins', function () {
                                 exp.push(createComp(str, rng, jsFrom));
                                 notExp.push(createComp(a[1 - j], rng, jsFrom))
                             }
+                            notExp.push(createComp(badJsStr, rng, tsFrom))
 
                             asserter.suggested(exp);
                             asserter.notSuggested(notExp);
