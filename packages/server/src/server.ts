@@ -68,7 +68,7 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
         return new Promise(resolve => {
             setInterval(
                 () => {
-                    if (vals.every(val => { return !!documents.get('file://' + val) })) { resolve() }
+                    if (vals.every(val => { return !!documents.get('file://' + val.replace('%3A',':')) })) { resolve() }
                 },
                 100
             )
@@ -179,7 +179,7 @@ connection.onSignatureHelp((params): Thenable<SignatureHelp> => {
         return new Promise(resolve => {
             setInterval(
                 () => {
-                    if (vals.every(val => { return !!documents.get('file://' + val) })) { resolve() }
+                    if (vals.every(val => { return !!documents.get('file://' + val.replace('%3A',':')) })) { resolve() }
                 },
                 100
             )
