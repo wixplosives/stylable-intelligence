@@ -60,7 +60,7 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
         if (l.startsWith(valueMapping.from)) {
             let val = path.join(path.dirname(params.textDocument.uri.slice(7)), l.slice('-st-from'.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim());
             if (!documents.get(val)) { vals.push(val) };
-            connection.sendNotification(OpenDocNotification.type, val);
+            connection.sendNotification(OpenDocNotification.type, val.replace('%3A',':'));
         }
     })
 
@@ -171,7 +171,7 @@ connection.onSignatureHelp((params): Thenable<SignatureHelp> => {
         if (l.startsWith(valueMapping.from)) {
             let val = path.join(path.dirname(params.textDocument.uri.slice(7)), l.slice('-st-from'.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim());
             if (!documents.get(val)) { vals.push(val) };
-            connection.sendNotification(OpenDocNotification.type, val);
+            connection.sendNotification(OpenDocNotification.type, val.replace('%3A',':'));
         }
     })
 
