@@ -47,37 +47,43 @@ connection.onInitialize((params): InitializeResult => {
 
 connection.listen();
 
+
+const isWindows = process.platform === 'win32';
+const fileUriToNativePath = (uri: string) => isWindows ? uri.slice(8).replace('%3A', ':') : uri.slice(7);
+const nativePathToFileUri = (path: string): string => 'file://' + (isWindows ? `/${path.replace(/\\/g, '/').replace(':', '%3A')}` : path)
+
+function getRequestedFiles(doc: string, origin: string): string[] {
+    const originNativePath = fileUriToNativePath(origin)
+    const originDir = path.dirname(originNativePath);
+
+    return doc
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l.startsWith(valueMapping.from))
+        .map(l => path.join(originDir, l.slice('-st-from'.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim()))
+        .map(nativePathToFileUri);
+}
+
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
-    if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
+    if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) {return Promise.resolve([])}
     let cssCompsRaw = cssService.doComplete(documents.get(params.textDocument.uri), params.position, cssService.parseStylesheet(documents.get(params.textDocument.uri)))
 
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
 
-    let lines = doc.split('\n').map(l => l.trim());
-    let vals: string[] = [];
-    lines.forEach(l => {
-        if (l.startsWith(valueMapping.from)) {
-            let val = path.join(path.dirname(params.textDocument.uri.slice(7)), l.slice('-st-from'.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim());
-            if (!documents.get(val)) { vals.push(val) };
-            connection.sendNotification(OpenDocNotification.type, val);
-        }
-    })
+    const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
+    requestedFiles.forEach(file => connection.sendNotification(OpenDocNotification.type, file));
 
-    function waitForVals() {
-        return new Promise(resolve => {
-            setInterval(
-                () => {
-                    if (vals.every(val => { return !!documents.get('file://' + val) })) { resolve() }
-                },
-                100
-            )
-        })
-    }
+    return new Promise((resolve) => {
+        const interval = setInterval(() => {
+            if (requestedFiles.every(file => !!documents.get(file))) {
+                clearInterval(interval);
+                resolve()
+            }
+        }, 100);
+    }).then(() => {
 
-    return waitForVals().then(() => {
-
-        return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, documents)
+        return provider.provideCompletionItemsFromSrc(doc, {line: pos.line, character: pos.character}, params.textDocument.uri, documents)
             .then((res) => {
                 return res.map((com: Completion) => {
                     let lspCompletion = CompletionItem.create(com.label);
@@ -100,6 +106,59 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
     })
 
 });
+// connection.onCompletion((params): Thenable<CompletionItem[]> => {
+//     if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
+//     let cssCompsRaw = cssService.doComplete(documents.get(params.textDocument.uri), params.position, cssService.parseStylesheet(documents.get(params.textDocument.uri)))
+
+//     const doc = documents.get(params.textDocument.uri).getText();
+//     const pos = params.position;
+
+//     let lines = doc.split('\n').map(l => l.trim());
+//     let vals: string[] = [];
+//     lines.forEach(l => {
+//         if (l.startsWith(valueMapping.from)) {
+//             let val = path.join(path.dirname(params.textDocument.uri.slice(7)), l.slice('-st-from'.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim());
+//             if (!documents.get(val)) { vals.push(val) };
+//             connection.sendNotification(OpenDocNotification.type, val);
+//         }
+//     })
+
+//     function waitForVals() {
+//         return new Promise(resolve => {
+//             setInterval(
+//                 () => {
+//                     if (vals.every(val => { return !!documents.get('file://' + val) })) { resolve() }
+//                 },
+//                 100
+//             )
+//         })
+//     }
+
+//     return waitForVals().then(() => {
+
+//         return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, documents)
+//             .then((res) => {
+//                 return res.map((com: Completion) => {
+//                     let lspCompletion = CompletionItem.create(com.label);
+//                     let ted: TextEdit = TextEdit.replace(
+//                         com.range ? com.range : new ProviderRange(new ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos),
+//                         typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
+//                     lspCompletion.insertTextFormat = InsertTextFormat.Snippet;
+//                     lspCompletion.detail = com.detail;
+//                     lspCompletion.textEdit = ted;
+//                     lspCompletion.sortText = com.sortText;
+//                     lspCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
+//                     if (com.additionalCompletions) {
+//                         lspCompletion.command = Command.create("additional", "editor.action.triggerSuggest")
+//                     } else if (com.triggerSignature) {
+//                         lspCompletion.command = Command.create("additional", "editor.action.triggerParameterHints")
+//                     }
+//                     return lspCompletion;
+//                 }).concat(cssCompsRaw ? cssCompsRaw.items : [])
+//             });
+//     })
+
+// });
 
 documents.onDidChangeContent(function (change) {
 
