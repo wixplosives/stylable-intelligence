@@ -37,7 +37,7 @@ function testCompletion(fileToTest: string, testCases: [vscode.Position, string[
 suite("Extension Tests", () => {
 
     test("simple completion", function () {
-        this.timeout(30000)
+        this.timeout(300000)
         const testCases: [vscode.Position, string[]][] = [
             [new vscode.Position(0, 0), [':import', '.root', ':vars', '.gaga', '@namespace']]
         ];
@@ -45,7 +45,7 @@ suite("Extension Tests", () => {
     });
 
     test("advanced completion", function () {
-        this.timeout(30000)
+        this.timeout(300000)
         const testCases: [vscode.Position, string[]][] = [
             [new vscode.Position(10, 6), [':shmover', ':bover']]
         ];
