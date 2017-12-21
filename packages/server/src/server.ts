@@ -1,15 +1,15 @@
 'use strict';
-import {setInterval} from 'timers';
+import { setInterval } from 'timers';
 import * as path from 'path';
-import {CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, SignatureHelp, NotificationType, RequestType, RequestType0, Command} from 'vscode-languageserver';
-import {createProvider, } from './provider-factory';
-import {ProviderPosition, ProviderRange} from './completion-providers';
-import {Completion} from './completion-types';
-import {createDiagnosis} from './diagnosis';
+import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, SignatureHelp, NotificationType, RequestType, RequestType0, Command } from 'vscode-languageserver';
+import { createProvider, } from './provider-factory';
+import { ProviderPosition, ProviderRange } from './completion-providers';
+import { Completion } from './completion-types';
+import { createDiagnosis } from './diagnosis';
 import * as VCL from 'vscode-css-languageservice';
-import {ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest} from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
-import {valueMapping} from 'stylable/dist/src/stylable-value-parsers';
-import {fileUriToNativePath, nativePathToFileUri} from './utils/uri-utils';
+import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
+import { valueMapping } from 'stylable/dist/src/stylable-value-parsers';
+import { fileUriToNativePath, nativePathToFileUri } from './utils/uri-utils';
 
 
 namespace OpenDocNotification {
@@ -62,7 +62,7 @@ function getRequestedFiles(doc: string, origin: string): string[] {
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
     // debugger;
-    if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) {return Promise.resolve([])}
+    if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
     let cssCompsRaw = cssService.doComplete(documents.get(params.textDocument.uri), params.position, cssService.parseStylesheet(documents.get(params.textDocument.uri)))
 
     const doc = documents.get(params.textDocument.uri).getText();
@@ -80,7 +80,7 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
         }, 100);
     }).then(() => {
 
-        return provider.provideCompletionItemsFromSrc(doc, {line: pos.line, character: pos.character}, params.textDocument.uri, documents)
+        return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, documents)
             .then((res) => {
                 return res.map((com: Completion) => {
                     let lspCompletion = CompletionItem.create(com.label);
@@ -104,15 +104,15 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
 
 });
 
-documents.onDidChangeContent(function(change) {
+documents.onDidChangeContent(function (change) {
 
     let cssDiags =
         change.document.uri.endsWith('.css')
             ? cssService.doValidation(change.document, cssService.parseStylesheet(change.document))
                 .filter(diag => {
-                    if (diag.code === 'emptyRules') {return false;}
-                    if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') {return false;}
-                    if (diag.code === 'css-lcurlyexpected' && readDocRange(change.document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) {return false;}
+                    if (diag.code === 'emptyRules') { return false; }
+                    if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') { return false; }
+                    if (diag.code === 'css-lcurlyexpected' && readDocRange(change.document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) { return false; }
                     if (diag.code === 'unknownProperties') {
                         return false;
                     }
@@ -124,15 +124,15 @@ documents.onDidChangeContent(function(change) {
                 })
             : [];
 
-    let diagnostics = createDiagnosis(change.document, processor).map(diag => {diag.source = 'stylable'; return diag;});
-    connection.sendDiagnostics({uri: change.document.uri, diagnostics: diagnostics.concat(cssDiags)})
+    let diagnostics = createDiagnosis(change.document, processor).map(diag => { diag.source = 'stylable'; return diag; });
+    connection.sendDiagnostics({ uri: change.document.uri, diagnostics: diagnostics.concat(cssDiags) })
 });
 
 
 connection.onDefinition((params): Thenable<Definition> => {
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
-    return provider.getDefinitionLocation(doc, {line: pos.line, character: pos.character}, params.textDocument.uri)
+    return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
         .then((res) => {
             return res.map(loc => Location.create('file://' + loc.uri, loc.range))
         });
@@ -167,31 +167,42 @@ connection.onRequest(ColorPresentationRequest.type, params => {
 
 connection.onSignatureHelp((params): Thenable<SignatureHelp> => {
 
-    const src: string = documents.get(params.textDocument.uri).getText();
-    let lines = src.split('\n').map(l => l.trim());
-    let vals: string[] = [];
-    lines.forEach(l => {
-        if (l.startsWith(valueMapping.from)) {
-            let val = path.join(path.dirname(params.textDocument.uri.slice(7)), l.slice('-st-from'.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim());
-            if (!documents.get(val)) {vals.push(val)};
-            connection.sendNotification(OpenDocNotification.type, val);
-        }
-    })
+    const doc: string = documents.get(params.textDocument.uri).getText();
+    // let lines = doc.split('\n').map(l => l.trim());
+    // let vals: string[] = [];
+    // lines.forEach(l => {
+    //     if (l.startsWith(valueMapping.from)) {
+    //         let val = path.join(path.dirname(params.textDocument.uri.slice(7)), l.slice('-st-from'.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim());
+    //         if (!documents.get(val)) {vals.push(val)};
+    //         connection.sendNotification(OpenDocNotification.type, val);
+    //     }
+    // })
 
-    function waitForVals() {
-        return new Promise(resolve => {
-            setInterval(
-                () => {
-                    if (vals.every(val => {return !!documents.get('file://' + val)})) {resolve()}
-                },
-                100
-            )
-        })
-    }
+    // function waitForVals() {
+    //     return new Promise(resolve => {
+    //         setInterval(
+    //             () => {
+    //                 if (vals.every(val => {return !!documents.get('file://' + val)})) {resolve()}
+    //             },
+    //             100
+    //         )
+    //     })
+    // }
 
-    return waitForVals().then(() => {
-        // console.log('why?!')
-        let sig = provider.getSignatureHelp(src, params.position, params.textDocument.uri, documents);
+    // return waitForVals().then(() => {
+    // console.log('why?!')
+    const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
+    requestedFiles.forEach(file => connection.sendNotification(OpenDocNotification.type, file));
+
+    return new Promise((resolve) => {
+        const interval = setInterval(() => {
+            if (requestedFiles.every(file => !!documents.get(file))) {
+                clearInterval(interval);
+                resolve()
+            }
+        }, 100);
+    }).then(() => {
+        let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, documents);
         return Promise.resolve(sig!)
     })
 })
