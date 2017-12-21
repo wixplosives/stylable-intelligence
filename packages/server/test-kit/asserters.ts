@@ -11,7 +11,7 @@ import { pathFromPosition } from '../src/utils/postcss-ast-utils'
 import { NodeBase } from 'postcss';
 import { Provider } from '../src/index';
 import { SignatureHelp, TextDocumentPositionParams, TextDocumentIdentifier } from 'vscode-languageserver';
-
+import { fileUriToNativePath } from '../src/utils/uri-utils';
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {
@@ -131,11 +131,8 @@ const minDocs: MinimalDocs = {
     get(uri: string): TextDocument {
         if (!uri.startsWith('file://')) {
             return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri).toString());
-        } else if (process.platform === 'win32') {
-            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(8)).toString());
-        }
-        else {
-            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri.slice(7)).toString());
+        } else {
+            return TextDocument.create(uri, 'css', 1, fs.readFileSync(fileUriToNativePath(uri)).toString());
         }
     },
     keys(): string[] {
@@ -207,13 +204,13 @@ export const namedCompletion: (typeName: string, rng: ProviderRange, from: strin
     return { label: typeName, sortText: 'a', insertText: typeName, detail: 'from: ' + from + '\n' + 'Value: ' + value, range: rng }
 }
 export const cssMixinCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
-    return new Completion(symbolName, 'from: ' + from , 'a', symbolName, rng)
+    return new Completion(symbolName, 'from: ' + from, 'a', symbolName, rng)
 }
 export const codeMixinCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
-    return new Completion(symbolName, 'from: ' + from , 'a', symbolName + "($0)", rng, false, true)
+    return new Completion(symbolName, 'from: ' + from, 'a', symbolName + "($0)", rng, false, true)
 }
 export const formatterCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
-    return new Completion(symbolName, 'from: ' + from , 'a', new snippet(symbolName + "($0)"), rng, false, true)
+    return new Completion(symbolName, 'from: ' + from, 'a', new snippet(symbolName + "($0)"), rng, false, true)
 }
 export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (stateName, rng, from = 'Local file') => {
     return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName, range: rng }
