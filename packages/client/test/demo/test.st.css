@@ -1,13 +1,15 @@
-:import {
-    -st-from: "./my-mixins.ts";
-    -st-named: paramlessMixin, paramfulMixin;
+.local {
+    color: red;
 }
 
-:import {
-    -st-from: "./my-js-mixins.js";
-    -st-named: aMixin, aBareMixin;
+:vars {
+    one: fuchsia;
+    two: goldenrod;
 }
 
-.myClass {
-    -st-mixin: paramfulMixin('25','aaa','a'), aBareMixin()
+.gaga {
+    color: value(one);
 }
+
+
+

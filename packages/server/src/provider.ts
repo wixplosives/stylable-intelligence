@@ -347,17 +347,21 @@ export default class Provider {
         let res = fixAndProcess(src, position, filePath);
         let meta = res.processed.meta;
         if (!meta) return Promise.resolve([]);
-        let start = Math.max(
-            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(' '),
-            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(':'),
-            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(';'),
-            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf(','),
-            res.currentLine.slice(0, res.cursorLineIndex).lastIndexOf('('),
-            0
-        )
+        const parsed: any[] = pvp(res.currentLine).nodes;
 
-        let end = res.currentLine.slice(res.cursorLineIndex).search(/[:, ;)]|$/);
-        let word = res.currentLine.slice(start === 0 ? start : start + 1, res.cursorLineIndex + end);
+        function findNode(nodes: any[], index: number): any {
+            return nodes
+                .filter(n => n.sourceIndex <= index)
+                .reduce((m, n) => { return (m.sourceIndex > n.sourceIndex) ? m : n })
+        }
+
+        let val = findNode(parsed, position.character);
+        while (val.nodes) {
+            val = findNode(val.nodes, position.character)
+        }
+
+        let word = val.value;
+
         let defs: ProviderLocation[] = [];
 
         if (Object.keys(meta.mappedSymbols).find(sym => sym === word.replace('.', ''))) {
@@ -437,7 +441,7 @@ export default class Provider {
         if (rev.type === 'function' && !!rev.unclosed) {
             mixin = rev.value;
         } else { return null };
-        let activeParam = parsed.nodes.reverse()[0].nodes.reduce((acc:number,cur:any) => {return (cur.type === 'div' ? acc+1 : acc) },0);
+        let activeParam = parsed.nodes.reverse()[0].nodes.reduce((acc: number, cur: any) => { return (cur.type === 'div' ? acc + 1 : acc) }, 0);
 
         if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
             return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default');
@@ -486,9 +490,6 @@ export default class Provider {
             signatures: [sigInfo]
         } as SignatureHelp
     }
-
-
-
 
     getSignatureForJsModifier(mixin: string, activeParam: number, fileSrc: string): SignatureHelp | null {
 

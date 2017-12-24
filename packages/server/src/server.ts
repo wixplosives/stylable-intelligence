@@ -61,7 +61,6 @@ function getRequestedFiles(doc: string, origin: string): string[] {
 }
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
-    // debugger;
     if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
     let cssCompsRaw = cssService.doComplete(documents.get(params.textDocument.uri), params.position, cssService.parseStylesheet(documents.get(params.textDocument.uri)))
 
@@ -128,13 +127,12 @@ documents.onDidChangeContent(function (change) {
     connection.sendDiagnostics({ uri: change.document.uri, diagnostics: diagnostics.concat(cssDiags) })
 });
 
-
 connection.onDefinition((params): Thenable<Definition> => {
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
     return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
         .then((res) => {
-            return res.map(loc => Location.create('file://' + loc.uri, loc.range))
+            return res.map(loc => Location.create(nativePathToFileUri(loc.uri), loc.range))
         });
 });
 
@@ -168,29 +166,7 @@ connection.onRequest(ColorPresentationRequest.type, params => {
 connection.onSignatureHelp((params): Thenable<SignatureHelp> => {
 
     const doc: string = documents.get(params.textDocument.uri).getText();
-    // let lines = doc.split('\n').map(l => l.trim());
-    // let vals: string[] = [];
-    // lines.forEach(l => {
-    //     if (l.startsWith(valueMapping.from)) {
-    //         let val = path.join(path.dirname(params.textDocument.uri.slice(7)), l.slice('-st-from'.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim());
-    //         if (!documents.get(val)) {vals.push(val)};
-    //         connection.sendNotification(OpenDocNotification.type, val);
-    //     }
-    // })
 
-    // function waitForVals() {
-    //     return new Promise(resolve => {
-    //         setInterval(
-    //             () => {
-    //                 if (vals.every(val => {return !!documents.get('file://' + val)})) {resolve()}
-    //             },
-    //             100
-    //         )
-    //     })
-    // }
-
-    // return waitForVals().then(() => {
-    // console.log('why?!')
     const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
     requestedFiles.forEach(file => connection.sendNotification(OpenDocNotification.type, file));
 
