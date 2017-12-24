@@ -375,127 +375,6 @@ export class CssMixinCompletionProvider implements CompletionProvider {
     text: string[] = [''];
 }
 
-// export class CodeMixinCompletionProvider implements CompletionProvider {
-//     provide(options: ProviderOptions): Completion[] {
-//         if (options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) && options.trimmedLine.startsWith(valueMapping.mixin + ':')) {
-//             if (options.wholeLine.lastIndexOf('(') > options.wholeLine.lastIndexOf(')')) { return [] }
-
-
-//             let valueStart = options.wholeLine.indexOf(':') + 1;
-//             let value = options.wholeLine.slice(valueStart, options.position.character);
-
-//             let parsed = pvp(value.trim());
-
-//             let names: string[] = parsed.nodes.filter((n: any) => n.type === 'function').map((n: any) => n.value);
-//             const rev = parsed.nodes.reverse();
-
-//             let lastName: string = (parsed.nodes.length > 0 && rev[0].type === 'word') ? rev[0].value : '';
-
-//             return Object.keys(options.meta.mappedSymbols)
-//                 .filter(ms => options.meta.mappedSymbols[ms]._kind === 'import')
-//                 .filter(ms => ms.startsWith(lastName))
-//                 .filter(ms => names.length===0 || names.indexOf(ms) === -1)
-//                 .filter(ms => {
-//                     if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts')) {
-//                         let sig = extractTsSignature((options.meta.mappedSymbols[ms] as ImportSymbol).import.from, ms, (options.meta.mappedSymbols[ms] as ImportSymbol).type === 'default')
-//                         if (!sig) { return false; }
-//                         let rtype = sig.declaration.type
-//                             ? ((sig.declaration.type as TypeReferenceNode).typeName as Identifier).getText()
-//                             : "";
-//                         if (/(\w+.)?stCssFrag/.test(rtype.trim())) { return true; }
-//                         return false;
-//                     }
-//                     if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.js')) {
-//                         if (extractJsModifierRetrunType(ms, 0, options.docs.get('file://' + (options.meta.mappedSymbols[ms] as ImportSymbol).import.from).getText()) === 'stCssFrag') {
-//                             return true;
-//                         }
-//                     }
-//                     return false;
-//                 })
-//                 .map(ms => {
-//                     return codeMixinCompletion(
-//                         ms,
-//                         new ProviderRange(
-//                             new ProviderPosition(options.position.line, options.position.character - lastName.length),
-//                             options.position
-//                         ),
-//                         (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative
-//                     )
-//                 });
-//         } else {
-//             return [];
-//         }
-//     }
-//     text: string[] = [''];
-// }
-
-// export class FormatterCompletionProvider implements CompletionProvider {
-//     provide(options: ProviderOptions): Completion[] {
-//         if (!options.isTopLevel && options.wholeLine.includes(':') && options.wholeLine.indexOf(':') < options.position.character
-//             && !options.trimmedLine.startsWith(valueMapping.mixin + ':')
-//             && options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js'))) {
-//             let valueStart = options.wholeLine.indexOf(':') + 1;
-//             let value = options.wholeLine.slice(valueStart);
-
-//             let parsed = pvp(value.trim());
-
-//             let names: string[] = parsed.nodes.filter((n: any) => n.type === 'function').map((n: any) => n.value);
-//             const rev = parsed.nodes.reverse();
-
-//             let lastName: string = (parsed.nodes.length > 0 && rev[0].type === 'word') ? rev[0].value : '';
-
-//             // let regs = value.trim().match(/((\w+)(\([\w"' ,]*\),))+/g);
-//             // let names: string[] = [];
-//             // if (regs) { names = regs.map(r => r.slice(0, r.indexOf('('))) }
-//             // if (value.indexOf(',') !== -1) {
-//             //     names.push(value.slice(value.lastIndexOf(',') + 1).trim());
-//             // } else {
-//             //     names.push(value.trim())
-//             // }
-
-//             // let lastName = /,\s*$/.test(options.wholeLine)
-//             //     ? ''
-//             //     : (names || []).reverse()[0] || '';
-
-//             return Object.keys(options.meta.mappedSymbols)
-//                 .filter(ms => (options.meta.mappedSymbols[ms]._kind === 'import'))
-//                 .filter(ms => ms.startsWith(lastName))
-//                 .filter(ms => !names || names.indexOf(ms) === -1)
-//                 .filter(ms => {
-//                     if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts')) {
-//                         let sig = extractTsSignature((options.meta.mappedSymbols[ms] as ImportSymbol).import.from, ms, (options.meta.mappedSymbols[ms] as ImportSymbol).type === 'default')
-//                         if (!sig) { return false; }
-//                         let rtype = sig.declaration.type
-//                             ? ((sig.declaration.type as TypeReferenceNode).typeName as Identifier).getText()
-//                             : "";
-//                         if (/(\w+.)?stCssFrag/.test(rtype.trim())) { return false; }
-//                         return true;
-//                     }
-//                     if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.js')) {
-//                         if (extractJsModifierRetrunType(ms, 0, options.docs.get('file://' + (options.meta.mappedSymbols[ms] as ImportSymbol).import.from).getText()) !== 'stCssFrag') {
-//                             return true;
-//                         }
-//                     }
-//                     return false;
-//                 })
-//                 .map(ms => {
-//                     return codeMixinCompletion(
-//                         ms,
-//                         new ProviderRange(
-//                             new ProviderPosition(options.position.line, options.position.character - lastName.length),
-//                             options.position
-//                         ),
-//                         (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative
-//                     )
-//                 });
-
-//         } else {
-//             return [];
-//         }
-//     }
-//     text: string[] = [''];
-// }
-
 export class CodeMixinCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) && options.trimmedLine.startsWith(valueMapping.mixin + ':')) {
@@ -553,7 +432,7 @@ export class CodeMixinCompletionProvider implements CompletionProvider {
 export class FormatterCompletionProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
         if (!options.isTopLevel && options.wholeLine.includes(':') && options.wholeLine.indexOf(':') < options.position.character
-            && !options.trimmedLine.startsWith(valueMapping.mixin + ':')
+            && !options.trimmedLine.startsWith(valueMapping.mixin + ':') && !options.isNamedValueLine
             && options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js'))) {
             let valueStart = options.wholeLine.indexOf(':') + 1;
             let value = options.wholeLine.slice(valueStart);
@@ -565,17 +444,6 @@ export class FormatterCompletionProvider implements CompletionProvider {
 
             let lastName: string = (parsed.nodes.length > 0 && rev[0].type === 'word') ? rev[0].value : '';
 
-            // let regs = value.trim().match(/((\w+)(\([\w"' ,]*\),))+/g);
-            // let names: string[] = [];
-            // if (regs) { names = regs.map(r => r.slice(0, r.indexOf('('))) }
-            // if (value.indexOf(',') !== -1) {
-            //     names.push(value.slice(value.lastIndexOf(',') + 1).trim());
-            // } else {
-            //     names.push(value.trim())
-            // }
-            // let lastName = /,\s*$/.test(options.wholeLine)
-            //     ? ''
-            //     : (names || []).reverse()[0] || '';
             return Object.keys(options.meta.mappedSymbols)
                 .filter(ms => (options.meta.mappedSymbols[ms]._kind === 'import'))
                 .filter(ms => ms.startsWith(lastName))

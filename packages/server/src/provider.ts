@@ -381,17 +381,12 @@ export default class Provider {
                     break;
                 }
                 case 'import': {
-                    const file: string = path.join(path.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
+                    const filePath: string = path.join(path.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
 
                     defs.push(
                         new ProviderLocation(
-                            file,
-                            this.findWord(word, docs.get(nativePathToFileUri(file)).getText(), position)
-
-                            // new ProviderRange(
-                            //     new ProviderPosition(0, 0),
-                            //     new ProviderPosition(0, 0),
-                            // )
+                            filePath,
+                            this.findWord(word, docs.get(nativePathToFileUri(filePath)).getText(), position)
                         )
                     );
                     break;

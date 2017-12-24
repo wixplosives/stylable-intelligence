@@ -11,9 +11,9 @@
 
 :import {
     -st-from: "./import.st.css";
-    -st-named: kaka;
+    -st-named:
 }
 
 .myClass {
-    -st-mixin: aBareMixin()
+    -st-mixin: aMixin()
 }
