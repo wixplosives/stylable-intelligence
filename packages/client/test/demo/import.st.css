@@ -5,3 +5,8 @@
 .lala {
     color: goldenrod;
 }
+
+:vars {
+    nana: foo;
+    kaka: moo;
+}

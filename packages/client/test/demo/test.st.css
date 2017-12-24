@@ -1,15 +1,19 @@
-.local {
-    color: red;
+:import {
+    -st-from: "./my-mixins.ts";
+    -st-named: paramlessMixin, paramfulMixin, notARealMixin;
+    -st-default: mixin;
 }
 
-:vars {
-    one: fuchsia;
-    two: goldenrod;
+:import {
+    -st-from: "./my-js-mixins.js";
+    -st-named: aMixin, aBareMixin, aFormatter;
 }
 
-.gaga {
-    color: value(one);
+:import {
+    -st-from: "./import.st.css";
+    -st-named: kaka;
 }
 
-
-
+.myClass {
+    -st-mixin: aBareMixin()
+}

@@ -130,10 +130,22 @@ documents.onDidChangeContent(function (change) {
 connection.onDefinition((params): Thenable<Definition> => {
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
-    return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, params.textDocument.uri)
-        .then((res) => {
-            return res.map(loc => Location.create(nativePathToFileUri(loc.uri), loc.range))
-        });
+    const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
+    requestedFiles.forEach(file => connection.sendNotification(OpenDocNotification.type, file));
+
+    return new Promise((resolve) => {
+        const interval = setInterval(() => {
+            if (requestedFiles.every(file => !!documents.get(file))) {
+                clearInterval(interval);
+                resolve()
+            }
+        }, 100);
+    }).then(() => {
+        return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, documents)
+            .then((res) => {
+                return res.map(loc => Location.create(nativePathToFileUri(loc.uri), loc.range))
+            });
+    });
 });
 
 connection.onHover((params): Thenable<Hover> => {

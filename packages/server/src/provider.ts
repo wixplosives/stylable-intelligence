@@ -31,6 +31,7 @@ import * as path from 'path';
 import { Position, TextDocumentPositionParams, SignatureHelp, SignatureInformation, ParameterInformation, TextDocuments } from 'vscode-languageserver';
 import * as ts from 'typescript';
 import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName, Identifier, LiteralTypeNode } from 'typescript';
+import { nativePathToFileUri } from './utils/uri-utils';
 
 
 export default class Provider {
@@ -343,7 +344,7 @@ export default class Provider {
         return res;
     }
 
-    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string): Thenable<ProviderLocation[]> {
+    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string, docs: MinimalDocs): Thenable<ProviderLocation[]> {
         let res = fixAndProcess(src, position, filePath);
         let meta = res.processed.meta;
         if (!meta) return Promise.resolve([]);
@@ -356,7 +357,7 @@ export default class Provider {
         }
 
         let val = findNode(parsed, position.character);
-        while (val.nodes) {
+        while (val.nodes && val.nodes.length > 0) {
             val = findNode(val.nodes, position.character)
         }
 
@@ -380,15 +381,17 @@ export default class Provider {
                     break;
                 }
                 case 'import': {
+                    const file: string = path.join(path.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
+
                     defs.push(
                         new ProviderLocation(
-                            path.join(
-                                path.dirname(meta.source),
-                                (symb as ImportSymbol).import.fromRelative),
-                            new ProviderRange(
-                                new ProviderPosition(0, 0),
-                                new ProviderPosition(0, 0),
-                            )
+                            file,
+                            this.findWord(word, docs.get(nativePathToFileUri(file)).getText(), position)
+
+                            // new ProviderRange(
+                            //     new ProviderPosition(0, 0),
+                            //     new ProviderPosition(0, 0),
+                            // )
                         )
                     );
                     break;

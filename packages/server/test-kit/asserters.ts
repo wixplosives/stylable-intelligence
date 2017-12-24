@@ -112,14 +112,13 @@ export function getDefinition(fileName: string): Thenable<ProviderLocation[]> {
     let src: string = fs.readFileSync(fullPath).toString();
     let pos = getCaretPosition(src);
     src = src.replace('|', "");
-    return provider.getDefinitionLocation(src, pos, fullPath).then((res) => {
+    return provider.getDefinitionLocation(src, pos, fullPath, minDocs).then((res) => {
         return res;
     })
 }
 
 export function getSignatureHelp(fileName: string, prefix: string): SignatureHelp | null {
     const fullPath = path.join(__dirname, '/../test/cases/', fileName);
-    // console.log("fullpath: ", fullPath)
     let src: string = fs.readFileSync(fullPath).toString();
     let pos = getCaretPosition(src);
     src = src.replace('|', prefix);
