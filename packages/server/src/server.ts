@@ -10,6 +10,7 @@ import * as VCL from 'vscode-css-languageservice';
 import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
 import { valueMapping } from 'stylable/dist/src/stylable-value-parsers';
 import { fileUriToNativePath, nativePathToFileUri } from './utils/uri-utils';
+import { createMeta } from './provider';
 
 
 namespace OpenDocNotification {
@@ -56,7 +57,7 @@ function getRequestedFiles(doc: string, origin: string): string[] {
         .split('\n')
         .map(l => l.trim())
         .filter(l => l.startsWith(valueMapping.from))
-        .map(l => path.join(originDir, l.slice('-st-from'.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim()))
+        .map(l => path.join(originDir, l.slice(valueMapping.from.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim()))
         .map(nativePathToFileUri);
 }
 
@@ -113,7 +114,12 @@ documents.onDidChangeContent(function (change) {
                     if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') { return false; }
                     if (diag.code === 'css-lcurlyexpected' && readDocRange(change.document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) { return false; }
                     if (diag.code === 'unknownProperties') {
-                        return false;
+                        let prop = diag.message.match(/'(.*)'/)![1]
+                        let src = documents.get(change.document.uri).getText();
+                        let meta = createMeta(src, change.document.uri).meta;
+                        if (meta && Object.keys(meta.mappedSymbols).some(ms => ms === prop)) {
+                            return false;
+                        }
                     }
                     return true;
                 })

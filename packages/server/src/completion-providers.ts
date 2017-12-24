@@ -26,7 +26,7 @@ import Provider, { extractTsSignature, extractJsModifierRetrunType } from './pro
 import { TypeReferenceNode, Identifier } from 'typescript';
 import { MinimalDocs } from './provider-factory';
 const pvp = require('postcss-value-parser');
-import {nativePathToFileUri} from './utils/uri-utils';
+import { nativePathToFileUri } from './utils/uri-utils';
 
 
 export interface ProviderOptions {
@@ -214,18 +214,28 @@ export class TopLevelDirectiveProvider implements CompletionProvider {
 
 export class ValueDirectiveProvider implements CompletionProvider {
     provide(options: ProviderOptions): Completion[] {
+        pvp;
         if (!options.isTopLevel && !options.isDirective && !this.isInsideValueDirective(options.wholeLine, options.position.character)
-            && options.wholeLine.indexOf(':') !== -1 && this.text.some(t => {
-                return t.startsWith(options.wholeLine.slice(options.wholeLine.indexOf(':') + 1).trim()) || t.startsWith(options.wholeLine.slice(options.wholeLine.lastIndexOf(',') + 1).trim())
-            })) {
-            return [valueDirective(new ProviderRange(
-                new ProviderPosition(
-                    options.position.line,
-                    options.wholeLine.includes(',')
-                        ? options.wholeLine.lastIndexOf(',') + 1
-                        : options.wholeLine.indexOf(':') + 1),
-                options.position
-            ))]
+            && options.wholeLine.indexOf(':') !== -1)
+        {
+            const parsed = pvp(options.wholeLine.slice(options.wholeLine.indexOf(':') + 1)).nodes;
+            const node = parsed[parsed.length - 1];
+            if (
+                node.type === 'div' || node.type === 'space'
+                || node.type === 'function' && !node.unclosed
+                || node.type === 'word' && this.text.some(t => t.startsWith(node.value))
+            ) {
+                return [valueDirective(new ProviderRange(
+                    new ProviderPosition(
+                        options.position.line,
+                        options.wholeLine.includes(',')
+                            ? options.wholeLine.lastIndexOf(',') + 1
+                            : options.wholeLine.indexOf(':') + 1),
+                    options.position
+                ))]
+            } else {
+                return [];
+            }
         } else {
             return [];
         }
@@ -394,7 +404,7 @@ export class CodeMixinCompletionProvider implements CompletionProvider {
             return Object.keys(options.meta.mappedSymbols)
                 .filter(ms => options.meta.mappedSymbols[ms]._kind === 'import')
                 .filter(ms => ms.startsWith(lastName))
-                .filter(ms => names.length===0 || names.indexOf(ms) === -1)
+                .filter(ms => names.length === 0 || names.indexOf(ms) === -1)
                 .filter(ms => {
                     if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts')) {
                         let sig = extractTsSignature((options.meta.mappedSymbols[ms] as ImportSymbol).import.from, ms, (options.meta.mappedSymbols[ms] as ImportSymbol).type === 'default')
