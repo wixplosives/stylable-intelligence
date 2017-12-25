@@ -10,3 +10,9 @@
     nana: foo;
     kaka: moo;
 }
+
+@custom-selector :--lala div div;
+
+root:hover :--lala, root:shmover {
+
+}
