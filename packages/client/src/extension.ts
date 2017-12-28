@@ -82,8 +82,6 @@ export function activate(context: ExtensionContext) {
                 })
             }
         })))
-        .then(() => {
-            return client
-        })
+        .then(() => client)
 }
 

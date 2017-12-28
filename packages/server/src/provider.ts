@@ -2,8 +2,9 @@
 import { MinimalDocs } from './provider-factory';
 import * as PostCss from 'postcss';
 const pvp = require('postcss-value-parser');
+const psp = require('postcss-selector-parser');
 import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping } from 'stylable';
-import { isSelector, pathFromPosition } from './utils/postcss-ast-utils';
+import { isSelector, pathFromPosition, isDeclaration } from './utils/postcss-ast-utils';
 import {
     createRange,
     ExtendCompletionProvider,
@@ -23,6 +24,7 @@ import {
     ValueDirectiveProvider,
     CodeMixinCompletionProvider,
     FormatterCompletionProvider,
+    CompletionProvider
 } from './completion-providers';
 import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
@@ -38,20 +40,20 @@ export default class Provider {
     constructor(public styl: Stylable) { }
 
     public providers = [
-        new RulesetInternalDirectivesProvider(),
-        new ImportInternalDirectivesProvider(),
-        new TopLevelDirectiveProvider(),
-        new ValueDirectiveProvider(),
-        new GlobalCompletionProvider(),
-        new SelectorCompletionProvider(),
-        new ExtendCompletionProvider(),
-        new CssMixinCompletionProvider(),
-        new CodeMixinCompletionProvider(),
-        new FormatterCompletionProvider(),
-        new NamedCompletionProvider(),
-        new StateCompletionProvider(),
-        new PseudoElementCompletionProvider(),
-        new ValueCompletionProvider(),
+        RulesetInternalDirectivesProvider,
+        ImportInternalDirectivesProvider,
+        TopLevelDirectiveProvider,
+        ValueDirectiveProvider,
+        GlobalCompletionProvider,
+        SelectorCompletionProvider,
+        ExtendCompletionProvider,
+        CssMixinCompletionProvider,
+        CodeMixinCompletionProvider,
+        FormatterCompletionProvider,
+        NamedCompletionProvider,
+        StateCompletionProvider,
+        PseudoElementCompletionProvider,
+        ValueCompletionProvider,
     ]
 
     public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, docs: MinimalDocs): Thenable<Completion[]> {
@@ -85,45 +87,44 @@ export default class Provider {
         src: string,
         position: ProviderPosition,
         meta: StylableMeta,
-        fakes: PostCss.Rule[],
-        currentLine: string,
+        fakeRules: PostCss.Rule[],
+        originalLine: string,
         cursorLineIndex: number,
         docs: MinimalDocs): ProviderOptions {
 
         const path = pathFromPosition(meta.rawAst, { line: position.line + 1, character: position.character });
         const lastPart: PostCss.NodeBase = path[path.length - 1];
         const prevPart: PostCss.NodeBase = path[path.length - 2];
-        const isMediaQuery = path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media');
-        function isDirective(line: string) { return Object.keys(valueMapping).some(k => line.indexOf((valueMapping as any)[k]) !== -1) };
-        function isNamedDirective(line: string) { return line.indexOf(valueMapping.named) !== -1 };
 
 
-        const lastRule: SRule | null = prevPart && isSelector(prevPart) && fakes.findIndex((f) => { return f.selector === prevPart.selector }) === -1
+        const lastSelectorPart: SRule | null = prevPart && isSelector(prevPart) && fakeRules.findIndex((f) => { return f.selector === prevPart.selector }) === -1
             ? <SRule>prevPart
-            : lastPart && isSelector(lastPart) && fakes.findIndex((f) => { return f.selector === lastPart.selector }) === -1
+            : lastPart && isSelector(lastPart) && fakeRules.findIndex((f) => { return f.selector === lastPart.selector }) === -1
                 ? <SRule>lastPart
-                : null
+                : null;
 
-        const wholeLine = currentLine;
-        while (currentLine.lastIndexOf(' ') > cursorLineIndex) {
-            currentLine = currentLine.slice(0, currentLine.lastIndexOf(' '))
+
+        let fixedLine = originalLine;
+        let fixedCharIndex = cursorLineIndex;
+        while (fixedLine.lastIndexOf(' ') > cursorLineIndex) {
+            fixedLine = fixedLine.slice(0, fixedLine.lastIndexOf(' '))
         }
-        if (currentLine.lastIndexOf(' ') === cursorLineIndex) { currentLine = currentLine.slice(0, currentLine.lastIndexOf(' ')) }
-
-        if (!isDirective(currentLine) && currentLine.lastIndexOf(' ') > -1 && currentLine.lastIndexOf(' ') < cursorLineIndex) {
-            cursorLineIndex -= (currentLine.lastIndexOf(' ') + 1);
-            currentLine = currentLine.slice(currentLine.lastIndexOf(' '));
+        if (fixedLine.lastIndexOf(' ') === cursorLineIndex) {
+            fixedLine = fixedLine.slice(0, fixedLine.lastIndexOf(' '))
         }
 
-        let trimmedLine = currentLine.trim();
-        let postDirectiveSpaces = (Object.keys(valueMapping).some(k => { return trimmedLine.startsWith((valueMapping as any)[k]) })) ? currentLine.match((/:(\s*)\w?/))![1].length : 0
-        let postValueSpaces = (Object.keys(valueMapping).some(k => { return trimmedLine.startsWith((valueMapping as any)[k]) && trimmedLine.indexOf(',') !== -1 }))
-            ? (currentLine.replace(/^\s*/, '').match(/\s+/) || [''])[0].length
-            : 0
-        let ps = parseSelector(trimmedLine, cursorLineIndex);
+        if (!isDirective(fixedLine) && fixedLine.lastIndexOf(' ') > -1 && fixedLine.lastIndexOf(' ') < cursorLineIndex) {
+            fixedCharIndex -= (fixedLine.lastIndexOf(' ') + 1);
+            fixedLine = fixedLine.slice(fixedLine.lastIndexOf(' '));
+        }
 
-        let chunkStrings: string[] = ps.selector.map(s => s.text).reduce((acc, arr) => { return acc.concat(arr) }, []);
-        let remain = cursorLineIndex;
+        let trimmedLine = fixedLine.trim();
+        let remain = fixedCharIndex; // ?
+
+        // if(lastSelectorPart) {
+        let ps = parseSelector(trimmedLine, fixedCharIndex);
+        let chunkStrings: string[] = ps.selector.reduce((acc, s) => { return acc.concat(s.text) }, ([] as string[]));
+
         let pos = chunkStrings.findIndex(str => {
             if (str.length >= remain) {
                 return true;
@@ -132,6 +133,7 @@ export default class Provider {
                 return false;
             }
         })
+        // }
 
         let rev = chunkStrings.slice().reverse();
         pos -= Math.max(rev.findIndex(s => !/^:+/.test(s) || (/^:--/.test(s))), 0)
@@ -190,8 +192,8 @@ export default class Provider {
             : customSelectorType
                 ? this.recursiveResolve(resolved, customSelectorType, ps, customSelectorString.slice(3), finalPseudo ? finalPseudo.curMeta : [])
                 : [];
-        let isImport = !!lastRule && (lastRule.selector === ':import');
-        let fromNode: Declaration | undefined = isImport ? (lastRule!.nodes as Declaration[]).find(n => n.prop === valueMapping.from) : undefined;
+        let isImport = !!lastSelectorPart && (lastSelectorPart.selector === ':import');
+        let fromNode: Declaration | undefined = isImport ? (lastSelectorPart!.nodes as Declaration[]).find(n => n.prop === valueMapping.from) : undefined;
         let importName = (isImport && fromNode) ? fromNode.value.replace(/'/g, '').replace(/"/g, '') : '';
         let resolvedImport: StylableMeta | null = null;
         if (importName && importName.endsWith('.st.css')) try {
@@ -224,8 +226,8 @@ export default class Provider {
 
         let isInValue: boolean = false;
 
-        if (/value\(/.test(wholeLine)) {
-            let line = wholeLine.slice(0, position.character);
+        if (/value\(/.test(originalLine)) {
+            let line = originalLine.slice(0, position.character);
             let stack = 0;
             for (let i = 0; i <= line.length; i++) {
                 if (line[i] === '(') {
@@ -248,26 +250,24 @@ export default class Provider {
         return {
             meta: meta,
             docs: docs,
-            lastRule: lastRule,
+            lastRule: lastSelectorPart,
             trimmedLine: trimmedLine,
-            wholeLine: wholeLine,
-            postDirectiveSpaces: postDirectiveSpaces,
-            postValueSpaces: postValueSpaces,
+            originalLine: originalLine,
             position: position,
-            isTopLevel: !lastRule,
+            isTopLevel: !lastSelectorPart,
             isLineStart: false,
             isImport: isImport,
             isNamedValueLine: isNamedValueLine,
             namedValues: namedValues,
             isDirective: isDirective(trimmedLine),
             resolvedImport: resolvedImport,
-            insideSimpleSelector: !!lastRule && !!/^\s*\.?\w*$/.test(lastRule.selector),
+            insideSimpleSelector: !!lastSelectorPart && !!/^\s*\.?\w*$/.test(lastSelectorPart.selector),
             resolved: resolved,
             currentSelector: currentSelector,
             target: ps.target,
-            isMediaQuery: isMediaQuery,
+            isMediaQuery: isMediaQuery(path),
             hasNamespace: /@namespace/.test(src),
-            fakes: fakes,
+            fakes: fakeRules,
             pseudo: pseudo,
             resolvedPseudo: resolvedPseudo,
             customSelector: customSelectorString,
@@ -440,6 +440,7 @@ export default class Provider {
             mixin = rev.value;
         } else { return null };
         let activeParam = parsed.nodes.reverse()[0].nodes.reduce((acc: number, cur: any) => { return (cur.type === 'div' ? acc + 1 : acc) }, 0);
+        if (mixin === 'value') { return null }
 
         if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
             return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default');
@@ -709,3 +710,6 @@ export function extractJsModifierRetrunType(mixin: string, activeParam: number, 
     return returnType;
 }
 
+function isMediaQuery(path: PostCss.NodeBase[]) { return path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media') };
+function isDirective(line: string) { return Object.keys(valueMapping).some(k => line.indexOf((valueMapping as any)[k]) !== -1) };
+function isNamedDirective(line: string) { return line.indexOf(valueMapping.named) !== -1 };

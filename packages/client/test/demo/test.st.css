@@ -1,10 +1,13 @@
 :vars {
-    color1: red;
-    color2: blue;
+    color: red;
 }
 
-.local {
-    color: value(color2);
-    lasld: 'lfkkk';
+.lala {
+    color: value()
+
+}
+:import {
+    -st-from: "./kllk";
 }
 
+.lala::haha:kssks::jjajaj

@@ -176,19 +176,25 @@ describe('Signature Help', function () {
         }).timeout(5000);
     });
 
-    describe('No signature when outside param area', function () {
-        it('after parentheses', function () {
+    describe('No signature', function () {
+        it('outside param area after parentheses', function () {
             let filePath = 'mixins/imported-mixins-paramful-signature-outside-1.st.css'
 
             let sig = getSignatureHelp(filePath, '')
 
             expect(sig).to.be.null;
         })
-    })
 
-    describe('No signature when outside param area', function () {
-        it('in mixin name', function () {
+        it('outside param area in mixin name', function () {
             let filePath = 'mixins/imported-mixins-paramful-signature-outside-2.st.css'
+
+            let sig = getSignatureHelp(filePath, '')
+
+            expect(sig).to.be.null;
+        })
+
+        it('in value()', function () {
+            let filePath = 'variables/inside-value-local-vars.st.css'
 
             let sig = getSignatureHelp(filePath, '')
 

@@ -11,6 +11,7 @@ import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, Color
 import { valueMapping } from 'stylable/dist/src/stylable-value-parsers';
 import { fileUriToNativePath, nativePathToFileUri } from './utils/uri-utils';
 import { createMeta } from './provider';
+import { start } from 'repl';
 
 
 namespace OpenDocNotification {
@@ -63,7 +64,12 @@ function getRequestedFiles(doc: string, origin: string): string[] {
 
 connection.onCompletion((params): Thenable<CompletionItem[]> => {
     if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
-    let cssCompsRaw = cssService.doComplete(documents.get(params.textDocument.uri), params.position, cssService.parseStylesheet(documents.get(params.textDocument.uri)))
+    const cssCompsRaw = cssService.doComplete(
+        documents.get(params.textDocument.uri),
+        params.position,
+        cssService.parseStylesheet(documents.get(params.textDocument.uri))
+    )
+    const cssComps = cssCompsRaw ? cssCompsRaw.items : []
 
     const doc = documents.get(params.textDocument.uri).getText();
     const pos = params.position;
@@ -71,11 +77,16 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
     const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
     requestedFiles.forEach(file => connection.sendNotification(OpenDocNotification.type, file));
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+        const startTime = new Date();
+
         const interval = setInterval(() => {
             if (requestedFiles.every(file => !!documents.get(file))) {
                 clearInterval(interval);
                 resolve()
+            } else if (Number(new Date()) - Number(startTime) > 300) {
+                clearInterval(interval);
+                resolve();
             }
         }, 100);
     }).then(() => {
@@ -98,9 +109,10 @@ connection.onCompletion((params): Thenable<CompletionItem[]> => {
                         lspCompletion.command = Command.create("additional", "editor.action.triggerParameterHints")
                     }
                     return lspCompletion;
-                }).concat(cssCompsRaw ? cssCompsRaw.items : [])
+                }).concat(cssComps)
             });
-    })
+    }).catch(e => { console.error(e); return cssComps })
+
 
 });
 
@@ -139,11 +151,16 @@ connection.onDefinition((params): Thenable<Definition> => {
     const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
     requestedFiles.forEach(file => connection.sendNotification(OpenDocNotification.type, file));
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+        const startTime = new Date();
+
         const interval = setInterval(() => {
             if (requestedFiles.every(file => !!documents.get(file))) {
                 clearInterval(interval);
                 resolve()
+            } else if (Number(new Date()) - Number(startTime) > 300) {
+                clearInterval(interval);
+                resolve();
             }
         }, 100);
     }).then(() => {
@@ -180,7 +197,6 @@ connection.onRequest(ColorPresentationRequest.type, params => {
 
 });
 
-
 connection.onSignatureHelp((params): Thenable<SignatureHelp> => {
 
     const doc: string = documents.get(params.textDocument.uri).getText();
@@ -188,11 +204,16 @@ connection.onSignatureHelp((params): Thenable<SignatureHelp> => {
     const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
     requestedFiles.forEach(file => connection.sendNotification(OpenDocNotification.type, file));
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+        const startTime = new Date();
+
         const interval = setInterval(() => {
             if (requestedFiles.every(file => !!documents.get(file))) {
                 clearInterval(interval);
                 resolve()
+            } else if (Number(new Date()) - Number(startTime) > 300) {
+                clearInterval(interval);
+                resolve();
             }
         }, 100);
     }).then(() => {
