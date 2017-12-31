@@ -15,7 +15,7 @@ export function isInNode(position: ProviderPosition, node: PostCss.NodeBase): bo
         return false;
     }
     if (!node.source.end) {
-        return !isBeforeRuleset(position, node) || (!!(node as PostCss.ContainerBase).nodes && !!((node as PostCss.ContainerBase).nodes!.length > 0 ));
+        return !isBeforeRuleset(position, node) || (!!(node as PostCss.ContainerBase).nodes && !!((node as PostCss.ContainerBase).nodes!.length > 0));
     }
     if (node.source.end!.line < position.line) {
         return false;
@@ -55,9 +55,18 @@ export function isSelector(node: PostCss.NodeBase): node is PostCss.Rule {
     return node.hasOwnProperty('selector')
 }
 
+export function isVars(node: PostCss.NodeBase) {
+    return node.hasOwnProperty('selector') && (node as PostCss.Rule).selector === ':vars';
+}
+
 export function isDeclaration(node: PostCss.NodeBase): node is PostCss.Declaration {
     return node.hasOwnProperty('prop');
 }
+
+export function isComment(node: PostCss.NodeBase): node is PostCss.Comment {
+    return node.hasOwnProperty('type') && (node as PostCss.Comment).type === 'comment';
+}
+
 
 export function pathFromPosition(ast: PostCss.NodeBase, position: ProviderPosition, res: PostCss.NodeBase[] = []): PostCss.NodeBase[] {
     let currentNode = ast;

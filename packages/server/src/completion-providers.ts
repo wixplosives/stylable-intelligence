@@ -19,7 +19,7 @@ import {
     valueDirective,
     codeMixinCompletion,
 } from './completion-types';
-import { isContainer, isDeclaration } from './utils/postcss-ast-utils';
+import { isContainer, isDeclaration, isComment, isVars } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
 import Provider, { extractTsSignature, extractJsModifierRetrunType } from './provider';
@@ -173,13 +173,13 @@ export const ImportInternalDirectivesProvider: CompletionProvider = {
 export const RulesetInternalDirectivesProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
         let res: Completion[] = [];
-        if (!options.isImport && options.isLineStart && options.lastRule && (isContainer(options.lastRule))) {
-            if (options.lastRule.nodes!.every(n => isDeclaration(n) && rulesetDirectives.mixin !== n.prop)) {
+        if (!options.isImport && options.isLineStart && options.lastRule && isContainer(options.lastRule) && !isVars(options.lastRule)) {
+            if (!isVars(options.lastRule) && (options.lastRule.nodes!.every(n => (isDeclaration(n) && rulesetDirectives.mixin !== n.prop) || isComment(n)))) {
                 res.push(rulesetInternalDirective('mixin', createDirectiveRange(options)));
             }
             if (options.insideSimpleSelector && !options.isMediaQuery) {
                 simpleRulesetDeclarations.filter(d => d !== 'mixin').forEach(type => {
-                    if (options.lastRule!.nodes!.every(n => isDeclaration(n) && rulesetDirectives[type] !== n.prop)) {
+                    if (options.lastRule!.nodes!.every(n => (isDeclaration(n) && rulesetDirectives[type] !== n.prop) || isComment(n))) {
                         res.push(rulesetInternalDirective(type, createDirectiveRange(options)))
                     }
                 })
