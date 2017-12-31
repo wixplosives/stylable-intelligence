@@ -122,7 +122,7 @@ export default class Provider {
         let remain = fixedCharIndex; // ?
 
         // if(lastSelectorPart) {
-        let ps = parseSelector(trimmedLine, fixedCharIndex);
+        let ps = parseSelector(trimmedLine, fixedCharIndex); pvp;
         let chunkStrings: string[] = ps.selector.reduce((acc, s) => { return acc.concat(s.text) }, ([] as string[]));
 
         let pos = chunkStrings.findIndex(str => {
@@ -261,7 +261,7 @@ export default class Provider {
             namedValues: namedValues,
             isDirective: isDirective(trimmedLine),
             resolvedImport: resolvedImport,
-            insideSimpleSelector: !!lastSelectorPart && !!/^\s*\.?\w*$/.test(lastSelectorPart.selector),
+            insideSimpleSelector: !!lastSelectorPart && !!/^\s*\.?[\w-]*$/.test(lastSelectorPart.selector),
             resolved: resolved,
             currentSelector: currentSelector,
             target: ps.target,
