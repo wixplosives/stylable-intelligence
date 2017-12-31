@@ -107,28 +107,23 @@ export default class Provider {
         while (fixedLine.lastIndexOf(' ') >= cursorPosInLine) {
             fixedLine = fixedLine.slice(0, fixedLine.lastIndexOf(' '))
         }
-
         if (!isDirective(fixedLine) && fixedLine.lastIndexOf(' ') > -1 && fixedLine.lastIndexOf(' ') < cursorPosInLine) {
             fixedCharIndex -= (fixedLine.lastIndexOf(' ') + 1);
             fixedLine = fixedLine.slice(fixedLine.lastIndexOf(' '));
         }
+        const trimmedLine = fixedLine.trim();
 
-        let trimmedLine = fixedLine.trim();
-        let remain = fixedCharIndex; // ?
 
-        // if(lastSelectorPart) {
         let ps = parseSelector(trimmedLine, fixedCharIndex);
         let chunkStrings: string[] = ps.selector.reduce((acc, s) => { return acc.concat(s.text) }, ([] as string[]));
-
         let pos = chunkStrings.findIndex(str => {
-            if (str.length >= remain) {
+            if (str.length >= fixedCharIndex) {
                 return true;
             } else {
-                remain -= str.length;
+                fixedCharIndex -= str.length;
                 return false;
             }
         })
-        // }
 
         let rev = chunkStrings.slice().reverse();
         pos -= Math.max(rev.findIndex(s => !/^:+/.test(s) || (/^:--/.test(s))), 0)
@@ -187,6 +182,7 @@ export default class Provider {
             : customSelectorType
                 ? this.recursiveResolve(resolved, customSelectorType, ps, customSelectorString.slice(3), finalPseudo ? finalPseudo.curMeta : [])
                 : [];
+
         let isImport = !!lastSelectorPart && (lastSelectorPart.selector === ':import');
         let fromNode: Declaration | undefined = isImport ? (lastSelectorPart!.nodes as Declaration[]).find(n => n.prop === valueMapping.from) : undefined;
         let importName = (isImport && fromNode) ? fromNode.value.replace(/'/g, '').replace(/"/g, '') : '';
@@ -219,20 +215,7 @@ export default class Provider {
             }
         }
 
-        let isInValue: boolean = false;
 
-        if (/value\(/.test(lineText)) {
-            let line = lineText.slice(0, position.character);
-            let stack = 0;
-            for (let i = 0; i <= line.length; i++) {
-                if (line[i] === '(') {
-                    stack += 1
-                } else if (line[i] === ')') {
-                    stack -= 1
-                }
-            }
-            if (stack > 0) { isInValue = true }
-        }
 
         let importVars: any[] = [];
         meta.imports.forEach(imp => {
@@ -267,10 +250,12 @@ export default class Provider {
             resolvedPseudo: resolvedPseudo,
             customSelector: customSelectorString,
             customSelectorType: customSelectorType,
-            isInValue: isInValue,
+            isInValue: isInValue(lineText, position),
             importVars: importVars,
         }
     }
+
+
 
     private isFinalPartValidPseudo(resolved: CSSResolve[], trimmedLine: string) {
         let prevMetas: StylableMeta[] = [resolved[resolved.length - 1].meta];
@@ -405,7 +390,7 @@ export default class Provider {
         let split = src.split('\n');
         let lineIndex = split.findIndex(l => {
             return (l.trim().startsWith(word) || l.trim().startsWith('.' + word))
-                && (l.trim().replace('.','').slice(word.length).trim().startsWith('{') || l.trim().replace('.','').slice(word.length).trim().startsWith(':'));
+                && (l.trim().replace('.', '').slice(word.length).trim().startsWith('{') || l.trim().replace('.', '').slice(word.length).trim().startsWith(':'));
         })
         if (lineIndex === -1 || lineIndex === position.line) { lineIndex = split.findIndex(l => l.trim().indexOf(word) !== -1) }
         if (lineIndex === -1 || lineIndex === position.line) { return createRange(0, 0, 0, 0) };
@@ -571,6 +556,7 @@ export default class Provider {
         } as SignatureHelp
     }
 
+
 }
 
 
@@ -711,3 +697,20 @@ export function extractJsModifierRetrunType(mixin: string, activeParam: number, 
 function isMediaQuery(path: PostCss.NodeBase[]) { return path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media') };
 function isDirective(line: string) { return Object.keys(valueMapping).some(k => line.trim().startsWith((valueMapping as any)[k])) };
 function isNamedDirective(line: string) { return line.indexOf(valueMapping.named) !== -1 };
+function isInValue(lineText: string, position: ProviderPosition) {
+    let isInValue: boolean = false;
+
+    if (/value\(/.test(lineText)) {
+        let line = lineText.slice(0, position.character);
+        let stack = 0;
+        for (let i = 0; i <= line.length; i++) {
+            if (line[i] === '(') {
+                stack += 1
+            } else if (line[i] === ')') {
+                stack -= 1
+            }
+        }
+        if (stack > 0) { isInValue = true }
+    }
+    return isInValue;
+}
