@@ -58,15 +58,13 @@ export default class Provider {
 
     public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, docs: MinimalDocs): Thenable<Completion[]> {
         let res = fixAndProcess(src, pos, fileName);
-
         return this.provideCompletionItemsFromAst(src, res.currentLine, res.cursorLineIndex, pos, res.processed.meta!, res.processed.fakes, docs);
     }
 
-
     public provideCompletionItemsFromAst(
         src: string,
-        currentLine: string,
-        cursorLineIndex: number,
+        lineText: string,
+        cursorPosInLine: number,
         position: ProviderPosition,
         meta: StylableMeta,
         fakes: PostCss.Rule[],
@@ -74,9 +72,9 @@ export default class Provider {
     ): Thenable<Completion[]> {
         const completions: Completion[] = [];
         try {
-            let options = this.createProviderOptions(src, position, meta, fakes, currentLine, cursorLineIndex, docs)
+            let options = this.createProviderOptions(src, position, meta, fakes, lineText, cursorPosInLine, docs)
             this.providers.forEach(p => {
-                options.isLineStart = p.text.some((s: string) => s.indexOf(currentLine.trim()) === 0)
+                options.isLineStart = p.text.some((s: string) => s.indexOf(lineText.trim()) === 0)
                 completions.push(...p.provide(options))
             });
         } catch (e) { }
@@ -88,8 +86,8 @@ export default class Provider {
         position: ProviderPosition,
         meta: StylableMeta,
         fakeRules: PostCss.Rule[],
-        originalLine: string,
-        cursorLineIndex: number,
+        lineText: string,
+        cursorPosInLine: number,
         docs: MinimalDocs): ProviderOptions {
 
         const path = pathFromPosition(meta.rawAst, { line: position.line + 1, character: position.character });
@@ -104,16 +102,13 @@ export default class Provider {
                 : null;
 
 
-        let fixedLine = originalLine;
-        let fixedCharIndex = cursorLineIndex;
-        while (fixedLine.lastIndexOf(' ') > cursorLineIndex) {
-            fixedLine = fixedLine.slice(0, fixedLine.lastIndexOf(' '))
-        }
-        if (fixedLine.lastIndexOf(' ') === cursorLineIndex) {
+        let fixedLine = lineText;
+        let fixedCharIndex = cursorPosInLine;
+        while (fixedLine.lastIndexOf(' ') >= cursorPosInLine) {
             fixedLine = fixedLine.slice(0, fixedLine.lastIndexOf(' '))
         }
 
-        if (!isDirective(fixedLine) && fixedLine.lastIndexOf(' ') > -1 && fixedLine.lastIndexOf(' ') < cursorLineIndex) {
+        if (!isDirective(fixedLine) && fixedLine.lastIndexOf(' ') > -1 && fixedLine.lastIndexOf(' ') < cursorPosInLine) {
             fixedCharIndex -= (fixedLine.lastIndexOf(' ') + 1);
             fixedLine = fixedLine.slice(fixedLine.lastIndexOf(' '));
         }
@@ -122,7 +117,7 @@ export default class Provider {
         let remain = fixedCharIndex; // ?
 
         // if(lastSelectorPart) {
-        let ps = parseSelector(trimmedLine, fixedCharIndex); pvp;
+        let ps = parseSelector(trimmedLine, fixedCharIndex);
         let chunkStrings: string[] = ps.selector.reduce((acc, s) => { return acc.concat(s.text) }, ([] as string[]));
 
         let pos = chunkStrings.findIndex(str => {
@@ -226,8 +221,8 @@ export default class Provider {
 
         let isInValue: boolean = false;
 
-        if (/value\(/.test(originalLine)) {
-            let line = originalLine.slice(0, position.character);
+        if (/value\(/.test(lineText)) {
+            let line = lineText.slice(0, position.character);
             let stack = 0;
             for (let i = 0; i <= line.length; i++) {
                 if (line[i] === '(') {
@@ -252,7 +247,7 @@ export default class Provider {
             docs: docs,
             lastRule: lastSelectorPart,
             trimmedLine: trimmedLine,
-            originalLine: originalLine,
+            originalLine: lineText,
             position: position,
             isTopLevel: !lastSelectorPart,
             isLineStart: false,
@@ -408,7 +403,10 @@ export default class Provider {
 
     findWord(word: string, src: string, position: Position): ProviderRange {
         let split = src.split('\n');
-        let lineIndex = split.findIndex(l => l.trim().startsWith(word))
+        let lineIndex = split.findIndex(l => {
+            return (l.trim().startsWith(word) || l.trim().startsWith('.' + word))
+                && (l.trim().replace('.','').slice(word.length).trim().startsWith('{') || l.trim().replace('.','').slice(word.length).trim().startsWith(':'));
+        })
         if (lineIndex === -1 || lineIndex === position.line) { lineIndex = split.findIndex(l => l.trim().indexOf(word) !== -1) }
         if (lineIndex === -1 || lineIndex === position.line) { return createRange(0, 0, 0, 0) };
         let line = split[lineIndex];
@@ -711,5 +709,5 @@ export function extractJsModifierRetrunType(mixin: string, activeParam: number, 
 }
 
 function isMediaQuery(path: PostCss.NodeBase[]) { return path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media') };
-function isDirective(line: string) { return Object.keys(valueMapping).some(k => line.indexOf((valueMapping as any)[k]) !== -1) };
+function isDirective(line: string) { return Object.keys(valueMapping).some(k => line.trim().startsWith((valueMapping as any)[k])) };
 function isNamedDirective(line: string) { return line.indexOf(valueMapping.named) !== -1 };
