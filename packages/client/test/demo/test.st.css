@@ -1,13 +1,10 @@
-:vars {
-    color: red;
-}
-
-.lala {
-    color: value()
-
-}
 :import {
-    -st-from: "./kllk";
-}
+    -st-from: "./import.st.css";
+    -st-default: Comp;
+ }
 
-.lala::haha:kssks::jjajaj
+ .grid{
+    -st-extends: Comp;
+ }
+
+Comp

@@ -19,6 +19,7 @@ export interface SelectorDirectChild extends SelectorQuery { }
 export interface CursorPosition {
     focusChunk: SelectorQuery | Array<SelectorChunk | SelectorInternalChunk>;
     index: number;
+    internalIndex: number;
 }
 
 export function createSelectorChunk(value?: Partial<SelectorChunk>): SelectorChunk {
@@ -51,7 +52,7 @@ export function isSelectorDirectChild(chunk: SelectorQuery): chunk is SelectorDi
 export function parseSelector(inputSelector: string, cursorIndex: number = 0): { selector: SelectorQuery[], target: CursorPosition } {
     const res: SelectorQuery[] = [];
     const textArr: string[] = [];
-    let cursorTarget = { focusChunk: {} as any, text: textArr, index: -1 };
+    let cursorTarget = { focusChunk: {} as any, text: textArr, index: -1, internalIndex: 0 };
     const tokenizedSelectors = selectorTokenizer.parse(inputSelector);
 
     if (tokenizedSelectors.type !== 'selectors') {
@@ -63,6 +64,7 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
     let selector = inputSelector.trim();
     let currentPosition = spaceBeforeSelector && spaceBeforeSelector[0].length || 0;
     let currentSourceQuery: string = '';
+    let chunkInternalPos = 0;
     res.push(createSelectorChunk());
     for (let i = 0; i < firstSelector.nodes.length; i++) {
         const selectorQueryItem = firstSelector.nodes[i];
@@ -70,6 +72,7 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
         if (isSelectorChunk(currentTarget) || isSelectorInternalChunk(currentTarget)) {
             switch (selectorQueryItem.type) {
                 case 'class':
+                    chunkInternalPos++;
                     currentSourceQuery = '.' + selectorQueryItem.name;
                     currentTarget.text.push(currentSourceQuery);
                     currentTarget.classes.push(selectorQueryItem.name);
@@ -81,6 +84,7 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                     currentTarget = createSelectorDescendent();
                     currentTarget.text.push(currentSourceQuery);
                     res.push(currentTarget, createSelectorChunk());
+                    chunkInternalPos = 0;
                     selector = selector.slice(currentSourceQuery.length);
                     break;
                 case 'operator':
@@ -90,11 +94,13 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                         currentTarget = createSelectorDirectChild();
                         currentTarget.text.push(currentSourceQuery);
                         res.push(currentTarget, createSelectorChunk());
+                        chunkInternalPos = 0;
                         selector = selector.slice(currentSourceQuery.length);
                     }
                     break;
                 case 'pseudo-class':
                     if (selectorQueryItem.name.startsWith('--')) {
+                        chunkInternalPos++; // ?
                         currentSourceQuery = ':' + selectorQueryItem.name;
                         currentTarget.text.push(currentSourceQuery);
                         currentTarget.customSelectors.push(':' + selectorQueryItem.name);
@@ -102,7 +108,11 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                         break;
                     }
                     else {
+                        chunkInternalPos++;
                         currentSourceQuery = ':' + selectorQueryItem.name;
+                        // if (cursorIndex <= currentPosition + currentSourceQuery.length && currentTarget === cursorTarget.focusChunk) {
+                        //     cursorTarget.internalIndex++;
+                        // }
                         currentTarget.text.push(currentSourceQuery);
                         currentTarget.states.push(selectorQueryItem.name);
                         selector = selector.slice(currentSourceQuery.length);
@@ -113,15 +123,18 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                     currentTarget = createSelectorInternalChunk({ name: selectorQueryItem.name });
                     currentTarget.text.push(currentSourceQuery);
                     res.push(currentTarget);
+                    chunkInternalPos = 0;
                     selector = selector.slice(currentSourceQuery.length);
                     break;
                 case 'element':
+                    chunkInternalPos++;
                     currentSourceQuery = selectorQueryItem.name;
                     currentTarget.text.push(currentSourceQuery);
                     currentTarget.type = selectorQueryItem.name;
                     selector = selector.slice(currentSourceQuery.length);
                     break;
                 case 'invalid':
+                    chunkInternalPos++; // ?
                     currentSourceQuery = selectorQueryItem.value;
                     currentTarget.text.push(currentSourceQuery);
                     selector = selector.slice(currentSourceQuery.length).trim();
@@ -133,11 +146,13 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
         const queryLength = currentSourceQuery.length;
         const newPosition = currentPosition + queryLength;
         const isCursorInQuery = cursorIndex > currentPosition && cursorIndex <= newPosition;
+
         if (isCursorInQuery) {
             cursorTarget = {
                 focusChunk: currentTarget,
                 text: currentTarget.text,
-                index: res.indexOf(currentTarget)
+                index: res.indexOf(currentTarget),
+                internalIndex: chunkInternalPos
             }
         }
         currentPosition += queryLength;
@@ -159,7 +174,7 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
     return {
         selector: res,
         target: cursorTarget
-    };;
+    };
 }
 
 // const selectorSpliter = /(?= )|(?=\.)|(?=#)|(?=\[)|(?=:)|(?=@)/;

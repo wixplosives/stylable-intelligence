@@ -34,6 +34,7 @@ import { Position, TextDocumentPositionParams, SignatureHelp, SignatureInformati
 import * as ts from 'typescript';
 import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName, Identifier, LiteralTypeNode } from 'typescript';
 import { nativePathToFileUri } from './utils/uri-utils';
+import { resolve } from 'url';
 
 
 export default class Provider {
@@ -116,30 +117,19 @@ export default class Provider {
 
         let ps = parseSelector(trimmedLine, fixedCharIndex);
         let chunkStrings: string[] = ps.selector.reduce((acc, s) => { return acc.concat(s.text) }, ([] as string[]));
-        let pos = chunkStrings.findIndex(str => {
-            if (str.length >= fixedCharIndex) {
-                return true;
-            } else {
-                fixedCharIndex -= str.length;
-                return false;
+
+
+
+        let currentSelector = (ps.selector[0] as SelectorChunk).classes[0] || (ps.selector[0] as SelectorChunk).customSelectors[0] || chunkStrings[0];
+
+        let resolved: CSSResolve[] = [];
+        if (currentSelector) {
+            const expandedCustomSelector = meta.customSelectors[currentSelector]
+            if (!!expandedCustomSelector) {
+                currentSelector = expandedCustomSelector.match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0];
             }
-        })
-
-        let rev = chunkStrings.slice().reverse();
-        pos -= Math.max(rev.findIndex(s => !/^:+/.test(s) || (/^:--/.test(s))), 0)
-        let currentSelector = (/^:+/.test(chunkStrings[pos]) && !chunkStrings[pos].startsWith(':--')) ? chunkStrings[Math.max(pos - 1, 0)] : chunkStrings[pos]
-        if (currentSelector && currentSelector.startsWith('.')) { currentSelector = currentSelector.slice(1) }
-
-        let resolved = currentSelector
-            ? (Object.keys(meta.customSelectors).some(k => k === currentSelector) && meta.customSelectors[currentSelector] !== '')
-                ? this.styl.resolver.resolveExtends(
-                    meta,
-                    meta.customSelectors[currentSelector].match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0],
-                    currentSelector.startsWith(':--')
-                        ? meta.customSelectors[currentSelector].match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0][0] === meta.customSelectors[currentSelector].match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0][0].toUpperCase()
-                        : currentSelector[0] === currentSelector[0].toUpperCase())
-                : this.styl.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase())
-            : [];
+            resolved = this.styl.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase())
+        }
 
 
         let finalPseudo;
@@ -207,7 +197,6 @@ export default class Provider {
                     value.split(',').map(x => x.trim()).filter(x => x !== '').forEach(x => namedValues.push(x));
                     break;
                 } else {
-                    isNamedValueLine = true;
                     let valueStart = lines[i].indexOf(':') + 1;
                     let value = lines[i].slice(valueStart);
                     value.split(',').map(x => x.trim()).filter(x => x !== '').forEach(x => namedValues.push(x));
@@ -230,7 +219,7 @@ export default class Provider {
             docs: docs,
             lastRule: lastSelectorPart,
             trimmedLine: trimmedLine,
-            originalLine: lineText,
+            lineText: lineText,
             position: position,
             isTopLevel: !lastSelectorPart,
             isLineStart: false,

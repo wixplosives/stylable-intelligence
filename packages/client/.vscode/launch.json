@@ -6,7 +6,7 @@
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
-      "args": ["/home/wix/projects/hello-stylable","--extensionDevelopmentPath=${workspaceRoot}"],
+      "args": ["${workspaceRoot}/test/demo","--extensionDevelopmentPath=${workspaceRoot}"],
       "stopOnEntry": false,
       "sourceMaps": true,
       "preLaunchTask": "npm"

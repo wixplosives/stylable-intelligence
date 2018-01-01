@@ -34,7 +34,7 @@ export interface ProviderOptions {
     docs: MinimalDocs,
     lastRule: SRule | null,
     trimmedLine: string,
-    originalLine: string,
+    lineText: string,
     position: ProviderPosition,
     isTopLevel: boolean,
     isLineStart: boolean,
@@ -136,8 +136,8 @@ function createDirectiveRange(options: ProviderOptions): ProviderRange {
         new ProviderPosition(
             options.position.line,
             Math.max(0, options.position.character -
-                (topLevelDirectives.customSelector.startsWith(options.originalLine)
-                    ? options.originalLine.length
+                (topLevelDirectives.customSelector.startsWith(options.lineText)
+                    ? options.lineText.length
                     : options.trimmedLine.length))),
         options.position
     );
@@ -198,7 +198,7 @@ export const TopLevelDirectiveProvider: CompletionProvider = {
             if (!options.isMediaQuery) {
                 return topLevelDeclarations
                     .filter(d => options.hasNamespace ? (d !== 'namespace') : true)
-                    .filter(d => topLevelDirectives[d].startsWith(options.trimmedLine) || topLevelDirectives[d].startsWith(options.originalLine))
+                    .filter(d => topLevelDirectives[d].startsWith(options.trimmedLine) || topLevelDirectives[d].startsWith(options.lineText))
                     .map(d => topLevelDirective(d, createDirectiveRange(options)));
             } else {
                 return [topLevelDirective('root', createDirectiveRange(options))]
@@ -213,9 +213,9 @@ export const TopLevelDirectiveProvider: CompletionProvider = {
 export const ValueDirectiveProvider: CompletionProvider & { isInsideValueDirective: (wholeLine: string, pos: number) => boolean } = {
     provide(options: ProviderOptions): Completion[] {
         pvp;
-        if (!options.isTopLevel && !options.isDirective && !this.isInsideValueDirective(options.originalLine, options.position.character)
-            && options.originalLine.indexOf(':') !== -1) {
-            const parsed = pvp(options.originalLine.slice(options.originalLine.indexOf(':') + 1)).nodes;
+        if (!options.isTopLevel && !options.isDirective && !this.isInsideValueDirective(options.lineText, options.position.character)
+            && options.lineText.indexOf(':') !== -1) {
+            const parsed = pvp(options.lineText.slice(options.lineText.indexOf(':') + 1)).nodes;
             const node = parsed[parsed.length - 1];
             if (
                 node.type === 'div' || node.type === 'space'
@@ -225,9 +225,9 @@ export const ValueDirectiveProvider: CompletionProvider & { isInsideValueDirecti
                 return [valueDirective(new ProviderRange(
                     new ProviderPosition(
                         options.position.line,
-                        options.originalLine.includes(',')
-                            ? options.originalLine.lastIndexOf(',') + 1
-                            : options.originalLine.indexOf(':') + 1),
+                        options.lineText.includes(',')
+                            ? options.lineText.lastIndexOf(',') + 1
+                            : options.lineText.indexOf(':') + 1),
                     options.position
                 ))]
             } else {
@@ -271,7 +271,7 @@ export const GlobalCompletionProvider: CompletionProvider = {
                 )];
             } else {
                 let offset = 0;
-                if (options.originalLine.lastIndexOf(':') !== -1) {
+                if (options.lineText.lastIndexOf(':') !== -1) {
                     if (this.text[0].startsWith(options.trimmedLine.slice(options.trimmedLine.lastIndexOf(':')))) {
                         offset = options.trimmedLine.slice(options.trimmedLine.lastIndexOf(':')).length;
                     }
@@ -353,10 +353,10 @@ export const ExtendCompletionProvider: CompletionProvider = {
 export const CssMixinCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
         if (options.trimmedLine.startsWith(valueMapping.mixin + ':')) {
-            let valueStart = options.originalLine.indexOf(':') + 1;
-            let value = options.originalLine.slice(valueStart);
+            let valueStart = options.lineText.indexOf(':') + 1;
+            let value = options.lineText.slice(valueStart);
             let names = value.split(',').map(x => x.trim()).filter(x => x !== '');
-            let lastName = /,\s*$/.test(options.originalLine)
+            let lastName = /,\s*$/.test(options.lineText)
                 ? ''
                 : names.reverse()[0] || '';
 
@@ -385,11 +385,11 @@ export const CssMixinCompletionProvider: CompletionProvider = {
 export const CodeMixinCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
         if (options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) && options.trimmedLine.startsWith(valueMapping.mixin + ':')) {
-            if (options.originalLine.lastIndexOf('(') > options.originalLine.lastIndexOf(')')) { return [] }
+            if (options.lineText.lastIndexOf('(') > options.lineText.lastIndexOf(')')) { return [] }
 
 
-            let valueStart = options.originalLine.indexOf(':') + 1;
-            let value = options.originalLine.slice(valueStart, options.position.character);
+            let valueStart = options.lineText.indexOf(':') + 1;
+            let value = options.lineText.slice(valueStart, options.position.character);
 
             let parsed = pvp(value.trim());
 
@@ -438,11 +438,11 @@ export const CodeMixinCompletionProvider: CompletionProvider = {
 
 export const FormatterCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
-        if (!options.isTopLevel && options.originalLine.includes(':') && options.originalLine.indexOf(':') < options.position.character
+        if (!options.isTopLevel && options.lineText.includes(':') && options.lineText.indexOf(':') < options.position.character
             && !options.trimmedLine.startsWith(valueMapping.mixin + ':') && !options.isNamedValueLine
             && options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js'))) {
-            let valueStart = options.originalLine.indexOf(':') + 1;
-            let value = options.originalLine.slice(valueStart);
+            let valueStart = options.lineText.indexOf(':') + 1;
+            let value = options.lineText.slice(valueStart);
 
             let parsed = pvp(value.trim());
 
@@ -494,10 +494,10 @@ export const NamedCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
         if (options.isNamedValueLine && options.resolvedImport) {
 
-            let valueStart = options.originalLine.indexOf(':') + 1;
-            let value = options.originalLine.slice(valueStart);
+            let valueStart = options.lineText.indexOf(':') + 1;
+            let value = options.lineText.slice(valueStart);
             let names = value.split(',').map(x => x.trim()).filter(x => x !== '');
-            let lastName = /,\s*$/.test(options.originalLine)
+            let lastName = /,\s*$/.test(options.lineText)
                 ? ''
                 : names.reverse()[0] || '';
 
@@ -641,11 +641,11 @@ export const StateCompletionProvider: CompletionProvider = {
 export const ValueCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
         if (options.isInValue) {
-            let inner = options.originalLine.slice(0, options.originalLine.indexOf(')', options.position.character) + 1).slice(options.originalLine.slice(0, options.originalLine.indexOf(')', options.position.character) + 1).lastIndexOf('(')).replace('(', '').replace(')', '').trim();
+            let inner = options.lineText.slice(0, options.lineText.indexOf(')', options.position.character) + 1).slice(options.lineText.slice(0, options.lineText.indexOf(')', options.position.character) + 1).lastIndexOf('(')).replace('(', '').replace(')', '').trim();
 
             let comps: Completion[] = [];
             options.meta.vars.forEach(v => {
-                if (v.name.startsWith(inner) && !options.originalLine.slice(0, options.originalLine.indexOf(':')).includes(v.name)) {
+                if (v.name.startsWith(inner) && !options.lineText.slice(0, options.lineText.indexOf(':')).includes(v.name)) {
                     comps.push(valueCompletion(v.name, 'Local variable', v.value, new ProviderRange(
                         new ProviderPosition(options.position.line, options.position.character - inner.length),
                         options.position,
