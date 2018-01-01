@@ -3,24 +3,62 @@ import { expect } from 'chai';
 
 describe('Selector Parser', function () {
 
-    it('Parses multi-part selectors', function () {
-        const res = parseSelector('.first::second:someState::third');
+    let sel: string;
 
-        expect(res).to.not.equal(null);
+    sel = 'div.simple:withState:andAnother';
+    sel.split(/[\.:]/).forEach((sub, i) => {
+        const tested = sel.slice(0, sel.indexOf(sub) + sub.length);
+        it('Parses a selector with element and class - selector string:   ' + tested + '  ', function () {
+            const { selector: parsed, target } = parseSelector(tested)
 
-        expect(res.selector.length).to.equal(3);
-        expect((res.selector[0] as SelectorInternalChunk).type).to.equal('*');
-        expect((res.selector[0] as SelectorInternalChunk).classes.length).to.equal(1);
-        expect((res.selector[0] as SelectorInternalChunk).states.length).to.equal(0);
+            expect(parsed.length).to.equal(1);
+            expect((parsed[0] as SelectorInternalChunk).customSelectors).to.eql([]);
+            expect((parsed[0] as SelectorInternalChunk).type).to.equal('div');
+            expect((parsed[0] as SelectorInternalChunk).classes).to.eql(i === 0 ? [] : ['simple'])
+            expect((parsed[0] as SelectorInternalChunk).states).to.eql(i <= 1 ? [] : i === 2 ? ['withState'] : ['withState', 'andAnother'])
+        })
+    })
 
-        expect((res.selector[1] as SelectorInternalChunk).name).to.equal('second');
-        expect((res.selector[1] as SelectorInternalChunk).classes.length).to.equal(0);
-        expect((res.selector[1] as SelectorInternalChunk).states.length).to.equal(1);
+    sel = '.not-so.simple:withState:andAnother'
+    sel.split(/[\.:]/).forEach((sub, i) => {
+        if (i === 0) { return }
+        const tested = sel.slice(0, sel.indexOf(sub) + sub.length);
+        it('Parses a selector with two classes - selector string:   ' + tested + '  ', function () {
+            const { selector: parsed, target } = parseSelector(tested)
 
-        expect((res.selector[2] as SelectorInternalChunk).name).to.equal('third');
-        expect((res.selector[2] as SelectorInternalChunk).classes.length).to.equal(0);
-        expect((res.selector[2] as SelectorInternalChunk).states.length).to.equal(0);
+            expect(parsed.length).to.equal(1);
+            expect((parsed[0] as SelectorInternalChunk).customSelectors).to.eql([]);
+            expect((parsed[0] as SelectorInternalChunk).type).to.equal('*');
+            expect((parsed[0] as SelectorInternalChunk).classes).to.eql(i <= 1 ? ['not-so'] : ['not-so', 'simple'])
+            expect((parsed[0] as SelectorInternalChunk).states).to.eql(i <= 2 ? [] : i === 3 ? ['withState'] : ['withState', 'andAnother'])
+        })
+    })
+
+    sel = '.first::second:someState::third'
+    sel.split(/\.|:+/).forEach((sub, i) => {
+        if (i === 0) { return };
+        const tested = sel.slice(0, sel.indexOf(sub) + sub.length);
+        it('Parses a multi-level selector with states - selector string:   ' + tested + '   ', function () {
+            const { selector: parsed, target } = parseSelector(tested)
+            sel;
+            expect(parsed.length).to.equal(i <= 2 ? i : i === 3 ? 2 : 3);
+            expect((parsed[0] as SelectorInternalChunk).customSelectors).to.eql([]);
+            expect((parsed[0] as SelectorInternalChunk).type).to.equal('*');
+            expect((parsed[0] as SelectorInternalChunk).classes).to.eql(['first']);
+            expect((parsed[0] as SelectorInternalChunk).states).to.eql([]);
+
+            if (i >= 2) {
+                expect((parsed[1] as SelectorInternalChunk).customSelectors).to.eql([]);
+                expect((parsed[1] as SelectorInternalChunk).type).to.equal('second');
+                expect((parsed[1] as SelectorInternalChunk).classes).to.eql([]);
+                expect((parsed[1] as SelectorInternalChunk).states).to.eql(i===2 ? [] : ['someState']);
+            }
+        })
     });
+
+
+
+
 
     describe('Target chunk', function () {
         it('returns index of correct selector chunk', function () {
@@ -30,12 +68,12 @@ describe('Selector Parser', function () {
             expect((target.focusChunk as any[])[1]).to.equal(selector[1]);
         })
 
-        it('returns internal location in selector chunk', function() {
+        it('returns internal location in selector chunk', function () {
             const { selector, target } = parseSelector('.first::second:someState::third', '.first::second:someState'.length);
             expect(target.internalIndex).to.equal(1);
         })
 
-        it('returns internal location in selector chunk II', function() {
+        it('returns internal location in selector chunk II', function () {
             const { selector, target } = parseSelector('.first::second:someState::third:otherState', '.first::second:someState'.length);
             expect(target.internalIndex).to.equal(1);
         })

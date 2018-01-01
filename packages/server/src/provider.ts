@@ -314,6 +314,8 @@ export default class Provider {
     }
 
     public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string, docs: MinimalDocs): Thenable<ProviderLocation[]> {
+        if (!filePath.endsWith('.st.css')) { return Promise.resolve([]) }
+
         let res = fixAndProcess(src, position, filePath);
         let meta = res.processed.meta;
         if (!meta) return Promise.resolve([]);
@@ -390,6 +392,7 @@ export default class Provider {
     }
 
     getSignatureHelp(src: string, pos: Position, filePath: string, documents: MinimalDocs): SignatureHelp | null {
+        if (!filePath.endsWith('.st.css')) { return null }
         let res = fixAndProcess(src, pos, filePath);
         let meta = res.processed.meta;
         if (!meta) return null;

@@ -120,7 +120,7 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                     }
                 case 'pseudo-element':
                     currentSourceQuery = '::' + selectorQueryItem.name;
-                    currentTarget = createSelectorInternalChunk({ name: selectorQueryItem.name });
+                    currentTarget = createSelectorInternalChunk({ name: selectorQueryItem.name, type: selectorQueryItem.name });
                     currentTarget.text.push(currentSourceQuery);
                     res.push(currentTarget);
                     chunkInternalPos = 0;
