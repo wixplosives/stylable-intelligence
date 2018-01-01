@@ -6,7 +6,7 @@ describe('Selector Parser', function () {
     let sel: string;
 
     sel = 'div.simple:withState:andAnother';
-    sel.split(/[\.:]/).forEach((sub, i) => {
+    sel.split(/\.|:+/).forEach((sub, i) => {
         const tested = sel.slice(0, sel.indexOf(sub) + sub.length);
         it('Parses a selector with element and class - selector string:   ' + tested + '  ', function () {
             const { selector: parsed, target } = parseSelector(tested)
@@ -19,8 +19,8 @@ describe('Selector Parser', function () {
         })
     })
 
-    sel = '.not-so.simple:withState:andAnother'
-    sel.split(/[\.:]/).forEach((sub, i) => {
+    sel = '.not-so.simple:withState:andAnother';
+    sel.split(/\.|:+/).forEach((sub, i) => {
         if (i === 0) { return }
         const tested = sel.slice(0, sel.indexOf(sub) + sub.length);
         it('Parses a selector with two classes - selector string:   ' + tested + '  ', function () {
@@ -32,7 +32,7 @@ describe('Selector Parser', function () {
             expect((parsed[0] as SelectorInternalChunk).classes).to.eql(i <= 1 ? ['not-so'] : ['not-so', 'simple'])
             expect((parsed[0] as SelectorInternalChunk).states).to.eql(i <= 2 ? [] : i === 3 ? ['withState'] : ['withState', 'andAnother'])
         })
-    })
+    });
 
     sel = '.first::second:someState::third'
     sel.split(/\.|:+/).forEach((sub, i) => {
@@ -40,7 +40,7 @@ describe('Selector Parser', function () {
         const tested = sel.slice(0, sel.indexOf(sub) + sub.length);
         it('Parses a multi-level selector with states - selector string:   ' + tested + '   ', function () {
             const { selector: parsed, target } = parseSelector(tested)
-            sel;
+
             expect(parsed.length).to.equal(i <= 2 ? i : i === 3 ? 2 : 3);
             expect((parsed[0] as SelectorInternalChunk).customSelectors).to.eql([]);
             expect((parsed[0] as SelectorInternalChunk).type).to.equal('*');
@@ -53,11 +53,42 @@ describe('Selector Parser', function () {
                 expect((parsed[1] as SelectorInternalChunk).classes).to.eql([]);
                 expect((parsed[1] as SelectorInternalChunk).states).to.eql(i===2 ? [] : ['someState']);
             }
+            if (i === 4) {
+                expect((parsed[2] as SelectorInternalChunk).customSelectors).to.eql([]);
+                expect((parsed[2] as SelectorInternalChunk).type).to.equal('third');
+                expect((parsed[2] as SelectorInternalChunk).classes).to.eql([]);
+                expect((parsed[2] as SelectorInternalChunk).states).to.eql([]);
+            }
         })
     });
 
+    sel = ':--custom:hover::inner::deep'
+    sel.split(/\.|:+/).forEach((sub, i) => {
+        if (i === 0) { return };
+        const tested = sel.slice(0, sel.indexOf(sub) + sub.length);
+        it('Parses a multi-level selector with custom selector - selector string:   ' + tested + '   ', function () {
+            const { selector: parsed, target } = parseSelector(tested)
 
+            expect(parsed.length).to.equal(i <= 2 ? 1 : i-1);
+            expect((parsed[0] as SelectorInternalChunk).customSelectors).to.eql([':--custom']);
+            expect((parsed[0] as SelectorInternalChunk).type).to.equal('*');
+            expect((parsed[0] as SelectorInternalChunk).classes).to.eql([]);
+            expect((parsed[0] as SelectorInternalChunk).states).to.eql(i===1 ? [] : ['hover']);
 
+            if (i >= 3) {
+                expect((parsed[1] as SelectorInternalChunk).customSelectors).to.eql([]);
+                expect((parsed[1] as SelectorInternalChunk).type).to.equal('inner');
+                expect((parsed[1] as SelectorInternalChunk).classes).to.eql([]);
+                expect((parsed[1] as SelectorInternalChunk).states).to.eql([]);
+            }
+            if (i === 4) {
+                expect((parsed[2] as SelectorInternalChunk).customSelectors).to.eql([]);
+                expect((parsed[2] as SelectorInternalChunk).type).to.equal('deep');
+                expect((parsed[2] as SelectorInternalChunk).classes).to.eql([]);
+                expect((parsed[2] as SelectorInternalChunk).states).to.eql([]);
+            }
+        })
+    });
 
 
     describe('Target chunk', function () {
