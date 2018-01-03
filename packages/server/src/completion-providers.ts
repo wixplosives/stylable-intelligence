@@ -1,4 +1,5 @@
-import { StylableMeta, SRule, valueMapping, ClassSymbol, CSSResolve, VarSymbol, ImportSymbol } from 'stylable';
+import { StylableMeta, SRule, valueMapping, ClassSymbol, CSSResolve, VarSymbol, ImportSymbol, StylableResolver } from 'stylable';
+import {evalValue} from 'stylable/dist/src/functions'
 import { CursorPosition, SelectorInternalChunk } from "./utils/selector-analyzer";
 import {
     classCompletion,
@@ -22,7 +23,7 @@ import {
 import { isContainer, isDeclaration, isComment, isVars } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
-import Provider, { extractTsSignature, extractJsModifierRetrunType } from './provider';
+import Provider, { extractTsSignature, extractJsModifierRetrunType, isDirective } from './provider';
 import { TypeReferenceNode, Identifier } from 'typescript';
 import { MinimalDocs } from './provider-factory';
 const pvp = require('postcss-value-parser');
@@ -32,6 +33,7 @@ import { nativePathToFileUri } from './utils/uri-utils';
 export interface ProviderOptions {
     meta: StylableMeta,
     docs: MinimalDocs,
+    resolver: StylableResolver
     lastRule: SRule | null,
     trimmedLine: string,
     lineText: string,
@@ -41,14 +43,11 @@ export interface ProviderOptions {
     isImport: boolean,
     isNamedValueLine: boolean,
     namedValues: string[],
-    isDirective: boolean,
     resolvedImport: StylableMeta | null
-    insideSimpleSelector: boolean,
     resolved: CSSResolve[],
     currentSelector: string,
     target: CursorPosition
     isMediaQuery: boolean,
-    hasNamespace: boolean
     fakes: PostCss.Rule[],
     pseudo: string | null,
     resolvedPseudo: CSSResolve[],
@@ -155,10 +154,10 @@ const topLevelDeclarations: (keyof typeof topLevelDirectives)[] = ['root', 'name
 
 export const ImportInternalDirectivesProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isImport && options.isLineStart && options.lastRule && !options.isMediaQuery && isContainer(options.lastRule)) {
+        if (options.isImport && options.isLineStart && !options.isMediaQuery) {
             const res: Completion[] = [];
             importDeclarations.forEach(type => {
-                if (options.lastRule!.nodes!.every(n => isDeclaration(n) && importDirectives[type] !== n.prop)) {
+                if (options.lastRule!.nodes!.every(n => isDeclaration(n) && importDirectives[type] !== n.prop || isComment(n))) {
                     res.push(importInternalDirective(type, createDirectiveRange(options)))
                 }
             })
@@ -170,14 +169,18 @@ export const ImportInternalDirectivesProvider: CompletionProvider = {
     text: importDeclarations.map(name => importDirectives[name])
 }
 
+function isSimpleSelector(sel: string) {
+    return !!/^\s*\.?[\w-]*$/.test(sel) //Only a single class or element
+}
+
 export const RulesetInternalDirectivesProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
         let res: Completion[] = [];
         if (!options.isImport && options.isLineStart && options.lastRule && isContainer(options.lastRule) && !isVars(options.lastRule)) {
-            if (!isVars(options.lastRule) && (options.lastRule.nodes!.every(n => (isDeclaration(n) && rulesetDirectives.mixin !== n.prop) || isComment(n)))) {
+            if (options.lastRule.nodes!.every(n => (isDeclaration(n) && rulesetDirectives.mixin !== n.prop) || isComment(n))) {
                 res.push(rulesetInternalDirective('mixin', createDirectiveRange(options)));
             }
-            if (options.insideSimpleSelector && !options.isMediaQuery) {
+            if (isSimpleSelector(options.lastRule.selector) && !options.isMediaQuery) {
                 simpleRulesetDeclarations.filter(d => d !== 'mixin').forEach(type => {
                     if (options.lastRule!.nodes!.every(n => (isDeclaration(n) && rulesetDirectives[type] !== n.prop) || isComment(n))) {
                         res.push(rulesetInternalDirective(type, createDirectiveRange(options)))
@@ -197,7 +200,7 @@ export const TopLevelDirectiveProvider: CompletionProvider = {
         if (options.isTopLevel && options.isLineStart) {
             if (!options.isMediaQuery) {
                 return topLevelDeclarations
-                    .filter(d => options.hasNamespace ? (d !== 'namespace') : true)
+                    .filter(d => !/@namespace/.test((options.meta.ast.source.input as any).css) || (d !== 'namespace'))
                     .filter(d => topLevelDirectives[d].startsWith(options.trimmedLine) || topLevelDirectives[d].startsWith(options.lineText))
                     .map(d => topLevelDirective(d, createDirectiveRange(options)));
             } else {
@@ -210,10 +213,11 @@ export const TopLevelDirectiveProvider: CompletionProvider = {
     text: topLevelDeclarations.map(name => topLevelDirectives[name])
 }
 
+
 export const ValueDirectiveProvider: CompletionProvider & { isInsideValueDirective: (wholeLine: string, pos: number) => boolean } = {
     provide(options: ProviderOptions): Completion[] {
         pvp;
-        if (!options.isTopLevel && !options.isDirective && !this.isInsideValueDirective(options.lineText, options.position.character)
+        if (!options.isTopLevel && !isDirective(options.lineText) && !this.isInsideValueDirective(options.lineText, options.position.character)
             && options.lineText.indexOf(':') !== -1) {
             const parsed = pvp(options.lineText.slice(options.lineText.indexOf(':') + 1)).nodes;
             const node = parsed[parsed.length - 1];
@@ -510,7 +514,7 @@ export const NamedCompletionProvider: CompletionProvider = {
                     .map(ms => [
                         ms,
                         path.relative(options.meta.source, options.resolvedImport!.source).slice(1).replace('\\', '/'),
-                        options.resolvedImport!.mappedSymbols[ms]._kind === 'var' ? (options.resolvedImport!.mappedSymbols[ms] as VarSymbol).value : 'Stylable class'
+                        options.resolvedImport!.mappedSymbols[ms]._kind === 'var' ? (options.resolvedImport!.mappedSymbols[ms] as VarSymbol).text : 'Stylable class'
                     ])
             )
 
@@ -643,10 +647,13 @@ export const ValueCompletionProvider: CompletionProvider = {
         if (options.isInValue) {
             let inner = options.lineText.slice(0, options.lineText.indexOf(')', options.position.character) + 1).slice(options.lineText.slice(0, options.lineText.indexOf(')', options.position.character) + 1).lastIndexOf('(')).replace('(', '').replace(')', '').trim();
 
+
+
             let comps: Completion[] = [];
             options.meta.vars.forEach(v => {
                 if (v.name.startsWith(inner) && !options.lineText.slice(0, options.lineText.indexOf(':')).includes(v.name)) {
-                    comps.push(valueCompletion(v.name, 'Local variable', v.value, new ProviderRange(
+                    const value = evalValue(options.resolver, v.text, options.meta, v.node)
+                    comps.push(valueCompletion(v.name, 'Local variable', value, new ProviderRange(
                         new ProviderPosition(options.position.line, options.position.character - inner.length),
                         options.position,
                     )))
@@ -654,7 +661,8 @@ export const ValueCompletionProvider: CompletionProvider = {
             })
             options.importVars.forEach(v => {
                 if (v.name.startsWith(inner) && options.meta.imports.some(imp => Object.keys(imp.named).some(key => key === v.name))) {
-                    comps.push(valueCompletion(v.name, v.from, v.value, new ProviderRange(
+                    const value = evalValue(options.resolver, v.value, options.meta, v.node)
+                    comps.push(valueCompletion(v.name, v.from, value, new ProviderRange(
                         new ProviderPosition(options.position.line, options.position.character - inner.length),
                         options.position,
                     )))

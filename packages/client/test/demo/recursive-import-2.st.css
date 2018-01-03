@@ -1,15 +1,9 @@
 :import {
-    -st-from: './recursive-import-1.st.css';
-    -st-default: Bongo;
+    -st-from: "./recursive-import-1.st.css";
+    -st-default: Comp;
 }
 
-@custom-selector :--bongo .root Bongo;
-
-@custom-selector :--mongo .root Bongo;
-
-.local {
-    -st-extends: Bongo;
+.bobo {
+    -st-extends: Comp;
 }
-
-.local:state
 

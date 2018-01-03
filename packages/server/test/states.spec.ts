@@ -234,7 +234,7 @@ describe('States', function () {
         });
     });
 
-    describe('Deep recursive immports', function () {
+    describe('Deep recursive imports', function () {
         let str = ':loompa';
         const createComp = (str: string, rng: ProviderRange, path: string) => asserters.stateCompletion(str.slice(1), rng, path);
 

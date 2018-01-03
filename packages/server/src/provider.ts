@@ -3,7 +3,7 @@ import { MinimalDocs } from './provider-factory';
 import * as PostCss from 'postcss';
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
-import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping } from 'stylable';
+import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping, StylableTransformer, Diagnostics, expandCustomSelectors as RemoveWhenWorks, expandCustomSelectors } from 'stylable';
 import { isSelector, pathFromPosition, isDeclaration } from './utils/postcss-ast-utils';
 import {
     createRange,
@@ -36,6 +36,29 @@ import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, Qualifie
 import { nativePathToFileUri } from './utils/uri-utils';
 import { resolve } from 'url';
 
+
+// ///////
+// var replaceRuleSelector = require('postcss-selector-matches/dist/replaceRuleSelector');
+// var cloneDeep = require('lodash.clonedeep');
+// var CUSTOM_SELECTOR_RE = /:--[\w-]+/g;
+// function expandCustomSelectors(rule:any, meta:any, diagnostics?:any) {
+//     var customSelectors = meta.customSelectors;
+//     if (rule.selector.indexOf(':--') > -1) {
+//         rule.selector = rule.selector.replace(CUSTOM_SELECTOR_RE, function (extensionName:any, _matches:any, selector:any) {
+//             if (!customSelectors[extensionName] && diagnostics) {
+//                 diagnostics.warn(rule, "The selector '" + rule.selector + "' is undefined", { word: rule.selector });
+//                 return selector;
+//             }
+//             return ':matches(' + customSelectors[extensionName] + ')';
+//         });
+//         return transformMatchesOnRule(rule, false);
+//     }
+//     return rule.selector;
+// }
+// function transformMatchesOnRule(rule:any, lineBreak:any) {
+//     return replaceRuleSelector(rule, { lineBreak: lineBreak });
+// }
+///////
 
 export default class Provider {
     constructor(public styl: Stylable) { }
@@ -103,6 +126,10 @@ export default class Provider {
                 : null;
 
 
+        const isImport = !!lastSelectorPart && (lastSelectorPart.selector === ':import');
+        const isInSelector = !!lastSelectorPart && !isImport;
+
+
         let fixedLine = lineText;
         let fixedCharIndex = cursorPosInLine;
         while (fixedLine.lastIndexOf(' ') >= cursorPosInLine) {
@@ -115,20 +142,37 @@ export default class Provider {
         const trimmedLine = fixedLine.trim();
 
 
+        // if (isInSelector) {
+        let transformer = new StylableTransformer({
+            diagnostics: new Diagnostics(),
+            fileProcessor: this.styl.fileProcessor,
+            requireModule: () => { throw new Error('Not implemented, why are we here') }
+        })
+
+
+
+
         let ps = parseSelector(trimmedLine, fixedCharIndex);
         let chunkStrings: string[] = ps.selector.reduce((acc, s) => { return acc.concat(s.text) }, ([] as string[]));
 
 
+        const expanded2: string = expandCustomSelectors(PostCss.rule({ selector: trimmedLine }), meta.customSelectors).split(' ').pop()!;// ToDo: replace with selector parser
+
+        let resolvedPseudo2 = transformer.resolveSelectorElements(meta, expanded2);
 
         let currentSelector = (ps.selector[0] as SelectorChunk).classes[0] || (ps.selector[0] as SelectorChunk).customSelectors[0] || chunkStrings[0];
 
+
+
         let resolved: CSSResolve[] = [];
-        if (currentSelector) {
-            const expandedCustomSelector = meta.customSelectors[currentSelector]
-            if (!!expandedCustomSelector) {
-                currentSelector = expandedCustomSelector.match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0];
-            }
-            resolved = this.styl.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase())
+        if (currentSelector && resolvedPseudo2[0].length) {
+            // const expandedCustomSelector = meta.customSelectors[currentSelector]
+            // if (!!expandedCustomSelector) {
+            //     currentSelector = expandedCustomSelector.match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0];
+            // }
+            // resolved = this.styl.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase())
+            const clas = resolvedPseudo2[0].find(e => e.type === 'class' || (e.type === 'element' && e.resolved.length > 1));
+            resolved = clas ? clas.resolved : [];
         }
 
 
@@ -136,7 +180,10 @@ export default class Provider {
         try {
             finalPseudo = this.isFinalPartValidPseudo(resolved, trimmedLine);
         } catch (e) { }
-        let pseudo = (trimmedLine.match(/::\w+/))
+
+
+
+        let pseudoElementId = (trimmedLine.match(/::\w+/))
             ? (trimmedLine.endsWith('::')
                 ? trimmedLine.split('::').reverse()[1].split(':')[0]
                 : (finalPseudo && finalPseudo.res)
@@ -154,10 +201,10 @@ export default class Provider {
             customSelectorString = trimmedLine.match(/^(:--\w*)/)![1];
             expanded = meta.customSelectors[customSelectorString];
         }
-        if (finalPseudo && finalPseudo.curMeta && Object.keys(finalPseudo.curMeta[finalPseudo.curMeta.length - 1].customSelectors).some(cs => cs === ':--' + pseudo)) {
-            customSelectorString = ':--' + pseudo
+        if (finalPseudo && finalPseudo.curMeta && Object.keys(finalPseudo.curMeta[finalPseudo.curMeta.length - 1].customSelectors).some(cs => cs === ':--' + pseudoElementId)) {
+            customSelectorString = ':--' + pseudoElementId
             expanded = finalPseudo.curMeta[finalPseudo.curMeta.length - 1].customSelectors[customSelectorString];
-            pseudo = null;
+            pseudoElementId = null;
         }
         if (expanded) {
             let ps_exp = parseSelector(expanded, expanded.length)
@@ -167,13 +214,16 @@ export default class Provider {
             }
         }
 
-        let resolvedPseudo = pseudo
-            ? this.recursiveResolve(resolved, pseudo, ps, customSelectorType, finalPseudo ? finalPseudo.curMeta : [])
+        let resolvedPseudo = pseudoElementId
+            ? this.recursiveResolve(resolved, pseudoElementId, ps, customSelectorType, finalPseudo ? finalPseudo.curMeta : [])
             : customSelectorType
                 ? this.recursiveResolve(resolved, customSelectorType, ps, customSelectorString.slice(3), finalPseudo ? finalPseudo.curMeta : [])
                 : [];
 
-        let isImport = !!lastSelectorPart && (lastSelectorPart.selector === ':import');
+
+
+
+
         let fromNode: Declaration | undefined = isImport ? (lastSelectorPart!.nodes as Declaration[]).find(n => n.prop === valueMapping.from) : undefined;
         let importName = (isImport && fromNode) ? fromNode.value.replace(/'/g, '').replace(/"/g, '') : '';
         let resolvedImport: StylableMeta | null = null;
@@ -182,6 +232,9 @@ export default class Provider {
         } catch (e) {
             resolvedImport = null;
         }
+
+
+
 
         let isNamedValueLine = false;
         let namedValues: string[] = [];
@@ -204,12 +257,12 @@ export default class Provider {
             }
         }
 
-
+        // }
 
         let importVars: any[] = [];
         meta.imports.forEach(imp => {
             try {
-                this.styl.fileProcessor.process(imp.from).vars.forEach(v => importVars.push({ name: v.name, value: v.value, from: imp.fromRelative }))
+                this.styl.fileProcessor.process(imp.from).vars.forEach(v => importVars.push({ name: v.name, value: v.text, from: imp.fromRelative }))
             } catch (e) { }
         })
 
@@ -217,6 +270,7 @@ export default class Provider {
         return {
             meta: meta,
             docs: docs,
+            resolver: this.styl.resolver,
             lastRule: lastSelectorPart,
             trimmedLine: trimmedLine,
             lineText: lineText,
@@ -226,16 +280,13 @@ export default class Provider {
             isImport: isImport,
             isNamedValueLine: isNamedValueLine,
             namedValues: namedValues,
-            isDirective: isDirective(trimmedLine),
             resolvedImport: resolvedImport,
-            insideSimpleSelector: !!lastSelectorPart && !!/^\s*\.?[\w-]*$/.test(lastSelectorPart.selector),
             resolved: resolved,
             currentSelector: currentSelector,
             target: ps.target,
-            isMediaQuery: isMediaQuery(path),
-            hasNamespace: /@namespace/.test(src),
+            isMediaQuery: isInMediaQuery(path),
             fakes: fakeRules,
-            pseudo: pseudo,
+            pseudo: pseudoElementId,
             resolvedPseudo: resolvedPseudo,
             customSelector: customSelectorString,
             customSelectorType: customSelectorType,
@@ -686,8 +737,8 @@ export function extractJsModifierRetrunType(mixin: string, activeParam: number, 
     return returnType;
 }
 
-function isMediaQuery(path: PostCss.NodeBase[]) { return path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media') };
-function isDirective(line: string) { return Object.keys(valueMapping).some(k => line.trim().startsWith((valueMapping as any)[k])) };
+function isInMediaQuery(path: PostCss.NodeBase[]) { return path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media') };
+export function isDirective(line: string) { return Object.keys(valueMapping).some(k => line.trim().startsWith((valueMapping as any)[k])) };
 function isNamedDirective(line: string) { return line.indexOf(valueMapping.named) !== -1 };
 function isInValue(lineText: string, position: ProviderPosition) {
     let isInValue: boolean = false;

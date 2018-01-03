@@ -58,7 +58,7 @@
     "postcss-nested": "^2.1.2",
     "postcss-selector-parser": "^3.1.1",
     "postcss-value-parser": "^3.3.0",
-    "stylable": "^5.0.0",
+    "stylable": "5.0.5-next",
     "tslib": "~1.8.0",
     "typescript": "^2.6.2",
     "vscode-css-languageservice": "^3.0.1",

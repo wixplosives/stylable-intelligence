@@ -1,21 +1,6 @@
-.lokal {
-    color: red;
-    -st-states: Nordrhein, Westfalen;
-}
-
-:vars {
-    one: fuchsia;
-    two: goldenrod;
-}
-
-.gaga .root {
-    color: red;
-}
-
-:import {
-    -st-from: "./import.st";
-}
- /* .lokal {} */
- .myClass {
-    -st-mixin: url('lala'), url('kaka')
+.root {
+    -st-mixin:
+        modifyFunc(
+            color1 = green
+        );
 }

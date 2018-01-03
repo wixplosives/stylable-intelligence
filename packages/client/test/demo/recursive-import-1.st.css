@@ -1,17 +1,17 @@
-.momo{
-    -st-states: anotherState,oneMoreState;
+:import {
+    -st-from: "./recursive-import-0.st.css";
+    -st-default: Compi;
 }
 
-.gaga {
-    -st-states : state,otherState;
+.shlomo {
+    color: black;
+}
+
+.momo{
+    -st-extends: Compi;
+    -st-states: anotherState;
 }
 
 .root {
-    -st-states: rooroo;
+    -st-states : state,otherState;
 }
-
-@custom-selector :--bongo .gaga;
-
-@custom-selector :--pongo .root;
-
-:--bongo:
