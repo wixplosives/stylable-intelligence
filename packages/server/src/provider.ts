@@ -152,26 +152,19 @@ export default class Provider {
 
 
 
-        let ps = parseSelector(trimmedLine, fixedCharIndex);
-        let chunkStrings: string[] = ps.selector.reduce((acc, s) => { return acc.concat(s.text) }, ([] as string[]));
+        const ps = parseSelector(trimmedLine, fixedCharIndex);
+        const chunkStrings: string[] = ps.selector.reduce((acc, s) => { return acc.concat(s.text) }, ([] as string[]));
 
 
-        const expanded2: string = expandCustomSelectors(PostCss.rule({ selector: trimmedLine }), meta.customSelectors).split(' ').pop()!;// ToDo: replace with selector parser
+        const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: trimmedLine }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
 
-        let resolvedPseudo2 = transformer.resolveSelectorElements(meta, expanded2);
+        const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
 
         let currentSelector = (ps.selector[0] as SelectorChunk).classes[0] || (ps.selector[0] as SelectorChunk).customSelectors[0] || chunkStrings[0];
 
-
-
         let resolved: CSSResolve[] = [];
-        if (currentSelector && resolvedPseudo2[0].length) {
-            // const expandedCustomSelector = meta.customSelectors[currentSelector]
-            // if (!!expandedCustomSelector) {
-            //     currentSelector = expandedCustomSelector.match(/[^\w:]*([\w:]+)$/)![1].split('::').reverse()[0].split(':')[0];
-            // }
-            // resolved = this.styl.resolver.resolveExtends(meta, currentSelector, currentSelector[0] === currentSelector[0].toUpperCase())
-            const clas = resolvedPseudo2[0].find(e => e.type === 'class' || (e.type === 'element' && e.resolved.length > 1));
+        if (currentSelector && resolvedElements[0].length) {
+            const clas = resolvedElements[0].find(e => e.type === 'class' || (e.type === 'element' && e.resolved.length > 1));  //TODO: better type parsing
             resolved = clas ? clas.resolved : [];
         }
 
@@ -182,17 +175,19 @@ export default class Provider {
         } catch (e) { }
 
 
+        let pseudoElementId: string|null = null;
+        if (trimmedLine.match(/::\w+/)) { //line has ::str
+            if (trimmedLine.endsWith('::')) {
+                pseudoElementId = trimmedLine.split('::').reverse()[1].split(':')[0] //last pseudo-element before final ::
+            } else if (finalPseudo && finalPseudo.res) {
+                pseudoElementId = trimmedLine.split('::').reverse()[0].split(':')[0] //last pseudo-element is valid
+            } else if (trimmedLine.split('::').length > 2) {
+                pseudoElementId = trimmedLine.split('::').reverse()[1].split(':')[0] //last segment is not real pseudo
+            }
+        }
 
-        let pseudoElementId = (trimmedLine.match(/::\w+/))
-            ? (trimmedLine.endsWith('::')
-                ? trimmedLine.split('::').reverse()[1].split(':')[0]
-                : (finalPseudo && finalPseudo.res)
-                    ? trimmedLine.split('::').reverse()[0].split(':')[0]
-                    : trimmedLine.split('::').length > 2
-                        ? trimmedLine.split('::').reverse()[1].split(':')[0]
-                        : null
-            )
-            : null;
+        let pe2 = resolvedElements[0].reverse().find(e => e.type==='pseudo-element' && e.resolved.length>0)
+        // pseudoElementId = pe2 ? pe2.name : null;
 
         let customSelectorType = '';
         let customSelectorString = '';
