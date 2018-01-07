@@ -175,7 +175,7 @@ export default class Provider {
         } catch (e) { }
 
 
-        let pseudoElementId: string|null = null;
+        let pseudoElementId: string | null = null;
         if (trimmedLine.match(/::\w+/)) { //line has ::str
             if (trimmedLine.endsWith('::')) {
                 pseudoElementId = trimmedLine.split('::').reverse()[1].split(':')[0] //last pseudo-element before final ::
@@ -186,7 +186,7 @@ export default class Provider {
             }
         }
 
-        let pe2 = resolvedElements[0].reverse().find(e => e.type==='pseudo-element' && e.resolved.length>0)
+        let pe2 = resolvedElements[0].reverse().find(e => e.type === 'pseudo-element' && e.resolved.length > 0)
         // pseudoElementId = pe2 ? pe2.name : null;
 
         let customSelectorType = '';
@@ -370,12 +370,16 @@ export default class Provider {
         function findNode(nodes: any[], index: number): any {
             return nodes
                 .filter(n => n.sourceIndex <= index)
-                .reduce((m, n) => { return (m.sourceIndex > n.sourceIndex) ? m : n })
+                .reduce((m, n) => { return (m.sourceIndex > n.sourceIndex) ? m : n }, {sourceIndex: -1})
         }
 
         let val = findNode(parsed, position.character);
         while (val.nodes && val.nodes.length > 0) {
-            val = findNode(val.nodes, position.character)
+            if (findNode(val.nodes, position.character).sourceIndex >= 0 ) {
+                val = findNode(val.nodes, position.character)
+            } else {
+                break;
+            }
         }
 
         let word = val.value;
@@ -409,9 +413,9 @@ export default class Provider {
                     break;
                 }
             }
-        } else if (Object.keys(meta.customSelectors).find(sym => sym === word)) {
+        } else if (Object.keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
             defs.push(
-                new ProviderLocation(meta.source, this.findWord(word, src, position))
+                new ProviderLocation(meta.source, this.findWord(':--' + word, src, position))
             );
         }
 
