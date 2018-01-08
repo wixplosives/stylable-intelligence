@@ -102,9 +102,7 @@ export default class Provider {
                 options.isLineStart = p.text.some((s: string) => s.indexOf(lineText.trim()) === 0)
                 completions.push(...p.provide(options))
             });
-        } catch (e) {
-            let a = 'a';
-         }
+        } catch (e) { }
         return Promise.resolve(this.dedupe(completions));
     }
 
@@ -184,7 +182,7 @@ export default class Provider {
 
         if (resolvedElements[0].length) {
             const realPseudoInd = _.findLastIndex(resolvedElements[0], e => e.type === 'pseudo-element' && e.resolved.length > 0);
-            if (realPseudoInd>0 &&
+            if (realPseudoInd > 0 &&
                 resolvedElements[0].slice(realPseudoInd).every(e => e.type === 'pseudo-element') &&
                 _.keys(resolvedElements[0][realPseudoInd].resolved[0].meta.customSelectors).some(cs => cs === ':--' + pseudoElementId)
             ) {
