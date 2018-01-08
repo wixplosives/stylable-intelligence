@@ -176,8 +176,8 @@ assert-plus@^0.2.0:
   resolved "https://registry.yarnpkg.com/assert-plus/-/assert-plus-0.2.0.tgz#d74e1b87e7affc0db8aadb7021f3fe48101ab234"
 
 assertion-error@^1.0.1:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/assertion-error/-/assertion-error-1.0.2.tgz#13ca515d86206da0bac66e834dd397d87581094c"
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/assertion-error/-/assertion-error-1.1.0.tgz#e60b6b0e8f301bd97e5375215bda406c85118c0b"
 
 asynckit@^0.4.0:
   version "0.4.0"
@@ -2543,8 +2543,8 @@ strip-bom@^2.0.0:
     is-utf8 "^0.2.0"
 
 stylable@next:
-  version "5.0.6-rc.2"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.0.6-rc.2.tgz#878327467eecf1b020430f8141bee479f9638a9e"
+  version "5.0.6-rc.3"
+  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.0.6-rc.3.tgz#74563c35a456c04005750b9d1d04ce1ad4936806"
   dependencies:
     css-selector-tokenizer "^0.7.0"
     deindent "^0.1.0"

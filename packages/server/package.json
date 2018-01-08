@@ -50,10 +50,12 @@
     "webpack-dev-server": "~2.9.4"
   },
   "dependencies": {
+    "@types/lodash": "^4.14.92",
     "css-selector-tokenizer": "^0.7.0",
     "doctrine": "^2.0.0",
     "htap": "^1.0.3",
     "ipaddr": "^0.0.9",
+    "lodash": "^4.17.4",
     "postcss": "^6.0.14",
     "postcss-nested": "^2.1.2",
     "postcss-selector-parser": "^3.1.1",

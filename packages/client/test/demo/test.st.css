@@ -1,12 +1,10 @@
-.local {
-    color: red;
-}
+:import {
+    -st-from: "./import.st.css";
+    -st-default: Comp;
+ }
 
-:vars {
-    one: fuchsia;
-    two: goldenrod;
-}
+ .grid{
+    -st-extends: Comp;
+ }
 
-.gaga {
-    color: value();
-}
+.grid::pongo::m

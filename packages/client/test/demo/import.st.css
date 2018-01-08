@@ -6,8 +6,3 @@
 @custom-selector :--pongo div > Comp;
 
 @custom-selector :--mongo div span Comp, span Comp;
-
-:vars {
-    var1: red;
-    var2: black;
-}
