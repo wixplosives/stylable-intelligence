@@ -72,7 +72,6 @@ describe("Definitions", function () {
             });
         });
 
-
         describe("Vars", function () {
             it("should return definition of imported var in -st-named", function () {
                 return asserters.getDefinition('definitions/imported-var-named.st.css').then((defs) => {

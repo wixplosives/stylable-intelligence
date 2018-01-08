@@ -169,18 +169,14 @@ export const ImportInternalDirectivesProvider: CompletionProvider = {
     text: importDeclarations.map(name => importDirectives[name])
 }
 
-function isSimpleSelector(sel: string) {
-    return !!/^\s*\.?[\w-]*$/.test(sel) //Only a single class or element
-}
-
-export const RulesetInternalDirectivesProvider: CompletionProvider = {
+export const RulesetInternalDirectivesProvider: CompletionProvider & {isSimpleSelector: (sel: string) => boolean} = {
     provide(options: ProviderOptions): Completion[] {
         let res: Completion[] = [];
         if (!options.isImport && options.isLineStart && options.lastRule && isContainer(options.lastRule) && !isVars(options.lastRule)) {
             if (options.lastRule.nodes!.every(n => (isDeclaration(n) && rulesetDirectives.mixin !== n.prop) || isComment(n))) {
                 res.push(rulesetInternalDirective('mixin', createDirectiveRange(options)));
             }
-            if (isSimpleSelector(options.lastRule.selector) && !options.isMediaQuery) {
+            if (this.isSimpleSelector(options.lastRule.selector) && !options.isMediaQuery) {
                 simpleRulesetDeclarations.filter(d => d !== 'mixin').forEach(type => {
                     if (options.lastRule!.nodes!.every(n => (isDeclaration(n) && rulesetDirectives[type] !== n.prop) || isComment(n))) {
                         res.push(rulesetInternalDirective(type, createDirectiveRange(options)))
@@ -192,7 +188,10 @@ export const RulesetInternalDirectivesProvider: CompletionProvider = {
             return [];
         }
     },
-    text: simpleRulesetDeclarations.map(name => rulesetDirectives[name])
+    text: simpleRulesetDeclarations.map(name => rulesetDirectives[name]),
+    isSimpleSelector(sel: string) {
+        return !!/^\s*\.?[\w-]*$/.test(sel) //Only a single class or element
+    }
 }
 
 export const TopLevelDirectiveProvider: CompletionProvider = {
@@ -212,7 +211,6 @@ export const TopLevelDirectiveProvider: CompletionProvider = {
     },
     text: topLevelDeclarations.map(name => topLevelDirectives[name])
 }
-
 
 export const ValueDirectiveProvider: CompletionProvider & { isInsideValueDirective: (wholeLine: string, pos: number) => boolean } = {
     provide(options: ProviderOptions): Completion[] {
@@ -443,7 +441,7 @@ export const CodeMixinCompletionProvider: CompletionProvider = {
 export const FormatterCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
         if (!options.isTopLevel && options.lineText.includes(':') && options.lineText.indexOf(':') < options.position.character
-            && !options.trimmedLine.startsWith(valueMapping.mixin + ':') && !options.isNamedValueLine
+            && !options.trimmedLine.startsWith(valueMapping.mixin + ':') && !options.isNamedValueLine && !options.lineText.trim().startsWith(valueMapping.from)
             && options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js'))) {
             let valueStart = options.lineText.indexOf(':') + 1;
             let value = options.lineText.slice(valueStart);
