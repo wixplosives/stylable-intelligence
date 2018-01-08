@@ -1,5 +1,5 @@
 import { StylableMeta, SRule, valueMapping, ClassSymbol, CSSResolve, VarSymbol, ImportSymbol, StylableResolver } from 'stylable';
-import {evalValue} from 'stylable/dist/src/functions'
+import { evalValue } from 'stylable/dist/src/functions'
 import { CursorPosition, SelectorInternalChunk } from "./utils/selector-analyzer";
 import {
     classCompletion,
@@ -169,7 +169,7 @@ export const ImportInternalDirectivesProvider: CompletionProvider = {
     text: importDeclarations.map(name => importDirectives[name])
 }
 
-export const RulesetInternalDirectivesProvider: CompletionProvider & {isSimpleSelector: (sel: string) => boolean} = {
+export const RulesetInternalDirectivesProvider: CompletionProvider & { isSimpleSelector: (sel: string) => boolean } = {
     provide(options: ProviderOptions): Completion[] {
         let res: Completion[] = [];
         if (!options.isImport && options.isLineStart && options.lastRule && isContainer(options.lastRule) && !isVars(options.lastRule)) {
@@ -278,8 +278,6 @@ export const GlobalCompletionProvider: CompletionProvider = {
                         offset = options.trimmedLine.slice(options.trimmedLine.lastIndexOf(':')).length;
                     }
                 }
-
-
                 return [globalCompletion(
                     new ProviderRange(
                         new ProviderPosition(
