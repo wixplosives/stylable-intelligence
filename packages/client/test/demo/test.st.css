@@ -1,10 +1,6 @@
-:import {
-    -st-from: "./import.st.css";
-    -st-default: Comp;
- }
 
- .grid{
-    -st-extends: Comp;
- }
+:
 
-.grid::pongo::m
+.gaga{
+    color:red;
+}

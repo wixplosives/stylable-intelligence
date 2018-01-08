@@ -34,11 +34,10 @@ export interface ProviderOptions {
     meta: StylableMeta,
     docs: MinimalDocs,
     resolver: StylableResolver
-    lastRule: SRule | null,
+    enclosingSelector: SRule | null,
     trimmedLine: string,
     lineText: string,
     position: ProviderPosition,
-    isTopLevel: boolean,
     isLineStart: boolean,
     isImport: boolean,
     isNamedValueLine: boolean,
@@ -157,7 +156,7 @@ export const ImportInternalDirectivesProvider: CompletionProvider = {
         if (options.isImport && options.isLineStart && !options.isMediaQuery) {
             const res: Completion[] = [];
             importDeclarations.forEach(type => {
-                if (options.lastRule!.nodes!.every(n => isDeclaration(n) && importDirectives[type] !== n.prop || isComment(n))) {
+                if (options.enclosingSelector!.nodes!.every(n => isDeclaration(n) && importDirectives[type] !== n.prop || isComment(n))) {
                     res.push(importInternalDirective(type, createDirectiveRange(options)))
                 }
             })
@@ -172,13 +171,13 @@ export const ImportInternalDirectivesProvider: CompletionProvider = {
 export const RulesetInternalDirectivesProvider: CompletionProvider & { isSimpleSelector: (sel: string) => boolean } = {
     provide(options: ProviderOptions): Completion[] {
         let res: Completion[] = [];
-        if (!options.isImport && options.isLineStart && options.lastRule && isContainer(options.lastRule) && !isVars(options.lastRule)) {
-            if (options.lastRule.nodes!.every(n => (isDeclaration(n) && rulesetDirectives.mixin !== n.prop) || isComment(n))) {
+        if (!options.isImport && options.isLineStart && options.enclosingSelector && isContainer(options.enclosingSelector) && !isVars(options.enclosingSelector)) {
+            if (options.enclosingSelector.nodes!.every(n => (isDeclaration(n) && rulesetDirectives.mixin !== n.prop) || isComment(n))) {
                 res.push(rulesetInternalDirective('mixin', createDirectiveRange(options)));
             }
-            if (this.isSimpleSelector(options.lastRule.selector) && !options.isMediaQuery) {
+            if (this.isSimpleSelector(options.enclosingSelector.selector) && !options.isMediaQuery) {
                 simpleRulesetDeclarations.filter(d => d !== 'mixin').forEach(type => {
-                    if (options.lastRule!.nodes!.every(n => (isDeclaration(n) && rulesetDirectives[type] !== n.prop) || isComment(n))) {
+                    if (options.enclosingSelector!.nodes!.every(n => (isDeclaration(n) && rulesetDirectives[type] !== n.prop) || isComment(n))) {
                         res.push(rulesetInternalDirective(type, createDirectiveRange(options)))
                     }
                 })
@@ -196,7 +195,7 @@ export const RulesetInternalDirectivesProvider: CompletionProvider & { isSimpleS
 
 export const TopLevelDirectiveProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isTopLevel && options.isLineStart) {
+        if (!options.enclosingSelector && options.isLineStart) {
             if (!options.isMediaQuery) {
                 return topLevelDeclarations
                     .filter(d => !/@namespace/.test((options.meta.ast.source.input as any).css) || (d !== 'namespace'))
@@ -215,7 +214,7 @@ export const TopLevelDirectiveProvider: CompletionProvider = {
 export const ValueDirectiveProvider: CompletionProvider & { isInsideValueDirective: (wholeLine: string, pos: number) => boolean } = {
     provide(options: ProviderOptions): Completion[] {
         pvp;
-        if (!options.isTopLevel && !isDirective(options.lineText) && !this.isInsideValueDirective(options.lineText, options.position.character)
+        if (options.enclosingSelector && !isDirective(options.lineText) && !this.isInsideValueDirective(options.lineText, options.position.character)
             && options.lineText.indexOf(':') !== -1) {
             const parsed = pvp(options.lineText.slice(options.lineText.indexOf(':') + 1)).nodes;
             const node = parsed[parsed.length - 1];
@@ -254,13 +253,11 @@ export const ValueDirectiveProvider: CompletionProvider & { isInsideValueDirecti
         }
         return stack > 0;
     }
-
-
 }
 
 export const GlobalCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isTopLevel && !options.trimmedLine.endsWith('::')) {
+        if (!options.enclosingSelector && !options.trimmedLine.endsWith('::')) {
             if (options.isLineStart) {
                 return [globalCompletion(
                     new ProviderRange(
@@ -299,7 +296,7 @@ export const GlobalCompletionProvider: CompletionProvider = {
 
 export const SelectorCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isTopLevel && (options.trimmedLine === ':' || !options.trimmedLine.endsWith(':'))) {
+        if (!options.enclosingSelector && (options.trimmedLine === ':' || !options.trimmedLine.endsWith(':'))) {
             let comps: Completion[] = [];
             comps.push(...Object.keys(options.meta.classes)
                 .filter(k => k !== 'root' && options.fakes.findIndex(f => f.selector === '.' + k) === -1)
@@ -438,7 +435,7 @@ export const CodeMixinCompletionProvider: CompletionProvider = {
 
 export const FormatterCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
-        if (!options.isTopLevel && options.lineText.includes(':') && options.lineText.indexOf(':') < options.position.character
+        if (options.enclosingSelector && options.lineText.includes(':') && options.lineText.indexOf(':') < options.position.character
             && !options.trimmedLine.startsWith(valueMapping.mixin + ':') && !options.isNamedValueLine && !options.lineText.trim().startsWith(valueMapping.from)
             && options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js'))) {
             let valueStart = options.lineText.indexOf(':') + 1;
@@ -533,7 +530,7 @@ export const NamedCompletionProvider: CompletionProvider = {
 
 export const PseudoElementCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isTopLevel && options.resolved.length > 0) {
+        if (!options.enclosingSelector && options.resolved.length > 0) {
             let pseudos = collectSelectorParts(
                 options.resolvedPseudo,
                 options.resolved,
@@ -599,7 +596,7 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
 
 export const StateCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isTopLevel && !options.trimmedLine.endsWith('::')) {
+        if (!options.enclosingSelector && !options.trimmedLine.endsWith('::')) {
             let states = collectSelectorParts(
                 options.resolvedPseudo,
                 options.resolved,

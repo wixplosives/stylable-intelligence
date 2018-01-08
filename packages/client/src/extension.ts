@@ -1,6 +1,5 @@
 
 'use strict';
-import { connect } from 'tls';
 import { Trace } from 'vscode-jsonrpc'
 import { ExtensionContext, workspace, TextDocument, languages, ColorInformation, ColorPresentation, Color, Uri } from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, Executable, NotificationType } from 'vscode-languageclient';

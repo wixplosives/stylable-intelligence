@@ -102,7 +102,9 @@ export default class Provider {
                 options.isLineStart = p.text.some((s: string) => s.indexOf(lineText.trim()) === 0)
                 completions.push(...p.provide(options))
             });
-        } catch (e) { }
+        } catch (e) {
+            let a = 'a';
+         }
         return Promise.resolve(this.dedupe(completions));
     }
 
@@ -169,7 +171,6 @@ export default class Provider {
             resolved = clas ? clas.resolved : [];
         }
 
-
         let pe2 = _.findLast(resolvedElements[0], e => e.type === 'pseudo-element' && e.resolved.length > 0)
         let pseudoElementId = pe2 ? pe2.name : '';
 
@@ -202,7 +203,6 @@ export default class Provider {
         }
 
         let resolvedPseudo = pe2 ? pe2.resolved : [];
-
 
         let fromNode: Declaration | undefined = isImport ? (lastSelectorPart!.nodes as Declaration[]).find(n => n.prop === valueMapping.from) : undefined;
         let importName = (isImport && fromNode) ? fromNode.value.replace(/'/g, '').replace(/"/g, '') : '';
@@ -247,11 +247,10 @@ export default class Provider {
             meta: meta,
             docs: docs,
             resolver: this.styl.resolver,
-            lastRule: lastSelectorPart,
+            enclosingSelector: lastSelectorPart,
             trimmedLine: trimmedLine,
             lineText: lineText,
             position: position,
-            isTopLevel: !lastSelectorPart,
             isLineStart: false,
             isImport: isImport,
             isNamedValueLine: isNamedValueLine,
