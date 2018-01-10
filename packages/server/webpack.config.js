@@ -1,3 +1,6 @@
+var webpack = require('webpack');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+var VendorChunkPlugin = require('webpack-vendor-chunk-plugin');
 const path = require('path');
 const glob = require("glob");
 const {
@@ -5,28 +8,50 @@ const {
 } = require('./package.json');
 const testFiles = glob.sync(testGlob);
 
-const distPath = path.join(__dirname,  '..', 'client', 'server');
+const distPath = path.join(__dirname, '..', 'client', 'server');
 
 
 const testsSetup = [path.join(__dirname, '..', 'client', 'server', 'test', 'setup.js')];
 module.exports = {
     devtool: 'eval',
     entry: {
-        test: testsSetup.concat(testFiles),
-        webtest: testsSetup.concat(testFiles.map(fileName => `mocha-loader!${fileName}`))
-    },
-    output: {
-        path: distPath,
-        filename: '[name].bundle.js',
-        libraryTarget: 'umd',
-        pathinfo: true
+        main: './src/provider.ts',
+        vendor: ['typescript', 'lodash'],
     },
     devServer: {
-        contentBase: distPath,
+        // contentBase: distPath,
         inline: true,
         hot: false
     },
     module: {
-        noParse: [/\.min\.js$/, /\.bundle\.js$/]
+        rules: [{
+                test: /\.tsx?$/,
+                use: {
+                    loader: 'ts-loader',
+                    options: {
+                        compilerOptions: {
+                            "declaration": false
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    resolve: {
+        extensions: ['.ts', '.tsx', '.js']
+    },
+    output: {
+        filename: 'dist/[name].bundle.js',
+        pathinfo: true
+    },
+    plugins: [
+        new BundleAnalyzerPlugin(),
+        new webpack.optimize.CommonsChunkPlugin({ name: 'vendor', filename: 'vendor.bundle.js' }),
+        new VendorChunkPlugin('vendor')
+    ],
+    node: {
+        fs: 'empty',
+        module: 'empty'
     }
+
 };

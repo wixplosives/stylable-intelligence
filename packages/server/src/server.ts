@@ -1,7 +1,7 @@
 'use strict';
 import { setInterval } from 'timers';
 import * as path from 'path';
-import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, SignatureHelp, NotificationType, RequestType, RequestType0, Command } from 'vscode-languageserver';
+import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, SignatureHelp, NotificationType, RequestType, RequestType0, Command, ParameterInformation } from 'vscode-languageserver';
 import { createProvider, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
@@ -217,7 +217,7 @@ connection.onSignatureHelp((params): Thenable<SignatureHelp> => {
             }
         }, 100);
     }).then(() => {
-        let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, documents);
+        let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, documents, ParameterInformation);
         return Promise.resolve(sig!)
     })
 })

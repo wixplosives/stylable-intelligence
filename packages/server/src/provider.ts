@@ -30,36 +30,13 @@ import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
 import { Declaration } from 'postcss';
 import * as path from 'path';
-import { Position, TextDocumentPositionParams, SignatureHelp, SignatureInformation, ParameterInformation, TextDocuments } from 'vscode-languageserver';
+import { Position, SignatureHelp, SignatureInformation, ParameterInformation } from 'vscode-languageserver';
 import * as ts from 'typescript';
 import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName, Identifier, LiteralTypeNode } from 'typescript';
 import { nativePathToFileUri } from './utils/uri-utils';
 import { resolve } from 'url';
 import * as _ from 'lodash';
 
-
-// ///////
-// var replaceRuleSelector = require('postcss-selector-matches/dist/replaceRuleSelector');
-// var cloneDeep = require('lodash.clonedeep');
-// var CUSTOM_SELECTOR_RE = /:--[\w-]+/g;
-// function expandCustomSelectors(rule:any, meta:any, diagnostics?:any) {
-//     var customSelectors = meta.customSelectors;
-//     if (rule.selector.indexOf(':--') > -1) {
-//         rule.selector = rule.selector.replace(CUSTOM_SELECTOR_RE, function (extensionName:any, _matches:any, selector:any) {
-//             if (!customSelectors[extensionName] && diagnostics) {
-//                 diagnostics.warn(rule, "The selector '" + rule.selector + "' is undefined", { word: rule.selector });
-//                 return selector;
-//             }
-//             return ':matches(' + customSelectors[extensionName] + ')';
-//         });
-//         return transformMatchesOnRule(rule, false);
-//     }
-//     return rule.selector;
-// }
-// function transformMatchesOnRule(rule:any, lineBreak:any) {
-//     return replaceRuleSelector(rule, { lineBreak: lineBreak });
-// }
-///////
 
 export default class Provider {
     constructor(public styl: Stylable) { }
@@ -97,10 +74,10 @@ export default class Provider {
     ): Thenable<Completion[]> {
         const completions: Completion[] = [];
         try {
-            let options = this.createProviderOptions(src, position, meta, fakes, lineText, cursorPosInLine, docs)
+            let options = this.createProviderOptions(src, position, meta, fakes, lineText, cursorPosInLine, docs);
             this.providers.forEach(p => {
-                options.isLineStart = p.text.some((s: string) => s.indexOf(lineText.trim()) === 0)
-                completions.push(...p.provide(options))
+                options.isLineStart = p.text.some((s: string) => s.indexOf(lineText.trim()) === 0);
+                completions.push(...p.provide(options));
             });
         } catch (e) { }
         return Promise.resolve(this.dedupe(completions));
@@ -111,57 +88,35 @@ export default class Provider {
         position: ProviderPosition,
         meta: StylableMeta,
         fakeRules: PostCss.Rule[],
-        lineText: string,
+        fullLineText: string,
         cursorPosInLine: number,
         docs: MinimalDocs): ProviderOptions {
 
-        const path = pathFromPosition(meta.rawAst, { line: position.line + 1, character: position.character });
-        const lastPart: PostCss.NodeBase = path[path.length - 1];
-        const prevPart: PostCss.NodeBase = path[path.length - 2];
-
-
-        const lastSelectorPart: SRule | null = prevPart && isSelector(prevPart) && fakeRules.findIndex((f) => { return f.selector === prevPart.selector }) === -1
-            ? <SRule>prevPart
-            : lastPart && isSelector(lastPart) && fakeRules.findIndex((f) => { return f.selector === lastPart.selector }) === -1
-                ? <SRule>lastPart
-                : null;
-
-
-        const isImport = !!lastSelectorPart && (lastSelectorPart.selector === ':import');
-        const isInSelector = !!lastSelectorPart && !isImport;
-
-
-        let fixedLine = lineText;
-        let fixedCharIndex = cursorPosInLine;
-        while (fixedLine.lastIndexOf(' ') >= cursorPosInLine) {
-            fixedLine = fixedLine.slice(0, fixedLine.lastIndexOf(' '))
-        }
-        if (!isDirective(fixedLine) && fixedLine.lastIndexOf(' ') > -1 && fixedLine.lastIndexOf(' ') < cursorPosInLine) {
-            fixedCharIndex -= (fixedLine.lastIndexOf(' ') + 1);
-            fixedLine = fixedLine.slice(fixedLine.lastIndexOf(' '));
-        }
-        const trimmedLine = fixedLine.trim();
-
-
-        // if (isInSelector) {
-        let transformer = new StylableTransformer({
+        const transformer = new StylableTransformer({
             diagnostics: new Diagnostics(),
             fileProcessor: this.styl.fileProcessor,
             requireModule: () => { throw new Error('Not implemented, why are we here') }
         })
 
+        const path = pathFromPosition(meta.rawAst, { line: position.line + 1, character: position.character });
+        const astAtCursor: PostCss.NodeBase = path[path.length - 1];
+        const parentAst: PostCss.NodeBase | undefined = (astAtCursor as PostCss.Declaration).parent ? (astAtCursor as PostCss.Declaration).parent : undefined;
+        const lastSelectorPart: SRule | null = parentAst && isSelector(parentAst) && fakeRules.findIndex((f) => { return f.selector === parentAst.selector }) === -1
+            ? <SRule>parentAst
+            : astAtCursor && isSelector(astAtCursor) && fakeRules.findIndex((f) => { return f.selector === astAtCursor.selector }) === -1
+                ? <SRule>astAtCursor
+                : null;
 
 
+                const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(fullLineText, cursorPosInLine);
 
-        const ps = parseSelector(trimmedLine, fixedCharIndex);
+
+        const ps = parseSelector(lineChunkAtCursor, fixedCharIndex);
         const chunkStrings: string[] = ps.selector.reduce((acc, s) => { return acc.concat(s.text) }, ([] as string[]));
+        const currentSelector = (ps.selector[0] as SelectorChunk).classes[0] || (ps.selector[0] as SelectorChunk).customSelectors[0] || chunkStrings[0];
 
-
-        const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: trimmedLine }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
-
+        const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: lineChunkAtCursor }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
         const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
-
-        let currentSelector = (ps.selector[0] as SelectorChunk).classes[0] || (ps.selector[0] as SelectorChunk).customSelectors[0] || chunkStrings[0];
 
         let resolved: CSSResolve[] = [];
         if (currentSelector && resolvedElements[0].length) {
@@ -169,71 +124,32 @@ export default class Provider {
             resolved = clas ? clas.resolved : [];
         }
 
-        let pe2 = _.findLast(resolvedElements[0], e => e.type === 'pseudo-element' && e.resolved.length > 0)
-        let pseudoElementId = pe2 ? pe2.name : '';
+        const lastPseudo = _.findLast(resolvedElements[0], e => e.type === 'pseudo-element' && e.resolved.length > 0)
+        let pseudoElementId = lastPseudo ? lastPseudo.name : '';
 
         let customSelectorType = '';
         let customSelectorString = '';
-        let expanded: string = '';
-        if (trimmedLine.startsWith(':--')) {
-            customSelectorString = trimmedLine.match(/^(:--\w*)/)![1];
+        let expanded = '';
+        if (lineChunkAtCursor.startsWith(':--')) {
+            customSelectorString = lineChunkAtCursor.match(/^(:--\w*)/)![1];
             expanded = meta.customSelectors[customSelectorString];
         }
 
-        if (resolvedElements[0].length) {
-            const realPseudoInd = _.findLastIndex(resolvedElements[0], e => e.type === 'pseudo-element' && e.resolved.length > 0);
-            if (realPseudoInd > 0 &&
-                resolvedElements[0].slice(realPseudoInd).every(e => e.type === 'pseudo-element') &&
-                _.keys(resolvedElements[0][realPseudoInd].resolved[0].meta.customSelectors).some(cs => cs === ':--' + pseudoElementId)
-            ) {
-                customSelectorString = ':--' + pseudoElementId;
-                expanded = resolvedElements[0][realPseudoInd].resolved[0].meta.customSelectors[customSelectorString];
-                pseudoElementId = '';
-            }
+        if (lastPseudo &&
+            !!lastPseudo.resolved[0].meta.customSelectors[':--' + pseudoElementId]
+        ) {
+            customSelectorString = ':--' + pseudoElementId;
+            expanded = lastPseudo.resolved[0].meta.customSelectors[customSelectorString];
+            pseudoElementId = '';
         }
 
         if (expanded) {
-            let ps_exp = parseSelector(expanded, expanded.length)
-            customSelectorType = Array.isArray(ps_exp.target.focusChunk) ? ps_exp.target.focusChunk[0].type : (ps_exp.target.focusChunk as any).type
-            if (customSelectorType === '*') {
-                customSelectorType = (ps_exp.selector[0] as SelectorChunk).classes[0];
-            }
+            customSelectorType = lastPseudo ? lastPseudo.resolved[0].symbol.name : resolvedElements[0][0].name
         }
 
-        let resolvedPseudo = pe2 ? pe2.resolved : [];
+        const { isNamedValueLine, namedValues } = getNamedValues(src, position.line);
 
-        let fromNode: Declaration | undefined = isImport ? (lastSelectorPart!.nodes as Declaration[]).find(n => n.prop === valueMapping.from) : undefined;
-        let importName = (isImport && fromNode) ? fromNode.value.replace(/'/g, '').replace(/"/g, '') : '';
-        let resolvedImport: StylableMeta | null = null;
-        if (importName && importName.endsWith('.st.css')) try {
-            resolvedImport = this.styl.fileProcessor.process(meta.imports.find(i => i.fromRelative === importName)!.from);
-        } catch (e) {
-            resolvedImport = null;
-        }
-
-
-        let isNamedValueLine = false;
-        let namedValues: string[] = [];
-        let lines = src.split('\n');
-        if (importName) {
-            for (let i = position.line; i > 0; i--) {
-                if (isDirective(lines[i]) && !isNamedDirective(lines[i])) {
-                    break;
-                } else if (isNamedDirective(lines[i])) {
-                    isNamedValueLine = true;
-                    let valueStart = lines[i].indexOf(':') + 1;
-                    let value = lines[i].slice(valueStart);
-                    value.split(',').map(x => x.trim()).filter(x => x !== '').forEach(x => namedValues.push(x));
-                    break;
-                } else {
-                    let valueStart = lines[i].indexOf(':') + 1;
-                    let value = lines[i].slice(valueStart);
-                    value.split(',').map(x => x.trim()).filter(x => x !== '').forEach(x => namedValues.push(x));
-                }
-            }
-        }
-
-        let importVars: any[] = [];
+        const importVars: any[] = [];
         meta.imports.forEach(imp => {
             try {
                 this.styl.fileProcessor.process(imp.from).vars.forEach(v => importVars.push({ name: v.name, value: v.text, from: imp.fromRelative }))
@@ -244,26 +160,25 @@ export default class Provider {
         return {
             meta: meta,
             docs: docs,
-            resolver: this.styl.resolver,
-            enclosingSelector: lastSelectorPart,
-            trimmedLine: trimmedLine,
-            lineText: lineText,
+            styl: this.styl,
+            parentSelector: lastSelectorPart,
+            astAtCursor: astAtCursor,
+            lineChunkAtCursor: lineChunkAtCursor,
+            fullLineText: fullLineText,
             position: position,
             isLineStart: false,
-            isImport: isImport,
             isNamedValueLine: isNamedValueLine,
             namedValues: namedValues,
-            resolvedImport: resolvedImport,
             resolved: resolved,
             currentSelector: currentSelector,
             target: ps.target,
             isMediaQuery: isInMediaQuery(path),
             fakes: fakeRules,
             pseudo: pseudoElementId,
-            resolvedPseudo: resolvedPseudo,
+            resolvedPseudo: lastPseudo ? lastPseudo.resolved : [],
             customSelector: customSelectorString,
             customSelectorType: customSelectorType,
-            isInValue: isInValue(lineText, position),
+            isInValue: isInValue(fullLineText, position),
             importVars: importVars,
         }
     }
@@ -363,7 +278,7 @@ export default class Provider {
         )
     }
 
-    getSignatureHelp(src: string, pos: Position, filePath: string, documents: MinimalDocs): SignatureHelp | null {
+    getSignatureHelp(src: string, pos: Position, filePath: string, documents: MinimalDocs, paramInfo: typeof ParameterInformation): SignatureHelp | null {
         if (!filePath.endsWith('.st.css')) { return null }
         let res = fixAndProcess(src, pos, filePath);
         let meta = res.processed.meta;
@@ -390,10 +305,10 @@ export default class Provider {
         if (mixin === 'value') { return null }
 
         if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
-            return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default');
+            return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
         } else if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.js')) {
             if (documents.keys().indexOf('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts') !== -1) {
-                return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts', (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default');
+                return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts', (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
             } else {
                 console.log((meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
                 return this.getSignatureForJsModifier(
@@ -404,14 +319,14 @@ export default class Provider {
                             ? 'file://'
                             : '')
                         + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from
-                    ).getText());
+                    ).getText(), paramInfo);
             }
         } else {
             return null;
         }
     }
 
-    getSignatureForTsModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean): SignatureHelp | null {
+    getSignatureForTsModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean, paramInfo: typeof ParameterInformation): SignatureHelp | null {
         let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault)
         let ptypes = sig!.parameters.map(p => {
             return p.name + ":" + ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
@@ -422,7 +337,7 @@ export default class Provider {
 
         let parameters: ParameterInformation[] = sig!.parameters.map(pt => {
             let label = pt.name + ":" + ((pt.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText();
-            return ParameterInformation.create(label)
+            return paramInfo.create(label)
         });
 
         let sigInfo: SignatureInformation = {
@@ -437,7 +352,7 @@ export default class Provider {
         } as SignatureHelp
     }
 
-    getSignatureForJsModifier(mixin: string, activeParam: number, fileSrc: string): SignatureHelp | null {
+    getSignatureForJsModifier(mixin: string, activeParam: number, fileSrc: string, paramInfo: typeof ParameterInformation): SignatureHelp | null {
 
         let lines = fileSrc.split('\n');
         let mixinLine: number = lines.findIndex(l => l.trim().startsWith('exports.' + mixin));
@@ -506,7 +421,7 @@ export default class Provider {
         }
         if (descLines[0] && descLines[0].startsWith('@description')) { descLines[0] = descLines[0].slice(12).trim() }
 
-        let parameters: ParameterInformation[] = params.map(p => ParameterInformation.create(p[1] + ': ' + p[0], p[2].trim()))
+        let parameters: ParameterInformation[] = params.map(p => paramInfo.create(p[1] + ': ' + p[0], p[2].trim()))
 
         let sigInfo: SignatureInformation = {
             label: mixin + '(' + parameters.map(p => p.label).join(', ') + '): ' + returnType,
@@ -677,4 +592,41 @@ function isInValue(lineText: string, position: ProviderPosition) {
         if (stack > 0) { isInValue = true }
     }
     return isInValue;
+}
+
+function getChunkAtCursor(fullLineText: string, cursorPosInLine: number): { lineChunkAtCursor: string, fixedCharIndex: number } {
+    let fixedCharIndex = cursorPosInLine;
+    let lineChunkAtCursor = fullLineText;
+    while (lineChunkAtCursor.lastIndexOf(' ') >= cursorPosInLine) {
+        lineChunkAtCursor = lineChunkAtCursor.slice(0, lineChunkAtCursor.lastIndexOf(' '))
+    }
+    if (!isDirective(lineChunkAtCursor) && lineChunkAtCursor.lastIndexOf(' ') > -1 && lineChunkAtCursor.lastIndexOf(' ') < cursorPosInLine) {
+        fixedCharIndex -= (lineChunkAtCursor.lastIndexOf(' ') + 1);
+        lineChunkAtCursor = lineChunkAtCursor.slice(lineChunkAtCursor.lastIndexOf(' '));
+    }
+    return { lineChunkAtCursor: lineChunkAtCursor.trim(), fixedCharIndex };
+}
+
+function getNamedValues(src: string, lineIndex: number): { isNamedValueLine: boolean, namedValues: string[] } {
+    let lines = src.split('\n');
+    let isNamedValueLine = false;
+    let namedValues: string[] = [];
+
+    for (let i = lineIndex; i > 0; i--) {
+        if (isDirective(lines[i]) && !isNamedDirective(lines[i])) {
+            break;
+        } else if (isNamedDirective(lines[i])) {
+            isNamedValueLine = true;
+            let valueStart = lines[i].indexOf(':') + 1;
+            let value = lines[i].slice(valueStart);
+            value.split(',').map(x => x.trim()).filter(x => x !== '').forEach(x => namedValues.push(x));
+            break;
+        } else {
+            let valueStart = lines[i].indexOf(':') + 1;
+            let value = lines[i].slice(valueStart);
+            value.split(',').map(x => x.trim()).filter(x => x !== '').forEach(x => namedValues.push(x));
+        }
+    }
+
+    return { isNamedValueLine, namedValues }
 }

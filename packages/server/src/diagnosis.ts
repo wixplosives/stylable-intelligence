@@ -1,7 +1,6 @@
 import { StylableMeta } from 'stylable/dist/src/stylable-processor';
 import { Diagnostic, Range, DiagnosticSeverity } from 'vscode-languageserver-types/lib/main';
 import { TextDocument } from 'vscode-languageserver-types/lib/main';
-// import {NodeSource} from 'postcss'
 import * as path from 'path';
 import { safeParse, Diagnostics, process as stylableProcess, StylableTransformer, FileProcessor } from 'stylable';
 import { Diagnostic as Report } from 'stylable/src/diagnostics'
@@ -21,9 +20,8 @@ export function createDiagnosis(doc: TextDocument, fp: FileProcessor<StylableMet
     let transformer = new StylableTransformer({
         diagnostics: new Diagnostics(),
         fileProcessor: fp,
-        requireModule: (path) => {
+        requireModule: () => {
             // console.log(path)
-            return require(path);
         }
     })
 

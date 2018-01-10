@@ -1,6 +1,5 @@
-
-:
-
-.gaga{
-    color:red;
+:import {
+    -st-from: './top-import.st.css';
+    -st-named: shlomo,
+     poopy,
 }

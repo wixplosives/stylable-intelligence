@@ -10,7 +10,7 @@ import { createMeta, ProviderLocation } from '../src/provider';
 import { pathFromPosition } from '../src/utils/postcss-ast-utils'
 import { NodeBase } from 'postcss';
 import { Provider } from '../src/index';
-import { SignatureHelp, TextDocumentPositionParams, TextDocumentIdentifier } from 'vscode-languageserver';
+import { SignatureHelp, TextDocumentPositionParams, TextDocumentIdentifier, ParameterInformation } from 'vscode-languageserver';
 import { fileUriToNativePath } from '../src/utils/uri-utils';
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
@@ -123,7 +123,7 @@ export function getSignatureHelp(fileName: string, prefix: string): SignatureHel
     let pos = getCaretPosition(src);
     src = src.replace('|', prefix);
     pos.character += prefix.length;
-    return provider.getSignatureHelp(src, pos, fullPath, minDocs);
+    return provider.getSignatureHelp(src, pos, fullPath, minDocs, ParameterInformation);
 }
 
 const minDocs: MinimalDocs = {
