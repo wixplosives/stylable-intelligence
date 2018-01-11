@@ -16,12 +16,11 @@ import * as ts from 'typescript'
 import { FileSystemReadSync } from 'kissfs';
 export {MinimalDocs} from './provider-factory';
 
-namespace OpenDocNotification {
-    export const type = new NotificationType<string, void>('stylable/openDocumentNotification');
-}
+// namespace OpenDocNotification {
+// }
 
 export class StylableLanguageService {
-    constructor(connection: IConnection, services: { styl: Stylable }, documents: TextDocuments ) {
+    constructor(connection: IConnection, services: { styl: Stylable }, documents: TextDocuments, private OpenDocNotificationType : NotificationType<string, void> ) {
 
         const provider = createProvider(documents, services.styl);
         const processor = provider.styl.fileProcessor;
@@ -77,7 +76,7 @@ export class StylableLanguageService {
             const pos = params.position;
 
             const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
-            requestedFiles.forEach(file => connection.sendNotification(OpenDocNotification.type, file));
+            requestedFiles.forEach(file => connection.sendNotification(OpenDocNotificationType, file));
 
             return new Promise((resolve, reject) => {
                 const startTime = new Date();
@@ -151,7 +150,7 @@ export class StylableLanguageService {
             const doc = documents.get(params.textDocument.uri).getText();
             const pos = params.position;
             const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
-            requestedFiles.forEach(file => connection.sendNotification(OpenDocNotification.type, file));
+            requestedFiles.forEach(file => connection.sendNotification(OpenDocNotificationType, file));
 
             return new Promise((resolve, reject) => {
                 const startTime = new Date();
@@ -204,7 +203,7 @@ export class StylableLanguageService {
             const doc: string = documents.get(params.textDocument.uri).getText();
 
             const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
-            requestedFiles.forEach(file => connection.sendNotification(OpenDocNotification.type, file));
+            requestedFiles.forEach(file => connection.sendNotification(OpenDocNotificationType, file));
 
             return new Promise((resolve, reject) => {
                 const startTime = new Date();

@@ -74,8 +74,9 @@ export function activate(context: ExtensionContext) {
             if (doc.fileName.endsWith('.js')) {
                 workspace.findFiles('**/' + path.basename(doc.fileName).slice(0, -3) + '.d.ts').then((uris) => {
                     uris.forEach(u => {
-                        // console.log('opening: ' + u);
+                        console.log('opening: ' + u);
                         workspace.openTextDocument(u);
+                        console.log('opened: ' + u);
                     })
                 })
             }
