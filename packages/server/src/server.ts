@@ -18,7 +18,6 @@ import {LocalSyncFs} from './local-sync-fs';
 import *  as fs from 'fs';
 
 
-fs.appendFileSync('/tmp/lsp.log', Date.now() +  ': Start\n');
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const docs = new TextDocuments();
 // docs.listen(connection);
@@ -28,7 +27,6 @@ const fileSystem = new LocalSyncFs('');
 const styl = new Stylable('/', createFs(docs, fileSystem, true), () => ({ default: {} }))
 
 const service =  new StylableLanguageService(connection, {styl}, docs)
-fs.appendFileSync('/tmp/lsp.log', Date.now() +  ': Up\n');
 
 
 
