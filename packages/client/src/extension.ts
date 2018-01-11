@@ -33,7 +33,6 @@ export function activate(context: ExtensionContext) {
 
     context.subscriptions.push(client.start());
 
-
     return client
         .onReady()
         .then(_ => {

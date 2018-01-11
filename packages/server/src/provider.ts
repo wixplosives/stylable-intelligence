@@ -107,14 +107,10 @@ export default class Provider {
                 ? <SRule>astAtCursor
                 : null;
 
-
-                const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(fullLineText, cursorPosInLine);
-
-
+        const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(fullLineText, cursorPosInLine);
         const ps = parseSelector(lineChunkAtCursor, fixedCharIndex);
         const chunkStrings: string[] = ps.selector.reduce((acc, s) => { return acc.concat(s.text) }, ([] as string[]));
         const currentSelector = (ps.selector[0] as SelectorChunk).classes[0] || (ps.selector[0] as SelectorChunk).customSelectors[0] || chunkStrings[0];
-
         const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: lineChunkAtCursor }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
         const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
 

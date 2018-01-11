@@ -3,6 +3,7 @@ import {TextDocument} from 'vscode-languageserver-types/lib/main'
 import {TextDocuments} from "vscode-languageserver/lib/main";
 import {createDiagnosis} from '../src/diagnosis'
 import {createProcessor} from '../src/provider-factory'
+import { LocalSyncFs } from '../src/local-sync-fs';
 
 function createDiagnostics(files:{[filePath:string]:string}, path:string) {
     const docs:{[path:string]:TextDocument} = {}
@@ -20,7 +21,7 @@ function createDiagnostics(files:{[filePath:string]:string}, path:string) {
         }
     } as TextDocuments
 
-    return createDiagnosis(documents.get(path), createProcessor(documents, false))
+    return createDiagnosis(documents.get(path), createProcessor(documents, new LocalSyncFs(''), false))
 }
 
 

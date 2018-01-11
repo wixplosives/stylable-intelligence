@@ -155,7 +155,7 @@ const topLevelDeclarations: (keyof typeof topLevelDirectives)[] = ['root', 'name
 // If directive doesn't already exist
 export const ImportInternalDirectivesProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
-        if (options.parentSelector && options.parentSelector.selector === ':import' && options.isLineStart && !options.isMediaQuery) {
+        if (options.parentSelector && options.parentSelector.selector === ':import' && !options.isMediaQuery && options.isLineStart) {
             const res: Completion[] = [];
             importDeclarations.forEach(type => {
                 if (options.parentSelector!.nodes!.every(n => isDeclaration(n) && importDirectives[type] !== n.prop || isComment(n))) {

@@ -2,8 +2,7 @@ import { expect } from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 import { TextDocument } from 'vscode-languageserver-types';
-
-import { createProvider, MinimalDocs } from '../src/provider-factory'
+import { createProvider, MinimalDocs, createFs } from '../src/provider-factory'
 import { Completion, snippet } from '../src/completion-types';
 import { ProviderPosition, ProviderRange } from '../src/completion-providers';
 import { createMeta, ProviderLocation } from '../src/provider';
@@ -12,6 +11,8 @@ import { NodeBase } from 'postcss';
 import { Provider } from '../src/index';
 import { SignatureHelp, TextDocumentPositionParams, TextDocumentIdentifier, ParameterInformation } from 'vscode-languageserver';
 import { fileUriToNativePath } from '../src/utils/uri-utils';
+import { Stylable } from 'stylable';
+import { LocalSyncFs } from '../src/local-sync-fs';
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {
@@ -139,7 +140,7 @@ const minDocs: MinimalDocs = {
     }
 };
 
-const provider = createProvider(minDocs);
+const provider = createProvider(minDocs, new Stylable('/', createFs(minDocs, new LocalSyncFs(''), true), () => ({ default: {} })));
 
 
 

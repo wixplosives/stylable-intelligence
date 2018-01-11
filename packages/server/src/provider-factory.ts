@@ -8,14 +8,15 @@ import {
 import Provider from './provider';
 import * as fs from 'fs';
 import { htap } from 'htap';
+import { FileSystemReadSync, EventEmitter } from 'kissfs';
 
 
-export function createProvider(docs: MinimalDocs, withFilePrefix: boolean = true): Provider {
-    const styl = new Stylable('/', createFs(docs, withFilePrefix), () => ({ default: {} }))
-    return new Provider(styl)
+export function createProvider(docs: MinimalDocs, stylable: Stylable, withFilePrefix: boolean = true): Provider {
+    // const styl = new Stylable('/', createFs(docs, fileSystem, withFilePrefix), () => ({ default: {} }))
+    return new Provider(stylable)
 }
 
-function createFs(docs: MinimalDocs, withFilePrefix: boolean = true): any {
+export function createFs(docs: MinimalDocs, fileSystem: FileSystemReadSync, withFilePrefix: boolean = true): any {
 
     const getDocFormatPath = (path: string) => {
         if (process.platform === 'win32') {
@@ -28,9 +29,9 @@ function createFs(docs: MinimalDocs, withFilePrefix: boolean = true): any {
     return {
         readFileSync(path: string) {
             if (docs.keys().indexOf(getDocFormatPath(path)) !== -1) {
-                return docs.get(getDocFormatPath(path)).getText()
+                return docs.get(getDocFormatPath(path)).getText();
             } else {
-                return fs.readFileSync(path).toString();
+                return fileSystem.loadTextFileSync(path).toString();
             }
         },
         statSync(path: string) {
@@ -48,15 +49,17 @@ function createFs(docs: MinimalDocs, withFilePrefix: boolean = true): any {
     }
 }
 
-export function createProcessor(docs: MinimalDocs, withFilePrefix: boolean = true): FileProcessor<StylableMeta> {
+export function createProcessor(docs: MinimalDocs, fileSystem: FileSystemReadSync, withFilePrefix: boolean = true): FileProcessor<StylableMeta> {
     let proccesor = cachedProcessFile<StylableMeta>((fullpath, content) => {
         return stylableProcess(safeParse(content, { from: fullpath }))
-    }, createFs(docs, withFilePrefix))
+    }, createFs(docs, fileSystem, withFilePrefix))
     return proccesor;
 
 }
 
-export interface MinimalDocs {
+export interface MinimalDocs extends Partial<FileSystemReadSync> {
     get: (uri: string) => TextDocument;
-    keys: () => string[]
+    keys: () => string[];
+    // loadTextFileSync:(fullPath: string) => string;
+    // events: EventEmitter;
 }
