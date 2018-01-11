@@ -1,6 +1,6 @@
 {
-  "name": "stylable-intelligence-server",
-  "version": "0.0.48",
+  "name": "stylable-intelligence-service",
+  "version": "0.0.49",
   "description": "Stylable Language Server",
   "author": "Nadav Abraami (nadav@wix.com)",
   "publisher": "Nadav Abraami (nadav@wix.com)",
