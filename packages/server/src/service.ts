@@ -14,6 +14,7 @@ import { createMeta } from './provider';
 import { Stylable } from 'stylable';
 import * as ts from 'typescript'
 import { FileSystemReadSync } from 'kissfs';
+export {MinimalDocs} from './provider-factory';
 
 namespace OpenDocNotification {
     export const type = new NotificationType<string, void>('stylable/openDocumentNotification');
