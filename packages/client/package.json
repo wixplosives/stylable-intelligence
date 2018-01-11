@@ -92,6 +92,7 @@
         "typescript": "^2.6.2"
     },
     "dependencies": {
+        "bignumber": "^1.1.0",
         "css-selector-tokenizer": "^0.7.0",
         "glob": "^7.1.2",
         "lodash": "4.17.4",
