@@ -1,6 +1,6 @@
 import {expect} from 'chai'
 import {TextDocument} from 'vscode-languageserver-types/lib/main'
-import {TextDocuments} from "vscode-languageserver/lib/main";
+import {TextDocuments, Command,Location, Position, Range, TextEdit,CompletionItem,ParameterInformation,Diagnostic} from "vscode-languageserver/lib/main";
 import {createDiagnosis} from '../src/diagnosis'
 import {createProcessor} from '../src/provider-factory'
 import { LocalSyncFs } from '../src/local-sync-fs';
@@ -21,7 +21,16 @@ function createDiagnostics(files:{[filePath:string]:string}, path:string) {
         }
     } as TextDocuments
 
-    return createDiagnosis(documents.get(path), createProcessor(documents, new LocalSyncFs(''), false))
+    return createDiagnosis(documents.get(path), createProcessor(documents, new LocalSyncFs(''), false),{
+        Command,
+        Location,
+        Position,
+        Range,
+        TextEdit,
+        CompletionItem,
+        ParameterInformation,
+        Diagnostic
+    })
 }
 
 

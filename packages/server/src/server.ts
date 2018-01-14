@@ -1,7 +1,7 @@
 'use strict';
 import { setInterval } from 'timers';
 import * as path from 'path';
-import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, SignatureHelp, NotificationType, RequestType, RequestType0, Command, ParameterInformation } from 'vscode-languageserver';
+import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, SignatureHelp, NotificationType, RequestType, RequestType0, Command, ParameterInformation, Diagnostic } from 'vscode-languageserver';
 import { createProvider, createFs, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
@@ -16,8 +16,6 @@ import { StylableLanguageService } from './service'
 import { Stylable } from 'stylable';
 import {LocalSyncFs} from './local-sync-fs';
 import *  as fs from 'fs';
-
-
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const docs = new TextDocuments();
 // docs.listen(connection);
@@ -27,7 +25,20 @@ const fileSystem = new LocalSyncFs('');
 const styl = new Stylable('/', createFs(docs, fileSystem, true), () => ({ default: {} }))
 const OpenDocNotificationType = new NotificationType<string, void>('stylable/openDocumentNotification');
 
-const service =  new StylableLanguageService(connection, {styl}, docs, OpenDocNotificationType)
+const service =  new StylableLanguageService(connection, {styl}, docs, {
+    openDoc:OpenDocNotificationType,
+    colorPresentationRequest:ColorPresentationRequest,
+    colorRequest:DocumentColorRequest
+},{
+    Command,
+    Location,
+    Position,
+    Range,
+    TextEdit,
+    CompletionItem,
+    ParameterInformation,
+    Diagnostic
+}, VCL)
 
 
 

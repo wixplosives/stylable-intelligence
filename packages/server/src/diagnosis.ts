@@ -1,11 +1,11 @@
 import { StylableMeta } from 'stylable/dist/src/stylable-processor';
-import { Diagnostic, Range, DiagnosticSeverity } from 'vscode-languageserver-types/lib/main';
+import { Diagnostic, Range } from 'vscode-languageserver-types/lib/main';
 import { TextDocument } from 'vscode-languageserver-types/lib/main';
 import * as path from 'path';
 import { safeParse, Diagnostics, process as stylableProcess, StylableTransformer, FileProcessor } from 'stylable';
 import { Diagnostic as Report } from 'stylable/src/diagnostics'
-
-export function createDiagnosis(doc: TextDocument, fp: FileProcessor<StylableMeta>): Diagnostic[] {
+import {LSPTypeHelpers} from './types';
+export function createDiagnosis(doc: TextDocument, fp: FileProcessor<StylableMeta>, typeHelpers:LSPTypeHelpers): Diagnostic[] {
     if (!doc.uri.endsWith('.st.css')) { return [] };
 
     let file: string;
@@ -34,16 +34,18 @@ export function createDiagnosis(doc: TextDocument, fp: FileProcessor<StylableMet
     } catch(e) {}
     return meta.diagnostics.reports.concat(meta.transformDiagnostics ? meta.transformDiagnostics.reports : [])
         .map(reportToDiagnostic)
+
+        //stylable diagnostic to protocol diagnostic
+    function reportToDiagnostic(report: Report) {
+        let severity = report.type === 'error' ? 1 : 2
+        let range = createRange(report,typeHelpers)
+        return typeHelpers.Diagnostic.create(range, report.message, severity as any)
+    }
+
 }
 
-//stylable diagnostic to protocol diagnostic
-function reportToDiagnostic(report: Report) {
-    let severity = report.type === 'error' ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning
-    let range = createRange(report)
-    return Diagnostic.create(range, report.message, severity)
-}
 
-function createRange(report: Report) {
+function createRange(report: Report, typeHelpers:LSPTypeHelpers) {
     let source = report.node.source
     let start = { line: 0, character: 0 }
     let end = { line: 0, character: 0 }
@@ -67,5 +69,5 @@ function createRange(report: Report) {
         end.line = source.end!.line - 1
         end.character = source.end!.column
     }
-    return Range.create(start, end)
+    return typeHelpers.Range.create(start, end)
 }

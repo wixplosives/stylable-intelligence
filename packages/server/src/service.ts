@@ -1,13 +1,14 @@
 'use strict';
 import { setInterval } from 'timers';
 import * as path from 'path';
-import { CompletionItem, createConnection, IConnection, InitializeResult, InsertTextFormat, IPCMessageReader, IPCMessageWriter, TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, SignatureHelp, NotificationType, RequestType, RequestType0, Command, ParameterInformation } from 'vscode-languageserver';
+///         *                                                                *        *                                        *          *                                                              *
+import { CompletionItem,  IConnection, InitializeResult,  TextDocuments, TextEdit, Location, Definition, Hover, TextDocument, Range, Position, ServerCapabilities, SignatureHelp, NotificationType,  Command, ParameterInformation } from 'vscode-languageserver';
 import { createProvider, MinimalDocs, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import { createDiagnosis } from './diagnosis';
 import * as VCL from 'vscode-css-languageservice';
-import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
+import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest} from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
 import { valueMapping } from 'stylable/dist/src/stylable-value-parsers';
 import { fileUriToNativePath, nativePathToFileUri } from './utils/uri-utils';
 import { createMeta } from './provider';
@@ -15,16 +16,17 @@ import { Stylable } from 'stylable';
 import * as ts from 'typescript'
 import { FileSystemReadSync } from 'kissfs';
 export {MinimalDocs} from './provider-factory';
-
+import {NotificationTypes,LSPTypeHelpers} from './types'
 // namespace OpenDocNotification {
 // }
 
+
 export class StylableLanguageService {
-    constructor(connection: IConnection, services: { styl: Stylable }, documents: TextDocuments, private OpenDocNotificationType : NotificationType<string, void> ) {
+    constructor(connection: IConnection, services: { styl: Stylable }, documents: TextDocuments, notifications :NotificationTypes , typeHelpers:LSPTypeHelpers, vcl:typeof VCL) {
 
         const provider = createProvider(documents, services.styl);
         const processor = provider.styl.fileProcessor;
-        const cssService = VCL.getCSSLanguageService();
+        const cssService = vcl.getCSSLanguageService();
 
         documents.listen(connection);
 
@@ -76,7 +78,7 @@ export class StylableLanguageService {
             const pos = params.position;
 
             const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
-            requestedFiles.forEach(file => connection.sendNotification(OpenDocNotificationType, file));
+            requestedFiles.forEach(file => connection.sendNotification(notifications.openDoc, file));
 
             return new Promise((resolve, reject) => {
                 const startTime = new Date();
@@ -95,19 +97,19 @@ export class StylableLanguageService {
                 return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, documents)
                     .then((res) => {
                         return res.map((com: Completion) => {
-                            let lspCompletion = CompletionItem.create(com.label);
-                            let ted: TextEdit = TextEdit.replace(
+                            let lspCompletion:CompletionItem = typeHelpers.CompletionItem.create(com.label);
+                            let ted: TextEdit = typeHelpers.TextEdit.replace(
                                 com.range ? com.range : new ProviderRange(new ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos),
                                 typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
-                            lspCompletion.insertTextFormat = InsertTextFormat.Snippet;
+                            lspCompletion.insertTextFormat = 2;
                             lspCompletion.detail = com.detail;
                             lspCompletion.textEdit = ted;
                             lspCompletion.sortText = com.sortText;
                             lspCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
                             if (com.additionalCompletions) {
-                                lspCompletion.command = Command.create("additional", "editor.action.triggerSuggest")
+                                lspCompletion.command = typeHelpers.Command.create("additional", "editor.action.triggerSuggest")
                             } else if (com.triggerSignature) {
-                                lspCompletion.command = Command.create("additional", "editor.action.triggerParameterHints")
+                                lspCompletion.command = typeHelpers.Command.create("additional", "editor.action.triggerParameterHints")
                             }
                             return lspCompletion;
                         }).concat(cssComps)
@@ -125,7 +127,7 @@ export class StylableLanguageService {
                         .filter(diag => {
                             if (diag.code === 'emptyRules') { return false; }
                             if (diag.code === 'css-unknownatrule' && readDocRange(change.document, diag.range) === '@custom-selector') { return false; }
-                            if (diag.code === 'css-lcurlyexpected' && readDocRange(change.document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) { return false; }
+                            if (diag.code === 'css-lcurlyexpected' && readDocRange(change.document, typeHelpers.Range.create(typeHelpers.Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) { return false; }
                             if (diag.code === 'unknownProperties') {
                                 let prop = diag.message.match(/'(.*)'/)![1]
                                 let src = documents.get(change.document.uri).getText();
@@ -142,7 +144,7 @@ export class StylableLanguageService {
                         })
                     : [];
 
-            let diagnostics = createDiagnosis(change.document, processor).map(diag => { diag.source = 'stylable'; return diag; });
+            let diagnostics = createDiagnosis(change.document, processor, typeHelpers).map(diag => { diag.source = 'stylable'; return diag; });
             connection.sendDiagnostics({ uri: change.document.uri, diagnostics: diagnostics.concat(cssDiags) })
         });
 
@@ -150,7 +152,7 @@ export class StylableLanguageService {
             const doc = documents.get(params.textDocument.uri).getText();
             const pos = params.position;
             const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
-            requestedFiles.forEach(file => connection.sendNotification(OpenDocNotificationType, file));
+            requestedFiles.forEach(file => connection.sendNotification(notifications.openDoc, file));
 
             return new Promise((resolve, reject) => {
                 const startTime = new Date();
@@ -167,7 +169,7 @@ export class StylableLanguageService {
             }).then(() => {
                 return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, documents)
                     .then((res) => {
-                        return res.map(loc => Location.create(nativePathToFileUri(loc.uri), loc.range))
+                        return res.map(loc => typeHelpers.Location.create(nativePathToFileUri(loc.uri), loc.range))
                     });
             });
         });
@@ -183,14 +185,14 @@ export class StylableLanguageService {
             return Promise.resolve(refs)
         });
 
-        connection.onRequest(DocumentColorRequest.type, params => {
+        connection.onRequest(notifications.colorRequest.type, params => {
             const document = documents.get(params.textDocument.uri);
             const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
             const colors = cssService.findDocumentColors(document, stylesheet)
             return colors;
         });
 
-        connection.onRequest(ColorPresentationRequest.type, params => {
+        connection.onRequest(notifications.colorPresentationRequest.type, params => {
             const document = documents.get(params.textDocument.uri);
             const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
             const colors = cssService.getColorPresentations(document, stylesheet, params.color, params.range)
@@ -203,7 +205,7 @@ export class StylableLanguageService {
             const doc: string = documents.get(params.textDocument.uri).getText();
 
             const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
-            requestedFiles.forEach(file => connection.sendNotification(OpenDocNotificationType, file));
+            requestedFiles.forEach(file => connection.sendNotification(notifications.openDoc, file));
 
             return new Promise((resolve, reject) => {
                 const startTime = new Date();
@@ -218,7 +220,7 @@ export class StylableLanguageService {
                     }
                 }, 100);
             }).then(() => {
-                let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, documents, ParameterInformation);
+                let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, documents, typeHelpers.ParameterInformation);
                 return Promise.resolve(sig!)
             })
         })
