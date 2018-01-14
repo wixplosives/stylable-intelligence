@@ -20,7 +20,8 @@ export {MinimalDocs} from './provider-factory';
 // }
 
 export class StylableLanguageService {
-    constructor(connection: IConnection, services: { styl: Stylable }, documents: TextDocuments, private OpenDocNotificationType : NotificationType<string, void> ) {
+    constructor(connection: IConnection, services: { styl: Stylable }, documents: TextDocuments, private OpenDocNotificationType : NotificationType<string, void>,
+    private DocumentColorRequestType: typeof DocumentColorRequest, private ColorPresentationRequestType: typeof ColorPresentationRequest ) {
 
         const provider = createProvider(documents, services.styl);
         const processor = provider.styl.fileProcessor;
@@ -183,14 +184,14 @@ export class StylableLanguageService {
             return Promise.resolve(refs)
         });
 
-        connection.onRequest(DocumentColorRequest.type, params => {
+        connection.onRequest(DocumentColorRequestType.type, params => {
             const document = documents.get(params.textDocument.uri);
             const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
             const colors = cssService.findDocumentColors(document, stylesheet)
             return colors;
         });
 
-        connection.onRequest(ColorPresentationRequest.type, params => {
+        connection.onRequest(ColorPresentationRequestType.type, params => {
             const document = documents.get(params.textDocument.uri);
             const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
             const colors = cssService.getColorPresentations(document, stylesheet, params.color, params.range)

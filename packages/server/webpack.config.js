@@ -15,7 +15,7 @@ const testsSetup = [path.join(__dirname, '..', 'client', 'server', 'test', 'setu
 module.exports = {
     devtool: 'eval',
     entry: {
-        main: './src/provider.ts',
+        main: './src/service.ts',
         vendor: ['typescript', 'lodash'],
     },
     devServer: {

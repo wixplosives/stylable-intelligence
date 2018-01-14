@@ -1,4 +1,4 @@
-import { LocalFileSystem, FileSystemReadSync, Directory, ShallowDirectory, File } from 'kissfs'
+import { LocalFileSystem, FileSystemReadSync, Directory, ShallowDirectory, File, DirectoryContent } from 'kissfs'
 import * as fs from 'fs';
 
 export class LocalSyncFs extends LocalFileSystem implements FileSystemReadSync {
@@ -12,5 +12,9 @@ export class LocalSyncFs extends LocalFileSystem implements FileSystemReadSync {
 
     loadDirectoryChildrenSync(fullPath: string): Array<File | ShallowDirectory> {
         return [];
+    }
+
+    loadDirectoryContentSync(fullPath?: string): DirectoryContent {
+        return {};
     }
 }

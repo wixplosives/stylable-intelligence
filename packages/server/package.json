@@ -24,6 +24,7 @@
     "watch": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc --watch -p .",
     "build": "tsc -d",
     "pack": "webpack",
+    "serve": "webpack-dev-server",
     "copy:cases": "ncp test/cases/ ../client/server/test/cases/",
     "pretest": "yarn clear && yarn build && yarn copy:cases && yarn compile",
     "test": "mocha  --reporter mocha-env-reporter ../client/server/test/**/*.spec.js",
