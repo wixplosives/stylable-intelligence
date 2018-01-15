@@ -1,11 +1,8 @@
 :import {
-    -st-from: "./mid-import.st.css";
-    -st-default: Comp;
+    -st-from: "./import.st.css";
+    -st-named: color1, color2;
 }
 
-.gaga {
-    -st-extends: Comp;
-    -st-states: localState;
+.local {
+    color: value( )
 }
-
-.gaga

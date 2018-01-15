@@ -3,9 +3,14 @@
 }
 
 .momo{
-    -st-states: anotherState,oneMoreState;
+    -st-states: anotherState;
 }
 
 .root {
     -st-states : state,otherState;
+}
+
+:vars {
+    color1: red;
+    color2: blue;
 }

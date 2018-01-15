@@ -1,6 +1,6 @@
 import { StylableMeta, SRule, valueMapping, ClassSymbol, CSSResolve, VarSymbol, ImportSymbol, StylableResolver, Stylable } from 'stylable';
 import { evalValue } from 'stylable/dist/src/functions'
-import { CursorPosition, SelectorInternalChunk } from "./utils/selector-analyzer";
+import { CursorPosition, SelectorInternalChunk, SelectorChunk } from "./utils/selector-analyzer";
 import {
     classCompletion,
     Completion,
@@ -30,7 +30,7 @@ const pvp = require('postcss-value-parser');
 import { nativePathToFileUri } from './utils/uri-utils';
 import { Declaration } from 'postcss';
 import { ResolvedElement } from 'stylable/dist/src/stylable-transformer';
-import { keys, findLast } from 'lodash';
+import { keys, findLast, last } from 'lodash';
 
 
 export interface ProviderOptions {
@@ -547,23 +547,45 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
 export const StateCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
         if (!options.parentSelector && !options.lineChunkAtCursor.endsWith('::')) {
-            let states = collectSelectorParts(
-                options.resolvedPseudo,
-                options.resolved,
-                (acc: string[][], t, ind, arr) => acc.concat(collectStates(t, options, ind, arr))
-            )
-            if (states.length === 0) {
-                return [];
-            }
 
-            let lastState = '';
-            if (/[^:]:(\w+):?$/.test(options.lineChunkAtCursor)) {
-                lastState = options.lineChunkAtCursor.match(/[^:]:(\w+):?$/)![1];
-            }
-            let realState = options.resolvedPseudo.length > 0
-                ? options.resolvedPseudo.some(r => Object.keys((r.symbol as any)[valueMapping.states] || {}).indexOf(lastState) !== -1)
-                : options.resolved.some(r => Object.keys((r.symbol as any)[valueMapping.states] || {}).indexOf(lastState) !== -1)
 
+            const lastNode = options.resolvedElements[0][options.resolvedElements[0].length - 1];
+            const chunk = Array.isArray(options.target.focusChunk) ? last(options.target.focusChunk) : options.target.focusChunk
+            const chunkyStates = (chunk && (chunk as SelectorChunk).states) ? (chunk as SelectorChunk).states : [];
+            const allStates = lastNode.resolved.reduce((acc, cur) => {
+                acc.push(...keys((cur.symbol as ClassSymbol)[valueMapping.states]))
+                return acc;
+            }, [] as string[])
+
+            const newStates = lastNode.resolved.reduce((acc, cur) => {
+                let relPath = path.relative(path.dirname(options.meta.source), cur.meta.source)
+                if (!relPath.startsWith('.')) { relPath = './' + relPath }
+                keys((cur.symbol as ClassSymbol)[valueMapping.states]).forEach(k => {
+                    if (
+                        !acc[k] &&
+                        (
+                            k.slice(0, -1).startsWith(options.lastSelectoid.replace(':', '')) || //selectoid is a substring of current state
+                            allStates.includes(options.lastSelectoid.replace(':', '')) //selectoid is a valid state TODO: selectoid is both
+                        ) &&
+                        (chunkyStates.every(cs => cs !== k))
+                    ) { acc[k] = options.meta.source === cur.meta.source ? 'Local file' : relPath }
+                })
+                return acc;
+            }, {} as { [k: string]: string });
+
+            let states = keys(newStates).map(k => [k, newStates[k]]);
+            if (states.length === 0) { return [] };
+
+            // let lastState = '';
+            // if (/[^:]:(\w+):?$/.test(options.lineChunkAtCursor)) {
+            //     lastState = options.lineChunkAtCursor.match(/[^:]:(\w+):?$/)![1];
+            // }
+            // let realState = options.resolvedPseudo.length > 0
+            //     ? options.resolvedPseudo.some(r => Object.keys((r.symbol as any)[valueMapping.states] || {}).includes(lastState))
+            //     : options.resolved.some(r => Object.keys((r.symbol as any)[valueMapping.states] || {}).includes(lastState))
+
+            const lastState = options.lastSelectoid.replace(':', '');
+            const realState = allStates.includes(lastState);
             return states.reduce((acc: Completion[], st) => {
                 acc.push(stateCompletion(st[0], st[1], (new ProviderRange(
                     new ProviderPosition(
@@ -625,50 +647,6 @@ export const ValueCompletionProvider: CompletionProvider = {
         }
     },
     text: ['']
-}
-
-function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr: CSSResolve[]) {
-    let lastState = '';
-    if (/[^:]:(\w+):?$/.test(options.lineChunkAtCursor)) {
-        lastState = options.lineChunkAtCursor.match(/[^:]:(\w+):?$/)![1];
-    } else if (/::(\w+):?$/.test(options.lineChunkAtCursor)) {
-        let lastPseudo = options.lineChunkAtCursor.match(/::(\w+):?$/)![1];
-        if (lastPseudo !== options.pseudo && lastPseudo !== options.customSelector.slice(3)) {
-            lastState = lastPseudo;
-        }
-    }
-
-    let existing = arr.reduce((acc: string[], cur) => {
-        if ((cur.symbol as ClassSymbol)[valueMapping.states]) {
-            Object.keys((cur.symbol as any)[valueMapping.states]).forEach(s => acc.push(s))
-        }
-        return acc;
-    }, [])
-    let candidates = Object.keys((t.symbol as any)['-st-states'] || {});
-
-    return candidates
-        .filter(s => {
-            if (Array.isArray(options.target.focusChunk)
-                ? options.target.focusChunk.some(c => c.states.some(state => state === s))
-                : (options.target.focusChunk as SelectorInternalChunk).states.some(state => state === s)) {
-                return false;
-            } else if (s.slice(0, -1).startsWith(lastState)) {
-                return true;
-            } else if (existing.some(c => (c === lastState) && (c !== s))) {
-                return true;
-            } else {
-                return false;
-            }
-        })
-        .map(s => {
-            return [s, path.relative(options.meta.source, t.meta.source).slice(1).replace('\\', '/') || 'Local file']
-        })
-}
-
-function collectSelectorParts(value: CSSResolve[], defaultVal: CSSResolve[], reducer: (acc: string[][], t: CSSResolve, ind: number, arr: CSSResolve[]) => string[][]): string[][] {
-    return value.length > 0
-        ? value.reduce(reducer, [])
-        : defaultVal.reduce(reducer, []);
 }
 
 function createCodeMixinCompletion(name: string, lastName: string, position: ProviderPosition, meta: StylableMeta) {
