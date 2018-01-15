@@ -25,7 +25,7 @@ const fileSystem = new LocalSyncFs('');
 const styl = new Stylable('/', createFs(docs, fileSystem, true), () => ({ default: {} }))
 const OpenDocNotificationType = new NotificationType<string, void>('stylable/openDocumentNotification');
 
-const service =  new StylableLanguageService(connection, {styl}, docs, {
+const service =  new StylableLanguageService(connection, {styl}, fileSystem,  docs ,{
     openDoc:OpenDocNotificationType,
     colorPresentationRequest:ColorPresentationRequest,
     colorRequest:DocumentColorRequest

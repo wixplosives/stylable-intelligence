@@ -16,7 +16,7 @@ const testsSetup = [path.join(__dirname, '..', 'client', 'server', 'test', 'setu
 module.exports = {
     // devtool: 'eval',
     entry: {
-        main: './src/service.ts'
+        main: './src/provider-factory.ts'
     },
     devServer: {
         // contentBase: distPath,

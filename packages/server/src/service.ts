@@ -22,7 +22,7 @@ import {NotificationTypes,LSPTypeHelpers} from './types'
 
 
 export class StylableLanguageService {
-    constructor(connection: IConnection, services: { styl: Stylable }, documents: TextDocuments, notifications :NotificationTypes , typeHelpers:LSPTypeHelpers, vcl:typeof VCL) {
+    constructor(connection: IConnection, services: { styl: Stylable }, fs:FileSystemReadSync, documents: TextDocuments, notifications :NotificationTypes , typeHelpers:LSPTypeHelpers, vcl:typeof VCL) {
 
         const provider = createProvider(documents, services.styl);
         const processor = provider.styl.fileProcessor;
@@ -144,7 +144,7 @@ export class StylableLanguageService {
                         })
                     : [];
 
-            let diagnostics = createDiagnosis(change.document, processor, typeHelpers).map(diag => { diag.source = 'stylable'; return diag; });
+            let diagnostics = createDiagnosis(change.document, fs, processor, typeHelpers).map(diag => { diag.source = 'stylable'; return diag; });
             connection.sendDiagnostics({ uri: change.document.uri, diagnostics: diagnostics.concat(cssDiags) })
         });
 

@@ -11,6 +11,10 @@ import { htap } from 'htap';
 import { FileSystemReadSync, EventEmitter } from 'kissfs';
 
 
+export {Completion} from './completion-types';
+export { ProviderRange, ProviderPosition }  from './completion-providers'
+export { createDiagnosis }  from './diagnosis';
+
 export function createProvider(docs: MinimalDocs, stylable: Stylable, withFilePrefix: boolean = true): Provider {
     // const styl = new Stylable('/', createFs(docs, fileSystem, withFilePrefix), () => ({ default: {} }))
     return new Provider(stylable)

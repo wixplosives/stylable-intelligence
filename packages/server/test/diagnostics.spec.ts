@@ -20,8 +20,8 @@ function createDiagnostics(files:{[filePath:string]:string}, path:string) {
             return Object.keys(docs)
         }
     } as TextDocuments
-
-    return createDiagnosis(documents.get(path), createProcessor(documents, new LocalSyncFs(''), false),{
+    const fs =  new LocalSyncFs('');
+    return createDiagnosis(documents.get(path),  fs, createProcessor(documents, fs, false),{
         Command,
         Location,
         Position,

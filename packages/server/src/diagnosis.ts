@@ -5,7 +5,9 @@ import * as path from 'path';
 import { safeParse, Diagnostics, process as stylableProcess, StylableTransformer, FileProcessor } from 'stylable';
 import { Diagnostic as Report } from 'stylable/src/diagnostics'
 import {LSPTypeHelpers} from './types';
-export function createDiagnosis(doc: TextDocument, fp: FileProcessor<StylableMeta>, typeHelpers:LSPTypeHelpers): Diagnostic[] {
+import { FileSystemReadSync } from 'kissfs';
+
+export function createDiagnosis(doc: TextDocument, fs:FileSystemReadSync, fp: FileProcessor<StylableMeta>, typeHelpers:LSPTypeHelpers): Diagnostic[] {
     if (!doc.uri.endsWith('.st.css')) { return [] };
 
     let file: string;
@@ -20,8 +22,13 @@ export function createDiagnosis(doc: TextDocument, fp: FileProcessor<StylableMet
     let transformer = new StylableTransformer({
         diagnostics: new Diagnostics(),
         fileProcessor: fp,
-        requireModule: () => {
-            // console.log(path)
+        requireModule: (path:string) => {
+            try{
+                return eval(fs.loadTextFileSync(path))
+            }catch(err){
+                console.warn('diagnosis, failed eval module')
+            }
+            return null;
         }
     })
 
@@ -29,6 +36,7 @@ export function createDiagnosis(doc: TextDocument, fp: FileProcessor<StylableMet
     let meta = stylableProcess(docPostCSSRoot)
 
     fp.add(file, meta);
+
     try {
         transformer.transform(meta)
     } catch(e) {}
