@@ -628,7 +628,7 @@ export const ValueCompletionProvider: CompletionProvider = {
             const importVars: any[] = [];
             options.meta.imports.forEach(imp => {
                 try {
-                    options.styl.fileProcessor.process(imp.from).vars.forEach(v => importVars.push({ name: v.name, value: v.text, from: imp.fromRelative }))
+                    options.styl.fileProcessor.process(imp.from).vars.forEach(v => importVars.push({ name: v.name, value: v.text, from: imp.fromRelative, node: v.node }))
                 } catch (e) { }
             })
 

@@ -312,8 +312,8 @@ caniuse-api@^1.5.2:
     lodash.uniq "^4.5.0"
 
 caniuse-db@^1.0.30000529, caniuse-db@^1.0.30000634, caniuse-db@^1.0.30000639:
-  version "1.0.30000791"
-  resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000791.tgz#06787f56caef4300a17e35d137447123bdf536f9"
+  version "1.0.30000792"
+  resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000792.tgz#a7dac6dc9f5181b675fd69e5cb06fefb523157f8"
 
 caseless@~0.11.0:
   version "0.11.0"
@@ -2551,8 +2551,8 @@ strip-bom@^2.0.0:
     is-utf8 "^0.2.0"
 
 stylable@next:
-  version "5.0.6-rc.5"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.0.6-rc.5.tgz#1decf5b3d649bc79ef6e4cc997c559f85af5f277"
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.1.0.tgz#1743c3649b3097407698ff653a1980a94beedd5a"
   dependencies:
     css-selector-tokenizer "^0.7.0"
     deindent "^0.1.0"
