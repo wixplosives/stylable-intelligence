@@ -23,26 +23,29 @@ import {
 import { isContainer, isDeclaration, isComment, isVars } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
-import Provider, { extractTsSignature, extractJsModifierRetrunType, isDirective } from './provider';
+import Provider, { extractTsSignature, extractJsModifierRetrunType, isDirective, getNamedValues, isInValue, getExistingNames, isMixin } from './provider';
 import { TypeReferenceNode, Identifier } from 'typescript';
 import { MinimalDocs } from './provider-factory';
 const pvp = require('postcss-value-parser');
 import { nativePathToFileUri } from './utils/uri-utils';
 import { Declaration } from 'postcss';
+import { ResolvedElement } from 'stylable/dist/src/stylable-transformer';
+import { keys, findLast } from 'lodash';
 
 
 export interface ProviderOptions {
     meta: StylableMeta,
     docs: MinimalDocs,
     styl: Stylable,
+    src: string,
+    resolvedElements: ResolvedElement[][],
     parentSelector: SRule | null,
     astAtCursor: PostCss.NodeBase,
     lineChunkAtCursor: string,
+    lastSelectoid: string,
     fullLineText: string,
     position: ProviderPosition,
     isLineStart: boolean,
-    isNamedValueLine: boolean,
-    namedValues: string[],
     resolved: CSSResolve[],
     currentSelector: string,
     target: CursorPosition
@@ -52,8 +55,6 @@ export interface ProviderOptions {
     resolvedPseudo: CSSResolve[],
     customSelector: string,
     customSelectorType: string,
-    isInValue: boolean,
-    importVars: any[],
 }
 
 export interface CompletionProvider {
@@ -367,13 +368,8 @@ export const ExtendCompletionProvider: CompletionProvider = {
 export const CssMixinCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
         if (options.lineChunkAtCursor.startsWith(valueMapping.mixin + ':')) {
-            let valueStart = options.fullLineText.indexOf(':') + 1;
-            let value = options.fullLineText.slice(valueStart);
-            let names = value.split(',').map(x => x.trim()).filter(x => x !== '');
-            let lastName = /,\s*$/.test(options.fullLineText)
-                ? ''
-                : names.reverse()[0] || '';
 
+            const { names, lastName } = getExistingNames(options.fullLineText, options.position)
             return Object.keys(options.meta.mappedSymbols)
                 .filter(ms => ((options.meta.mappedSymbols[ms]._kind === 'import' && (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('st.css')) || options.meta.mappedSymbols[ms]._kind === 'class'))
                 .filter(ms => ms.startsWith(lastName))
@@ -396,57 +392,26 @@ export const CssMixinCompletionProvider: CompletionProvider = {
     text: ['']
 }
 
+// Mixin completions
 // Inside ruleset, which is not :import or :vars
 // Only inside simple selector
 // RHS of -st-mixin
 // There is  a JS/TS import
 export const CodeMixinCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
-        if (options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) && options.lineChunkAtCursor.startsWith(valueMapping.mixin + ':')) {
+        if (options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) &&
+            !options.fullLineText.trim().startsWith(valueMapping.from) &&
+            options.parentSelector && options.lineChunkAtCursor.startsWith(valueMapping.mixin + ':')
+        ) {
             if (options.fullLineText.lastIndexOf('(') > options.fullLineText.lastIndexOf(')')) { return [] }
 
-
-            let valueStart = options.fullLineText.indexOf(':') + 1;
-            let value = options.fullLineText.slice(valueStart, options.position.character);
-
-            let parsed = pvp(value.trim());
-
-            let names: string[] = parsed.nodes.filter((n: any) => n.type === 'function').map((n: any) => n.value);
-            const rev = parsed.nodes.reverse();
-
-            let lastName: string = (parsed.nodes.length > 0 && rev[0].type === 'word') ? rev[0].value : '';
-
+            const { names, lastName } = getExistingNames(options.fullLineText, options.position)
             return Object.keys(options.meta.mappedSymbols)
                 .filter(ms => options.meta.mappedSymbols[ms]._kind === 'import')
                 .filter(ms => ms.startsWith(lastName))
-                .filter(ms => names.length === 0 || names.indexOf(ms) === -1)
-                .filter(ms => {
-                    if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts')) {
-                        let sig = extractTsSignature((options.meta.mappedSymbols[ms] as ImportSymbol).import.from, ms, (options.meta.mappedSymbols[ms] as ImportSymbol).type === 'default')
-                        if (!sig) { return false; }
-                        let rtype = sig.declaration.type
-                            ? ((sig.declaration.type as TypeReferenceNode).typeName as Identifier).getText()
-                            : "";
-                        if (/(\w+.)?stCssFrag/.test(rtype.trim())) { return true; }
-                        return false;
-                    }
-                    if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.js')) {
-                        if (extractJsModifierRetrunType(ms, 0, options.docs.get(nativePathToFileUri((options.meta.mappedSymbols[ms] as ImportSymbol).import.from)).getText()) === 'stCssFrag') {
-                            return true;
-                        }
-                    }
-                    return false;
-                })
-                .map(ms => {
-                    return codeMixinCompletion(
-                        ms,
-                        new ProviderRange(
-                            new ProviderPosition(options.position.line, options.position.character - lastName.length),
-                            options.position
-                        ),
-                        (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative
-                    )
-                });
+                .filter(ms => names.length === 0 || !names.includes(ms))
+                .filter(ms => isMixin(ms, options.meta, options.docs))
+                .map(ms => createCodeMixinCompletion(ms, lastName, options.position, options.meta));
         } else {
             return [];
         }
@@ -454,56 +419,23 @@ export const CodeMixinCompletionProvider: CompletionProvider = {
     text: ['']
 }
 
-
 // Inside ruleset, which is not :import
 // RHS of any rule
 export const FormatterCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
-        if (options.parentSelector && options.fullLineText.includes(':') && options.fullLineText.indexOf(':') < options.position.character
-            && !options.lineChunkAtCursor.startsWith(valueMapping.mixin + ':') && !options.fullLineText.trim().startsWith(valueMapping.from)
-            && options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js'))) {
-            let valueStart = options.fullLineText.indexOf(':') + 1;
-            let value = options.fullLineText.slice(valueStart);
+        if (options.meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) &&
+            !options.fullLineText.trim().startsWith(valueMapping.from) &&
+            options.parentSelector && options.fullLineText.includes(':') && options.fullLineText.indexOf(':') < options.position.character &&
+            !options.lineChunkAtCursor.startsWith(valueMapping.mixin + ':')
+        ) {
 
-            let parsed = pvp(value.trim());
-
-            let names: string[] = parsed.nodes.filter((n: any) => n.type === 'function').map((n: any) => n.value);
-            const rev = parsed.nodes.reverse();
-
-            let lastName: string = (parsed.nodes.length > 0 && rev[0].type === 'word') ? rev[0].value : '';
-
+            const { names, lastName } = getExistingNames(options.fullLineText, options.position)
             return Object.keys(options.meta.mappedSymbols)
                 .filter(ms => (options.meta.mappedSymbols[ms]._kind === 'import'))
                 .filter(ms => ms.startsWith(lastName))
-                .filter(ms => !names || names.indexOf(ms) === -1)
-                .filter(ms => {
-                    if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.ts')) {
-                        let sig = extractTsSignature((options.meta.mappedSymbols[ms] as ImportSymbol).import.from, ms, (options.meta.mappedSymbols[ms] as ImportSymbol).type === 'default')
-                        if (!sig) { return false; }
-                        let rtype = sig.declaration.type
-                            ? ((sig.declaration.type as TypeReferenceNode).typeName as Identifier).getText()
-                            : "";
-                        if (/(\w+.)?stCssFrag/.test(rtype.trim())) { return false; }
-                        return true;
-                    }
-                    if ((options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('.js')) {
-                        if (extractJsModifierRetrunType(ms, 0, options.docs.get(nativePathToFileUri((options.meta.mappedSymbols[ms] as ImportSymbol).import.from)).getText()) !== 'stCssFrag') {
-                            return true;
-                        }
-                    }
-                    return false;
-                })
-                .map(ms => {
-                    return codeMixinCompletion(
-                        ms,
-                        new ProviderRange(
-                            new ProviderPosition(options.position.line, options.position.character - lastName.length),
-                            options.position
-                        ),
-                        (options.meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative
-                    )
-                });
-
+                .filter(ms => names.length === 0 || !names.includes(ms))
+                .filter(ms => !isMixin(ms, options.meta, options.docs))
+                .map(ms => createCodeMixinCompletion(ms, lastName, options.position, options.meta));
         } else {
             return [];
         }
@@ -514,46 +446,26 @@ export const FormatterCompletionProvider: CompletionProvider = {
 // Inside :import
 // RHS of -st-named
 // import exists
-export const NamedCompletionProvider: CompletionProvider = {
+export const NamedCompletionProvider: CompletionProvider & { resolveImport: (options: ProviderOptions) => StylableMeta | null } = {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isNamedValueLine) {
 
-            let importName: string = '';
-            if (options.parentSelector && options.parentSelector.selector === ':import' && (options.astAtCursor as PostCss.Rule).nodes && (options.astAtCursor as PostCss.Rule).nodes!.length) {
-                importName = ((options.astAtCursor as PostCss.Rule).nodes!.find(n => (n as PostCss.Declaration).prop === valueMapping.from) as PostCss.Declaration).value.replace(/'|"/g, '');
-            }
-
-            let resolvedImport: StylableMeta | null = null;
-            if (importName && importName.endsWith('.st.css')) try {
-                resolvedImport = options.styl.fileProcessor.process(options.meta.imports.find(i => i.fromRelative === importName)!.from);
-            } catch (e) {
-                resolvedImport = null;
-            }
-
-
+        const { isNamedValueLine, namedValues } = getNamedValues(options.src, options.position.line);
+        if (isNamedValueLine) {
+            const resolvedImport: StylableMeta | null = this.resolveImport(options);
             if (resolvedImport) {
-
-                let valueStart = options.fullLineText.indexOf(':') + 1;
-                let value = options.fullLineText.slice(valueStart);
-                let names = value.split(',').map(x => x.trim()).filter(x => x !== '');
-                let lastName = /,\s*$/.test(options.fullLineText)
-                    ? ''
-                    : names.reverse()[0] || '';
-
+                const { names, lastName } = getExistingNames(options.fullLineText, options.position)
                 let comps: string[][] = [[]];
                 comps.push(
                     ...Object.keys(resolvedImport.mappedSymbols)
-                        .filter(ms => (resolvedImport!.mappedSymbols[ms]._kind === 'class' || resolvedImport!.mappedSymbols[ms]._kind === 'var') && ms !== 'root')
+                        .filter(ms => (resolvedImport.mappedSymbols[ms]._kind === 'class' || resolvedImport.mappedSymbols[ms]._kind === 'var') && ms !== 'root')
                         .filter(ms => ms.slice(0, -1).startsWith(lastName))
-                        .filter(ms => ms === '' || options.namedValues.every(name => name !== ms))
+                        .filter(ms => !namedValues.includes(ms))
                         .map(ms => [
                             ms,
-                            path.relative(options.meta.source, resolvedImport!.source).slice(1).replace('\\', '/'),
-                            resolvedImport!.mappedSymbols[ms]._kind === 'var' ? (resolvedImport!.mappedSymbols[ms] as VarSymbol).text : 'Stylable class'
+                            path.relative(options.meta.source, resolvedImport.source).slice(1).replace('\\', '/'),
+                            resolvedImport.mappedSymbols[ms]._kind === 'var' ? (resolvedImport.mappedSymbols[ms] as VarSymbol).text : 'Stylable class'
                         ])
                 )
-
-
                 return comps.slice(1).map(c => namedCompletion(
                     c[0],
                     new ProviderRange(
@@ -563,78 +475,71 @@ export const NamedCompletionProvider: CompletionProvider = {
                     c[1],
                     c[2]
                 ));
-            } else {
-                return [];
             }
-        } else {
-            return [];
         }
+        return [];
+    },
+    resolveImport(options: ProviderOptions): StylableMeta | null {
+        let resolvedImport: StylableMeta | null = null;
+
+        let importName: string = '';
+        if (options.parentSelector && options.parentSelector.selector === ':import' && (options.astAtCursor as PostCss.Rule).nodes && (options.astAtCursor as PostCss.Rule).nodes!.length) {
+            importName = ((options.astAtCursor as PostCss.Rule).nodes!.find(n => (n as PostCss.Declaration).prop === valueMapping.from) as PostCss.Declaration).value.replace(/'|"/g, '');
+        }
+        if (importName && importName.endsWith('.st.css')) try {
+            resolvedImport = options.styl.fileProcessor.process(options.meta.imports.find(i => i.fromRelative === importName)!.from);
+        } catch (e) { }
+        return resolvedImport;
     },
     text: ['']
 }
 
 export const PseudoElementCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
+        let comps: any[] = [];
         if (!options.parentSelector && options.resolved.length > 0) {
-            let pseudos = collectSelectorParts(
-                options.resolvedPseudo,
-                options.resolved,
-                (acc: string[][], t, ind, arr) => acc.concat(collectElements(t, options, ind, arr))
-            )
 
-            if (pseudos.length === 0) {
-                return [];
-            }
-            let offset = 0;
-
-            if (options.lineChunkAtCursor.match(/:+/g)) {
-                let trimmedPart = options.lineChunkAtCursor.replace(/:+$/, '').split(':').reverse()[0]
-                if (trimmedPart.startsWith('--')) { trimmedPart = ':' + trimmedPart }
-                if (options.resolved.length > 0 && options.resolved
-                    .some(res => (
-                        Object.keys((res as any).symbol[valueMapping.states] || {}).some((k: string) => k === trimmedPart)) ||
-                        Object.keys((res as any).meta.customSelectors || {}).some((k: string) => k === trimmedPart))
-                ) {
-                    offset = options.lineChunkAtCursor.endsWith(':')
-                        ? options.lineChunkAtCursor.endsWith('::') ? 2 : 1
-                        : 0;
-                } else if (options.resolvedPseudo.length > 0 && options.resolvedPseudo
-                    .some(res => (
-                        Object.keys((res as any).symbol[valueMapping.states] || {})
-                            .some((k: string) => k === trimmedPart)))
-                ) {
-                    offset = options.lineChunkAtCursor.endsWith(':')
-                        ? options.lineChunkAtCursor.endsWith('::') ? 2 : 1
-                        : 0;
-                } else if (cssPseudoClasses.indexOf(trimmedPart) !== -1) {
-                    offset = options.lineChunkAtCursor.endsWith(':')
-                        ? options.lineChunkAtCursor.endsWith('::') ? 2 : 1
-                        : 0;
-                } else if (options.lineChunkAtCursor.match(/:{1,2}\w*$/)) {
-                    if (options.lineChunkAtCursor.endsWith(':')) {
-                        offset = options.lineChunkAtCursor.match(/:+$/)![0].length;
-                    } else {
-                        if (trimmedPart === options.pseudo || trimmedPart === options.customSelector.slice(3)) {
-                            offset = 0;
-                        } else {
-                            offset = 2 + options.lineChunkAtCursor.split('::').reverse()[0].length;
-                        }
-                    }
-                } else {
-                    offset = options.lineChunkAtCursor.length - (options.lineChunkAtCursor.indexOf(options.pseudo!) + options.pseudo!.length)
-                }
-            }
-            return pseudos.reduce((acc: Completion[], p) => {
-                acc.push(pseudoElementCompletion(p[0], p[1], (new ProviderRange(
-                    new ProviderPosition(options.position.line,
-                        Math.max(0, options.position.character - offset)
-                    ), options.position)
-                )));
+            const lastNode = options.resolvedElements[0][options.resolvedElements[0].length - 1];
+            const states = lastNode.resolved.reduce((acc, cur) => {
+                acc = acc.concat(keys((cur.symbol as ClassSymbol)[valueMapping.states]))
                 return acc;
-            }, [])
-        } else {
-            return [];
+            }, cssPseudoClasses)
+
+            const filter = lastNode.resolved.length
+                ? states.includes(options.lastSelectoid.replace(':', ''))
+                    ? ''
+                    : options.lastSelectoid.replace(':', '')
+                : lastNode.name;
+
+            const scope = filter
+                ? options.resolvedElements[0][options.resolvedElements[0].length - 2]
+                : lastNode;
+
+            const colons = options.lineChunkAtCursor.match(/:*$/)![0].length;
+
+            scope.resolved.forEach(res => {
+                if (!(res.symbol as ClassSymbol)[valueMapping.root]) { return }
+
+                comps = comps.concat(keys(res.meta.classes)
+                    .concat(keys(res.meta.customSelectors).map(s => s.slice(':--'.length)))
+                    .filter(e => e.startsWith(filter) && e !== 'root')
+                    .map(c => {
+                        let relPath = path.relative(path.dirname(options.meta.source), res.meta.source)
+                        if (!relPath.startsWith('.')) { relPath = './' + relPath }
+
+                        return filter
+                            ? pseudoElementCompletion(c, relPath, new ProviderRange(
+                                new ProviderPosition(options.position.line, options.position.character - filter.length - 2),
+                                new ProviderPosition(options.position.line, options.position.character),
+                            ))
+                            : pseudoElementCompletion(c, relPath, new ProviderRange(
+                                new ProviderPosition(options.position.line, options.position.character - colons),
+                                new ProviderPosition(options.position.line, options.position.character),
+                            ))
+                    }))
+            })
         }
+        return comps;
     },
     text: ['']
 }
@@ -682,7 +587,7 @@ export const StateCompletionProvider: CompletionProvider = {
 
 export const ValueCompletionProvider: CompletionProvider = {
     provide(options: ProviderOptions): Completion[] {
-        if (options.isInValue) {
+        if (isInValue(options.fullLineText, options.position)) {
             let inner = options.fullLineText.slice(0, options.fullLineText.indexOf(')', options.position.character) + 1).slice(options.fullLineText.slice(0, options.fullLineText.indexOf(')', options.position.character) + 1).lastIndexOf('(')).replace('(', '').replace(')', '').trim();
 
 
@@ -697,7 +602,15 @@ export const ValueCompletionProvider: CompletionProvider = {
                     )))
                 }
             })
-            options.importVars.forEach(v => {
+
+            const importVars: any[] = [];
+            options.meta.imports.forEach(imp => {
+                try {
+                    options.styl.fileProcessor.process(imp.from).vars.forEach(v => importVars.push({ name: v.name, value: v.text, from: imp.fromRelative }))
+                } catch (e) { }
+            })
+
+            importVars.forEach(v => {
                 if (v.name.startsWith(inner) && options.meta.imports.some(imp => Object.keys(imp.named).some(key => key === v.name))) {
                     const value = evalValue(options.styl.resolver, v.value, options.meta, v.node)
                     comps.push(valueCompletion(v.name, v.from, value, new ProviderRange(
@@ -712,50 +625,6 @@ export const ValueCompletionProvider: CompletionProvider = {
         }
     },
     text: ['']
-}
-
-function collectElements(t: CSSResolve, options: ProviderOptions, ind: number, arr: CSSResolve[]) {
-    // if (ind === 0) { return [] };
-    if (!t.symbol) { return [] };
-    if (!(t.symbol as ClassSymbol)[valueMapping.root]) { return [] };
-    return Object.keys((t.meta.classes) || [])
-        .concat(Object.keys(t.meta.customSelectors).map(cs => cs.slice(3)) || [])
-        .filter(s => s !== 'root')
-        .filter(s => {
-            if (arr
-                .some(res => (
-                    (Object.keys((res as any).symbol[valueMapping.states] || {}))
-                        .some((k: string) => k === options.lineChunkAtCursor.split(':').reverse()[0])))
-            ) {
-                return true;
-            }
-            if (/[^^]:/.test(options.lineChunkAtCursor) &&
-                ((!options.pseudo && !options.customSelector) ||
-                    (
-                        options.pseudo &&
-                        !options.lineChunkAtCursor.endsWith(':') &&
-                        !options.lineChunkAtCursor.endsWith(options.pseudo)
-                    ) || (
-                        options.customSelector &&
-                        !options.lineChunkAtCursor.endsWith(':') &&
-                        !options.lineChunkAtCursor.endsWith(options.customSelector.slice(3))
-                    )
-                )
-            ) {
-                return s.startsWith(options.lineChunkAtCursor.split(':').reverse()[0]) || cssPseudoClasses.indexOf(options.lineChunkAtCursor.split(':').reverse()[0]) !== -1;
-            } else {
-                return true;
-            }
-        })
-        .map(s => [s, arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector) && (options.currentSelector !== 'root' || !options.customSelectorType))
-            ? arr.find(r => r.symbol.name === (options.pseudo ? options.pseudo : options.currentSelector))!.meta.imports[0].fromRelative
-            : arr.find(r => r.symbol.name === options.customSelectorType)
-                ? arr.find(r => r.symbol.name === options.customSelectorType)!.meta.imports.length > 0
-                    ? arr.find(r => r.symbol.name === options.customSelectorType)!.meta.imports.find(i => i.defaultExport === options.customSelectorType)!.fromRelative
-                    : 'Local file'
-                : 'Local file']
-
-        )
 }
 
 function collectStates(t: CSSResolve, options: ProviderOptions, ind: number, arr: CSSResolve[]) {
@@ -800,5 +669,16 @@ function collectSelectorParts(value: CSSResolve[], defaultVal: CSSResolve[], red
     return value.length > 0
         ? value.reduce(reducer, [])
         : defaultVal.reduce(reducer, []);
+}
+
+function createCodeMixinCompletion(name: string, lastName: string, position: ProviderPosition, meta: StylableMeta) {
+    return codeMixinCompletion(
+        name,
+        new ProviderRange(
+            new ProviderPosition(position.line, position.character - lastName.length),
+            position
+        ),
+        (meta.mappedSymbols[name] as ImportSymbol).import.fromRelative
+    )
 }
 

@@ -1,8 +1,11 @@
 :import {
-    -st-from: './my-mixins.ts';
-    -st-named: paramfulMixin;
+    -st-from: "./mid-import.st.css";
+    -st-default: Comp;
 }
 
-.lll {
-    -st-mixin:
+.gaga {
+    -st-extends: Comp;
+    -st-states: localState;
 }
+
+.gaga

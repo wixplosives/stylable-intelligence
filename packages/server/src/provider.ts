@@ -101,7 +101,7 @@ export default class Provider {
         const path = pathFromPosition(meta.rawAst, { line: position.line + 1, character: position.character });
         const astAtCursor: PostCss.NodeBase = path[path.length - 1];
         const parentAst: PostCss.NodeBase | undefined = (astAtCursor as PostCss.Declaration).parent ? (astAtCursor as PostCss.Declaration).parent : undefined;
-        const lastSelectorPart: SRule | null = parentAst && isSelector(parentAst) && fakeRules.findIndex((f) => { return f.selector === parentAst.selector }) === -1
+        const parentSelector: SRule | null = parentAst && isSelector(parentAst) && fakeRules.findIndex((f) => { return f.selector === parentAst.selector }) === -1
             ? <SRule>parentAst
             : astAtCursor && isSelector(astAtCursor) && fakeRules.findIndex((f) => { return f.selector === astAtCursor.selector }) === -1
                 ? <SRule>astAtCursor
@@ -143,28 +143,19 @@ export default class Provider {
             customSelectorType = lastPseudo ? lastPseudo.resolved[0].symbol.name : resolvedElements[0][0].name
         }
 
-        const { isNamedValueLine, namedValues } = getNamedValues(src, position.line);
-
-        const importVars: any[] = [];
-        meta.imports.forEach(imp => {
-            try {
-                this.styl.fileProcessor.process(imp.from).vars.forEach(v => importVars.push({ name: v.name, value: v.text, from: imp.fromRelative }))
-            } catch (e) { }
-        })
-
-
         return {
             meta: meta,
             docs: docs,
             styl: this.styl,
-            parentSelector: lastSelectorPart,
+            src: src,
+            resolvedElements: resolvedElements,
+            parentSelector: parentSelector,
             astAtCursor: astAtCursor,
             lineChunkAtCursor: lineChunkAtCursor,
+            lastSelectoid: ps.lastSelector,
             fullLineText: fullLineText,
             position: position,
             isLineStart: false,
-            isNamedValueLine: isNamedValueLine,
-            namedValues: namedValues,
             resolved: resolved,
             currentSelector: currentSelector,
             target: ps.target,
@@ -174,8 +165,6 @@ export default class Provider {
             resolvedPseudo: lastPseudo ? lastPseudo.resolved : [],
             customSelector: customSelectorString,
             customSelectorType: customSelectorType,
-            isInValue: isInValue(fullLineText, position),
-            importVars: importVars,
         }
     }
 
@@ -572,7 +561,7 @@ export function extractJsModifierRetrunType(mixin: string, activeParam: number, 
 function isInMediaQuery(path: PostCss.NodeBase[]) { return path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media') };
 export function isDirective(line: string) { return Object.keys(valueMapping).some(k => line.trim().startsWith((valueMapping as any)[k])) };
 function isNamedDirective(line: string) { return line.indexOf(valueMapping.named) !== -1 };
-function isInValue(lineText: string, position: ProviderPosition) {
+export function isInValue(lineText: string, position: ProviderPosition) {
     let isInValue: boolean = false;
 
     if (/value\(/.test(lineText)) {
@@ -603,7 +592,7 @@ function getChunkAtCursor(fullLineText: string, cursorPosInLine: number): { line
     return { lineChunkAtCursor: lineChunkAtCursor.trim(), fixedCharIndex };
 }
 
-function getNamedValues(src: string, lineIndex: number): { isNamedValueLine: boolean, namedValues: string[] } {
+export function getNamedValues(src: string, lineIndex: number): { isNamedValueLine: boolean, namedValues: string[] } {
     let lines = src.split('\n');
     let isNamedValueLine = false;
     let namedValues: string[] = [];
@@ -625,4 +614,29 @@ function getNamedValues(src: string, lineIndex: number): { isNamedValueLine: boo
     }
 
     return { isNamedValueLine, namedValues }
+}
+
+export function getExistingNames(lineText: string, position: ProviderPosition) {
+    const valueStart = lineText.indexOf(':') + 1;
+    const value = lineText.slice(valueStart, position.character);
+    const parsed = pvp(value.trim());
+    const names: string[] = parsed.nodes.filter((n: any) => n.type === 'function' || n.type === 'word').map((n: any) => n.value);
+    const rev = parsed.nodes.reverse();
+    const lastName: string = (parsed.nodes.length && rev[0].type === 'word') ? rev[0].value : '';
+    return { names, lastName };
+}
+
+export function isMixin(name: string, meta: StylableMeta, docs: MinimalDocs) {
+    const importSymbol = (meta.mappedSymbols[name] as ImportSymbol);
+    if (importSymbol.import.fromRelative.endsWith('.ts')) {
+        const sig = extractTsSignature(importSymbol.import.from, name, importSymbol.type === 'default')
+        if (!sig) { return false; }
+        let rtype = sig.declaration.type
+            ? ((sig.declaration.type as TypeReferenceNode).typeName as Identifier).getText()
+            : "";
+        return (/(\w+.)?stCssFrag/.test(rtype.trim()));
+    } if (importSymbol.import.fromRelative.endsWith('.js')) {
+        return (extractJsModifierRetrunType(name, 0, docs.get(nativePathToFileUri(importSymbol.import.from)).getText()) === 'stCssFrag')
+    }
+    return false;
 }

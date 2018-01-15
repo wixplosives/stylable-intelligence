@@ -3891,8 +3891,8 @@ strip-json-comments@~2.0.1:
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
 stylable@next:
-  version "5.0.6-rc.3"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.0.6-rc.3.tgz#74563c35a456c04005750b9d1d04ce1ad4936806"
+  version "5.0.6-rc.5"
+  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.0.6-rc.5.tgz#1decf5b3d649bc79ef6e4cc997c559f85af5f277"
   dependencies:
     css-selector-tokenizer "^0.7.0"
     deindent "^0.1.0"
