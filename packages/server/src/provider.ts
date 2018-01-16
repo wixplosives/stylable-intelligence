@@ -151,11 +151,12 @@ export default class Provider {
     }
 
     public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string, docs: MinimalDocs): Thenable<ProviderLocation[]> {
+
         if (!filePath.endsWith('.st.css')) { return Promise.resolve([]) }
 
         let res = fixAndProcess(src, position, filePath);
         let meta = res.processed.meta;
-        if (!meta) return Promise.resolve([]);
+        if (!meta) { return Promise.resolve([]) };
         const parsed: any[] = pvp(res.currentLine).nodes;
 
         function findNode(nodes: any[], index: number): any {
@@ -204,7 +205,7 @@ export default class Provider {
                     break;
                 }
             }
-        } else if (Object.keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
+        } else if (keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
             defs.push(
                 new ProviderLocation(meta.source, this.findWord(':--' + word, src, position))
             );
@@ -593,19 +594,4 @@ export function getExistingNames(lineText: string, position: ProviderPosition) {
     const rev = parsed.nodes.reverse();
     const lastName: string = (parsed.nodes.length && rev[0].type === 'word') ? rev[0].value : '';
     return { names, lastName };
-}
-
-export function isMixin(name: string, meta: StylableMeta, docs: MinimalDocs) {
-    const importSymbol = (meta.mappedSymbols[name] as ImportSymbol);
-    if (importSymbol.import.fromRelative.endsWith('.ts')) {
-        const sig = extractTsSignature(importSymbol.import.from, name, importSymbol.type === 'default')
-        if (!sig) { return false; }
-        let rtype = sig.declaration.type
-            ? ((sig.declaration.type as TypeReferenceNode).typeName as Identifier).getText()
-            : "";
-        return (/(\w+.)?stCssFrag/.test(rtype.trim()));
-    } if (importSymbol.import.fromRelative.endsWith('.js')) {
-        return (extractJsModifierRetrunType(name, 0, docs.get(nativePathToFileUri(importSymbol.import.from)).getText()) === 'stCssFrag')
-    }
-    return false;
 }

@@ -23,7 +23,7 @@ import {
 import { isContainer, isDeclaration, isComment, isVars } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
-import Provider, { extractTsSignature, extractJsModifierRetrunType, isDirective, getNamedValues, isInValue, getExistingNames, isMixin } from './provider';
+import Provider, { extractTsSignature, extractJsModifierRetrunType, isDirective, getNamedValues, isInValue, getExistingNames } from './provider';
 import { TypeReferenceNode, Identifier } from 'typescript';
 import { MinimalDocs } from './provider-factory';
 const pvp = require('postcss-value-parser');
@@ -433,7 +433,7 @@ export const NamedCompletionProvider: CompletionProvider & { resolveImport: (par
                 const { names, lastName } = getExistingNames(fullLineText, position)
                 let comps: string[][] = [[]];
                 comps.push(
-                    ...Object.keys(resolvedImport.mappedSymbols)
+                    ...keys(resolvedImport.mappedSymbols)
                         .filter(ms => (resolvedImport.mappedSymbols[ms]._kind === 'class' || resolvedImport.mappedSymbols[ms]._kind === 'var') && ms !== 'root')
                         .filter(ms => ms.slice(0, -1).startsWith(lastName))
                         .filter(ms => !namedValues.includes(ms))
@@ -618,3 +618,17 @@ function createCodeMixinCompletion(name: string, lastName: string, position: Pro
     )
 }
 
+function isMixin(name: string, meta: StylableMeta, docs: MinimalDocs) {
+    const importSymbol = (meta.mappedSymbols[name] as ImportSymbol);
+    if (importSymbol.import.fromRelative.endsWith('.ts')) {
+        const sig = extractTsSignature(importSymbol.import.from, name, importSymbol.type === 'default')
+        if (!sig) { return false; }
+        let rtype = sig.declaration.type
+            ? ((sig.declaration.type as TypeReferenceNode).typeName as Identifier).getText()
+            : "";
+        return (/(\w+.)?stCssFrag/.test(rtype.trim()));
+    } if (importSymbol.import.fromRelative.endsWith('.js')) {
+        return (extractJsModifierRetrunType(name, 0, docs.get(nativePathToFileUri(importSymbol.import.from)).getText()) === 'stCssFrag')
+    }
+    return false;
+}
