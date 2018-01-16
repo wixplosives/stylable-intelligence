@@ -17,7 +17,8 @@ import { Stylable } from 'stylable';
 import * as ts from 'typescript'
 import { FileSystemReadSync } from 'kissfs';
 export {MinimalDocs} from './provider-factory';
-import {NotificationTypes,LSPTypeHelpers, ExtendedFSReadSync} from './types'
+import {NotificationTypes, ExtendedFSReadSync} from './types';
+
 // namespace OpenDocNotification {
 // }
 
@@ -77,44 +78,26 @@ export class StylableLanguageService {
             const doc = fs.get(params.textDocument.uri).getText();
             const pos = params.position;
 
-            const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
-            requestedFiles.forEach(file => connection.sendNotification(notifications.openDoc, file));
-
-            return new Promise((resolve, reject) => {
-                const startTime = new Date();
-
-                const interval = setInterval(() => {
-                    if (requestedFiles.every(file => !!fs.get(file))) {
-                        clearInterval(interval);
-                        resolve()
-                    } else if (Number(new Date()) - Number(startTime) > 300) {
-                        clearInterval(interval);
-                        resolve();
-                    }
-                }, 100);
-            }).then(() => {
-
-                return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, fs)
-                    .then((res) => {
-                        return res.map((com: Completion) => {
-                            let lspCompletion:CompletionItem = CompletionItem.create(com.label);
-                            let ted: TextEdit = TextEdit.replace(
-                                com.range ? com.range : new ProviderRange(new ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos),
-                                typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
-                            lspCompletion.insertTextFormat = 2;
-                            lspCompletion.detail = com.detail;
-                            lspCompletion.textEdit = ted;
-                            lspCompletion.sortText = com.sortText;
-                            lspCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
-                            if (com.additionalCompletions) {
-                                lspCompletion.command = Command.create("additional", "editor.action.triggerSuggest")
-                            } else if (com.triggerSignature) {
-                                lspCompletion.command = Command.create("additional", "editor.action.triggerParameterHints")
-                            }
-                            return lspCompletion;
-                        }).concat(cssComps)
-                    });
-            }).catch(e => { console.error(e); return cssComps })
+            return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, fs)
+                .then((res) => {
+                    return res.map((com: Completion) => {
+                        let lspCompletion:CompletionItem = CompletionItem.create(com.label);
+                        let ted: TextEdit = TextEdit.replace(
+                            com.range ? com.range : new ProviderRange(new ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos),
+                            typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
+                        lspCompletion.insertTextFormat = 2;
+                        lspCompletion.detail = com.detail;
+                        lspCompletion.textEdit = ted;
+                        lspCompletion.sortText = com.sortText;
+                        lspCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
+                        if (com.additionalCompletions) {
+                            lspCompletion.command = Command.create("additional", "editor.action.triggerSuggest")
+                        } else if (com.triggerSignature) {
+                            lspCompletion.command = Command.create("additional", "editor.action.triggerParameterHints")
+                        }
+                        return lspCompletion;
+                    }).concat(cssComps)
+                });
 
 
         });
@@ -152,26 +135,11 @@ export class StylableLanguageService {
             const doc = fs.loadTextFileSync(params.textDocument.uri);
             const pos = params.position;
             const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
-            requestedFiles.forEach(file => connection.sendNotification(notifications.openDoc, file));
-
-            return new Promise((resolve, reject) => {
-                const startTime = new Date();
-
-                const interval = setInterval(() => {
-                    if (requestedFiles.every(file => !!fs.get(file))) {
-                        clearInterval(interval);
-                        resolve()
-                    } else if (Number(new Date()) - Number(startTime) > 300) {
-                        clearInterval(interval);
-                        resolve();
-                    }
-                }, 100);
-            }).then(() => {
-                return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, fs)
-                    .then((res) => {
-                        return res.map(loc => Location.create(nativePathToFileUri(loc.uri), loc.range))
-                    });
-            });
+            
+            return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, fs)
+                .then((res) => {
+                    return res.map(loc => Location.create(nativePathToFileUri(loc.uri), loc.range))
+                });
         });
 
         connection.onHover((params): Thenable<Hover> => {
@@ -205,24 +173,9 @@ export class StylableLanguageService {
             const doc: string = fs.loadTextFileSync(params.textDocument.uri);
 
             const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
-            requestedFiles.forEach(file => connection.sendNotification(notifications.openDoc, file));
-
-            return new Promise((resolve, reject) => {
-                const startTime = new Date();
-
-                const interval = setInterval(() => {
-                    if (requestedFiles.every(file => !!fs.get(file))) {
-                        clearInterval(interval);
-                        resolve()
-                    } else if (Number(new Date()) - Number(startTime) > 300) {
-                        clearInterval(interval);
-                        resolve();
-                    }
-                }, 100);
-            }).then(() => {
-                let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, fs, ParameterInformation);
-                return Promise.resolve(sig!)
-            })
+            
+            let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, fs, ParameterInformation);
+            return Promise.resolve(sig!)
         })
 
         function readDocRange(doc: TextDocument, rng: Range): string {
