@@ -1,9 +1,12 @@
 :import {
     -st-from: "./import.st.css";
-    -st-named: momo;
+    -st-default: Comp;
+}
+
+.root {
+    -st-extends: Comp;
 }
 
 .bobo {
-    -st-extends: momo;
+    -st-extends: Comp;
 }
-

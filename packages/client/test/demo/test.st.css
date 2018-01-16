@@ -1,8 +1,6 @@
 :import {
-    -st-from: './my-mixins.ts';
-    -st-named: paramfulMixin;
-}
-
-.lll {
-    -st-mixin:
+    -st-from: "./import.st.css";
+    -st-named: color1,
+            color2,momo
+            ,
 }

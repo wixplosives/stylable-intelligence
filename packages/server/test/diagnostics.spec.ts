@@ -4,6 +4,7 @@ import {TextDocuments, Command,Location, Position, Range, TextEdit,CompletionIte
 import {createDiagnosis} from '../src/diagnosis'
 import {createProcessor} from '../src/provider-factory'
 import { LocalSyncFs } from '../src/local-sync-fs';
+import { createDocFs } from '../src/server';
 
 function createDiagnostics(files:{[filePath:string]:string}, path:string) {
     const docs:{[path:string]:TextDocument} = {}
@@ -21,16 +22,8 @@ function createDiagnostics(files:{[filePath:string]:string}, path:string) {
         }
     } as TextDocuments
     const fs =  new LocalSyncFs('');
-    return createDiagnosis(documents.get(path),  fs, createProcessor(documents, fs, false),{
-        Command,
-        Location,
-        Position,
-        Range,
-        TextEdit,
-        CompletionItem,
-        ParameterInformation,
-        Diagnostic
-    })
+    const docsFs = createDocFs(fs,documents);
+    return createDiagnosis(documents.get(path),  docsFs, createProcessor(docsFs, false))
 }
 
 

@@ -16,7 +16,8 @@ const testsSetup = [path.join(__dirname, '..', 'client', 'server', 'test', 'setu
 module.exports = {
     // devtool: 'eval',
     entry: {
-        main: './src/provider-factory.ts'
+        main: './src/service.ts',
+        vendor: ['typescript', 'lodash'],
     },
     devServer: {
         // contentBase: distPath,
@@ -34,11 +35,18 @@ module.exports = {
                     }
                 }
             }
+        },
+        {
+            test: /node_modules\/vscode-/,
+            use: {loader: "umd-compat-loader"}
         }
         ]
     },
     resolve: {
-        extensions: ['.ts', '.tsx', '.js', '.json']
+        extensions: ['.ts', '.tsx', '.js', '.json'],
+        alias: {
+            "vscode-nls": path.resolve(__dirname, "src", "vscode-nls.js")
+        }
     },
     output: {
         path: path.join(__dirname, 'dist'),

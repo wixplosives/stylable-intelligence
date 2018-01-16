@@ -189,7 +189,7 @@ describe('Pseudo-elements', function () {
 
         const str1 = '::shlomo';
         const str2 = '::momo';
-        const createComp = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './mid-import.st.css');
+        const createComp = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './import.st.css');
 
         [str1, str2].forEach((str, j, a) => {
 

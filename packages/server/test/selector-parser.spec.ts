@@ -90,6 +90,24 @@ describe('Selector Parser', function () {
         })
     });
 
+    it('Returns last selectoid', function() {
+        const tested = '.lala::baba:ff'
+        const { lastSelector } = parseSelector(tested)
+        expect(lastSelector).to.equal(':ff');
+    })
+
+    it('Does not return first selectoid', function() {
+        const tested = '.lala'
+        const { lastSelector } = parseSelector(tested)
+        expect(lastSelector).to.equal('');
+    })
+
+    it('Does not return pseudo element', function() {
+        const tested = '.lala::bobo'
+        const { lastSelector } = parseSelector(tested)
+        expect(lastSelector).to.equal('');
+    })
+
 
     describe('Target chunk', function () {
         it('returns index of correct selector chunk', function () {

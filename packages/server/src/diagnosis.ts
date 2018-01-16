@@ -1,13 +1,11 @@
 import { StylableMeta } from 'stylable/dist/src/stylable-processor';
-import { Diagnostic, Range } from 'vscode-languageserver-types/lib/main';
-import { TextDocument } from 'vscode-languageserver-types/lib/main';
+import { Diagnostic, Range, TextDocument } from 'vscode-languageserver-types';
 import * as path from 'path';
 import { safeParse, Diagnostics, process as stylableProcess, StylableTransformer, FileProcessor } from 'stylable';
 import { Diagnostic as Report } from 'stylable/src/diagnostics'
-import {LSPTypeHelpers} from './types';
 import { FileSystemReadSync } from 'kissfs';
 
-export function createDiagnosis(doc: TextDocument, fs:FileSystemReadSync, fp: FileProcessor<StylableMeta>, typeHelpers:LSPTypeHelpers): Diagnostic[] {
+export function createDiagnosis(doc: TextDocument, fs:FileSystemReadSync, fp: FileProcessor<StylableMeta>): Diagnostic[] {
     if (!doc.uri.endsWith('.st.css')) { return [] };
 
     let file: string;
@@ -46,14 +44,14 @@ export function createDiagnosis(doc: TextDocument, fs:FileSystemReadSync, fp: Fi
         //stylable diagnostic to protocol diagnostic
     function reportToDiagnostic(report: Report) {
         let severity = report.type === 'error' ? 1 : 2
-        let range = createRange(report,typeHelpers)
-        return typeHelpers.Diagnostic.create(range, report.message, severity as any)
+        let range = createRange(report)
+        return Diagnostic.create(range, report.message, severity as any)
     }
 
 }
 
 
-function createRange(report: Report, typeHelpers:LSPTypeHelpers) {
+function createRange(report: Report) {
     let source = report.node.source
     let start = { line: 0, character: 0 }
     let end = { line: 0, character: 0 }
@@ -77,5 +75,5 @@ function createRange(report: Report, typeHelpers:LSPTypeHelpers) {
         end.line = source.end!.line - 1
         end.character = source.end!.column
     }
-    return typeHelpers.Range.create(start, end)
+    return Range.create(start, end)
 }
