@@ -1,11 +1,11 @@
 {
   "name": "stylable-intelligence-service",
-  "version": "0.0.54",
+  "version": "0.0.56",
   "description": "Stylable Language Server",
   "author": "Nadav Abraami (nadav@wix.com)",
   "publisher": "Nadav Abraami (nadav@wix.com)",
-  "main": "./dist/src/provider-factory.js",
-  "types": "./dist/src/provider-factory.d.ts",
+  "main": "./dist/src/service.js",
+  "types": "./dist/src/service.d.ts",
   "engines": {
     "node": "*",
     "vscode": "^1.18.0"
