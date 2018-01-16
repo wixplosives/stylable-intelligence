@@ -35,7 +35,7 @@ import * as ts from 'typescript';
 import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName, Identifier, LiteralTypeNode } from 'typescript';
 import { nativePathToFileUri } from './utils/uri-utils';
 import { resolve } from 'url';
-import * as _ from 'lodash';
+import { keys } from 'lodash';
 
 
 export default class Provider {
@@ -75,10 +75,7 @@ export default class Provider {
         const completions: Completion[] = [];
         try {
             let options = this.createProviderOptions(src, position, meta, fakes, lineText, cursorPosInLine, docs);
-            this.providers.forEach(p => {
-                options.isLineStart = p.text.some((s: string) => s.indexOf(lineText.trim()) === 0);
-                completions.push(...p.provide(options));
-            });
+            this.providers.forEach(p => { completions.push(...p.provide(options)) });
         } catch (e) { }
         return Promise.resolve(this.dedupe(completions));
     }
@@ -120,29 +117,6 @@ export default class Provider {
             resolved = clas ? clas.resolved : [];
         }
 
-        const lastPseudo = _.findLast(resolvedElements[0], e => e.type === 'pseudo-element' && e.resolved.length > 0)
-        let pseudoElementId = lastPseudo ? lastPseudo.name : '';
-
-        let customSelectorType = '';
-        let customSelectorString = '';
-        let expanded = '';
-        if (lineChunkAtCursor.startsWith(':--')) {
-            customSelectorString = lineChunkAtCursor.match(/^(:--\w*)/)![1];
-            expanded = meta.customSelectors[customSelectorString];
-        }
-
-        if (lastPseudo &&
-            !!lastPseudo.resolved[0].meta.customSelectors[':--' + pseudoElementId]
-        ) {
-            customSelectorString = ':--' + pseudoElementId;
-            expanded = lastPseudo.resolved[0].meta.customSelectors[customSelectorString];
-            pseudoElementId = '';
-        }
-
-        if (expanded) {
-            customSelectorType = lastPseudo ? lastPseudo.resolved[0].symbol.name : resolvedElements[0][0].name
-        }
-
         return {
             meta: meta,
             docs: docs,
@@ -155,16 +129,11 @@ export default class Provider {
             lastSelectoid: ps.lastSelector,
             fullLineText: fullLineText,
             position: position,
-            isLineStart: false,
             resolved: resolved,
             currentSelector: currentSelector,
             target: ps.target,
             isMediaQuery: isInMediaQuery(path),
             fakes: fakeRules,
-            pseudo: pseudoElementId,
-            resolvedPseudo: lastPseudo ? lastPseudo.resolved : [],
-            customSelector: customSelectorString,
-            customSelectorType: customSelectorType,
         }
     }
 
@@ -559,7 +528,7 @@ export function extractJsModifierRetrunType(mixin: string, activeParam: number, 
 }
 
 function isInMediaQuery(path: PostCss.NodeBase[]) { return path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media') };
-export function isDirective(line: string) { return Object.keys(valueMapping).some(k => line.trim().startsWith((valueMapping as any)[k])) };
+export function isDirective(line: string) { return keys(valueMapping).some(k => line.trim().startsWith((valueMapping as any)[k])) };
 function isNamedDirective(line: string) { return line.indexOf(valueMapping.named) !== -1 };
 export function isInValue(lineText: string, position: ProviderPosition) {
     let isInValue: boolean = false;
