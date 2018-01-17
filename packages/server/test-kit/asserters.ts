@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
 import { TextDocument } from 'vscode-languageserver-types';
@@ -14,6 +15,7 @@ import { fileUriToNativePath } from '../src/utils/uri-utils';
 import { Stylable } from 'stylable';
 import { LocalSyncFs } from '../src/local-sync-fs';
 import { createDocFs } from '../src/server';
+import { createLanguageServiceHost, createBaseHost } from '../src/utils/temp-language-service-host';
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {
@@ -141,7 +143,23 @@ const minDocs: MinimalDocs = {
     }
 };
 const docsFs = createDocFs(new LocalSyncFs(''),minDocs);
-const provider = createProvider(new Stylable('/', createFs( docsFs, true), () => ({ default: {} })));
+
+let openedFiles:string[] = [];
+const tsLanguageServiceHost = createLanguageServiceHost({
+    cwd: __dirname,
+    getOpenedDocs: () => openedFiles,
+    compilerOptions: {
+        target: ts.ScriptTarget.ES5, sourceMap: false, declaration: true, outDir: 'dist',
+        module: ts.ModuleKind.CommonJS,
+        typeRoots: ["./node_modules/@types"]
+    },
+    defaultLibDirectory: path.join(__dirname, '../test/cases'),
+    baseHost: createBaseHost(docsFs, path)
+});
+const tsLanguageService = ts.createLanguageService(tsLanguageServiceHost);
+(tsLanguageService as any).setOpenedFiles = (files:string[]) => openedFiles = files;
+
+const provider = createProvider(new Stylable('/', createFs( docsFs, true), () => ({ default: {} })), tsLanguageService);
 
 
 

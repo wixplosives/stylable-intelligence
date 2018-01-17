@@ -18,6 +18,7 @@ import * as ts from 'typescript'
 import { FileSystemReadSync } from 'kissfs';
 export {MinimalDocs} from './provider-factory';
 import {NotificationTypes,LSPTypeHelpers, ExtendedFSReadSync} from './types'
+import { createLanguageServiceHost, createBaseHost } from './utils/temp-language-service-host';
 // namespace OpenDocNotification {
 // }
 
@@ -25,7 +26,23 @@ import {NotificationTypes,LSPTypeHelpers, ExtendedFSReadSync} from './types'
 export class StylableLanguageService {
     constructor(connection: IConnection, services: { styl: Stylable }, fs:ExtendedFSReadSync, notifications :NotificationTypes) {
 
-        const provider = createProvider(services.styl);
+        let openedFiles:string[] = [];
+        const tsLanguageServiceHost = createLanguageServiceHost({
+            cwd: '/',
+            getOpenedDocs: () => openedFiles,
+            compilerOptions: {
+                target: ts.ScriptTarget.ES5, sourceMap: false, declaration: true, outDir: 'dist',
+                lib:[],
+                module: ts.ModuleKind.CommonJS,
+                typeRoots: ["./node_modules/@types"]
+            },
+            defaultLibDirectory: '',
+            baseHost: createBaseHost(fs, path)
+        });
+        const tsLanguageService = ts.createLanguageService(tsLanguageServiceHost);
+        (tsLanguageService as any).setOpenedFiles = (files:string[]) => openedFiles = files;
+
+        const provider = createProvider(services.styl, tsLanguageService);
         const processor = provider.styl.fileProcessor;
         const cssService = VCL.getCSSLanguageService();
 
@@ -84,7 +101,13 @@ export class StylableLanguageService {
                 const startTime = new Date();
 
                 const interval = setInterval(() => {
-                    if (requestedFiles.every(file => !!fs.get(file))) {
+                    if (requestedFiles.every(file => {
+                            try{
+                                return !!fs.get(file)
+                            } catch(e) {
+                                return false;
+                            }
+                        })) {
                         clearInterval(interval);
                         resolve()
                     } else if (Number(new Date()) - Number(startTime) > 300) {

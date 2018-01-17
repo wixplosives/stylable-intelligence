@@ -37,10 +37,11 @@ import { nativePathToFileUri } from './utils/uri-utils';
 import { resolve } from 'url';
 import { keys } from 'lodash';
 import { ExtendedFSReadSync } from './types';
+import { createLanguageServiceHost } from './utils/temp-language-service-host';
 
 
 export default class Provider {
-    constructor(public styl: Stylable) { }
+    constructor(public styl: Stylable, public tsLangService:ts.LanguageService) { }
 
     public providers = [
         RulesetInternalDirectivesProvider,
@@ -123,6 +124,7 @@ export default class Provider {
             fs: fs,
             styl: this.styl,
             src: src,
+            tsLangService: this.tsLangService,
             resolvedElements: resolvedElements,
             parentSelector: parentSelector,
             astAtCursor: astAtCursor,
@@ -283,7 +285,7 @@ export default class Provider {
     }
 
     getSignatureForTsModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean, paramInfo: typeof ParameterInformation): SignatureHelp | null {
-        let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault)
+        let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault, this.tsLangService)
         let ptypes = sig!.parameters.map(p => {
             return p.name + ":" + ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
         });
@@ -474,21 +476,23 @@ export class ProviderLocation {
     constructor(public uri: string, public range: ProviderRange) { }
 }
 
-export function extractTsSignature(filePath: string, mixin: string, isDefault: boolean): ts.Signature | undefined {
-    const compilerOptions: ts.CompilerOptions = {
-        "jsx": ts.JsxEmit.React,
-        "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
-        "module": ts.ModuleKind.CommonJS,
-        "target": ts.ScriptTarget.ES5,
-        "strict": false,
-        "importHelpers": false,
-        "noImplicitReturns": false,
-        "strictNullChecks": false,
-        "sourceMap": false,
-        "outDir": "dist",
-        "typeRoots": ["./node_modules/@types"]
-    };
-    let program = ts.createProgram([filePath], compilerOptions);
+export function extractTsSignature(filePath: string, mixin: string, isDefault: boolean, tsLangService: ts.LanguageService): ts.Signature | undefined {
+    // const compilerOptions: ts.CompilerOptions = {
+    //     "jsx": ts.JsxEmit.React,
+    //     "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
+    //     "module": ts.ModuleKind.CommonJS,
+    //     "target": ts.ScriptTarget.ES5,
+    //     "strict": false,
+    //     "importHelpers": false,
+    //     "noImplicitReturns": false,
+    //     "strictNullChecks": false,
+    //     "sourceMap": false,
+    //     "outDir": "dist",
+    //     "typeRoots": ["./node_modules/@types"]
+    // };
+    // let program = ts.createProgram([filePath], compilerOptions);
+    (tsLangService as any).setOpenedFiles([filePath])
+    let program = tsLangService.getProgram();
     let tc = program.getTypeChecker();
     let sf = program.getSourceFile(filePath);
     let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function).find(f => {

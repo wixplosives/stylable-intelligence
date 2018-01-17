@@ -7,6 +7,7 @@ import {
 } from 'stylable';
 import Provider from './provider';
 import * as fs from 'fs';
+import * as ts from 'typescript';
 import { htap } from 'htap';
 import { FileSystemReadSync, EventEmitter } from 'kissfs';
 
@@ -15,9 +16,9 @@ export {Completion} from './completion-types';
 export { ProviderRange, ProviderPosition }  from './completion-providers'
 export { createDiagnosis }  from './diagnosis';
 
-export function createProvider(stylable: Stylable, withFilePrefix: boolean = true): Provider {
+export function createProvider(stylable: Stylable, tsLangService:ts.LanguageService, withFilePrefix: boolean = true): Provider {
     // const styl = new Stylable('/', createFs(docs, fileSystem, withFilePrefix), () => ({ default: {} }))
-    return new Provider(stylable)
+    return new Provider(stylable, tsLangService)
 }
 
 export function createFs(fileSystem: FileSystemReadSync, withFilePrefix: boolean = true): any {

@@ -32,13 +32,14 @@ import { Declaration } from 'postcss';
 import { ResolvedElement } from 'stylable/dist/src/stylable-transformer';
 import { keys, findLast, last } from 'lodash';
 import { ExtendedFSReadSync } from './types';
-
+import * as ts from 'typescript';
 
 export interface ProviderOptions {
     meta: StylableMeta,
     fs: ExtendedFSReadSync,
     styl: Stylable,
     src: string,
+    tsLangService: ts.LanguageService,
     resolvedElements: ResolvedElement[][],
     parentSelector: SRule | null,
     astAtCursor: PostCss.NodeBase,
@@ -379,7 +380,7 @@ export const CssMixinCompletionProvider: CompletionProvider = {
 // RHS of -st-mixin
 // There is  a JS/TS import
 export const CodeMixinCompletionProvider: CompletionProvider = {
-    provide({parentSelector, meta, fullLineText, lineChunkAtCursor, position, fs}: ProviderOptions): Completion[] {
+    provide({parentSelector, meta, fullLineText, lineChunkAtCursor, position, fs, tsLangService}: ProviderOptions): Completion[] {
         if (meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) &&
             !fullLineText.trim().startsWith(valueMapping.from) &&
             parentSelector && lineChunkAtCursor.startsWith(valueMapping.mixin + ':')
@@ -391,7 +392,7 @@ export const CodeMixinCompletionProvider: CompletionProvider = {
                 .filter(ms => meta.mappedSymbols[ms]._kind === 'import')
                 .filter(ms => ms.startsWith(lastName))
                 .filter(ms => names.length === 0 || !names.includes(ms))
-                .filter(ms => isMixin(ms, meta, fs))
+                .filter(ms => isMixin(ms, meta, fs, tsLangService))
                 .map(ms => createCodeMixinCompletion(ms, lastName, position, meta));
         } else {
             return [];
@@ -402,7 +403,7 @@ export const CodeMixinCompletionProvider: CompletionProvider = {
 // Inside ruleset, which is not :import
 // RHS of any rule
 export const FormatterCompletionProvider: CompletionProvider = {
-    provide({meta, fullLineText, parentSelector, lineChunkAtCursor, position, fs}: ProviderOptions): Completion[] {
+    provide({meta, fullLineText, parentSelector, lineChunkAtCursor, position, fs, tsLangService}: ProviderOptions): Completion[] {
         if (meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) &&
             !fullLineText.trim().startsWith(valueMapping.from) &&
             parentSelector && fullLineText.includes(':') && fullLineText.indexOf(':') < position.character &&
@@ -413,7 +414,7 @@ export const FormatterCompletionProvider: CompletionProvider = {
                 .filter(ms => (meta.mappedSymbols[ms]._kind === 'import'))
                 .filter(ms => ms.startsWith(lastName))
                 .filter(ms => names.length === 0 || !names.includes(ms))
-                .filter(ms => !isMixin(ms, meta, fs))
+                .filter(ms => !isMixin(ms, meta, fs, tsLangService))
                 .map(ms => createCodeMixinCompletion(ms, lastName, position, meta));
         } else {
             return [];
@@ -619,10 +620,10 @@ function createCodeMixinCompletion(name: string, lastName: string, position: Pro
     )
 }
 
-function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync) {
+function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLangService: ts.LanguageService) {
     const importSymbol = (meta.mappedSymbols[name] as ImportSymbol);
     if (importSymbol.import.fromRelative.endsWith('.ts')) {
-        const sig = extractTsSignature(importSymbol.import.from, name, importSymbol.type === 'default')
+        const sig = extractTsSignature(importSymbol.import.from, name, importSymbol.type === 'default', tsLangService)
         if (!sig) { return false; }
         let rtype = sig.declaration.type
             ? ((sig.declaration.type as TypeReferenceNode).typeName as Identifier).getText()
