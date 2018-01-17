@@ -18,6 +18,7 @@ import * as ts from 'typescript'
 import { FileSystemReadSync } from 'kissfs';
 export {MinimalDocs} from './provider-factory';
 import {NotificationTypes, ExtendedFSReadSync} from './types';
+export {NotificationTypes, ExtendedFSReadSync} from './types';
 
 // namespace OpenDocNotification {
 // }
@@ -52,7 +53,7 @@ export class StylableLanguageService {
             }
         });
 
-        connection.listen();
+        // connection.listen();
 
         function getRequestedFiles(doc: string, origin: string): string[] {
             const originNativePath = fileUriToNativePath(origin)
@@ -102,8 +103,7 @@ export class StylableLanguageService {
 
         });
 
-        connection.onDidChangeTextDocument(function (change) {
-            const document = fs.get(change.textDocument.uri);
+        function diagnose(document:TextDocument){
             let cssDiags =
                 document.uri.endsWith('.css')
                     ? cssService.doValidation(document, cssService.parseStylesheet(document))
@@ -129,6 +129,14 @@ export class StylableLanguageService {
 
             let diagnostics = createDiagnosis(document, fs, processor).map(diag => { diag.source = 'stylable'; return diag; });
             connection.sendDiagnostics({ uri: document.uri, diagnostics: diagnostics.concat(cssDiags) })
+        }
+        connection.onDidOpenTextDocument(function(params){
+            const document = fs.get(params.textDocument.uri);
+            diagnose(document);
+        });
+        connection.onDidChangeTextDocument(function (change) {
+            const document = fs.get(change.textDocument.uri);
+            diagnose(document);
         });
 
         connection.onDefinition((params): Thenable<Definition> => {
