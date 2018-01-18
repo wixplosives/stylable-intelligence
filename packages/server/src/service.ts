@@ -20,6 +20,8 @@ export {MinimalDocs} from './provider-factory';
 import {NotificationTypes,LSPTypeHelpers, ExtendedFSReadSync, ExtendedTsLanguageService} from './types'
 import { createLanguageServiceHost, createBaseHost } from './utils/temp-language-service-host';
 
+//exporting types for use in playground
+export {ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes}  from './types'
 
 export class StylableLanguageService {
     constructor(connection: IConnection, services: { styl: Stylable,tsLanguageService: ExtendedTsLanguageService  }, fs:ExtendedFSReadSync, notifications :NotificationTypes) {
