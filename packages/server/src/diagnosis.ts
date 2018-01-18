@@ -22,7 +22,9 @@ export function createDiagnosis(doc: TextDocument, fs:FileSystemReadSync, fp: Fi
         fileProcessor: fp,
         requireModule: (path:string) => {
             try{
-                return eval(fs.loadTextFileSync(path))
+                const m = {exports: {}};
+                new Function(['module','exports', 'require'], fs.loadTextFileSync(path))(m, m.exports, require);
+                return m.exports;
             }catch(err){
                 console.warn('diagnosis, failed eval module')
             }
