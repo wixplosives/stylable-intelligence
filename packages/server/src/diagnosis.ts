@@ -1,11 +1,11 @@
 import { StylableMeta } from 'stylable/dist/src/stylable-processor';
-import { Diagnostic, Range, DiagnosticSeverity } from 'vscode-languageserver-types/lib/main';
-import { TextDocument } from 'vscode-languageserver-types/lib/main';
+import { Diagnostic, Range, TextDocument } from 'vscode-languageserver-types';
 import * as path from 'path';
 import { safeParse, Diagnostics, process as stylableProcess, StylableTransformer, FileProcessor } from 'stylable';
 import { Diagnostic as Report } from 'stylable/src/diagnostics'
+import { FileSystemReadSync } from 'kissfs';
 
-export function createDiagnosis(doc: TextDocument, fp: FileProcessor<StylableMeta>): Diagnostic[] {
+export function createDiagnosis(doc: TextDocument, fs:FileSystemReadSync, fp: FileProcessor<StylableMeta>): Diagnostic[] {
     if (!doc.uri.endsWith('.st.css')) { return [] };
 
     let file: string;
@@ -17,31 +17,42 @@ export function createDiagnosis(doc: TextDocument, fp: FileProcessor<StylableMet
 
     file = decodeURIComponent(file);
 
+    function requireModule(path:string){
+        try{
+            const m = {exports: {}};
+            new Function('module','exports', 'require', fs.loadTextFileSync(path))(m, m.exports, requireModule);
+            return m.exports;
+        }catch(err){
+            console.warn('diagnosis, failed eval module')
+        }
+        return {};
+    }
     let transformer = new StylableTransformer({
         diagnostics: new Diagnostics(),
         fileProcessor: fp,
-        requireModule: () => {
-            // console.log(path)
-        }
+        requireModule
     })
 
     let docPostCSSRoot = safeParse(doc.getText(), { from: path.resolve(file) })
     let meta = stylableProcess(docPostCSSRoot)
 
     fp.add(file, meta);
+
     try {
         transformer.transform(meta)
     } catch(e) {}
     return meta.diagnostics.reports.concat(meta.transformDiagnostics ? meta.transformDiagnostics.reports : [])
         .map(reportToDiagnostic)
+
+        //stylable diagnostic to protocol diagnostic
+    function reportToDiagnostic(report: Report) {
+        let severity = report.type === 'error' ? 1 : 2
+        let range = createRange(report)
+        return Diagnostic.create(range, report.message, severity as any)
+    }
+
 }
 
-//stylable diagnostic to protocol diagnostic
-function reportToDiagnostic(report: Report) {
-    let severity = report.type === 'error' ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning
-    let range = createRange(report)
-    return Diagnostic.create(range, report.message, severity)
-}
 
 function createRange(report: Report) {
     let source = report.node.source

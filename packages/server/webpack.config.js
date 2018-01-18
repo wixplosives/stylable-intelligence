@@ -1,6 +1,7 @@
-var webpack = require('webpack');
+const webpack = require('webpack');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-var VendorChunkPlugin = require('webpack-vendor-chunk-plugin');
+const VendorChunkPlugin = require('webpack-vendor-chunk-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const glob = require("glob");
 const {
@@ -13,7 +14,7 @@ const distPath = path.join(__dirname, '..', 'client', 'server');
 
 const testsSetup = [path.join(__dirname, '..', 'client', 'server', 'test', 'setup.js')];
 module.exports = {
-    devtool: 'eval',
+    // devtool: 'eval',
     entry: {
         main: './src/service.ts',
         vendor: ['typescript', 'lodash'],
@@ -25,29 +26,36 @@ module.exports = {
     },
     module: {
         rules: [{
-                test: /\.tsx?$/,
-                use: {
-                    loader: 'ts-loader',
-                    options: {
-                        compilerOptions: {
-                            "declaration": false
-                        }
+            test: /\.tsx?$/,
+            use: {
+                loader: 'ts-loader',
+                options: {
+                    compilerOptions: {
+                        "declaration": false
                     }
                 }
             }
+        },
+        {
+            test: /node_modules\/vscode-/,
+            use: {loader: "umd-compat-loader"}
+        }
         ]
     },
     resolve: {
-        extensions: ['.ts', '.tsx', '.js']
+        extensions: ['.ts', '.tsx', '.js', '.json'],
+        alias: {
+            "vscode-nls": path.resolve(__dirname, "src", "vscode-nls.js")
+        }
     },
     output: {
-        filename: 'dist/[name].bundle.js',
+        path: path.join(__dirname, 'dist'),
+        filename: '[name].bundle.js',
         pathinfo: true
     },
     plugins: [
-        new BundleAnalyzerPlugin(),
-        new webpack.optimize.CommonsChunkPlugin({ name: 'vendor', filename: 'vendor.bundle.js' }),
-        new VendorChunkPlugin('vendor')
+        // new BundleAnalyzerPlugin(),
+        new HtmlWebpackPlugin()
     ],
     node: {
         fs: 'empty',

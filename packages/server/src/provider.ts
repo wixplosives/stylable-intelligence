@@ -36,10 +36,12 @@ import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, Qualifie
 import { nativePathToFileUri } from './utils/uri-utils';
 import { resolve } from 'url';
 import { keys } from 'lodash';
+import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
+import { createLanguageServiceHost } from './utils/temp-language-service-host';
 
 
 export default class Provider {
-    constructor(public styl: Stylable) { }
+    constructor(public styl: Stylable, public tsLangService:ExtendedTsLanguageService) { }
 
     public providers = [
         RulesetInternalDirectivesProvider,
@@ -58,9 +60,9 @@ export default class Provider {
         ValueCompletionProvider,
     ]
 
-    public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, docs: MinimalDocs): Thenable<Completion[]> {
+    public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, fs: ExtendedFSReadSync): Thenable<Completion[]> {
         let res = fixAndProcess(src, pos, fileName);
-        return this.provideCompletionItemsFromAst(src, res.currentLine, res.cursorLineIndex, pos, res.processed.meta!, res.processed.fakes, docs);
+        return this.provideCompletionItemsFromAst(src, res.currentLine, res.cursorLineIndex, pos, res.processed.meta!, res.processed.fakes, fs);
     }
 
     public provideCompletionItemsFromAst(
@@ -70,11 +72,11 @@ export default class Provider {
         position: ProviderPosition,
         meta: StylableMeta,
         fakes: PostCss.Rule[],
-        docs: MinimalDocs,
+        fs: ExtendedFSReadSync,
     ): Thenable<Completion[]> {
         const completions: Completion[] = [];
         try {
-            let options = this.createProviderOptions(src, position, meta, fakes, lineText, cursorPosInLine, docs);
+            let options = this.createProviderOptions(src, position, meta, fakes, lineText, cursorPosInLine, fs);
             this.providers.forEach(p => { completions.push(...p.provide(options)) });
         } catch (e) { }
         return Promise.resolve(this.dedupe(completions));
@@ -87,7 +89,7 @@ export default class Provider {
         fakeRules: PostCss.Rule[],
         fullLineText: string,
         cursorPosInLine: number,
-        docs: MinimalDocs): ProviderOptions {
+        fs: ExtendedFSReadSync): ProviderOptions {
 
         const transformer = new StylableTransformer({
             diagnostics: new Diagnostics(),
@@ -119,9 +121,10 @@ export default class Provider {
 
         return {
             meta: meta,
-            docs: docs,
+            fs: fs,
             styl: this.styl,
             src: src,
+            tsLangService: this.tsLangService,
             resolvedElements: resolvedElements,
             parentSelector: parentSelector,
             astAtCursor: astAtCursor,
@@ -150,7 +153,7 @@ export default class Provider {
         return res;
     }
 
-    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string, docs: MinimalDocs): Thenable<ProviderLocation[]> {
+    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string, fs: ExtendedFSReadSync): Thenable<ProviderLocation[]> {
 
         if (!filePath.endsWith('.st.css')) { return Promise.resolve([]) }
 
@@ -199,7 +202,7 @@ export default class Provider {
                     defs.push(
                         new ProviderLocation(
                             filePath,
-                            this.findWord(word, docs.get(nativePathToFileUri(filePath)).getText(), position)
+                            this.findWord(word, fs.loadTextFileSync(nativePathToFileUri(filePath)), position)
                         )
                     );
                     break;
@@ -233,7 +236,7 @@ export default class Provider {
         )
     }
 
-    getSignatureHelp(src: string, pos: Position, filePath: string, documents: MinimalDocs, paramInfo: typeof ParameterInformation): SignatureHelp | null {
+    getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
         if (!filePath.endsWith('.st.css')) { return null }
         let res = fixAndProcess(src, pos, filePath);
         let meta = res.processed.meta;
@@ -262,19 +265,19 @@ export default class Provider {
         if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
             return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
         } else if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.js')) {
-            if (documents.keys().indexOf('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts') !== -1) {
+            if (fs.getOpenedFiles().indexOf('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts') !== -1) {
                 return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts', (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
             } else {
                 console.log((meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
                 return this.getSignatureForJsModifier(
                     mixin,
                     activeParam,
-                    documents.get(
+                    fs.loadTextFileSync(
                         ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.startsWith('/')
                             ? 'file://'
                             : '')
                         + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from
-                    ).getText(), paramInfo);
+                    ), paramInfo);
             }
         } else {
             return null;
@@ -282,7 +285,7 @@ export default class Provider {
     }
 
     getSignatureForTsModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean, paramInfo: typeof ParameterInformation): SignatureHelp | null {
-        let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault)
+        let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault, this.tsLangService)
         let ptypes = sig!.parameters.map(p => {
             return p.name + ":" + ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
         });
@@ -473,21 +476,23 @@ export class ProviderLocation {
     constructor(public uri: string, public range: ProviderRange) { }
 }
 
-export function extractTsSignature(filePath: string, mixin: string, isDefault: boolean): ts.Signature | undefined {
-    const compilerOptions: ts.CompilerOptions = {
-        "jsx": ts.JsxEmit.React,
-        "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
-        "module": ts.ModuleKind.CommonJS,
-        "target": ts.ScriptTarget.ES5,
-        "strict": false,
-        "importHelpers": false,
-        "noImplicitReturns": false,
-        "strictNullChecks": false,
-        "sourceMap": false,
-        "outDir": "dist",
-        "typeRoots": ["./node_modules/@types"]
-    };
-    let program = ts.createProgram([filePath], compilerOptions);
+export function extractTsSignature(filePath: string, mixin: string, isDefault: boolean, tsLangService: ExtendedTsLanguageService): ts.Signature | undefined {
+    // const compilerOptions: ts.CompilerOptions = {
+    //     "jsx": ts.JsxEmit.React,
+    //     "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
+    //     "module": ts.ModuleKind.CommonJS,
+    //     "target": ts.ScriptTarget.ES5,
+    //     "strict": false,
+    //     "importHelpers": false,
+    //     "noImplicitReturns": false,
+    //     "strictNullChecks": false,
+    //     "sourceMap": false,
+    //     "outDir": "dist",
+    //     "typeRoots": ["./node_modules/@types"]
+    // };
+    // let program = ts.createProgram([filePath], compilerOptions);
+    tsLangService.setOpenedFiles([filePath])
+    let program = tsLangService.ts.getProgram();
     let tc = program.getTypeChecker();
     let sf = program.getSourceFile(filePath);
     let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function).find(f => {
