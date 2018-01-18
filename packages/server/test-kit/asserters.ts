@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
 import { TextDocument } from 'vscode-languageserver-types';
@@ -13,6 +14,9 @@ import { SignatureHelp, TextDocumentPositionParams, TextDocumentIdentifier, Para
 import { fileUriToNativePath } from '../src/utils/uri-utils';
 import { Stylable } from 'stylable';
 import { LocalSyncFs } from '../src/local-sync-fs';
+import { createDocFs } from '../src/server';
+import { createLanguageServiceHost, createBaseHost } from '../src/utils/temp-language-service-host';
+import { ExtendedTsLanguageService } from '../src/types';
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {
@@ -89,7 +93,7 @@ function completionsIntenal(provider: Provider, fileName: string, src: string, p
     src = src.replace('|', prefix);
     pos.character += prefix.length;
 
-    return provider.provideCompletionItemsFromSrc(src, pos, fileName, minDocs)
+    return provider.provideCompletionItemsFromSrc(src, pos, fileName, docsFs)
 }
 
 export function getCaretPosition(src: string) {
@@ -113,7 +117,7 @@ export function getDefinition(fileName: string): Thenable<ProviderLocation[]> {
     let src: string = fs.readFileSync(fullPath).toString();
     let pos = getCaretPosition(src);
     src = src.replace('|', "");
-    return provider.getDefinitionLocation(src, pos, fullPath, minDocs).then((res) => {
+    return provider.getDefinitionLocation(src, pos, fullPath, docsFs).then((res) => {
         return res;
     })
 }
@@ -124,7 +128,7 @@ export function getSignatureHelp(fileName: string, prefix: string): SignatureHel
     let pos = getCaretPosition(src);
     src = src.replace('|', prefix);
     pos.character += prefix.length;
-    return provider.getSignatureHelp(src, pos, fullPath, minDocs, ParameterInformation);
+    return provider.getSignatureHelp(src, pos, fullPath, docsFs, ParameterInformation);
 }
 
 const minDocs: MinimalDocs = {
@@ -139,8 +143,28 @@ const minDocs: MinimalDocs = {
         return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'));
     }
 };
+const docsFs = createDocFs(new LocalSyncFs(''),minDocs);
 
-const provider = createProvider(minDocs, new Stylable('/', createFs(minDocs, new LocalSyncFs(''), true), () => ({ default: {} })));
+let openedFiles:string[] = [];
+const tsLanguageServiceHost = createLanguageServiceHost({
+    cwd: __dirname,
+    getOpenedDocs: () => openedFiles,
+    compilerOptions: {
+        target: ts.ScriptTarget.ES5, sourceMap: false, declaration: true, outDir: 'dist',
+        module: ts.ModuleKind.CommonJS,
+        typeRoots: ["./node_modules/@types"]
+    },
+    defaultLibDirectory: path.join(__dirname, '../test/cases'),
+    baseHost: createBaseHost(docsFs, path)
+});
+const tsLanguageService = ts.createLanguageService(tsLanguageServiceHost);
+const wrappedTs:ExtendedTsLanguageService = {
+    ts:tsLanguageService,
+    setOpenedFiles:(files:string[]) => openedFiles = files
+};
+
+
+const provider = createProvider(new Stylable('/', createFs( docsFs, true), () => ({ default: {} })), wrappedTs);
 
 
 

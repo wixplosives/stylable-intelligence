@@ -49,7 +49,7 @@ export function isSelectorDirectChild(chunk: SelectorQuery): chunk is SelectorDi
     return chunk && chunk._type === 'direct-child';
 }
 
-export function parseSelector(inputSelector: string, cursorIndex: number = 0): { selector: SelectorQuery[], target: CursorPosition } {
+export function parseSelector(inputSelector: string, cursorIndex: number = 0): { selector: SelectorQuery[], target: CursorPosition, lastSelector: string } {
     const res: SelectorQuery[] = [];
     const textArr: string[] = [];
     let cursorTarget = { focusChunk: {} as any, text: textArr, index: -1, internalIndex: 0 };
@@ -64,6 +64,7 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
     let selector = inputSelector.trim();
     let currentPosition = spaceBeforeSelector && spaceBeforeSelector[0].length || 0;
     let currentSourceQuery: string = '';
+    let lastSelector: string = '';
     let chunkInternalPos = 0;
     res.push(createSelectorChunk());
     for (let i = 0; i < firstSelector.nodes.length; i++) {
@@ -77,16 +78,17 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                     currentTarget.text.push(currentSourceQuery);
                     currentTarget.classes.push(selectorQueryItem.name);
                     selector = selector.slice(currentSourceQuery.length);
+                    lastSelector = '';
                     break;
-                case 'spacing':
-                    const startSpaceMatch = selector.match(/^(\s)*/);
-                    currentSourceQuery = startSpaceMatch && startSpaceMatch[0] || ' ';
-                    currentTarget = createSelectorDescendent();
-                    currentTarget.text.push(currentSourceQuery);
-                    res.push(currentTarget, createSelectorChunk());
-                    chunkInternalPos = 0;
-                    selector = selector.slice(currentSourceQuery.length);
-                    break;
+                // case 'spacing':
+                //     const startSpaceMatch = selector.match(/^(\s)*/);
+                //     currentSourceQuery = startSpaceMatch && startSpaceMatch[0] || ' ';
+                //     currentTarget = createSelectorDescendent();
+                //     currentTarget.text.push(currentSourceQuery);
+                //     res.push(currentTarget, createSelectorChunk());
+                //     chunkInternalPos = 0;
+                //     selector = selector.slice(currentSourceQuery.length);
+                //     break;
                 case 'operator':
                     if (selectorQueryItem.operator === '>') {
                         const startDirectChildMatch = selector.match(/^(\s*>\s*)?/);
@@ -96,6 +98,7 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                         res.push(currentTarget, createSelectorChunk());
                         chunkInternalPos = 0;
                         selector = selector.slice(currentSourceQuery.length);
+                        lastSelector = '';
                     }
                     break;
                 case 'pseudo-class':
@@ -105,6 +108,7 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                         currentTarget.text.push(currentSourceQuery);
                         currentTarget.customSelectors.push(':' + selectorQueryItem.name);
                         selector = selector.slice(currentSourceQuery.length);
+                        lastSelector = '';
                         break;
                     }
                     else {
@@ -113,6 +117,7 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                         currentTarget.text.push(currentSourceQuery);
                         currentTarget.states.push(selectorQueryItem.name);
                         selector = selector.slice(currentSourceQuery.length);
+                        lastSelector = currentSourceQuery;
                         break;
                     }
                 case 'pseudo-element':
@@ -122,6 +127,7 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                     res.push(currentTarget);
                     chunkInternalPos = 0;
                     selector = selector.slice(currentSourceQuery.length);
+                    lastSelector = '';
                     break;
                 case 'element':
                     chunkInternalPos++;
@@ -129,12 +135,14 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                     currentTarget.text.push(currentSourceQuery);
                     currentTarget.type = selectorQueryItem.name;
                     selector = selector.slice(currentSourceQuery.length);
+                    lastSelector = '';
                     break;
                 case 'invalid':
                     chunkInternalPos++; // ?
                     currentSourceQuery = selectorQueryItem.value;
                     currentTarget.text.push(currentSourceQuery);
                     selector = selector.slice(currentSourceQuery.length).trim();
+                    lastSelector = currentSourceQuery;
                     break;
             }
         } else {
@@ -170,6 +178,8 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
 
     return {
         selector: res,
-        target: cursorTarget
+        target: cursorTarget,
+        lastSelector: lastSelector
     };
 }
+;

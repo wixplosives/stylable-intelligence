@@ -35,11 +35,13 @@ import * as ts from 'typescript';
 import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName, Identifier, LiteralTypeNode } from 'typescript';
 import { nativePathToFileUri } from './utils/uri-utils';
 import { resolve } from 'url';
-import * as _ from 'lodash';
+import { keys } from 'lodash';
+import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
+import { createLanguageServiceHost } from './utils/temp-language-service-host';
 
 
 export default class Provider {
-    constructor(public styl: Stylable) { }
+    constructor(public styl: Stylable, public tsLangService:ExtendedTsLanguageService) { }
 
     public providers = [
         RulesetInternalDirectivesProvider,
@@ -58,9 +60,9 @@ export default class Provider {
         ValueCompletionProvider,
     ]
 
-    public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, docs: MinimalDocs): Thenable<Completion[]> {
+    public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, fs: ExtendedFSReadSync): Thenable<Completion[]> {
         let res = fixAndProcess(src, pos, fileName);
-        return this.provideCompletionItemsFromAst(src, res.currentLine, res.cursorLineIndex, pos, res.processed.meta!, res.processed.fakes, docs);
+        return this.provideCompletionItemsFromAst(src, res.currentLine, res.cursorLineIndex, pos, res.processed.meta!, res.processed.fakes, fs);
     }
 
     public provideCompletionItemsFromAst(
@@ -70,15 +72,12 @@ export default class Provider {
         position: ProviderPosition,
         meta: StylableMeta,
         fakes: PostCss.Rule[],
-        docs: MinimalDocs,
+        fs: ExtendedFSReadSync,
     ): Thenable<Completion[]> {
         const completions: Completion[] = [];
         try {
-            let options = this.createProviderOptions(src, position, meta, fakes, lineText, cursorPosInLine, docs);
-            this.providers.forEach(p => {
-                options.isLineStart = p.text.some((s: string) => s.indexOf(lineText.trim()) === 0);
-                completions.push(...p.provide(options));
-            });
+            let options = this.createProviderOptions(src, position, meta, fakes, lineText, cursorPosInLine, fs);
+            this.providers.forEach(p => { completions.push(...p.provide(options)) });
         } catch (e) { }
         return Promise.resolve(this.dedupe(completions));
     }
@@ -90,7 +89,7 @@ export default class Provider {
         fakeRules: PostCss.Rule[],
         fullLineText: string,
         cursorPosInLine: number,
-        docs: MinimalDocs): ProviderOptions {
+        fs: ExtendedFSReadSync): ProviderOptions {
 
         const transformer = new StylableTransformer({
             diagnostics: new Diagnostics(),
@@ -101,7 +100,7 @@ export default class Provider {
         const path = pathFromPosition(meta.rawAst, { line: position.line + 1, character: position.character });
         const astAtCursor: PostCss.NodeBase = path[path.length - 1];
         const parentAst: PostCss.NodeBase | undefined = (astAtCursor as PostCss.Declaration).parent ? (astAtCursor as PostCss.Declaration).parent : undefined;
-        const lastSelectorPart: SRule | null = parentAst && isSelector(parentAst) && fakeRules.findIndex((f) => { return f.selector === parentAst.selector }) === -1
+        const parentSelector: SRule | null = parentAst && isSelector(parentAst) && fakeRules.findIndex((f) => { return f.selector === parentAst.selector }) === -1
             ? <SRule>parentAst
             : astAtCursor && isSelector(astAtCursor) && fakeRules.findIndex((f) => { return f.selector === astAtCursor.selector }) === -1
                 ? <SRule>astAtCursor
@@ -120,62 +119,24 @@ export default class Provider {
             resolved = clas ? clas.resolved : [];
         }
 
-        const lastPseudo = _.findLast(resolvedElements[0], e => e.type === 'pseudo-element' && e.resolved.length > 0)
-        let pseudoElementId = lastPseudo ? lastPseudo.name : '';
-
-        let customSelectorType = '';
-        let customSelectorString = '';
-        let expanded = '';
-        if (lineChunkAtCursor.startsWith(':--')) {
-            customSelectorString = lineChunkAtCursor.match(/^(:--\w*)/)![1];
-            expanded = meta.customSelectors[customSelectorString];
-        }
-
-        if (lastPseudo &&
-            !!lastPseudo.resolved[0].meta.customSelectors[':--' + pseudoElementId]
-        ) {
-            customSelectorString = ':--' + pseudoElementId;
-            expanded = lastPseudo.resolved[0].meta.customSelectors[customSelectorString];
-            pseudoElementId = '';
-        }
-
-        if (expanded) {
-            customSelectorType = lastPseudo ? lastPseudo.resolved[0].symbol.name : resolvedElements[0][0].name
-        }
-
-        const { isNamedValueLine, namedValues } = getNamedValues(src, position.line);
-
-        const importVars: any[] = [];
-        meta.imports.forEach(imp => {
-            try {
-                this.styl.fileProcessor.process(imp.from).vars.forEach(v => importVars.push({ name: v.name, value: v.text, from: imp.fromRelative }))
-            } catch (e) { }
-        })
-
-
         return {
             meta: meta,
-            docs: docs,
+            fs: fs,
             styl: this.styl,
-            parentSelector: lastSelectorPart,
+            src: src,
+            tsLangService: this.tsLangService,
+            resolvedElements: resolvedElements,
+            parentSelector: parentSelector,
             astAtCursor: astAtCursor,
             lineChunkAtCursor: lineChunkAtCursor,
+            lastSelectoid: ps.lastSelector,
             fullLineText: fullLineText,
             position: position,
-            isLineStart: false,
-            isNamedValueLine: isNamedValueLine,
-            namedValues: namedValues,
             resolved: resolved,
             currentSelector: currentSelector,
             target: ps.target,
             isMediaQuery: isInMediaQuery(path),
             fakes: fakeRules,
-            pseudo: pseudoElementId,
-            resolvedPseudo: lastPseudo ? lastPseudo.resolved : [],
-            customSelector: customSelectorString,
-            customSelectorType: customSelectorType,
-            isInValue: isInValue(fullLineText, position),
-            importVars: importVars,
         }
     }
 
@@ -192,12 +153,13 @@ export default class Provider {
         return res;
     }
 
-    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string, docs: MinimalDocs): Thenable<ProviderLocation[]> {
+    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string, fs: ExtendedFSReadSync): Thenable<ProviderLocation[]> {
+
         if (!filePath.endsWith('.st.css')) { return Promise.resolve([]) }
 
         let res = fixAndProcess(src, position, filePath);
         let meta = res.processed.meta;
-        if (!meta) return Promise.resolve([]);
+        if (!meta) { return Promise.resolve([]) };
         const parsed: any[] = pvp(res.currentLine).nodes;
 
         function findNode(nodes: any[], index: number): any {
@@ -240,13 +202,13 @@ export default class Provider {
                     defs.push(
                         new ProviderLocation(
                             filePath,
-                            this.findWord(word, docs.get(nativePathToFileUri(filePath)).getText(), position)
+                            this.findWord(word, fs.loadTextFileSync(nativePathToFileUri(filePath)), position)
                         )
                     );
                     break;
                 }
             }
-        } else if (Object.keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
+        } else if (keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
             defs.push(
                 new ProviderLocation(meta.source, this.findWord(':--' + word, src, position))
             );
@@ -274,7 +236,7 @@ export default class Provider {
         )
     }
 
-    getSignatureHelp(src: string, pos: Position, filePath: string, documents: MinimalDocs, paramInfo: typeof ParameterInformation): SignatureHelp | null {
+    getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
         if (!filePath.endsWith('.st.css')) { return null }
         let res = fixAndProcess(src, pos, filePath);
         let meta = res.processed.meta;
@@ -303,19 +265,19 @@ export default class Provider {
         if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
             return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
         } else if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.js')) {
-            if (documents.keys().indexOf('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts') !== -1) {
+            if (fs.getOpenedFiles().indexOf('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts') !== -1) {
                 return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts', (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
             } else {
                 console.log((meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
                 return this.getSignatureForJsModifier(
                     mixin,
                     activeParam,
-                    documents.get(
+                    fs.loadTextFileSync(
                         ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.startsWith('/')
                             ? 'file://'
                             : '')
                         + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from
-                    ).getText(), paramInfo);
+                    ), paramInfo);
             }
         } else {
             return null;
@@ -323,7 +285,7 @@ export default class Provider {
     }
 
     getSignatureForTsModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean, paramInfo: typeof ParameterInformation): SignatureHelp | null {
-        let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault)
+        let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault, this.tsLangService)
         let ptypes = sig!.parameters.map(p => {
             return p.name + ":" + ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
         });
@@ -514,21 +476,23 @@ export class ProviderLocation {
     constructor(public uri: string, public range: ProviderRange) { }
 }
 
-export function extractTsSignature(filePath: string, mixin: string, isDefault: boolean): ts.Signature | undefined {
-    const compilerOptions: ts.CompilerOptions = {
-        "jsx": ts.JsxEmit.React,
-        "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
-        "module": ts.ModuleKind.CommonJS,
-        "target": ts.ScriptTarget.ES5,
-        "strict": false,
-        "importHelpers": false,
-        "noImplicitReturns": false,
-        "strictNullChecks": false,
-        "sourceMap": false,
-        "outDir": "dist",
-        "typeRoots": ["./node_modules/@types"]
-    };
-    let program = ts.createProgram([filePath], compilerOptions);
+export function extractTsSignature(filePath: string, mixin: string, isDefault: boolean, tsLangService: ExtendedTsLanguageService): ts.Signature | undefined {
+    // const compilerOptions: ts.CompilerOptions = {
+    //     "jsx": ts.JsxEmit.React,
+    //     "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
+    //     "module": ts.ModuleKind.CommonJS,
+    //     "target": ts.ScriptTarget.ES5,
+    //     "strict": false,
+    //     "importHelpers": false,
+    //     "noImplicitReturns": false,
+    //     "strictNullChecks": false,
+    //     "sourceMap": false,
+    //     "outDir": "dist",
+    //     "typeRoots": ["./node_modules/@types"]
+    // };
+    // let program = ts.createProgram([filePath], compilerOptions);
+    tsLangService.setOpenedFiles([filePath])
+    let program = tsLangService.ts.getProgram();
     let tc = program.getTypeChecker();
     let sf = program.getSourceFile(filePath);
     let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function).find(f => {
@@ -570,9 +534,9 @@ export function extractJsModifierRetrunType(mixin: string, activeParam: number, 
 }
 
 function isInMediaQuery(path: PostCss.NodeBase[]) { return path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media') };
-export function isDirective(line: string) { return Object.keys(valueMapping).some(k => line.trim().startsWith((valueMapping as any)[k])) };
+export function isDirective(line: string) { return keys(valueMapping).some(k => line.trim().startsWith((valueMapping as any)[k])) };
 function isNamedDirective(line: string) { return line.indexOf(valueMapping.named) !== -1 };
-function isInValue(lineText: string, position: ProviderPosition) {
+export function isInValue(lineText: string, position: ProviderPosition) {
     let isInValue: boolean = false;
 
     if (/value\(/.test(lineText)) {
@@ -603,7 +567,7 @@ function getChunkAtCursor(fullLineText: string, cursorPosInLine: number): { line
     return { lineChunkAtCursor: lineChunkAtCursor.trim(), fixedCharIndex };
 }
 
-function getNamedValues(src: string, lineIndex: number): { isNamedValueLine: boolean, namedValues: string[] } {
+export function getNamedValues(src: string, lineIndex: number): { isNamedValueLine: boolean, namedValues: string[] } {
     let lines = src.split('\n');
     let isNamedValueLine = false;
     let namedValues: string[] = [];
@@ -625,4 +589,14 @@ function getNamedValues(src: string, lineIndex: number): { isNamedValueLine: boo
     }
 
     return { isNamedValueLine, namedValues }
+}
+
+export function getExistingNames(lineText: string, position: ProviderPosition) {
+    const valueStart = lineText.indexOf(':') + 1;
+    const value = lineText.slice(valueStart, position.character);
+    const parsed = pvp(value.trim());
+    const names: string[] = parsed.nodes.filter((n: any) => n.type === 'function' || n.type === 'word').map((n: any) => n.value);
+    const rev = parsed.nodes.reverse();
+    const lastName: string = (parsed.nodes.length && rev[0].type === 'word') ? rev[0].value : '';
+    return { names, lastName };
 }
