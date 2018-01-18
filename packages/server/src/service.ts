@@ -90,32 +90,32 @@ export class StylableLanguageService {
                 cssService.parseStylesheet(fs.get(params.textDocument.uri))
             )
             const cssComps = cssCompsRaw ? cssCompsRaw.items : []
-
             const doc = fs.get(params.textDocument.uri).getText();
+
             const pos = params.position;
 
-            const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
-            requestedFiles.forEach(file => connection.sendNotification(notifications.openDoc, file));
+            // const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
+            // requestedFiles.forEach(file => connection.sendNotification(notifications.openDoc, file));
 
-            return new Promise((resolve, reject) => {
-                const startTime = new Date();
+            // return new Promise((resolve, reject) => {
+            //     const startTime = new Date();
 
-                const interval = setInterval(() => {
-                    if (requestedFiles.every(file => {
-                            try{
-                                return !!fs.get(file)
-                            } catch(e) {
-                                return false;
-                            }
-                        })) {
-                        clearInterval(interval);
-                        resolve()
-                    } else if (Number(new Date()) - Number(startTime) > 300) {
-                        clearInterval(interval);
-                        resolve();
-                    }
-                }, 100);
-            }).then(() => {
+            //     const interval = setInterval(() => {
+            //         if (requestedFiles.every(file => {
+            //                 try{
+            //                     return !!fs.get(file)
+            //                 } catch(e) {
+            //                     return false;
+            //                 }
+            //             })) {
+            //             clearInterval(interval);
+            //             resolve()
+            //         } else if (Number(new Date()) - Number(startTime) > 300) {
+            //             clearInterval(interval);
+            //             resolve();
+            //         }
+            //     }, 100);
+            // }).then(() => {
 
                 return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, fs)
                     .then((res) => {
@@ -137,13 +137,12 @@ export class StylableLanguageService {
                             return lspCompletion;
                         }).concat(cssComps)
                     });
-            }).catch(e => { console.error(e); return cssComps })
+            // }).catch(e => { console.error(e); return cssComps })
 
 
         });
 
-        connection.onDidChangeTextDocument(function (change) {
-            const document = fs.get(change.textDocument.uri);
+        function diagnose(document:TextDocument){
             let cssDiags =
                 document.uri.endsWith('.css')
                     ? cssService.doValidation(document, cssService.parseStylesheet(document))
@@ -169,32 +168,25 @@ export class StylableLanguageService {
 
             let diagnostics = createDiagnosis(document, fs, processor).map(diag => { diag.source = 'stylable'; return diag; });
             connection.sendDiagnostics({ uri: document.uri, diagnostics: diagnostics.concat(cssDiags) })
+        }
+        connection.onDidOpenTextDocument(function(params){
+            const document = fs.get(params.textDocument.uri);
+            diagnose(document);
+        });
+        connection.onDidChangeTextDocument(function (change) {
+            const document = fs.get(change.textDocument.uri);
+            diagnose(document);
         });
 
         connection.onDefinition((params): Thenable<Definition> => {
             const doc = fs.loadTextFileSync(params.textDocument.uri);
             const pos = params.position;
             const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
-            requestedFiles.forEach(file => connection.sendNotification(notifications.openDoc, file));
 
-            return new Promise((resolve, reject) => {
-                const startTime = new Date();
-
-                const interval = setInterval(() => {
-                    if (requestedFiles.every(file => !!fs.get(file))) {
-                        clearInterval(interval);
-                        resolve()
-                    } else if (Number(new Date()) - Number(startTime) > 300) {
-                        clearInterval(interval);
-                        resolve();
-                    }
-                }, 100);
-            }).then(() => {
-                return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, fs)
-                    .then((res) => {
-                        return res.map(loc => Location.create(nativePathToFileUri(loc.uri), loc.range))
-                    });
-            });
+            return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, fs)
+                .then((res) => {
+                    return res.map(loc => Location.create(nativePathToFileUri(loc.uri), loc.range))
+                });
         });
 
         connection.onHover((params): Thenable<Hover> => {
@@ -228,24 +220,9 @@ export class StylableLanguageService {
             const doc: string = fs.loadTextFileSync(params.textDocument.uri);
 
             const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
-            requestedFiles.forEach(file => connection.sendNotification(notifications.openDoc, file));
 
-            return new Promise((resolve, reject) => {
-                const startTime = new Date();
-
-                const interval = setInterval(() => {
-                    if (requestedFiles.every(file => !!fs.get(file))) {
-                        clearInterval(interval);
-                        resolve()
-                    } else if (Number(new Date()) - Number(startTime) > 300) {
-                        clearInterval(interval);
-                        resolve();
-                    }
-                }, 100);
-            }).then(() => {
-                let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, fs, ParameterInformation);
-                return Promise.resolve(sig!)
-            })
+            let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, fs, ParameterInformation);
+            return Promise.resolve(sig!)
         })
 
         function readDocRange(doc: TextDocument, rng: Range): string {

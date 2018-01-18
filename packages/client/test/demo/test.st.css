@@ -1,10 +1,1 @@
-:import {
-    -st-from: "./my-mixins.ts";
-    -st-named: paramlessMixin, paramfulMixin;
-}
-
-
-.myClass {
-    -st-mixin: paramfulMixin()
-}
 

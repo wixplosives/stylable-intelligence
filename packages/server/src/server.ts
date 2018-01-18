@@ -14,7 +14,7 @@ import { createMeta } from './provider';
 import { start } from 'repl';
 import { StylableLanguageService } from './service'
 import { Stylable } from 'stylable';
-import {LocalSyncFs} from './local-sync-fs';
+import { LocalSyncFs } from './local-sync-fs';
 import *  as fs from 'fs';
 import { FileSystemReadSync } from 'kissfs';
 import { ExtendedFSReadSync } from './types';
@@ -23,28 +23,30 @@ const docs = new TextDocuments();
 docs.listen(connection);
 const fileSystem = new LocalSyncFs('');
 
-export function createDocFs(fileSystem:FileSystemReadSync,docs:MinimalDocs):ExtendedFSReadSync{
+export function createDocFs(fileSystem: FileSystemReadSync, docs: MinimalDocs): ExtendedFSReadSync {
     return {
-        __proto__:fileSystem,
-        loadTextFile(path:string) { return Promise.resolve(this.loadTextFileSync(path)) },
-        loadTextFileSync: (path:string) => docs.get(path) ? docs.get(path).getText() : fileSystem.loadTextFileSync(path),
-        get(path:string) {
-            return docs.get(path) || TextDocument.create(path, 'stylable', 0, fileSystem.loadTextFileSync(path));
+        __proto__: fileSystem,
+        loadTextFile(path: string) { return Promise.resolve(this.loadTextFileSync(path)) },
+        loadTextFileSync: (path: string) => docs.get(path) ? docs.get(path).getText() : fileSystem.loadTextFileSync(path),
+        get(path: string) {
+            return docs.get(path) || TextDocument.create(path, 'stylable', 0, path.startsWith('file://')
+                ? fileSystem.loadTextFileSync( process.platform === 'win32' ? path.slice(8) : path.slice(7) )
+                : fileSystem.loadTextFileSync(path));
         },
-        getOpenedFiles(){
+        getOpenedFiles() {
             return docs.keys();
         }
-     } as any;
+    } as any;
 
 }
 
-const docFs:ExtendedFSReadSync = createDocFs(fileSystem, docs);
+const docFs: ExtendedFSReadSync = createDocFs(fileSystem, docs);
 
 const styl = new Stylable('/', createFs(docFs, true), () => ({ default: {} }))
 const OpenDocNotificationType = new NotificationType<string, void>('stylable/openDocumentNotification');
 
-const service =  new StylableLanguageService(connection, {styl}, docFs ,{
-    openDoc:OpenDocNotificationType,
-    colorPresentationRequest:ColorPresentationRequest,
-    colorRequest:DocumentColorRequest
+const service = new StylableLanguageService(connection, { styl }, docFs, {
+    openDoc: OpenDocNotificationType,
+    colorPresentationRequest: ColorPresentationRequest,
+    colorRequest: DocumentColorRequest
 });
