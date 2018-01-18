@@ -70,7 +70,6 @@ export class StylableLanguageService {
 
         connection.onCompletion((params): Thenable<CompletionItem[]> => {
             console.log('on completion')
-            debugger;
             if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
             const cssCompsRaw = cssService.doComplete(
                 fs.get(params.textDocument.uri),
