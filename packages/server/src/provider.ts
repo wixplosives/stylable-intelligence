@@ -36,12 +36,12 @@ import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, Qualifie
 import { nativePathToFileUri } from './utils/uri-utils';
 import { resolve } from 'url';
 import { keys } from 'lodash';
-import { ExtendedFSReadSync } from './types';
+import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
 import { createLanguageServiceHost } from './utils/temp-language-service-host';
 
 
 export default class Provider {
-    constructor(public styl: Stylable, public tsLangService:ts.LanguageService) { }
+    constructor(public styl: Stylable, public tsLangService:ExtendedTsLanguageService) { }
 
     public providers = [
         RulesetInternalDirectivesProvider,
@@ -476,7 +476,7 @@ export class ProviderLocation {
     constructor(public uri: string, public range: ProviderRange) { }
 }
 
-export function extractTsSignature(filePath: string, mixin: string, isDefault: boolean, tsLangService: ts.LanguageService): ts.Signature | undefined {
+export function extractTsSignature(filePath: string, mixin: string, isDefault: boolean, tsLangService: ExtendedTsLanguageService): ts.Signature | undefined {
     // const compilerOptions: ts.CompilerOptions = {
     //     "jsx": ts.JsxEmit.React,
     //     "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
@@ -491,8 +491,8 @@ export function extractTsSignature(filePath: string, mixin: string, isDefault: b
     //     "typeRoots": ["./node_modules/@types"]
     // };
     // let program = ts.createProgram([filePath], compilerOptions);
-    (tsLangService as any).setOpenedFiles([filePath])
-    let program = tsLangService.getProgram();
+    tsLangService.setOpenedFiles([filePath])
+    let program = tsLangService.ts.getProgram();
     let tc = program.getTypeChecker();
     let sf = program.getSourceFile(filePath);
     let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function).find(f => {

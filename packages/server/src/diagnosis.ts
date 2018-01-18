@@ -17,19 +17,20 @@ export function createDiagnosis(doc: TextDocument, fs:FileSystemReadSync, fp: Fi
 
     file = decodeURIComponent(file);
 
+    function requireModule(path:string){
+        try{
+            const m = {exports: {}};
+            new Function('module','exports', 'require', fs.loadTextFileSync(path))(m, m.exports, requireModule);
+            return m.exports;
+        }catch(err){
+            console.warn('diagnosis, failed eval module')
+        }
+        return {};
+    }
     let transformer = new StylableTransformer({
         diagnostics: new Diagnostics(),
         fileProcessor: fp,
-        requireModule: (path:string) => {
-            try{
-                const m = {exports: {}};
-                new Function(...['module','exports', 'require'], fs.loadTextFileSync(path))(m, m.exports, require);
-                return m.exports;
-            }catch(err){
-                console.warn('diagnosis, failed eval module')
-            }
-            return null;
-        }
+        requireModule
     })
 
     let docPostCSSRoot = safeParse(doc.getText(), { from: path.resolve(file) })

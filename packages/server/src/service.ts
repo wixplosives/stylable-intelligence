@@ -17,32 +17,16 @@ import { Stylable } from 'stylable';
 import * as ts from 'typescript'
 import { FileSystemReadSync } from 'kissfs';
 export {MinimalDocs} from './provider-factory';
-import {NotificationTypes,LSPTypeHelpers, ExtendedFSReadSync} from './types'
+import {NotificationTypes,LSPTypeHelpers, ExtendedFSReadSync, ExtendedTsLanguageService} from './types'
 import { createLanguageServiceHost, createBaseHost } from './utils/temp-language-service-host';
-// namespace OpenDocNotification {
-// }
 
 
 export class StylableLanguageService {
-    constructor(connection: IConnection, services: { styl: Stylable }, fs:ExtendedFSReadSync, notifications :NotificationTypes) {
+    constructor(connection: IConnection, services: { styl: Stylable,tsLanguageService: ExtendedTsLanguageService  }, fs:ExtendedFSReadSync, notifications :NotificationTypes) {
 
-        let openedFiles:string[] = [];
-        const tsLanguageServiceHost = createLanguageServiceHost({
-            cwd: '/',
-            getOpenedDocs: () => openedFiles,
-            compilerOptions: {
-                target: ts.ScriptTarget.ES5, sourceMap: false, declaration: true, outDir: 'dist',
-                lib:[],
-                module: ts.ModuleKind.CommonJS,
-                typeRoots: ["./node_modules/@types"]
-            },
-            defaultLibDirectory: '',
-            baseHost: createBaseHost(fs, path)
-        });
-        const tsLanguageService = ts.createLanguageService(tsLanguageServiceHost);
-        (tsLanguageService as any).setOpenedFiles = (files:string[]) => openedFiles = files;
+        
 
-        const provider = createProvider(services.styl, tsLanguageService);
+        const provider = createProvider(services.styl,services.tsLanguageService);
         const processor = provider.styl.fileProcessor;
         const cssService = VCL.getCSSLanguageService();
 
@@ -83,6 +67,8 @@ export class StylableLanguageService {
         }
 
         connection.onCompletion((params): Thenable<CompletionItem[]> => {
+            console.log('on completion')
+            debugger;
             if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
             const cssCompsRaw = cssService.doComplete(
                 fs.get(params.textDocument.uri),

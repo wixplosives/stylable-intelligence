@@ -16,8 +16,10 @@ import { StylableLanguageService } from './service'
 import { Stylable } from 'stylable';
 import { LocalSyncFs } from './local-sync-fs';
 import *  as fs from 'fs';
+import *  as ts from 'typescript';
 import { FileSystemReadSync } from 'kissfs';
-import { ExtendedFSReadSync } from './types';
+import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
+import { createLanguageServiceHost, createBaseHost } from './utils/temp-language-service-host';
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const docs = new TextDocuments();
 docs.listen(connection);
@@ -29,9 +31,8 @@ export function createDocFs(fileSystem: FileSystemReadSync, docs: MinimalDocs): 
         loadTextFile(path: string) { return Promise.resolve(this.loadTextFileSync(path)) },
         loadTextFileSync: (path: string) => docs.get(path) ? docs.get(path).getText() : fileSystem.loadTextFileSync(path),
         get(path: string) {
-            return docs.get(path) || TextDocument.create(path, 'stylable', 0, path.startsWith('file://')
-                ? fileSystem.loadTextFileSync( process.platform === 'win32' ? path.slice(8) : path.slice(7) )
-                : fileSystem.loadTextFileSync(path));
+            console.log('Path: ', fileUriToNativePath(path))
+            return docs.get(path) || TextDocument.create(path, 'stylable', 0, this.loadTextFileSync(fileUriToNativePath(path)));
         },
         getOpenedFiles() {
             return docs.keys();
@@ -44,8 +45,26 @@ const docFs: ExtendedFSReadSync = createDocFs(fileSystem, docs);
 
 const styl = new Stylable('/', createFs(docFs, true), () => ({ default: {} }))
 const OpenDocNotificationType = new NotificationType<string, void>('stylable/openDocumentNotification');
+let openedFiles:string[] = [];
+const tsLanguageServiceHost = createLanguageServiceHost({
+    cwd: '/',
+    getOpenedDocs: () => openedFiles,
+    compilerOptions: {
+        target: ts.ScriptTarget.ES5, sourceMap: false, declaration: true, outDir: 'dist',
+        lib:[],
+        module: ts.ModuleKind.CommonJS,
+        typeRoots: ["./node_modules/@types"]
+    },
+    defaultLibDirectory: '',
+    baseHost: createBaseHost(docFs, path)
+});
+const tsLanguageService = ts.createLanguageService(tsLanguageServiceHost);
+const wrappedTs:ExtendedTsLanguageService = {
+    setOpenedFiles:(files:string[]) => openedFiles = files,
+    ts:tsLanguageService
+};
 
-const service = new StylableLanguageService(connection, { styl }, docFs, {
+const service = new StylableLanguageService(connection, { styl, tsLanguageService:wrappedTs }, docFs, {
     openDoc: OpenDocNotificationType,
     colorPresentationRequest: ColorPresentationRequest,
     colorRequest: DocumentColorRequest

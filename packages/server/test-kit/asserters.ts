@@ -16,6 +16,7 @@ import { Stylable } from 'stylable';
 import { LocalSyncFs } from '../src/local-sync-fs';
 import { createDocFs } from '../src/server';
 import { createLanguageServiceHost, createBaseHost } from '../src/utils/temp-language-service-host';
+import { ExtendedTsLanguageService } from '../src/types';
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {
@@ -157,9 +158,13 @@ const tsLanguageServiceHost = createLanguageServiceHost({
     baseHost: createBaseHost(docsFs, path)
 });
 const tsLanguageService = ts.createLanguageService(tsLanguageServiceHost);
-(tsLanguageService as any).setOpenedFiles = (files:string[]) => openedFiles = files;
+const wrappedTs:ExtendedTsLanguageService = {
+    ts:tsLanguageService,
+    setOpenedFiles:(files:string[]) => openedFiles = files
+};
 
-const provider = createProvider(new Stylable('/', createFs( docsFs, true), () => ({ default: {} })), tsLanguageService);
+
+const provider = createProvider(new Stylable('/', createFs( docsFs, true), () => ({ default: {} })), wrappedTs);
 
 
 

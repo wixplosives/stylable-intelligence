@@ -31,7 +31,7 @@ import { nativePathToFileUri } from './utils/uri-utils';
 import { Declaration } from 'postcss';
 import { ResolvedElement } from 'stylable/dist/src/stylable-transformer';
 import { keys, findLast, last } from 'lodash';
-import { ExtendedFSReadSync } from './types';
+import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
 import * as ts from 'typescript';
 
 export interface ProviderOptions {
@@ -39,7 +39,7 @@ export interface ProviderOptions {
     fs: ExtendedFSReadSync,
     styl: Stylable,
     src: string,
-    tsLangService: ts.LanguageService,
+    tsLangService: ExtendedTsLanguageService,
     resolvedElements: ResolvedElement[][],
     parentSelector: SRule | null,
     astAtCursor: PostCss.NodeBase,
@@ -620,7 +620,7 @@ function createCodeMixinCompletion(name: string, lastName: string, position: Pro
     )
 }
 
-function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLangService: ts.LanguageService) {
+function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLangService: ExtendedTsLanguageService) {
     const importSymbol = (meta.mappedSymbols[name] as ImportSymbol);
     if (importSymbol.import.fromRelative.endsWith('.ts')) {
         const sig = extractTsSignature(importSymbol.import.from, name, importSymbol.type === 'default', tsLangService)
