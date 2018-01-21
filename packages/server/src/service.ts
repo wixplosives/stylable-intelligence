@@ -8,27 +8,27 @@ import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import { createDiagnosis } from './diagnosis';
 import * as VCL from 'vscode-css-languageservice';
-import {Command, Position, Range, Location, TextEdit, CompletionItem, ParameterInformation } from 'vscode-languageserver-types';
-import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest} from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
+import { Command, Position, Range, Location, TextEdit, CompletionItem, ParameterInformation } from 'vscode-languageserver-types';
+import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
 import { valueMapping } from 'stylable/dist/src/stylable-value-parsers';
 import { fileUriToNativePath, nativePathToFileUri } from './utils/uri-utils';
 import { createMeta } from './provider';
 import { Stylable } from 'stylable';
 import * as ts from 'typescript'
 import { FileSystemReadSync } from 'kissfs';
-export {MinimalDocs} from './provider-factory';
-import {NotificationTypes,LSPTypeHelpers, ExtendedFSReadSync, ExtendedTsLanguageService} from './types'
+export { MinimalDocs } from './provider-factory';
+import { NotificationTypes, LSPTypeHelpers, ExtendedFSReadSync, ExtendedTsLanguageService } from './types'
 import { createLanguageServiceHost, createBaseHost } from './utils/temp-language-service-host';
 
 //exporting types for use in playground
-export {ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes}  from './types'
+export { ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes } from './types'
 
 export class StylableLanguageService {
-    constructor(connection: IConnection, services: { styl: Stylable,tsLanguageService: ExtendedTsLanguageService  }, fs:ExtendedFSReadSync, notifications :NotificationTypes) {
+    constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService }, fs: ExtendedFSReadSync, notifications: NotificationTypes) {
 
-        
 
-        const provider = createProvider(services.styl,services.tsLanguageService);
+
+        const provider = createProvider(services.styl, services.tsLanguageService);
         const processor = provider.styl.fileProcessor;
         const cssService = VCL.getCSSLanguageService();
 
@@ -69,8 +69,6 @@ export class StylableLanguageService {
         }
 
         connection.onCompletion((params): Thenable<CompletionItem[]> => {
-            console.log('on completion')
-            debugger;
             if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
             const cssCompsRaw = cssService.doComplete(
                 fs.get(params.textDocument.uri),
@@ -82,55 +80,29 @@ export class StylableLanguageService {
 
             const pos = params.position;
 
-            // const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
-            // requestedFiles.forEach(file => connection.sendNotification(notifications.openDoc, file));
-
-            // return new Promise((resolve, reject) => {
-            //     const startTime = new Date();
-
-            //     const interval = setInterval(() => {
-            //         if (requestedFiles.every(file => {
-            //                 try{
-            //                     return !!fs.get(file)
-            //                 } catch(e) {
-            //                     return false;
-            //                 }
-            //             })) {
-            //             clearInterval(interval);
-            //             resolve()
-            //         } else if (Number(new Date()) - Number(startTime) > 300) {
-            //             clearInterval(interval);
-            //             resolve();
-            //         }
-            //     }, 100);
-            // }).then(() => {
-
-                return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, fs)
-                    .then((res) => {
-                        return res.map((com: Completion) => {
-                            let lspCompletion:CompletionItem = CompletionItem.create(com.label);
-                            let ted: TextEdit = TextEdit.replace(
-                                com.range ? com.range : new ProviderRange(new ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos),
-                                typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
-                            lspCompletion.insertTextFormat = 2;
-                            lspCompletion.detail = com.detail;
-                            lspCompletion.textEdit = ted;
-                            lspCompletion.sortText = com.sortText;
-                            lspCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
-                            if (com.additionalCompletions) {
-                                lspCompletion.command = Command.create("additional", "editor.action.triggerSuggest")
-                            } else if (com.triggerSignature) {
-                                lspCompletion.command = Command.create("additional", "editor.action.triggerParameterHints")
-                            }
-                            return lspCompletion;
-                        }).concat(cssComps)
-                    });
-            // }).catch(e => { console.error(e); return cssComps })
-
-
+            return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, fs)
+                .then((res) => {
+                    return res.map((com: Completion) => {
+                        let lspCompletion: CompletionItem = CompletionItem.create(com.label);
+                        let ted: TextEdit = TextEdit.replace(
+                            com.range ? com.range : new ProviderRange(new ProviderPosition(pos.line, Math.max(pos.character - 1, 0)), pos),
+                            typeof com.insertText === 'string' ? com.insertText : com.insertText.source)
+                        lspCompletion.insertTextFormat = 2;
+                        lspCompletion.detail = com.detail;
+                        lspCompletion.textEdit = ted;
+                        lspCompletion.sortText = com.sortText;
+                        lspCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
+                        if (com.additionalCompletions) {
+                            lspCompletion.command = Command.create("additional", "editor.action.triggerSuggest")
+                        } else if (com.triggerSignature) {
+                            lspCompletion.command = Command.create("additional", "editor.action.triggerParameterHints")
+                        }
+                        return lspCompletion;
+                    }).concat(cssComps)
+                });
         });
 
-        function diagnose(document:TextDocument){
+        function diagnose(document: TextDocument) {
             let cssDiags =
                 document.uri.endsWith('.css')
                     ? cssService.doValidation(document, cssService.parseStylesheet(document))
@@ -157,7 +129,7 @@ export class StylableLanguageService {
             let diagnostics = createDiagnosis(document, fs, processor).map(diag => { diag.source = 'stylable'; return diag; });
             connection.sendDiagnostics({ uri: document.uri, diagnostics: diagnostics.concat(cssDiags) })
         }
-        connection.onDidOpenTextDocument(function(params){
+        connection.onDidOpenTextDocument(function (params) {
             const document = fs.get(params.textDocument.uri);
             diagnose(document);
         });

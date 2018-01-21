@@ -413,7 +413,7 @@ export const FormatterCompletionProvider: CompletionProvider = {
             return Object.keys(meta.mappedSymbols)
                 .filter(ms => (meta.mappedSymbols[ms]._kind === 'import'))
                 .filter(ms => ms.startsWith(lastName))
-                .filter(ms => names.length === 0 || !names.includes(ms))
+                // .filter(ms => names.length === 0 || !names.includes(ms))
                 .filter(ms => !isMixin(ms, meta, fs, tsLangService))
                 .map(ms => createCodeMixinCompletion(ms, lastName, position, meta));
         } else {

@@ -31,7 +31,6 @@ export function createDocFs(fileSystem: FileSystemReadSync, docs: MinimalDocs): 
         loadTextFile(path: string) { return Promise.resolve(this.loadTextFileSync(path)) },
         loadTextFileSync: (path: string) => docs.get(path) ? docs.get(path).getText() : fileSystem.loadTextFileSync(path),
         get(path: string) {
-            console.log('Path: ', fileUriToNativePath(path))
             return docs.get(path) || TextDocument.create(path, 'stylable', 0, this.loadTextFileSync(fileUriToNativePath(path)));
         },
         getOpenedFiles() {
