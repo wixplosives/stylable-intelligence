@@ -4,10 +4,12 @@ import { expect } from 'chai'
 
 const isWindows = process.platform === 'win32';
 // const fileUriToNativePath = (uri: string) => isWindows ? uri.slice(8).replace('%3A', ':') : uri.slice(7);
-const nativePathToFileUri = (path: string): string => 'file://' + (isWindows ? `/${path.replace(/\\/g, '/').replace(':', '%3A')}` : path)
-
+export const toVscodePath = (path: string): string => {
+    if (path.startsWith('file://')) { return path };
+    return 'file://' + (isWindows ? `/${path.replace(/\\/g, '/').replace(':', '%3A')}` : path)
+}
 function assertDiagnosticExist(client: any, casePath: string, result: Object) {
-    let diagnostic = client._diagnostics._data.get(nativePathToFileUri(casePath))
+    let diagnostic = client._diagnostics._data.get(toVscodePath(casePath))
     expect(diagnostic).to.be.not.empty
     return expect(diagnostic[0]).to.contain.keys(result)
 }
