@@ -4,10 +4,11 @@
 }
 
 :import {
-    -st-from: "./js-mixins.js";
+    -st-from: "./my-js-mixins.js";
     -st-named: aFormatter, aFormatterWithParams;
 }
 
 .myClass {
     color: aFormatterWithParams('25','aaa','a');
+
 }

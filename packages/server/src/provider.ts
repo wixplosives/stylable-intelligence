@@ -38,6 +38,7 @@ import { resolve } from 'url';
 import { keys } from 'lodash';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
 import { createLanguageServiceHost } from './utils/temp-language-service-host';
+import { fromVscodePath } from './utils/uri-utils';
 
 
 export default class Provider {
@@ -407,7 +408,7 @@ export function createMeta(src: string, path: string) {
     let meta: StylableMeta;
     let fakes: PostCss.Rule[] = [];
     try {
-        let ast: PostCss.Root = safeParse(src, { from: createFrom(path) })
+        let ast: PostCss.Root = safeParse(src, { from: fromVscodePath(path) })
         ast.nodes && ast.nodes.forEach((node) => {
             if (node.type === 'decl') {
                 let r = PostCss.rule({ selector: node.prop + ':' + node.value });
@@ -430,10 +431,6 @@ export function createMeta(src: string, path: string) {
         meta: meta,
         fakes: fakes
     }
-}
-
-function createFrom(filePath: string): string | undefined {
-    return filePath.indexOf('file://') === 0 ? decodeURIComponent(filePath.slice(7 + Number(process.platform === 'win32'))) : decodeURIComponent(filePath);
 }
 
 function fixAndProcess(src: string, position: ProviderPosition, filePath: string, ) {
@@ -477,20 +474,7 @@ export class ProviderLocation {
 }
 
 export function extractTsSignature(filePath: string, mixin: string, isDefault: boolean, tsLangService: ExtendedTsLanguageService): ts.Signature | undefined {
-    // const compilerOptions: ts.CompilerOptions = {
-    //     "jsx": ts.JsxEmit.React,
-    //     "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
-    //     "module": ts.ModuleKind.CommonJS,
-    //     "target": ts.ScriptTarget.ES5,
-    //     "strict": false,
-    //     "importHelpers": false,
-    //     "noImplicitReturns": false,
-    //     "strictNullChecks": false,
-    //     "sourceMap": false,
-    //     "outDir": "dist",
-    //     "typeRoots": ["./node_modules/@types"]
-    // };
-    // let program = ts.createProgram([filePath], compilerOptions);
+
     tsLangService.setOpenedFiles([filePath])
     let program = tsLangService.ts.getProgram();
     let tc = program.getTypeChecker();

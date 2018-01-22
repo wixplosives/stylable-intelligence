@@ -15,27 +15,14 @@ export function createProvider(stylable: Stylable, tsLangService: ExtendedTsLang
 }
 
 export function createFs(fileSystem: FileSystemReadSync, withFilePrefix: boolean = true): any {
-
-    const getDocFormatPath = (path: string) => {
-        if (process.platform === 'win32') {
-            return withFilePrefix ? 'file:///' + htap(path) : htap(path);
-        } else {
-            return withFilePrefix ? 'file://' + path : path
-        }
-    }
-
     return {
         readFileSync(path: string) {
-
             return fileSystem.loadTextFileSync(path).toString();
-
         },
         statSync(path: string) {
-
             return {
                 mtime: new Date(Date.now())
             }
-
         }
     }
 }
