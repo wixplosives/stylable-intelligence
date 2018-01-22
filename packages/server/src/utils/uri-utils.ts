@@ -1,3 +1,11 @@
 const isWindows = process.platform === 'win32';
-export const fileUriToNativePath = (uri: string) => isWindows ? uri.slice(8).replace('%3A', ':') : uri.slice(7);
-export const nativePathToFileUri = (path: string): string => 'file://' + (isWindows ? `/${path.replace(/\\/g, '/').replace(':', '%3A')}` : path)
+export const fileUriToNativePath = (uri: string) => {
+    if (uri.startsWith('file://')) {
+        return isWindows ? uri.slice(8).replace('%3A', ':') : uri.slice(7)
+    }
+    return uri;
+}
+export const nativePathToFileUri = (path: string): string => {
+    if (path.startsWith('file://')) { return path };
+    return 'file://' + (isWindows ? `/${path.replace(/\\/g, '/').replace(':', '%3A')}` : path)
+}

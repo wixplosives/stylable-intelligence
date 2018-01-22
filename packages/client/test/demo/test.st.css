@@ -9,5 +9,5 @@
 }
 
 .myClass {
-    color: aFormatterWithParams('25','aaa','a'), |
+    color: aFormatterWithParams('25','aaa','a');
 }

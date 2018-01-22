@@ -44,5 +44,5 @@ exports.aFormatter = function () {
  * @returns {stString}
  */
 exports.aFormatterWithParams = function (strParam, numParam, enumParam) {
-
+    return 'a';
 }
