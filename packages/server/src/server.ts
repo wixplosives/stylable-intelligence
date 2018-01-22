@@ -9,13 +9,12 @@ import { createDiagnosis } from './diagnosis';
 import * as VCL from 'vscode-css-languageservice';
 import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
 import { valueMapping } from 'stylable/dist/src/stylable-value-parsers';
-import { fileUriToNativePath, nativePathToFileUri } from './utils/uri-utils';
+import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 import { createMeta } from './provider';
 import { start } from 'repl';
 import { StylableLanguageService } from './service'
 import { Stylable } from 'stylable';
 import { LocalSyncFs } from './local-sync-fs';
-import *  as fs from 'fs';
 import *  as ts from 'typescript';
 import { FileSystemReadSync } from 'kissfs';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
@@ -29,9 +28,13 @@ export function createDocFs(fileSystem: FileSystemReadSync, docs: MinimalDocs): 
     return {
         __proto__: fileSystem,
         loadTextFile(path: string) { return Promise.resolve(this.loadTextFileSync(path)) },
-        loadTextFileSync: (path: string) => docs.get(path) ? docs.get(path).getText() : fileSystem.loadTextFileSync(path),
+        loadTextFileSync(path: string) {
+            const vscodePath: string = toVscodePath(path);
+            const fromDocs = docs.get(vscodePath);
+            return fromDocs ? fromDocs.getText() : fileSystem.loadTextFileSync(fromVscodePath(path))
+        },
         get(path: string) {
-            return docs.get(path) || TextDocument.create(path, 'stylable', 0, this.loadTextFileSync(fileUriToNativePath(path)));
+            return docs.get(path) || TextDocument.create(path, 'stylable', 0, this.loadTextFileSync(fromVscodePath(path)));
         },
         getOpenedFiles() {
             return docs.keys();
@@ -44,13 +47,13 @@ const docFs: ExtendedFSReadSync = createDocFs(fileSystem, docs);
 
 const styl = new Stylable('/', createFs(docFs, true), () => ({ default: {} }))
 const OpenDocNotificationType = new NotificationType<string, void>('stylable/openDocumentNotification');
-let openedFiles:string[] = [];
+let openedFiles: string[] = [];
 const tsLanguageServiceHost = createLanguageServiceHost({
     cwd: '/',
     getOpenedDocs: () => openedFiles,
     compilerOptions: {
         target: ts.ScriptTarget.ES5, sourceMap: false, declaration: true, outDir: 'dist',
-        lib:[],
+        lib: [],
         module: ts.ModuleKind.CommonJS,
         typeRoots: ["./node_modules/@types"]
     },
@@ -58,12 +61,12 @@ const tsLanguageServiceHost = createLanguageServiceHost({
     baseHost: createBaseHost(docFs, path)
 });
 const tsLanguageService = ts.createLanguageService(tsLanguageServiceHost);
-const wrappedTs:ExtendedTsLanguageService = {
-    setOpenedFiles:(files:string[]) => openedFiles = files,
-    ts:tsLanguageService
+const wrappedTs: ExtendedTsLanguageService = {
+    setOpenedFiles: (files: string[]) => openedFiles = files,
+    ts: tsLanguageService
 };
 
-const service = new StylableLanguageService(connection, { styl, tsLanguageService:wrappedTs }, docFs, {
+const service = new StylableLanguageService(connection, { styl, tsLanguageService: wrappedTs }, docFs, {
     openDoc: OpenDocNotificationType,
     colorPresentationRequest: ColorPresentationRequest,
     colorRequest: DocumentColorRequest

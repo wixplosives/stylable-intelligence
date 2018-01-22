@@ -11,7 +11,7 @@ import * as VCL from 'vscode-css-languageservice';
 import { Command, Position, Range, Location, TextEdit, CompletionItem, ParameterInformation } from 'vscode-languageserver-types';
 import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
 import { valueMapping } from 'stylable/dist/src/stylable-value-parsers';
-import { fileUriToNativePath, nativePathToFileUri } from './utils/uri-utils';
+import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 import { createMeta } from './provider';
 import { Stylable } from 'stylable';
 import * as ts from 'typescript'
@@ -57,7 +57,7 @@ export class StylableLanguageService {
         connection.listen();
 
         function getRequestedFiles(doc: string, origin: string): string[] {
-            const originNativePath = fileUriToNativePath(origin)
+            const originNativePath = fromVscodePath(origin)
             const originDir = path.dirname(originNativePath);
 
             return doc
@@ -65,7 +65,7 @@ export class StylableLanguageService {
                 .map(l => l.trim())
                 .filter(l => l.startsWith(valueMapping.from))
                 .map(l => path.join(originDir, l.slice(valueMapping.from.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim()))
-                .map(nativePathToFileUri);
+                .map(toVscodePath);
         }
 
         connection.onCompletion((params): Thenable<CompletionItem[]> => {
@@ -143,9 +143,9 @@ export class StylableLanguageService {
             const pos = params.position;
             const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
 
-            return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, fs)
+            return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, fromVscodePath(params.textDocument.uri), fs)
                 .then((res) => {
-                    return res.map(loc => Location.create(nativePathToFileUri(loc.uri), loc.range))
+                    return res.map(loc => Location.create(toVscodePath(loc.uri), loc.range))
                 });
         });
 

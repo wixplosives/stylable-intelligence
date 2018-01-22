@@ -33,7 +33,7 @@ import * as path from 'path';
 import { Position, SignatureHelp, SignatureInformation, ParameterInformation } from 'vscode-languageserver';
 import * as ts from 'typescript';
 import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName, Identifier, LiteralTypeNode } from 'typescript';
-import { nativePathToFileUri } from './utils/uri-utils';
+import { toVscodePath } from './utils/uri-utils';
 import { resolve } from 'url';
 import { keys } from 'lodash';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
@@ -41,7 +41,7 @@ import { createLanguageServiceHost } from './utils/temp-language-service-host';
 
 
 export default class Provider {
-    constructor(public styl: Stylable, public tsLangService:ExtendedTsLanguageService) { }
+    constructor(public styl: Stylable, public tsLangService: ExtendedTsLanguageService) { }
 
     public providers = [
         RulesetInternalDirectivesProvider,
@@ -198,13 +198,16 @@ export default class Provider {
                 }
                 case 'import': {
                     const filePath: string = path.join(path.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
+                    const doc = fs.get(filePath);
 
-                    defs.push(
-                        new ProviderLocation(
-                            filePath,
-                            this.findWord(word, fs.loadTextFileSync(nativePathToFileUri(filePath)), position)
+                    if (doc.getText()!=='') {
+                        defs.push(
+                            new ProviderLocation(
+                                filePath,
+                                this.findWord(word, doc.getText(), position)
+                            )
                         )
-                    );
+                    };
                     break;
                 }
             }
@@ -272,12 +275,9 @@ export default class Provider {
                 return this.getSignatureForJsModifier(
                     mixin,
                     activeParam,
-                    fs.loadTextFileSync(
-                        ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.startsWith('/')
-                            ? 'file://'
-                            : '')
-                        + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from
-                    ), paramInfo);
+                    fs.get((meta.mappedSymbols[mixin]! as ImportSymbol).import.from).getText(),
+                    paramInfo
+                );
             }
         } else {
             return null;

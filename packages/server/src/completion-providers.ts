@@ -27,7 +27,7 @@ import Provider, { extractTsSignature, extractJsModifierRetrunType, isDirective,
 import { TypeReferenceNode, Identifier } from 'typescript';
 import { MinimalDocs } from './provider-factory';
 const pvp = require('postcss-value-parser');
-import { nativePathToFileUri } from './utils/uri-utils';
+import { toVscodePath } from './utils/uri-utils';
 import { Declaration } from 'postcss';
 import { ResolvedElement } from 'stylable/dist/src/stylable-transformer';
 import { keys, findLast, last } from 'lodash';
@@ -630,7 +630,7 @@ function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLan
             : "";
         return (/(\w+.)?stCssFrag/.test(rtype.trim()));
     } if (importSymbol.import.fromRelative.endsWith('.js')) {
-        return (extractJsModifierRetrunType(name, 0, fs.get(nativePathToFileUri(importSymbol.import.from)).getText()) === 'stCssFrag')
+        return (extractJsModifierRetrunType(name, 0, fs.get(toVscodePath(importSymbol.import.from)).getText()) === 'stCssFrag')
     }
     return false;
 }
