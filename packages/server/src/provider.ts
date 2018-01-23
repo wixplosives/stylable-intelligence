@@ -2,7 +2,7 @@
 import { MinimalDocs } from './provider-factory';
 import * as PostCss from 'postcss';
 const pvp = require('postcss-value-parser');
-const psp = require('postcss-selector-parser');
+// const psp = require('postcss-selector-parser');
 import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping, StylableTransformer, Diagnostics, expandCustomSelectors as RemoveWhenWorks, expandCustomSelectors } from 'stylable';
 import { isSelector, pathFromPosition, isDeclaration } from './utils/postcss-ast-utils';
 import {

@@ -6,8 +6,23 @@ const isWindows = process.platform === 'win32';
 // const fileUriToNativePath = (uri: string) => isWindows ? uri.slice(8).replace('%3A', ':') : uri.slice(7);
 const nativePathToFileUri = (path: string): string => 'file://' + (isWindows ? `/${path.replace(/\\/g, '/').replace(':', '%3A')}` : path)
 
+function getPathToDiagnostics(casePath:string){
+    let pathToFile = ''
+    if (process.platform === 'win32') {
+        pathToFile = casePath.split('\\').join('/')
+        pathToFile = pathToFile.split(':').join('%3A')
+        pathToFile = pathToFile.charAt(0).toLowerCase() + pathToFile.slice(1)
+        pathToFile = 'file:///' + pathToFile
+    } else {
+        pathToFile = 'file://' + casePath
+    }
+    return pathToFile
+
+}
+
+
 function assertDiagnosticExist(client: any, casePath: string, result: Object) {
-    let diagnostic = client._diagnostics._data.get(nativePathToFileUri(casePath))
+    let diagnostic = client._diagnostics._data.get(getPathToDiagnostics(casePath))
     expect(diagnostic).to.be.not.empty
     return expect(diagnostic[0]).to.contain.keys(result)
 }
