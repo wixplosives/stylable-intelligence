@@ -253,16 +253,23 @@ export default class Provider {
 
     findWord(word: string, src: string, position: Position): ProviderRange {
         let split = src.split('\n');
-        let lineIndex = split.findIndex(l => {
-            return (l.trim().startsWith(word) || l.trim().startsWith('.' + word))
-                && (l.trim().replace('.', '').slice(word.length).trim().startsWith('{') || l.trim().replace('.', '').slice(word.length).trim().startsWith(':'));
-        })
+        let regex = '\\b' + '\\.?' + this.escapeRegExp(word.replace('.', '').replace(':--', '')) + '\\b';
+        let lineIndex = split.findIndex(l => RegExp(regex).test(l));
         if (lineIndex === -1 || lineIndex === position.line) { lineIndex = split.findIndex(l => l.trim().indexOf(word) !== -1) }
         if (lineIndex === -1 || lineIndex === position.line) { return createRange(0, 0, 0, 0) };
         let line = split[lineIndex];
-        return createRange(
-            lineIndex, line.indexOf(word), lineIndex, line.indexOf(word) + word.length
-        )
+
+        const match = line.match(RegExp(regex))
+
+        if (match) {
+            return createRange(lineIndex, line.lastIndexOf(word), lineIndex, line.lastIndexOf(word) + word.length)
+        } else {
+            return createRange(0, 0, 0, 0)
+        }
+    }
+
+    escapeRegExp(re: string) {
+        return re.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
     }
 
     getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {

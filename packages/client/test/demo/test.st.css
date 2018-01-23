@@ -1,12 +1,9 @@
-:import {
-    -st-from: "./import.st.css";
-    -st-named: momo;
-}
-
 .local {
-    -st-extends: momo;
+    color: red;
 }
 
-.local::momo {
-    color: blue;
+@custom-selector :--lulu div > span
+
+.gaga {
+    -st-extends: lulu;
 }
