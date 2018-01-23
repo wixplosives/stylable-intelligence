@@ -56,17 +56,17 @@ export class StylableLanguageService {
 
         connection.listen();
 
-        function getRequestedFiles(doc: string, origin: string): string[] {
-            const originNativePath = fromVscodePath(origin)
-            const originDir = path.dirname(originNativePath);
+        // function getRequestedFiles(doc: string, origin: string): string[] {
+        //     const originNativePath = fromVscodePath(origin)
+        //     const originDir = path.dirname(originNativePath);
 
-            return doc
-                .split('\n')
-                .map(l => l.trim())
-                .filter(l => l.startsWith(valueMapping.from))
-                .map(l => path.join(originDir, l.slice(valueMapping.from.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim()))
-                .map(toVscodePath);
-        }
+        //     return doc
+        //         .split('\n')
+        //         .map(l => l.trim())
+        //         .filter(l => l.startsWith(valueMapping.from))
+        //         .map(l => path.join(originDir, l.slice(valueMapping.from.length + 1, l.indexOf(';')).replace(/"/g, '').replace(/'/g, "").trim()))
+        //         .map(toVscodePath);
+        // }
 
         connection.onCompletion((params): Thenable<CompletionItem[]> => {
             if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
@@ -141,7 +141,7 @@ export class StylableLanguageService {
         connection.onDefinition((params): Thenable<Definition> => {
             const doc = fs.loadTextFileSync(params.textDocument.uri);
             const pos = params.position;
-            const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
+            // const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
 
             return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, fromVscodePath(params.textDocument.uri), fs)
                 .then((res) => {
@@ -179,7 +179,7 @@ export class StylableLanguageService {
 
             const doc: string = fs.loadTextFileSync(params.textDocument.uri);
 
-            const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
+            // const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
 
             let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, fs, ParameterInformation);
             return Promise.resolve(sig!)
