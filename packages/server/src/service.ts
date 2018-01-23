@@ -141,7 +141,7 @@ export class StylableLanguageService {
         connection.onDefinition((params): Thenable<Definition> => {
             const doc = fs.loadTextFileSync(params.textDocument.uri);
             const pos = params.position;
-            const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
+            // const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
 
             return provider.getDefinitionLocation(doc, { line: pos.line, character: pos.character }, fromVscodePath(params.textDocument.uri), fs)
                 .then((res) => {
@@ -179,7 +179,7 @@ export class StylableLanguageService {
 
             const doc: string = fs.loadTextFileSync(params.textDocument.uri);
 
-            const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
+            // const requestedFiles = getRequestedFiles(doc, params.textDocument.uri);
 
             let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, fs, ParameterInformation);
             return Promise.resolve(sig!)
