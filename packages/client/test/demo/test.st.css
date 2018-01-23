@@ -1,14 +1,12 @@
 :import {
-    -st-from: "./my-mixins.ts";
-    -st-named: paramlessFormatter, formatterWithParams;
+    -st-from: "./import.st.css";
+    -st-named: momo;
 }
 
-:import {
-    -st-from: "./my-js-mixins.js";
-    -st-named: aFormatter, aFormatterWithParams;
+.local {
+    -st-extends: momo;
 }
 
-.myClass {
-    color: aFormatterWithParams('25','aaa','a');
-
+.local::momo {
+    color: blue;
 }

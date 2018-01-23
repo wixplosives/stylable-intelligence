@@ -175,7 +175,5 @@ export class StylableLanguageService {
             return lines[rng.start.line].slice(rng.start.character, rng.end.character);
         }
     }
-
-
 }
 

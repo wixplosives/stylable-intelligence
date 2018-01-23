@@ -35,10 +35,11 @@ import * as ts from 'typescript';
 import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName, Identifier, LiteralTypeNode } from 'typescript';
 import { toVscodePath } from './utils/uri-utils';
 import { resolve } from 'url';
-import { keys } from 'lodash';
+import { keys, values } from 'lodash';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
 import { createLanguageServiceHost } from './utils/temp-language-service-host';
 import { fromVscodePath } from './utils/uri-utils';
+import { ClassSymbol } from 'stylable/dist/src/stylable-processor';
 
 
 export default class Provider {
@@ -161,6 +162,7 @@ export default class Provider {
         let res = fixAndProcess(src, position, filePath);
         let meta = res.processed.meta;
         if (!meta) { return Promise.resolve([]) };
+
         const parsed: any[] = pvp(res.currentLine).nodes;
 
         function findNode(nodes: any[], index: number): any {
@@ -180,20 +182,39 @@ export default class Provider {
 
         let word = val.value;
 
+
+
+
+
+        const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
+        const transformer = new StylableTransformer({
+            diagnostics: new Diagnostics(),
+            fileProcessor: this.styl.fileProcessor,
+            requireModule: () => { throw new Error('Not implemented, why are we here') }
+        })
+        const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: lineChunkAtCursor }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
+        const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
+
         let defs: ProviderLocation[] = [];
 
-        if (Object.keys(meta.mappedSymbols).find(sym => sym === word.replace('.', ''))) {
+        const reso = resolvedElements[0][resolvedElements[0].length - 1].resolved.find(res => {
+            return res.symbol.name === word.replace('.', '') || keys((res.symbol as ClassSymbol)[valueMapping.states]).some(k => k === word)
+        })
+
+        if (reso) { meta = reso.meta; }
+
+        if (keys(meta.mappedSymbols).find(sym => sym === word.replace('.', ''))) {
             const symb = meta.mappedSymbols[word.replace('.', '')];
             switch (symb._kind) {
                 case 'class': {
                     defs.push(
-                        new ProviderLocation(meta.source, this.findWord(word, src, position))
+                        new ProviderLocation(meta.source, this.findWord(word, fs.get(meta.source).getText(), position))
                     );
                     break;
                 }
                 case 'var': {
                     defs.push(
-                        new ProviderLocation(meta.source, this.findWord(word, src, position))
+                        new ProviderLocation(meta.source, this.findWord(word, fs.get(meta.source).getText(), position))
                     );
                     break;
                 }
@@ -201,7 +222,7 @@ export default class Provider {
                     const filePath: string = path.join(path.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
                     const doc = fs.get(filePath);
 
-                    if (doc.getText()!=='') {
+                    if (doc.getText() !== '') {
                         defs.push(
                             new ProviderLocation(
                                 filePath,
@@ -212,6 +233,10 @@ export default class Provider {
                     break;
                 }
             }
+        } else if (values(meta.mappedSymbols).some(k => k._kind === 'class' && keys(k[valueMapping.states]).some(key => key === word))) {
+            defs.push(
+                new ProviderLocation(meta.source, this.findWord(word, fs.get(meta.source).getText(), position))
+            )
         } else if (keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
             defs.push(
                 new ProviderLocation(meta.source, this.findWord(':--' + word, src, position))
