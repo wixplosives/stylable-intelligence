@@ -182,10 +182,6 @@ export default class Provider {
 
         let word = val.value;
 
-
-
-
-
         const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
         const transformer = new StylableTransformer({
             diagnostics: new Diagnostics(),
@@ -202,6 +198,7 @@ export default class Provider {
         })
 
         if (reso) { meta = reso.meta; }
+        let temp: ClassSymbol | null = null;
 
         if (keys(meta.mappedSymbols).find(sym => sym === word.replace('.', ''))) {
             const symb = meta.mappedSymbols[word.replace('.', '')];
@@ -233,9 +230,14 @@ export default class Provider {
                     break;
                 }
             }
-        } else if (values(meta.mappedSymbols).some(k => k._kind === 'class' && keys(k[valueMapping.states]).some(key => key === word))) {
+        } else if (values(meta.mappedSymbols).some(k => {
+            if (k._kind === 'class' && keys(k[valueMapping.states]).some(key => key === word)) {
+                temp = k;
+                return true
+            } else { return false }
+        })) {
             defs.push(
-                new ProviderLocation(meta.source, this.findWord(word, fs.get(meta.source).getText(), position))
+                new ProviderLocation(meta.source, this.findWord(temp!.name, fs.get(meta.source).getText(), position))
             )
         } else if (keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
             defs.push(
