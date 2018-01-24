@@ -332,10 +332,10 @@ export const ExtendCompletionProvider: CompletionProvider = {
             comps.push(...Object.keys(meta.classes).filter(s => s.startsWith(str)).map(s => [s, 'Local file']))
             meta.imports.forEach(i => { if (i.defaultExport && i.defaultExport.startsWith(str)) { comps.push([i.defaultExport, i.fromRelative]) } })
             meta.imports.forEach(i => comps.push(...keys(i.named)
-                .filter(s => {
-                    const res = styl.resolver.resolve(meta.mappedSymbols[s]);
-                    return res && res._kind === 'css' && res.symbol._kind === 'class'
-                })
+                // .filter(s => {
+                //     const res = styl.resolver.resolve(meta.mappedSymbols[s]);
+                //     return res && res._kind === 'css' && res.symbol._kind === 'class'
+                // })
                 .filter(s => s.startsWith(str))
                 .map(s => [s, i.fromRelative])))
             return comps.slice(1).map(c => extendCompletion(
@@ -419,10 +419,10 @@ export const FormatterCompletionProvider: CompletionProvider = {
             return Object.keys(meta.mappedSymbols)
                 .filter(ms => (meta.mappedSymbols[ms]._kind === 'import'))
                 .filter(ms => ms.startsWith(lastName))
-                .filter(ms => {
-                    const res = styl.resolver.resolve(meta.mappedSymbols[ms])
-                    return res && res._kind === 'css' && res.symbol._kind === 'class'
-                })
+                // .filter(ms => {
+                //     const res = styl.resolver.resolve(meta.mappedSymbols[ms])
+                //     return res && res._kind === 'css' && res.symbol._kind === 'class'
+                // })
                 // .filter(ms => names.length === 0 || !names.includes(ms))
                 .filter(ms => !isMixin(ms, meta, fs, tsLangService))
                 .map(ms => createCodeMixinCompletion(ms, lastName, position, meta));

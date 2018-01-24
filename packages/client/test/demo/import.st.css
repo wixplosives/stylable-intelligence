@@ -2,15 +2,7 @@
     color: black;
 }
 
-.momo{
-    -st-states: anotherState,oneMoreState;
-}
-
-.root {
-    -st-states : state,otherState;
-}
-
 :vars {
-    aVar: red;
-    bVar: goldenrod;
+    oneVar: red;
+    twoVar: goldenrod;
 }

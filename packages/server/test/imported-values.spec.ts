@@ -10,7 +10,7 @@ describe('Imported Values', function () {
     const realPath = "./import-from-here.st.css";
     const jsPath = "../mixins/js-mixins.js";
     const tsPath = "../mixins/my-mixins.ts";
-    const createComp = (str: string, rng: ProviderRange, path: string) => asserters.extendsCompletion(str.startsWith('.') ? str.slice(1) : str, rng, path);
+    const createComp = (str: string, rng: ProviderRange, path: string) => asserters.extendsCompletion(str.slice(1), rng, path);
 
 
     [' ' + str1, ' ' + str2].forEach((str, j, a) => {
@@ -57,7 +57,7 @@ describe('Imported Values', function () {
 
     });
 
-    it.only('does not complete mixins, formatters, or vars in -st-extends', function () {
+    it('does not complete mixins, formatters, or vars in -st-extends', function () {
         const oneVar = 'oneVar';
         const twoVar = 'twoVar';
         const mixin = 'paramfulMixin';
