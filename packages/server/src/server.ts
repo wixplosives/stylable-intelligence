@@ -16,15 +16,20 @@ import { StylableLanguageService } from './service'
 import { Stylable } from 'stylable';
 import { LocalSyncFs } from './local-sync-fs';
 import *  as ts from 'typescript';
-import { FileSystemReadSync } from 'kissfs';
+import { FileSystemReadSync, Events, FileChangedEvent } from 'kissfs';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
 import { createLanguageServiceHost, createBaseHost } from './utils/temp-language-service-host';
+
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 const docs = new TextDocuments();
+
 docs.listen(connection);
+connection.listen();
+
 const fileSystem = new LocalSyncFs('');
 
 export function createDocFs(fileSystem: FileSystemReadSync, docs: MinimalDocs): ExtendedFSReadSync {
+
     return {
         __proto__: fileSystem,
         loadTextFile(path: string) { return Promise.resolve(this.loadTextFileSync(path)) },
@@ -34,13 +39,14 @@ export function createDocFs(fileSystem: FileSystemReadSync, docs: MinimalDocs): 
             return fromDocs ? fromDocs.getText() : fileSystem.loadTextFileSync(fromVscodePath(path))
         },
         get(path: string) {
+            console.log('Get ', path);
+
             return docs.get(path) || TextDocument.create(path, 'stylable', 0, this.loadTextFileSync(fromVscodePath(path)));
         },
         getOpenedFiles() {
             return docs.keys();
         }
     } as any;
-
 }
 
 const docFs: ExtendedFSReadSync = createDocFs(fileSystem, docs);
@@ -66,7 +72,7 @@ const wrappedTs: ExtendedTsLanguageService = {
     ts: tsLanguageService
 };
 
-const service = new StylableLanguageService(connection, { styl, tsLanguageService: wrappedTs }, docFs, {
+const service = new StylableLanguageService(connection, { styl, tsLanguageService: wrappedTs }, docFs, docs, {
     openDoc: OpenDocNotificationType,
     colorPresentationRequest: ColorPresentationRequest,
     colorRequest: DocumentColorRequest

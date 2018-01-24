@@ -1,9 +1,13 @@
-.local {
-    color: red;
+:import {
+    -st-from: "./my-mixins.ts";
+    -st-named: paramlessMixin, paramfulMixin;
 }
 
-@custom-selector :--lulu div > span
+:import {
+    -st-from: "./my-js-mixins.js";
+    -st-named: aMixin, aBareMixin;
+}
 
-.gaga {
-    -st-extends: lulu;
+.myClass {
+    -st-mixin: paramlessMixin()
 }

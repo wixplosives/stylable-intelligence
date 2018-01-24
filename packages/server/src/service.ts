@@ -3,7 +3,7 @@ import { setInterval } from 'timers';
 import * as path from 'path';
 ///         *                                                                *        *                                        *          *                                                              *
 import { IConnection, InitializeResult, TextDocuments, Definition, Hover, TextDocument, ServerCapabilities, SignatureHelp, NotificationType } from 'vscode-languageserver';
-import { createProvider, MinimalDocs, } from './provider-factory';
+import { createProvider, MinimalDocs, MinimalDocsDispatcher, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import { createDiagnosis } from './diagnosis';
@@ -24,7 +24,7 @@ import { createLanguageServiceHost, createBaseHost } from './utils/temp-language
 export { ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes } from './types'
 
 export class StylableLanguageService {
-    constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService }, fs: ExtendedFSReadSync, notifications: NotificationTypes) {
+    constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService }, fs: ExtendedFSReadSync , docsDispatcher:MinimalDocsDispatcher , notifications: NotificationTypes) {
 
 
 
@@ -53,8 +53,6 @@ export class StylableLanguageService {
                 } as CPServerCapabilities & ServerCapabilities)
             }
         });
-
-        connection.listen();
 
         connection.onCompletion((params): Thenable<CompletionItem[]> => {
             if (!params.textDocument.uri.endsWith('.st.css') && !params.textDocument.uri.startsWith('untitled:')) { return Promise.resolve([]) }
@@ -117,13 +115,13 @@ export class StylableLanguageService {
             let diagnostics = createDiagnosis(document, fs, processor).map(diag => { diag.source = 'stylable'; return diag; });
             connection.sendDiagnostics({ uri: document.uri, diagnostics: diagnostics.concat(cssDiags) })
         }
-        connection.onDidOpenTextDocument(function (params) {
-            const document = fs.get(params.textDocument.uri);
-            diagnose(document);
+
+
+        docsDispatcher.onDidOpen(function (params) {
+            diagnose(params.document);
         });
-        connection.onDidChangeTextDocument(function (change) {
-            const document = fs.get(change.textDocument.uri);
-            diagnose(document);
+        docsDispatcher.onDidChangeContent(function (params) {
+            diagnose(params.document);
         });
 
         connection.onDefinition((params): Thenable<Definition> => {

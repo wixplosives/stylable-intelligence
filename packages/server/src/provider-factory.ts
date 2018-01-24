@@ -1,5 +1,5 @@
 'use strict';
-import { TextDocument } from 'vscode-languageserver';
+import { TextDocument, TextDocuments, TextDocumentChangeEvent } from 'vscode-languageserver';
 import {
     cachedProcessFile, process as stylableProcess, safeParse, StylableMeta, FileProcessor, Stylable
 } from 'stylable';
@@ -7,6 +7,7 @@ import Provider from './provider';
 import { htap } from 'htap';
 import { FileSystemReadSync, EventEmitter } from 'kissfs';
 import { ExtendedTsLanguageService } from './types';
+import { Event } from 'vscode-jsonrpc';
 
 
 export function createProvider(stylable: Stylable, tsLangService: ExtendedTsLanguageService, withFilePrefix: boolean = true): Provider {
@@ -37,4 +38,9 @@ export function createProcessor(fileSystem: FileSystemReadSync, withFilePrefix: 
 export interface MinimalDocs extends Partial<FileSystemReadSync> {
     get: (uri: string) => TextDocument;
     keys: () => string[];
+}
+
+export interface MinimalDocsDispatcher extends Partial<TextDocuments> {
+    onDidChangeContent: Event<TextDocumentChangeEvent>;
+    onDidOpen: Event<TextDocumentChangeEvent>;
 }

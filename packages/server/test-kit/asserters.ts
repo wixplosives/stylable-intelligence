@@ -137,7 +137,8 @@ const minDocs: MinimalDocs = {
     },
     keys(): string[] {
         return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'));
-    }
+    },
+
 };
 const docsFs = createDocFs(new LocalSyncFs(''), minDocs);
 
