@@ -306,7 +306,6 @@ export default class Provider {
             if (fs.getOpenedFiles().indexOf(toVscodePath((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts')) !== -1) {
                 return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts', (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
             } else {
-                console.log((meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
                 return this.getSignatureForJsModifier(
                     mixin,
                     activeParam,

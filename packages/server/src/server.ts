@@ -39,8 +39,6 @@ export function createDocFs(fileSystem: FileSystemReadSync, docs: MinimalDocs): 
             return fromDocs ? fromDocs.getText() : fileSystem.loadTextFileSync(fromVscodePath(path))
         },
         get(path: string) {
-            console.log('Get ', path);
-
             return docs.get(path) || TextDocument.create(path, 'stylable', 0, this.loadTextFileSync(fromVscodePath(path)));
         },
         getOpenedFiles() {

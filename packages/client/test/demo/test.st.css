@@ -8,6 +8,13 @@
     -st-named: aMixin, aBareMixin;
 }
 
-.myClass {
-    -st-mixin: paramlessMixin()
+:import {
+    -st-from: "./import.st.css";
+    -st-named: aVar,bVar;
 }
+
+.myClass {
+    -st-extends: 
+}
+
+
