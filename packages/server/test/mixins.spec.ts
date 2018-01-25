@@ -162,12 +162,20 @@ describe('Mixins', function () {
                             let exp: Partial<Completion>[] = [];
                             let notExp: Partial<Completion>[] = [];
 
-                            if (str === str2 || (str === str1 && i <= 5)) {
-                                exp.push(createComp(str2, rng, tsFrom))
-                            } else if (str === str0 && i > 0) {
+                            if (i === 0) {
+                                exp.push(createComp(str1, rng, tsFrom));
+                                exp.push(createComp(str2, rng, tsFrom));
+                            } else if (str === str0) {
+                                notExp.push(createComp(str1, rng, tsFrom))
                                 notExp.push(createComp(str2, rng, tsFrom))
+                            } else if (i <= 5) {
+                                exp.push(createComp(str1, rng, tsFrom));
+                                exp.push(createComp(str2, rng, tsFrom));
+                            } else {
+                                exp.push(createComp(str, rng, tsFrom));
+                                notExp.push(createComp(a[1 - j], rng, tsFrom))
                             }
-                            notExp.push(createComp(str1, rng, tsFrom))
+                            notExp.push(createComp(badStr, rng, tsFrom))
 
                             asserter.suggested(exp);
                             asserter.notSuggested(notExp);

@@ -1,8 +1,4 @@
-.shlomo {
-    color: black;
-}
-
-:vars {
-    oneVar: red;
-    twoVar: goldenrod;
+.btn {
+    color: fuchsia;
+    -st-states: active;
 }

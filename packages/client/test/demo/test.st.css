@@ -1,20 +1,11 @@
 :import{
     -st-from:"./import.st.css";
     -st-default:Comp;
-    -st-named: shlomo, oneVar, twoVar;
+    -st-named:shlomo;
 }
 
-:import {
-    -st-from: "./my-mixins.ts";
-    -st-named: paramlessMixin, paramfulMixin, notARealMixin;
-    -st-default: shmixin;
-}
+@custom-selector :--popo div > Comp;
 
-:import {
-    -st-from: "./my-js-mixins.js";
-    -st-named: aMixin, aBareMixin, aFormatter;
-}
+@custom-selector :--pongo div span Comp;
 
-.gaga{
-    -st-extends: 
 

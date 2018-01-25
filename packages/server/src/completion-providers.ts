@@ -294,7 +294,7 @@ export const GlobalCompletionProvider: CompletionProvider = {
 // Selector level
 // Not after :, unless entire chunk is :
 export const SelectorCompletionProvider: CompletionProvider = {
-    provide({ parentSelector, fullLineText, position, lineChunkAtCursor, meta, fakes }: ProviderOptions): Completion[] {
+    provide({ parentSelector, fullLineText, position, lineChunkAtCursor, meta, fakes, styl }: ProviderOptions): Completion[] {
         if (!parentSelector && (lineChunkAtCursor === ':' || !lineChunkAtCursor.endsWith(':'))) {
             let comps: Completion[] = [];
             comps.push(...keys(meta.classes)
@@ -307,7 +307,9 @@ export const SelectorCompletionProvider: CompletionProvider = {
                 .reduce((acc: Completion[], imp) => {
                     if (acc.every(comp => comp.label !== imp.defaultExport)) { acc.push(classCompletion(imp.defaultExport, createDirectiveRange(position, fullLineText, lineChunkAtCursor), true)) };
                     keys(imp.named).forEach(exp => {
-                        if (acc.every(comp => comp.label.replace('.', '') !== imp.named[exp])) {
+                        const res = styl.resolver.resolve(meta.mappedSymbols[exp]);
+                        if (res && res._kind === 'css' && res.symbol && (res.symbol._kind === 'class' || res.symbol._kind === 'element') &&
+                            (acc.every(comp => comp.label.replace('.', '') !== imp.named[exp]))) {
                             acc.push(classCompletion(imp.named[exp], (createDirectiveRange(position, fullLineText, lineChunkAtCursor))))
                         }
                     });
@@ -401,7 +403,6 @@ export const CodeMixinCompletionProvider: CompletionProvider = {
                     const res = styl.resolver.resolve(meta.mappedSymbols[ms])
                     return res && res._kind === 'js'
                 })
-                .filter(ms => names.length === 0 || !names.includes(ms))
                 .filter(ms => isMixin(ms, meta, fs, tsLangService))
                 .map(ms => createCodeMixinCompletion(ms, lastName, position, meta));
         } else {
@@ -416,7 +417,7 @@ export const FormatterCompletionProvider: CompletionProvider = {
     provide({ meta, fullLineText, parentSelector, lineChunkAtCursor, position, fs, tsLangService, styl }: ProviderOptions): Completion[] {
         if (
             meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) &&
-            !fullLineText.trim().startsWith(valueMapping.from) && !fullLineText.trim().startsWith(valueMapping.extends) &&
+            !fullLineText.trim().startsWith(valueMapping.from) && !fullLineText.trim().startsWith(valueMapping.extends) && !fullLineText.trim().startsWith(valueMapping.named) &&
             parentSelector && fullLineText.includes(':') && fullLineText.indexOf(':') < position.character &&
             !lineChunkAtCursor.startsWith(valueMapping.mixin + ':')
         ) {
