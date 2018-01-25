@@ -11,6 +11,7 @@ describe('Imported Values', function () {
     const jsPath = "../mixins/js-mixins.js";
     const tsPath = "../mixins/my-mixins.ts";
     const createComp = (str: string, rng: ProviderRange, path: string) => asserters.extendsCompletion(str.slice(1), rng, path);
+    const createComp2 = (str: string, rng: ProviderRange, path: string) => asserters.extendsCompletion(str, rng, path);
 
 
     [' ' + str1, ' ' + str2].forEach((str, j, a) => {
@@ -66,10 +67,10 @@ describe('Imported Values', function () {
         return asserters.getCompletions('imports/st-extends-mixins.st.css').then((asserter) => {
             let notExp: Partial<Completion>[] = [];
 
-            notExp.push(createComp(oneVar, createRange(0, 0, 0, 0), realPath))
-            notExp.push(createComp(twoVar, createRange(0, 0, 0, 0), realPath))
-            notExp.push(createComp(mixin, createRange(0, 0, 0, 0), tsPath))
-            notExp.push(createComp(formatter, createRange(0, 0, 0, 0), jsPath))
+            notExp.push(createComp2(oneVar, createRange(0, 0, 0, 0), realPath))
+            notExp.push(createComp2(twoVar, createRange(0, 0, 0, 0), realPath))
+            notExp.push(createComp2(mixin, createRange(0, 0, 0, 0), tsPath))
+            notExp.push(createComp2(formatter, createRange(0, 0, 0, 0), jsPath))
 
             asserter.notSuggested(notExp);
         });

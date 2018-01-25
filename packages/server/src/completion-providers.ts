@@ -330,12 +330,12 @@ export const ExtendCompletionProvider: CompletionProvider = {
             let str = value.slice(spaces);
             let comps: string[][] = [[]];
             comps.push(...Object.keys(meta.classes).filter(s => s.startsWith(str)).map(s => [s, 'Local file']))
-            meta.imports.forEach(i => { if (i.defaultExport && i.defaultExport.startsWith(str)) { comps.push([i.defaultExport, i.fromRelative]) } })
+            meta.imports.forEach(i => { if (i.defaultExport && i.defaultExport.startsWith(str) && i.from.endsWith('st.css')) { comps.push([i.defaultExport, i.fromRelative]) } })
             meta.imports.forEach(i => comps.push(...keys(i.named)
-                // .filter(s => {
-                //     const res = styl.resolver.resolve(meta.mappedSymbols[s]);
-                //     return res && res._kind === 'css' && res.symbol._kind === 'class'
-                // })
+                .filter(s => {
+                    const res = styl.resolver.resolve(meta.mappedSymbols[s]);
+                    return res && res._kind === 'css' && (res.symbol._kind === 'class' || res.symbol._kind === 'element')
+                })
                 .filter(s => s.startsWith(str))
                 .map(s => [s, i.fromRelative])))
             return comps.slice(1).map(c => extendCompletion(
@@ -386,7 +386,7 @@ export const CssMixinCompletionProvider: CompletionProvider = {
 // RHS of -st-mixin
 // There is  a JS/TS import
 export const CodeMixinCompletionProvider: CompletionProvider = {
-    provide({ parentSelector, meta, fullLineText, lineChunkAtCursor, position, fs, tsLangService }: ProviderOptions): Completion[] {
+    provide({ parentSelector, meta, fullLineText, lineChunkAtCursor, position, fs, tsLangService, styl }: ProviderOptions): Completion[] {
         if (meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) &&
             !fullLineText.trim().startsWith(valueMapping.from) &&
             parentSelector && lineChunkAtCursor.startsWith(valueMapping.mixin + ':')
@@ -397,6 +397,10 @@ export const CodeMixinCompletionProvider: CompletionProvider = {
             return Object.keys(meta.mappedSymbols)
                 .filter(ms => meta.mappedSymbols[ms]._kind === 'import')
                 .filter(ms => ms.startsWith(lastName))
+                .filter(ms => {
+                    const res = styl.resolver.resolve(meta.mappedSymbols[ms])
+                    return res && res._kind === 'js'
+                })
                 .filter(ms => names.length === 0 || !names.includes(ms))
                 .filter(ms => isMixin(ms, meta, fs, tsLangService))
                 .map(ms => createCodeMixinCompletion(ms, lastName, position, meta));
@@ -407,11 +411,12 @@ export const CodeMixinCompletionProvider: CompletionProvider = {
 }
 
 // Inside ruleset, which is not :import
-// RHS of any rule
+// RHS of any rule except -st-extends, -st-from
 export const FormatterCompletionProvider: CompletionProvider = {
     provide({ meta, fullLineText, parentSelector, lineChunkAtCursor, position, fs, tsLangService, styl }: ProviderOptions): Completion[] {
-        if (meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) &&
-            !fullLineText.trim().startsWith(valueMapping.from) &&
+        if (
+            meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) &&
+            !fullLineText.trim().startsWith(valueMapping.from) && !fullLineText.trim().startsWith(valueMapping.extends) &&
             parentSelector && fullLineText.includes(':') && fullLineText.indexOf(':') < position.character &&
             !lineChunkAtCursor.startsWith(valueMapping.mixin + ':')
         ) {
@@ -419,10 +424,10 @@ export const FormatterCompletionProvider: CompletionProvider = {
             return Object.keys(meta.mappedSymbols)
                 .filter(ms => (meta.mappedSymbols[ms]._kind === 'import'))
                 .filter(ms => ms.startsWith(lastName))
-                // .filter(ms => {
-                //     const res = styl.resolver.resolve(meta.mappedSymbols[ms])
-                //     return res && res._kind === 'css' && res.symbol._kind === 'class'
-                // })
+                .filter(ms => {
+                    const res = styl.resolver.resolve(meta.mappedSymbols[ms])
+                    return res && res._kind === 'js'
+                })
                 // .filter(ms => names.length === 0 || !names.includes(ms))
                 .filter(ms => !isMixin(ms, meta, fs, tsLangService))
                 .map(ms => createCodeMixinCompletion(ms, lastName, position, meta));
