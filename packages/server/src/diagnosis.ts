@@ -6,21 +6,10 @@ import { Diagnostic as Report } from 'stylable/src/diagnostics'
 import { FileSystemReadSync } from 'kissfs';
 import { fromVscodePath } from './utils/uri-utils';
 
-export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileProcessor: FileProcessor<StylableMeta>): Diagnostic[] {
+export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileProcessor: FileProcessor<StylableMeta>, requireModule:typeof require): Diagnostic[] {
 
     if (!doc.uri.endsWith('.st.css')) { return [] };
     const file = fromVscodePath(doc.uri);
-
-    function requireModule(path: string) {
-        try {
-            const m = { exports: {} };
-            new Function('module', 'exports', 'require', fs.loadTextFileSync(path))(m, m.exports, requireModule);
-            return m.exports;
-        } catch (err) {
-            console.warn('diagnosis, failed eval module')
-        }
-        return {};
-    }
 
     const transformer = new StylableTransformer({
         diagnostics: new Diagnostics(),
