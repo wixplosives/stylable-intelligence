@@ -64,25 +64,15 @@ export default class Provider {
 
     public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, fs: ExtendedFSReadSync): Thenable<Completion[]> {
         let res = fixAndProcess(src, pos, fileName);
-        return this.provideCompletionItemsFromAst(src, res.currentLine, res.cursorLineIndex, pos, res.processed.meta!, res.processed.fakes, fs);
-    }
-
-    public provideCompletionItemsFromAst(
-        src: string,
-        lineText: string,
-        cursorPosInLine: number,
-        position: ProviderPosition,
-        meta: StylableMeta,
-        fakes: PostCss.Rule[],
-        fs: ExtendedFSReadSync,
-    ): Thenable<Completion[]> {
         const completions: Completion[] = [];
         try {
-            let options = this.createProviderOptions(src, position, meta, fakes, lineText, cursorPosInLine, fs);
+            let options = this.createProviderOptions(src, pos, res.processed.meta!, res.processed.fakes, res.currentLine, res.cursorLineIndex, fs);
             this.providers.forEach(p => { completions.push(...p.provide(options)) });
         } catch (e) { }
         return Promise.resolve(this.dedupe(completions));
     }
+
+
 
     private createProviderOptions(
         src: string,
