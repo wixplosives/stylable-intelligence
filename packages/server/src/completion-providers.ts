@@ -441,47 +441,55 @@ export const FormatterCompletionProvider: CompletionProvider = {
 // Inside :import
 // RHS of -st-named
 // import exists
-export const NamedCompletionProvider: CompletionProvider & { resolveImport: (parentSelector: SRule | null, astAtCursor: PostCss.NodeBase, styl: Stylable, meta: StylableMeta) => StylableMeta | null } = {
+export const NamedCompletionProvider: CompletionProvider & { resolveImport: (importName: string, styl: Stylable, meta: StylableMeta) => StylableMeta | null } = {
     provide({ parentSelector, astAtCursor, styl, meta, position, fullLineText, src }: ProviderOptions): Completion[] {
 
         const { isNamedValueLine, namedValues } = getNamedValues(src, position.line);
         if (isNamedValueLine) {
-            const resolvedImport: StylableMeta | null = this.resolveImport(parentSelector, astAtCursor, styl, meta);
-            if (resolvedImport) {
-                const { names, lastName } = getExistingNames(fullLineText, position)
-                let comps: string[][] = [[]];
-                comps.push(
-                    ...keys(resolvedImport.mappedSymbols)
-                        .filter(ms => (resolvedImport.mappedSymbols[ms]._kind === 'class' || resolvedImport.mappedSymbols[ms]._kind === 'var') && ms !== 'root')
-                        .filter(ms => ms.slice(0, -1).startsWith(lastName))
-                        .filter(ms => !namedValues.includes(ms))
-                        .map(ms => [
-                            ms,
-                            path.relative(meta.source, resolvedImport.source).slice(1).replace('\\', '/'),
-                            resolvedImport.mappedSymbols[ms]._kind === 'var' ? (resolvedImport.mappedSymbols[ms] as VarSymbol).text : 'Stylable class'
-                        ])
-                )
-                return comps.slice(1).map(c => namedCompletion(
-                    c[0],
-                    new ProviderRange(
-                        new ProviderPosition(position.line, position.character - lastName.length),
-                        new ProviderPosition(position.line, position.character)
-                    ),
-                    c[1],
-                    c[2]
-                ));
+
+            let importName: string = '';
+            if (parentSelector && parentSelector.selector === ':import' && (astAtCursor as PostCss.Rule).nodes && (astAtCursor as PostCss.Rule).nodes!.length) {
+                importName = ((astAtCursor as PostCss.Rule).nodes!.find(n => (n as PostCss.Declaration).prop === valueMapping.from) as PostCss.Declaration).value.replace(/'|"/g, '');
+            } else { return [] }
+
+            let comps: string[][] = [[]];
+
+            if (importName.endsWith('.st.css')) {
+
+                const resolvedImport: StylableMeta | null = this.resolveImport(importName, styl, meta);
+                if (resolvedImport) {
+                    const { names, lastName } = getExistingNames(fullLineText, position)
+                    comps.push(
+                        ...keys(resolvedImport.mappedSymbols)
+                            .filter(ms => (resolvedImport.mappedSymbols[ms]._kind === 'class' || resolvedImport.mappedSymbols[ms]._kind === 'var') && ms !== 'root')
+                            .filter(ms => ms.slice(0, -1).startsWith(lastName))
+                            .filter(ms => !namedValues.includes(ms))
+                            .map(ms => [
+                                ms,
+                                path.relative(meta.source, resolvedImport.source).slice(1).replace(/\\/g, '/'),
+                                resolvedImport.mappedSymbols[ms]._kind === 'var' ? (resolvedImport.mappedSymbols[ms] as VarSymbol).text : 'Stylable class'
+                            ])
+                    )
+                    return comps.slice(1).map(c => namedCompletion(
+                        c[0],
+                        new ProviderRange(
+                            new ProviderPosition(position.line, position.character - lastName.length),
+                            new ProviderPosition(position.line, position.character)
+                        ),
+                        c[1],
+                        c[2]
+                    ));
+                }
+            } else if (importName.endsWith('.js') || importName.endsWith('.ts')) {
+
             }
+
         }
         return [];
     },
 
-    resolveImport(parentSelector: SRule | null, astAtCursor: PostCss.NodeBase, styl: Stylable, meta: StylableMeta): StylableMeta | null {
+    resolveImport(importName: string, styl: Stylable, meta: StylableMeta): StylableMeta | null {
         let resolvedImport: StylableMeta | null = null;
-
-        let importName: string = '';
-        if (parentSelector && parentSelector.selector === ':import' && (astAtCursor as PostCss.Rule).nodes && (astAtCursor as PostCss.Rule).nodes!.length) {
-            importName = ((astAtCursor as PostCss.Rule).nodes!.find(n => (n as PostCss.Declaration).prop === valueMapping.from) as PostCss.Declaration).value.replace(/'|"/g, '');
-        }
         if (importName && importName.endsWith('.st.css')) try {
             resolvedImport = styl.fileProcessor.process(meta.imports.find(i => i.fromRelative === importName)!.from);
         } catch (e) { }

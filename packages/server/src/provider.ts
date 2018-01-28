@@ -276,23 +276,22 @@ export default class Provider {
 
     getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
         if (!filePath.endsWith('.st.css')) { return null }
-        let res = fixAndProcess(src, pos, filePath);
-        let meta = res.processed.meta;
+        const res = fixAndProcess(src, pos, filePath);
+        const meta = res.processed.meta;
         if (!meta) return null;
 
-        let split = src.split('\n');
-        let line = split[pos.line];
+        const split = src.split('\n');
+        const line = split[pos.line];
         let value: string = '';
-
 
         if (line.slice(0, pos.character).trim().startsWith(valueMapping.mixin)) {
             value = line.slice(0, pos.character).trim().slice(valueMapping.mixin.length + 1).trim();
         } else if (line.slice(0, pos.character).trim().includes(':')) {
             value = line.slice(0, pos.character).trim().slice(line.slice(0, pos.character).trim().indexOf(':') + 1).trim();
         }
-        let parsed = pvp(value);
-        let mixin = '';
+        const parsed = pvp(value);
 
+        let mixin = '';
         const rev = parsed.nodes.reverse()[0];
         if (rev.type === 'function' && !!rev.unclosed) {
             mixin = rev.value;

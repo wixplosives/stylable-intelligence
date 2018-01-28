@@ -24,7 +24,7 @@ import { createLanguageServiceHost, createBaseHost } from './utils/temp-language
 export { ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes } from './types'
 
 export class StylableLanguageService {
-    constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService }, fs: ExtendedFSReadSync , docsDispatcher:MinimalDocsDispatcher , notifications: NotificationTypes) {
+    constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
 
 
 
@@ -147,6 +147,8 @@ export class StylableLanguageService {
 
         connection.onRequest(notifications.colorRequest.type, params => {
             const document = fs.get(params.textDocument.uri);
+            const src = document.getText();
+
             const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
             const colors = cssService.findDocumentColors(document, stylesheet)
             return colors;
