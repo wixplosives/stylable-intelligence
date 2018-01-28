@@ -44,6 +44,14 @@ suite("Extension Tests", () => {
         return testCompletion('simple-completion.st.css', testCases);
     });
 
+    test("simple completion includes css completions", function () {
+        this.timeout(30000)
+        const testCases: [vscode.Position, string[]][] = [
+            [new vscode.Position(2, 11), ['goldenrod']]
+        ];
+        return testCompletion('simple-completion.st.css', testCases);
+    });
+
     test("advanced completion", function () {
         this.timeout(30000)
         const testCases: [vscode.Position, string[]][] = [

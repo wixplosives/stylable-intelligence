@@ -11,7 +11,7 @@ import { pathFromPosition } from '../src/utils/postcss-ast-utils'
 import { NodeBase } from 'postcss';
 import { Provider } from '../src/index';
 import { SignatureHelp, TextDocumentPositionParams, TextDocumentIdentifier, ParameterInformation } from 'vscode-languageserver';
-import { fileUriToNativePath } from '../src/utils/uri-utils';
+import { fromVscodePath } from '../src/utils/uri-utils';
 import { Stylable } from 'stylable';
 import { LocalSyncFs } from '../src/local-sync-fs';
 import { createDocFs } from '../src/server';
@@ -133,19 +133,16 @@ export function getSignatureHelp(fileName: string, prefix: string): SignatureHel
 
 const minDocs: MinimalDocs = {
     get(uri: string): TextDocument {
-        if (!uri.startsWith('file://')) {
-            return TextDocument.create(uri, 'css', 1, fs.readFileSync(uri).toString());
-        } else {
-            return TextDocument.create(uri, 'css', 1, fs.readFileSync(fileUriToNativePath(uri)).toString());
-        }
+        return TextDocument.create(uri, 'css', 1, fs.readFileSync(fromVscodePath(uri)).toString());
     },
     keys(): string[] {
         return fs.readdirSync(path.join(__dirname, '../test/cases/imports/'));
-    }
-};
-const docsFs = createDocFs(new LocalSyncFs(''),minDocs);
+    },
 
-let openedFiles:string[] = [];
+};
+const docsFs = createDocFs(new LocalSyncFs(''), minDocs);
+
+let openedFiles: string[] = [];
 const tsLanguageServiceHost = createLanguageServiceHost({
     cwd: __dirname,
     getOpenedDocs: () => openedFiles,
@@ -158,13 +155,13 @@ const tsLanguageServiceHost = createLanguageServiceHost({
     baseHost: createBaseHost(docsFs, path)
 });
 const tsLanguageService = ts.createLanguageService(tsLanguageServiceHost);
-const wrappedTs:ExtendedTsLanguageService = {
-    ts:tsLanguageService,
-    setOpenedFiles:(files:string[]) => openedFiles = files
+const wrappedTs: ExtendedTsLanguageService = {
+    ts: tsLanguageService,
+    setOpenedFiles: (files: string[]) => openedFiles = files
 };
 
 
-const provider = createProvider(new Stylable('/', createFs( docsFs, true), () => ({ default: {} })), wrappedTs);
+const provider = createProvider(new Stylable('/', createFs(docsFs, true), () => ({ default: {} })), wrappedTs);
 
 
 

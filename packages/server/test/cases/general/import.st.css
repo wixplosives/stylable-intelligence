@@ -2,3 +2,11 @@
     color: fuchsia;
     -st-states: active;
 }
+
+.shlomo {
+    -st-states: shlomoState;
+}
+
+.momo {
+    -st-states: momoState;
+}

@@ -18,6 +18,14 @@ export default function defaultMixin(pct: stPercent): styl.stCssFrag {
     return "max-width: " + pct + "%"
 }
 
-export function notARealMixin(): styl.stColor {
+export function paramlessFormatter(): styl.stColor {
     return "goldenrod"
 }
+
+export function formatterWithParams(numParam: stNumber<0, 200>,
+    strParam: styl.stString,
+    aliasedParam: lalaString,
+    enumParam: 'a' | 'b'): stNumber<0, 200> {
+    return "4";
+}
+

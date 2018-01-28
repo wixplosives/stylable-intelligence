@@ -7,6 +7,6 @@
     -st-extends: momo;
 }
 
-.local:mom|o {
+.local::mom|o {
     color: blue;
 }

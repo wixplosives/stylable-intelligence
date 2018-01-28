@@ -125,7 +125,7 @@ describe("Definitions", function () {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
                     expect(def.uri).to.equal(path.join(__dirname, '/../test/cases/', 'mixins/my-mixins.ts'));
-                    expect(def.range).to.eql(createRange(20, 16, 20, 29))
+                    expect(def.range).to.eql(createRange(20, 16, 20, 34))
                 });
             });
         });

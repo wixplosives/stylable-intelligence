@@ -2,7 +2,7 @@
 import { MinimalDocs } from './provider-factory';
 import * as PostCss from 'postcss';
 const pvp = require('postcss-value-parser');
-const psp = require('postcss-selector-parser');
+// const psp = require('postcss-selector-parser');
 import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping, StylableTransformer, Diagnostics, expandCustomSelectors as RemoveWhenWorks, expandCustomSelectors } from 'stylable';
 import { isSelector, pathFromPosition, isDeclaration } from './utils/postcss-ast-utils';
 import {
@@ -33,15 +33,17 @@ import * as path from 'path';
 import { Position, SignatureHelp, SignatureInformation, ParameterInformation } from 'vscode-languageserver';
 import * as ts from 'typescript';
 import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName, Identifier, LiteralTypeNode } from 'typescript';
-import { nativePathToFileUri } from './utils/uri-utils';
+import { toVscodePath } from './utils/uri-utils';
 import { resolve } from 'url';
-import { keys } from 'lodash';
+import { keys, values } from 'lodash';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
 import { createLanguageServiceHost } from './utils/temp-language-service-host';
+import { fromVscodePath } from './utils/uri-utils';
+import { ClassSymbol } from 'stylable/dist/src/stylable-processor';
 
 
 export default class Provider {
-    constructor(public styl: Stylable, public tsLangService:ExtendedTsLanguageService) { }
+    constructor(public styl: Stylable, public tsLangService: ExtendedTsLanguageService) { }
 
     public providers = [
         RulesetInternalDirectivesProvider,
@@ -62,25 +64,15 @@ export default class Provider {
 
     public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, fs: ExtendedFSReadSync): Thenable<Completion[]> {
         let res = fixAndProcess(src, pos, fileName);
-        return this.provideCompletionItemsFromAst(src, res.currentLine, res.cursorLineIndex, pos, res.processed.meta!, res.processed.fakes, fs);
-    }
-
-    public provideCompletionItemsFromAst(
-        src: string,
-        lineText: string,
-        cursorPosInLine: number,
-        position: ProviderPosition,
-        meta: StylableMeta,
-        fakes: PostCss.Rule[],
-        fs: ExtendedFSReadSync,
-    ): Thenable<Completion[]> {
         const completions: Completion[] = [];
         try {
-            let options = this.createProviderOptions(src, position, meta, fakes, lineText, cursorPosInLine, fs);
+            let options = this.createProviderOptions(src, pos, res.processed.meta!, res.processed.fakes, res.currentLine, res.cursorLineIndex, fs);
             this.providers.forEach(p => { completions.push(...p.provide(options)) });
         } catch (e) { }
         return Promise.resolve(this.dedupe(completions));
     }
+
+
 
     private createProviderOptions(
         src: string,
@@ -160,6 +152,7 @@ export default class Provider {
         let res = fixAndProcess(src, position, filePath);
         let meta = res.processed.meta;
         if (!meta) { return Promise.resolve([]) };
+
         const parsed: any[] = pvp(res.currentLine).nodes;
 
         function findNode(nodes: any[], index: number): any {
@@ -179,35 +172,63 @@ export default class Provider {
 
         let word = val.value;
 
+        const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
+        const transformer = new StylableTransformer({
+            diagnostics: new Diagnostics(),
+            fileProcessor: this.styl.fileProcessor,
+            requireModule: () => { throw new Error('Not implemented, why are we here') }
+        })
+        const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: lineChunkAtCursor }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
+        const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
+
         let defs: ProviderLocation[] = [];
 
-        if (Object.keys(meta.mappedSymbols).find(sym => sym === word.replace('.', ''))) {
+        const reso = resolvedElements[0][resolvedElements[0].length - 1].resolved.find(res => {
+            return res.symbol.name === word.replace('.', '') || keys((res.symbol as ClassSymbol)[valueMapping.states]).some(k => k === word)
+        })
+
+        if (reso) { meta = reso.meta; }
+        let temp: ClassSymbol | null = null;
+
+        if (keys(meta.mappedSymbols).find(sym => sym === word.replace('.', ''))) {
             const symb = meta.mappedSymbols[word.replace('.', '')];
             switch (symb._kind) {
                 case 'class': {
                     defs.push(
-                        new ProviderLocation(meta.source, this.findWord(word, src, position))
+                        new ProviderLocation(meta.source, this.findWord(word, fs.get(meta.source).getText(), position))
                     );
                     break;
                 }
                 case 'var': {
                     defs.push(
-                        new ProviderLocation(meta.source, this.findWord(word, src, position))
+                        new ProviderLocation(meta.source, this.findWord(word, fs.get(meta.source).getText(), position))
                     );
                     break;
                 }
                 case 'import': {
                     const filePath: string = path.join(path.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
+                    const doc = fs.get(filePath);
 
-                    defs.push(
-                        new ProviderLocation(
-                            filePath,
-                            this.findWord(word, fs.loadTextFileSync(nativePathToFileUri(filePath)), position)
+                    if (doc.getText() !== '') {
+                        defs.push(
+                            new ProviderLocation(
+                                filePath,
+                                this.findWord(word, doc.getText(), position)
+                            )
                         )
-                    );
+                    };
                     break;
                 }
             }
+        } else if (values(meta.mappedSymbols).some(k => {
+            if (k._kind === 'class' && keys(k[valueMapping.states]).some(key => key === word)) {
+                temp = k;
+                return true
+            } else { return false }
+        })) {
+            defs.push(
+                new ProviderLocation(meta.source, this.findWord(temp!.name, fs.get(meta.source).getText(), position))
+            )
         } else if (keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
             defs.push(
                 new ProviderLocation(meta.source, this.findWord(':--' + word, src, position))
@@ -224,37 +245,43 @@ export default class Provider {
 
     findWord(word: string, src: string, position: Position): ProviderRange {
         let split = src.split('\n');
-        let lineIndex = split.findIndex(l => {
-            return (l.trim().startsWith(word) || l.trim().startsWith('.' + word))
-                && (l.trim().replace('.', '').slice(word.length).trim().startsWith('{') || l.trim().replace('.', '').slice(word.length).trim().startsWith(':'));
-        })
+        let regex = '\\b' + '\\.?' + this.escapeRegExp(word.replace('.', '').replace(':--', '')) + '\\b';
+        let lineIndex = split.findIndex(l => RegExp(regex).test(l));
         if (lineIndex === -1 || lineIndex === position.line) { lineIndex = split.findIndex(l => l.trim().indexOf(word) !== -1) }
         if (lineIndex === -1 || lineIndex === position.line) { return createRange(0, 0, 0, 0) };
         let line = split[lineIndex];
-        return createRange(
-            lineIndex, line.indexOf(word), lineIndex, line.indexOf(word) + word.length
-        )
+
+        const match = line.match(RegExp(regex))
+
+        if (match) {
+            return createRange(lineIndex, line.lastIndexOf(word), lineIndex, line.lastIndexOf(word) + word.length)
+        } else {
+            return createRange(0, 0, 0, 0)
+        }
+    }
+
+    escapeRegExp(re: string) {
+        return re.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
     }
 
     getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
         if (!filePath.endsWith('.st.css')) { return null }
-        let res = fixAndProcess(src, pos, filePath);
-        let meta = res.processed.meta;
+        const res = fixAndProcess(src, pos, filePath);
+        const meta = res.processed.meta;
         if (!meta) return null;
 
-        let split = src.split('\n');
-        let line = split[pos.line];
+        const split = src.split('\n');
+        const line = split[pos.line];
         let value: string = '';
-
 
         if (line.slice(0, pos.character).trim().startsWith(valueMapping.mixin)) {
             value = line.slice(0, pos.character).trim().slice(valueMapping.mixin.length + 1).trim();
         } else if (line.slice(0, pos.character).trim().includes(':')) {
             value = line.slice(0, pos.character).trim().slice(line.slice(0, pos.character).trim().indexOf(':') + 1).trim();
         }
-        let parsed = pvp(value);
-        let mixin = '';
+        const parsed = pvp(value);
 
+        let mixin = '';
         const rev = parsed.nodes.reverse()[0];
         if (rev.type === 'function' && !!rev.unclosed) {
             mixin = rev.value;
@@ -265,19 +292,15 @@ export default class Provider {
         if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
             return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
         } else if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.js')) {
-            if (fs.getOpenedFiles().indexOf('file://' + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts') !== -1) {
+            if (fs.getOpenedFiles().indexOf(toVscodePath((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts')) !== -1) {
                 return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts', (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
             } else {
-                console.log((meta.mappedSymbols[mixin]! as ImportSymbol).import.from);
                 return this.getSignatureForJsModifier(
                     mixin,
                     activeParam,
-                    fs.loadTextFileSync(
-                        ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.startsWith('/')
-                            ? 'file://'
-                            : '')
-                        + (meta.mappedSymbols[mixin]! as ImportSymbol).import.from
-                    ), paramInfo);
+                    fs.get((meta.mappedSymbols[mixin]! as ImportSymbol).import.from).getText(),
+                    paramInfo
+                )
             }
         } else {
             return null;
@@ -407,7 +430,7 @@ export function createMeta(src: string, path: string) {
     let meta: StylableMeta;
     let fakes: PostCss.Rule[] = [];
     try {
-        let ast: PostCss.Root = safeParse(src, { from: createFrom(path) })
+        let ast: PostCss.Root = safeParse(src, { from: fromVscodePath(path) })
         ast.nodes && ast.nodes.forEach((node) => {
             if (node.type === 'decl') {
                 let r = PostCss.rule({ selector: node.prop + ':' + node.value });
@@ -430,10 +453,6 @@ export function createMeta(src: string, path: string) {
         meta: meta,
         fakes: fakes
     }
-}
-
-function createFrom(filePath: string): string | undefined {
-    return filePath.indexOf('file://') === 0 ? decodeURIComponent(filePath.slice(7 + Number(process.platform === 'win32'))) : decodeURIComponent(filePath);
 }
 
 function fixAndProcess(src: string, position: ProviderPosition, filePath: string, ) {
@@ -477,20 +496,7 @@ export class ProviderLocation {
 }
 
 export function extractTsSignature(filePath: string, mixin: string, isDefault: boolean, tsLangService: ExtendedTsLanguageService): ts.Signature | undefined {
-    // const compilerOptions: ts.CompilerOptions = {
-    //     "jsx": ts.JsxEmit.React,
-    //     "lib": ['lib.es2015.d.ts', 'lib.dom.d.ts'],
-    //     "module": ts.ModuleKind.CommonJS,
-    //     "target": ts.ScriptTarget.ES5,
-    //     "strict": false,
-    //     "importHelpers": false,
-    //     "noImplicitReturns": false,
-    //     "strictNullChecks": false,
-    //     "sourceMap": false,
-    //     "outDir": "dist",
-    //     "typeRoots": ["./node_modules/@types"]
-    // };
-    // let program = ts.createProgram([filePath], compilerOptions);
+
     tsLangService.setOpenedFiles([filePath])
     let program = tsLangService.ts.getProgram();
     let tc = program.getTypeChecker();

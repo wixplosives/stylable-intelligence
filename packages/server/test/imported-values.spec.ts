@@ -7,14 +7,17 @@ describe('Imported Values', function () {
     const str1 = 'Comp';
     const str2 = 'shlomo';
     const str3 = '.shlomo';
+    const realPath = "./import-from-here.st.css";
+    const jsPath = "../mixins/js-mixins.js";
+    const tsPath = "../mixins/my-mixins.ts";
+    const createComp = (str: string, rng: ProviderRange, path: string) => asserters.extendsCompletion(str.slice(1), rng, path);
+    const createComp2 = (str: string, rng: ProviderRange, path: string) => asserters.extendsCompletion(str, rng, path);
 
 
     [' ' + str1, ' ' + str2].forEach((str, j, a) => {
         str.split('').forEach((c, i) => {
 
-            const path = "./import-from-here.st.css";
-            const createComp = (str: string, rng: ProviderRange) => asserters.extendsCompletion(str.slice(1), rng, path);
-            let prefix = str.slice(0, i+1);
+            let prefix = str.slice(0, i + 1);
             let rng = createRange(7, 17, 7, 17 + i);
 
             it('completes default and named imports in -st-extends, with prefix ' + prefix + ' ', function () {
@@ -22,11 +25,11 @@ describe('Imported Values', function () {
                     let exp: Partial<Completion>[] = [];
                     let notExp: Partial<Completion>[] = [];
 
-                    exp.push(createComp(a[j], rng));
+                    exp.push(createComp(a[j], rng, realPath));
                     if (prefix.length <= 1) {
-                        exp.push(createComp(a[1 - j], rng));
+                        exp.push(createComp(a[1 - j], rng, realPath));
                     } else {
-                        notExp.push(createComp(a[1 - j], rng));
+                        notExp.push(createComp(a[1 - j], rng, realPath));
                     }
 
                     asserter.suggested(exp);
@@ -39,11 +42,11 @@ describe('Imported Values', function () {
                     let exp: Partial<Completion>[] = [];
                     let notExp: Partial<Completion>[] = [];
 
-                    exp.push(createComp(a[j], rng));
+                    exp.push(createComp(a[j], rng, realPath));
                     if (prefix.length <= 1) {
-                        exp.push(createComp(a[1 - j], rng));
+                        exp.push(createComp(a[1 - j], rng, realPath));
                     } else {
-                        notExp.push(createComp(a[1 - j], rng));
+                        notExp.push(createComp(a[1 - j], rng, realPath));
                     }
 
                     asserter.suggested(exp);
@@ -51,6 +54,25 @@ describe('Imported Values', function () {
                 });
             });
 
+        });
+
+    });
+
+    it('does not complete mixins, formatters, or vars in -st-extends', function () {
+        const oneVar = 'oneVar';
+        const twoVar = 'twoVar';
+        const mixin = 'paramfulMixin';
+        const formatter = 'aFormatter';
+
+        return asserters.getCompletions('imports/st-extends-mixins.st.css').then((asserter) => {
+            let notExp: Partial<Completion>[] = [];
+
+            notExp.push(createComp2(oneVar, createRange(0, 0, 0, 0), realPath))
+            notExp.push(createComp2(twoVar, createRange(0, 0, 0, 0), realPath))
+            notExp.push(createComp2(mixin, createRange(0, 0, 0, 0), tsPath))
+            notExp.push(createComp2(formatter, createRange(0, 0, 0, 0), jsPath))
+
+            asserter.notSuggested(notExp);
         });
     });
 

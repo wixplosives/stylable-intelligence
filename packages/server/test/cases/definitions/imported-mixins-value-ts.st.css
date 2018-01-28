@@ -1,6 +1,6 @@
 :import {
     -st-from: "../mixins/my-mixins.ts";
-    -st-named: paramlessMixin, paramfulMixin, notARealMixin;
+    -st-named: paramlessMixin, paramfulMixin, paramlessFormatter;
 }
 
 :import {
@@ -9,6 +9,6 @@
 }
 
 .local {
-    color: notARealMix|in();
+    color: paramlessFormat|ter();
     background-color: aFormatter(a,b,45);
 }
