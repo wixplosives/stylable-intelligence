@@ -2,3 +2,8 @@
     color: fuchsia;
     -st-states: active;
 }
+
+:vars {
+    redColor: red;
+    blueColor: blue;       
+}

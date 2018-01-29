@@ -12,7 +12,7 @@ import { Command, Position, Range, Location, TextEdit, CompletionItem, Parameter
 import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
 import { valueMapping } from 'stylable/dist/src/stylable-value-parsers';
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
-import { createMeta } from './provider';
+import { createMeta, fixAndProcess } from './provider';
 import { Stylable } from 'stylable';
 import * as ts from 'typescript'
 import { FileSystemReadSync } from 'kissfs';
@@ -148,9 +148,18 @@ export class StylableLanguageService {
         connection.onRequest(notifications.colorRequest.type, params => {
             const document = fs.get(params.textDocument.uri);
             const src = document.getText();
+            const res = fixAndProcess(src, new ProviderPosition(0, 0), params.textDocument.uri);
+            const meta = res.processed.meta!;
+            let varMaps: string[][] = [];
+            services.styl.createTransformer()
+            meta.imports.forEach(imp => {
+                processor.process(imp.from).vars.forEach(v => varMaps.push([v.name, v.text, imp.from]))
+            });
+
+            // const fixedSrc = fixVars(src, varMaps)
 
             const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
-            const colors = cssService.findDocumentColors(document, stylesheet)
+            const colors = cssService.findDocumentColors(document, stylesheet);
             return colors;
         });
 
@@ -173,6 +182,23 @@ export class StylableLanguageService {
         function readDocRange(doc: TextDocument, rng: Range): string {
             let lines = doc.getText().split('\n');
             return lines[rng.start.line].slice(rng.start.character, rng.end.character);
+        }
+
+        function fixVars(src: string, varMaps: string[][]) {
+            // let lines = src.replace(/\r\n/g, '\n').split('\n');
+            // let fixedSrc = src;
+            // let isNamed = false;
+            // let from = '';
+
+            // lines.forEach(line => {
+            //     if (line.trim().startsWith(valueMapping.from)) {
+            //         isNamed = true;
+            //         from = line.trim().replace(valueMapping.from, '').replace(':', '').trim();
+            //     } else if (from && (line.trim().startsWith(valueMapping.named) || isNamed)) {
+
+            //     }
+            // })
+
         }
     }
 }

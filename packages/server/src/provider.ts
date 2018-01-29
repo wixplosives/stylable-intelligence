@@ -72,8 +72,6 @@ export default class Provider {
         return Promise.resolve(this.dedupe(completions));
     }
 
-
-
     private createProviderOptions(
         src: string,
         position: ProviderPosition,
@@ -455,7 +453,7 @@ export function createMeta(src: string, path: string) {
     }
 }
 
-function fixAndProcess(src: string, position: ProviderPosition, filePath: string, ) {
+export function fixAndProcess(src: string, position: ProviderPosition, filePath: string, ) {
     let cursorLineIndex: number = position.character;
     let lines = src.replace(/\r\n/g, '\n').split('\n');
     let currentLine = lines[position.line];

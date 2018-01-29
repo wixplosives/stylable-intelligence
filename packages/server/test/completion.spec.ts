@@ -1,8 +1,8 @@
 import * as asserters from '../test-kit/asserters';
 import { createRange } from '../src/completion-providers';
 
-describe('completion unit test', function () {
-    describe('root level', function () {
+describe('Completions', function () {
+    describe('Stylesheet Top Level', function () {
         it('should complete ONLY import and vars directive, root and existing classes at top level', function () {
             return asserters.getCompletions('general/top-level-existing-classes.st.css').then((asserter) => {
                 asserter.suggested(
@@ -98,8 +98,7 @@ describe('completion unit test', function () {
         });
     });
 
-
-    describe('multiple files', function () {
+    describe('Multiple Files', function () {
 
         it('complete states for localy imported component', function () {
             return asserters.getCompletions('states/locally-imported-component.st.css')
@@ -120,7 +119,6 @@ describe('completion unit test', function () {
                 });
         });
 
-
         it('complete states for localy imported component ( recursive )', function () {
             return asserters.getCompletions('states/locally-imported-component-recursive.st.css')
                 .then((asserter) => {
@@ -132,4 +130,12 @@ describe('completion unit test', function () {
                 });
         });
     });
+
+    // describe.only('Missing Files', function() {
+    //     it('Should not break when import file is missing', function() {
+    //         return asserters.getCompletions('general/missing-import.st.css').then((asserter) => {
+    //             asserter.exactSuggested([]);
+    //         });
+    //     })
+    // })
 })
