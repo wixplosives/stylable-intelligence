@@ -1,5 +1,5 @@
 import { StylableMeta, SRule, valueMapping, ClassSymbol, CSSResolve, VarSymbol, ImportSymbol, StylableResolver, Stylable } from 'stylable';
-import { evalValue } from 'stylable/dist/src/functions'
+import { evalDeclarationValue } from 'stylable'
 import { CursorPosition, SelectorInternalChunk, SelectorChunk } from "./utils/selector-analyzer";
 import {
     classCompletion,
@@ -602,7 +602,7 @@ export const ValueCompletionProvider: CompletionProvider = {
             let comps: Completion[] = [];
             meta.vars.forEach(v => {
                 if (v.name.startsWith(inner) && !fullLineText.slice(0, fullLineText.indexOf(':')).includes(v.name)) {
-                    const value = evalValue(styl.resolver, v.text, meta, v.node)
+                    const value = evalDeclarationValue(styl.resolver, v.text, meta, v.node)
                     comps.push(valueCompletion(v.name, 'Local variable', value, new ProviderRange(
                         new ProviderPosition(position.line, position.character - inner.length),
                         position,
@@ -619,7 +619,7 @@ export const ValueCompletionProvider: CompletionProvider = {
 
             importVars.forEach(v => {
                 if (v.name.startsWith(inner) && meta.imports.some(imp => Object.keys(imp.named).some(key => key === v.name))) {
-                    const value = evalValue(styl.resolver, v.value, meta, v.node)
+                    const value = evalDeclarationValue(styl.resolver, v.value, meta, v.node)
                     comps.push(valueCompletion(v.name, v.from, value, new ProviderRange(
                         new ProviderPosition(position.line, position.character - inner.length),
                         position,

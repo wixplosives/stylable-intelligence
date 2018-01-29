@@ -9,16 +9,17 @@ import { Completion } from './completion-types';
 import { createDiagnosis } from './diagnosis';
 import * as VCL from 'vscode-css-languageservice';
 import { Command, Position, Range, Location, TextEdit, CompletionItem, ParameterInformation } from 'vscode-languageserver-types';
-import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
+import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest, ColorInformation } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
 import { valueMapping } from 'stylable/dist/src/stylable-value-parsers';
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 import { createMeta, fixAndProcess } from './provider';
-import { Stylable } from 'stylable';
+import { Stylable, evalDeclarationValue } from 'stylable';
 import * as ts from 'typescript'
 import { FileSystemReadSync } from 'kissfs';
 export { MinimalDocs } from './provider-factory';
 import { NotificationTypes, LSPTypeHelpers, ExtendedFSReadSync, ExtendedTsLanguageService } from './types'
 import { createLanguageServiceHost, createBaseHost } from './utils/temp-language-service-host';
+import { isInNode } from './utils/postcss-ast-utils';
 
 //exporting types for use in playground
 export { ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes } from './types'
@@ -147,24 +148,62 @@ export class StylableLanguageService {
 
         connection.onRequest(notifications.colorRequest.type, params => {
             const document = fs.get(params.textDocument.uri);
+
             const src = document.getText();
             const res = fixAndProcess(src, new ProviderPosition(0, 0), params.textDocument.uri);
             const meta = res.processed.meta!;
-            let varMaps: string[][] = [];
-            services.styl.createTransformer()
+
+            let colorComps: ColorInformation[] = [];
             meta.imports.forEach(imp => {
-                processor.process(imp.from).vars.forEach(v => varMaps.push([v.name, v.text, imp.from]))
+                const vars = processor.process(imp.from).vars;
+                vars.forEach(v => {
+                    const doc = TextDocument.create('', 'css', 0, '.gaga {color: ' + evalDeclarationValue(services.styl.resolver, v.text, meta, v.node) + '}');
+                    const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(doc);
+                    const colors = cssService.findDocumentColors(doc, stylesheet);
+                    const color = colors.length ? colors[0].color : null;
+                    if (color) {
+                        meta.rawAst.walkDecls(valueMapping.named, (decl) => {
+                            const lines = decl.value.split('\n');
+                            const lineIndex = lines.findIndex(l => l.includes(v.name)) //replace with regex
+                            if (lineIndex > -1 && lines[lineIndex].indexOf(v.name) > -1) {
+                                const varStart = lineIndex //replace with value parser
+                                    ? lines[lineIndex].indexOf(v.name) //replace with regex
+                                    : lines[lineIndex].indexOf(v.name) + valueMapping.named.length + decl.source.start!.column + 1 //replace with regex
+                                const range = new ProviderRange(
+                                    new ProviderPosition(decl.source.start!.line - 1 + lineIndex, varStart),
+                                    new ProviderPosition(decl.source.start!.line - 1 + lineIndex, v.name.length + varStart),
+                                )
+                                colorComps.push({ color, range } as ColorInformation)
+                            }
+                        });
+                    }
+                });
             });
 
-            // const fixedSrc = fixVars(src, varMaps)
-
             const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
-            const colors = cssService.findDocumentColors(document, stylesheet);
-            return colors;
+            colorComps.push(...cssService.findDocumentColors(document, stylesheet));
+            return colorComps;
         });
 
         connection.onRequest(notifications.colorPresentationRequest.type, params => {
             const document = fs.get(params.textDocument.uri);
+
+            const src = document.getText();
+            const res = fixAndProcess(src, new ProviderPosition(0, 0), params.textDocument.uri);
+            const meta = res.processed.meta!;
+
+            const wordStart = new ProviderPosition(params.range.start.line + 1, params.range.start.character + 1)
+            let named = false;
+            meta.rawAst.walkDecls(valueMapping.named, (node) => {
+                if (
+                    ((wordStart.line === node.source.start!.line && wordStart.character >= node.source.start!.column) || wordStart.line > node.source.start!.line)
+                    &&
+                    ((wordStart.line === node.source.end!.line && wordStart.character <= node.source.end!.column) || wordStart.line < node.source.end!.line)
+                ) {
+                    named = true;
+                }
+            })
+            if (named) { return [] };
             const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
             const colors = cssService.getColorPresentations(document, stylesheet, params.color, params.range)
             return colors;
@@ -184,22 +223,6 @@ export class StylableLanguageService {
             return lines[rng.start.line].slice(rng.start.character, rng.end.character);
         }
 
-        function fixVars(src: string, varMaps: string[][]) {
-            // let lines = src.replace(/\r\n/g, '\n').split('\n');
-            // let fixedSrc = src;
-            // let isNamed = false;
-            // let from = '';
-
-            // lines.forEach(line => {
-            //     if (line.trim().startsWith(valueMapping.from)) {
-            //         isNamed = true;
-            //         from = line.trim().replace(valueMapping.from, '').replace(':', '').trim();
-            //     } else if (from && (line.trim().startsWith(valueMapping.named) || isNamed)) {
-
-            //     }
-            // })
-
-        }
     }
 }
 
