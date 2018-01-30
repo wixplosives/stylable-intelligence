@@ -242,18 +242,25 @@ export class StylableLanguageService {
             const res = fixAndProcess(src, new ProviderPosition(0, 0), params.textDocument.uri);
             const meta = res.processed.meta!;
 
-            const wordStart = new ProviderPosition(params.range.start.line + 1, params.range.start.character + 1)
-            let named = false;
+            const word = src.split('\n')[params.range.start.line].slice(params.range.start.character, params.range.end.character);
+            if (word.startsWith('value(')) { return [] };
+
+            const wordStart = new ProviderPosition(params.range.start.line + 1, params.range.start.character + 1);
+
+            let noPicker = false;
+
+
+
             meta.rawAst.walkDecls(valueMapping.named, (node) => {
                 if (
                     ((wordStart.line === node.source.start!.line && wordStart.character >= node.source.start!.column) || wordStart.line > node.source.start!.line)
                     &&
                     ((wordStart.line === node.source.end!.line && wordStart.character <= node.source.end!.column) || wordStart.line < node.source.end!.line)
                 ) {
-                    named = true;
+                    noPicker = true;
                 }
             })
-            if (named) { return [] };
+            if (noPicker) { return [] };
             const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
             const colors = cssService.getColorPresentations(document, stylesheet, params.color, params.range)
             return colors;
