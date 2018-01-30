@@ -156,9 +156,11 @@ export class StylableLanguageService {
 
             let colorComps: ColorInformation[] = [];
             meta.imports.forEach(imp => {
-                const vars = processor.process(imp.from).vars;
+                const impMeta = processor.process(imp.from);
+                const vars = impMeta.vars;
                 vars.forEach(v => {
-                    const doc = TextDocument.create('', 'css', 0, '.gaga {color: ' + evalDeclarationValue(services.styl.resolver, v.text, meta, v.node) + '}');
+                    // evalDeclarationValue;
+                    const doc = TextDocument.create('', 'css', 0, '.gaga {color: ' + evalDeclarationValue(services.styl.resolver, v.text, impMeta, v.node) + '}');
                     const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(doc);
                     const colors = cssService.findDocumentColors(doc, stylesheet);
                     const color = colors.length ? colors[0].color : null;
@@ -177,8 +179,8 @@ export class StylableLanguageService {
                                 const varStart = lineIndex //replace with value parser
                                     ? lines[lineIndex].indexOf(v.name) //replace with regex
                                     : extraLines
-                                        ? lines[lineIndex].indexOf(v.name) + extraChars 
-                                        : lines[lineIndex].indexOf(v.name) + valueMapping.named.length + decl.source.start!.column + extraChars //replace with regex
+                                        ? lines[lineIndex].indexOf(v.name) + extraChars
+                                        : lines[lineIndex].indexOf(v.name) + valueMapping.named.length + decl.source.start!.column + extraChars -1 //replace with regex
                                 const range = new ProviderRange(
                                     new ProviderPosition(decl.source.start!.line - 1 + lineIndex + extraLines, varStart),
                                     new ProviderPosition(decl.source.start!.line - 1 + lineIndex + extraLines, v.name.length + varStart),

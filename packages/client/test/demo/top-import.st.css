@@ -10,6 +10,8 @@
     -st-states : state,otherState;
 }
 
-
+:vars {
+    topVar : goldenrod;
+}
 
  
