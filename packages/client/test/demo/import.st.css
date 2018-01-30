@@ -7,7 +7,9 @@
     -st-from: "./top-import.st.css";
     -st-named: topVar;
 }
+
 :vars {
-    redColor: 1px value(topVar);
+    redColor: value(topVar);
     blueColor: blue;
 }
+

@@ -155,12 +155,50 @@ export class StylableLanguageService {
             const meta = res.processed.meta!;
 
             let colorComps: ColorInformation[] = [];
+
+
+            const lines = src.split('\n');
+            lines.forEach((line, ind) => {
+                let valueRegex = /value\(([\w-]+)\)/g;
+                let regexResult;
+                while ((regexResult = valueRegex.exec(line)) !== null) {
+                    const result = regexResult[1];
+                    const sym = meta.mappedSymbols[result];
+                    if (sym && sym._kind === 'var') {
+                        const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(services.styl.resolver, sym.text, meta, sym.node) + '}');
+                        const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(doc);
+                        const colors = cssService.findDocumentColors(doc, stylesheet);
+                        const color = colors.length ? colors[0].color : null;
+                        if (color) {
+                            const range = new ProviderRange(
+                                new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1])),
+                                new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1]) + result.length)
+                            )
+                            colorComps.push({ color, range } as ColorInformation)
+                        }
+                    } else if (sym && sym._kind === 'import' && sym.type === 'named') {
+                        const impMeta = processor.process(sym.import.from);
+                        const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(services.styl.resolver, 'value('+sym.name+')', impMeta, impMeta.vars.find(v => v.name === sym.name)!.node) + '}');
+                        const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(doc);
+                        const colors = cssService.findDocumentColors(doc, stylesheet);
+                        const color = colors.length ? colors[0].color : null;
+                        if (color) {
+                            const range = new ProviderRange(
+                                new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1])),
+                                new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1]) + result.length)
+                            )
+                            colorComps.push({ color, range } as ColorInformation)
+                        }
+                    }
+
+                }
+            })
+
             meta.imports.forEach(imp => {
                 const impMeta = processor.process(imp.from);
                 const vars = impMeta.vars;
                 vars.forEach(v => {
-                    // evalDeclarationValue;
-                    const doc = TextDocument.create('', 'css', 0, '.gaga {color: ' + evalDeclarationValue(services.styl.resolver, v.text, impMeta, v.node) + '}');
+                    const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(services.styl.resolver, v.text, impMeta, v.node) + '}');
                     const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(doc);
                     const colors = cssService.findDocumentColors(doc, stylesheet);
                     const color = colors.length ? colors[0].color : null;
@@ -180,10 +218,10 @@ export class StylableLanguageService {
                                     ? lines[lineIndex].indexOf(v.name) //replace with regex
                                     : extraLines
                                         ? lines[lineIndex].indexOf(v.name) + extraChars
-                                        : lines[lineIndex].indexOf(v.name) + valueMapping.named.length + decl.source.start!.column + extraChars -1 //replace with regex
+                                        : lines[lineIndex].indexOf(v.name) + valueMapping.named.length + decl.source.start!.column + extraChars - 1
                                 const range = new ProviderRange(
                                     new ProviderPosition(decl.source.start!.line - 1 + lineIndex + extraLines, varStart),
-                                    new ProviderPosition(decl.source.start!.line - 1 + lineIndex + extraLines, v.name.length + varStart),
+                                    new ProviderPosition(decl.source.start!.line - 1 + lineIndex + extraLines, v.name.length + varStart)
                                 )
                                 colorComps.push({ color, range } as ColorInformation)
                             }

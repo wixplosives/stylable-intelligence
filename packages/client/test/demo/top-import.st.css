@@ -11,7 +11,10 @@
 }
 
 :vars {
-    topVar : goldenrod;
+    topVar: goldenrod;
 }
 
- 
+.loc {
+    color: value(topVar);
+}
+
