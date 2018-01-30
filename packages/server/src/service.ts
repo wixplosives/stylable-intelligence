@@ -171,20 +171,20 @@ export class StylableLanguageService {
                         const color = colors.length ? colors[0].color : null;
                         if (color) {
                             const range = new ProviderRange(
-                                new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1])),
+                                new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1]) - 'value('.length),
                                 new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1]) + result.length)
                             )
                             colorComps.push({ color, range } as ColorInformation)
                         }
                     } else if (sym && sym._kind === 'import' && sym.type === 'named') {
                         const impMeta = processor.process(sym.import.from);
-                        const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(services.styl.resolver, 'value('+sym.name+')', impMeta, impMeta.vars.find(v => v.name === sym.name)!.node) + '}');
+                        const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(services.styl.resolver, 'value(' + sym.name + ')', impMeta, impMeta.vars.find(v => v.name === sym.name)!.node) + '}');
                         const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(doc);
                         const colors = cssService.findDocumentColors(doc, stylesheet);
                         const color = colors.length ? colors[0].color : null;
                         if (color) {
                             const range = new ProviderRange(
-                                new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1])),
+                                new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1]) - 'value('.length),
                                 new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1]) + result.length)
                             )
                             colorComps.push({ color, range } as ColorInformation)
