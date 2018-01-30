@@ -1,7 +1,9 @@
 :import {
     -st-from: "./import.st.css";
-    -st-named: redColor,
-     blueColor;
+    -st-named:
+
+    redColor,
+     blueColor
 }
 
 .gaga {

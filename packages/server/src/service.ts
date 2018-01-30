@@ -20,6 +20,7 @@ export { MinimalDocs } from './provider-factory';
 import { NotificationTypes, LSPTypeHelpers, ExtendedFSReadSync, ExtendedTsLanguageService } from './types'
 import { createLanguageServiceHost, createBaseHost } from './utils/temp-language-service-host';
 import { isInNode } from './utils/postcss-ast-utils';
+import { last } from 'lodash';
 
 //exporting types for use in playground
 export { ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes } from './types'
@@ -164,14 +165,23 @@ export class StylableLanguageService {
                     if (color) {
                         meta.rawAst.walkDecls(valueMapping.named, (decl) => {
                             const lines = decl.value.split('\n');
-                            const lineIndex = lines.findIndex(l => l.includes(v.name)) //replace with regex
+                            const lineIndex = lines.findIndex(l => l.includes(v.name)); //replace with regex
                             if (lineIndex > -1 && lines[lineIndex].indexOf(v.name) > -1) {
+
+                                let extraLines = 0;
+                                let extraChars = 0;
+                                if (decl.raws.between) {
+                                    extraLines = decl.raws.between.split('\n').length - 1;
+                                    extraChars = last(decl.raws.between.split('\n'))!.length
+                                }
                                 const varStart = lineIndex //replace with value parser
                                     ? lines[lineIndex].indexOf(v.name) //replace with regex
-                                    : lines[lineIndex].indexOf(v.name) + valueMapping.named.length + decl.source.start!.column + 1 //replace with regex
+                                    : extraLines
+                                        ? lines[lineIndex].indexOf(v.name) + extraChars 
+                                        : lines[lineIndex].indexOf(v.name) + valueMapping.named.length + decl.source.start!.column + extraChars //replace with regex
                                 const range = new ProviderRange(
-                                    new ProviderPosition(decl.source.start!.line - 1 + lineIndex, varStart),
-                                    new ProviderPosition(decl.source.start!.line - 1 + lineIndex, v.name.length + varStart),
+                                    new ProviderPosition(decl.source.start!.line - 1 + lineIndex + extraLines, varStart),
+                                    new ProviderPosition(decl.source.start!.line - 1 + lineIndex + extraLines, v.name.length + varStart),
                                 )
                                 colorComps.push({ color, range } as ColorInformation)
                             }
