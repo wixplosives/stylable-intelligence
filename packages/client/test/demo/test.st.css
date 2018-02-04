@@ -10,3 +10,7 @@
 .local {
     -st-extends: gaga;
 }
+
+.mixed {
+    -st-mixin: gaga;
+}

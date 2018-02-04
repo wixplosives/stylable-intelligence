@@ -331,6 +331,23 @@ export class StylableLanguageService {
                         }
                     })
                 }
+            });
+            meta!.rawAst.walkDecls(valueMapping.mixin, (decl) => {
+                if (decl.value === word) {
+                    refs.push({
+                        uri,
+                        range: {
+                            start: {
+                                line: decl.source.start!.line - 1,
+                                character: decl.source.start!.column + valueMapping.mixin.length + (decl.raws.between ? decl.raws.between.length : 0) -1
+                            },
+                            end: {
+                                line: decl.source.start!.line - 1,
+                                character: decl.source.start!.column + valueMapping.mixin.length + (decl.raws.between ? decl.raws.between.length : 0) + word.length -1
+                            }
+                        }
+                    })
+                }
             })
             return refs;
         }
