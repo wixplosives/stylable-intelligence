@@ -1,8 +1,7 @@
 'use strict';
 import { setInterval } from 'timers';
 import * as path from 'path';
-///         *                                                                *        *                                        *          *                                                              *
-import { IConnection, InitializeResult, TextDocuments, Definition, Hover, TextDocument, ServerCapabilities, SignatureHelp, NotificationType } from 'vscode-languageserver';
+import { IConnection, InitializeResult, TextDocuments, Definition, Hover, TextDocument, ServerCapabilities, SignatureHelp, NotificationType, WorkspaceEdit, ReferenceParams, TextDocumentPositionParams } from 'vscode-languageserver';
 import { createProvider, MinimalDocs, MinimalDocsDispatcher, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
@@ -10,17 +9,20 @@ import { createDiagnosis } from './diagnosis';
 import * as VCL from 'vscode-css-languageservice';
 import { Command, Position, Range, Location, TextEdit, CompletionItem, ParameterInformation } from 'vscode-languageserver-types';
 import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest, ColorInformation } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
-import { valueMapping } from 'stylable/dist/src/stylable-value-parsers';
+import { valueMapping } from 'stylable';
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 import { createMeta, fixAndProcess } from './provider';
 import { Stylable, evalDeclarationValue } from 'stylable';
 import * as ts from 'typescript'
-import { FileSystemReadSync } from 'kissfs';
+import { FileSystemReadSync, Directory, DirectoryContent } from 'kissfs';
 export { MinimalDocs } from './provider-factory';
 import { NotificationTypes, LSPTypeHelpers, ExtendedFSReadSync, ExtendedTsLanguageService } from './types'
 import { createLanguageServiceHost, createBaseHost } from './utils/temp-language-service-host';
-import { isInNode } from './utils/postcss-ast-utils';
+import { isInNode, pathFromPosition, isRoot, isSelector, } from './utils/postcss-ast-utils';
 import { last } from 'lodash';
+import { LocalSyncFs } from './local-sync-fs';
+import { NodeBase, ContainerBase, Rule, Declaration } from 'postcss';
+const psp = require('postcss-selector-parser');
 
 //exporting types for use in playground
 export { ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes } from './types'
@@ -33,9 +35,10 @@ export class StylableLanguageService {
         const provider = createProvider(services.styl, services.tsLanguageService);
         const processor = provider.styl.fileProcessor;
         const cssService = VCL.getCSSLanguageService();
-
+        let base: string;
 
         connection.onInitialize((params): InitializeResult => {
+            base = params.rootUri!;
             return {
                 capabilities: ({
                     textDocumentSync: 1,//documents.syncKind,
@@ -45,6 +48,7 @@ export class StylableLanguageService {
                     definitionProvider: true,
                     hoverProvider: true,
                     referencesProvider: true,
+                    renameProvider: true,
                     colorProvider: true,
                     signatureHelpProvider: {
                         triggerCharacters: [
@@ -136,15 +140,13 @@ export class StylableLanguageService {
                 });
         });
 
-        connection.onHover((params): Thenable<Hover> => {
+        connection.onHover((params: TextDocumentPositionParams): Thenable<Hover> => {
             let hover = cssService.doHover(fs.get(params.textDocument.uri), params.position, cssService.parseStylesheet(fs.get(params.textDocument.uri)));
             return Promise.resolve(hover!) //Because Hover may be null, but not of null type - vscode code isn't strict that way.
         });
 
-        connection.onReferences((params): Thenable<Location[]> => {
-            let refs = cssService.findReferences(fs.get(params.textDocument.uri), params.position, cssService.parseStylesheet(fs.get(params.textDocument.uri)))
-
-            return Promise.resolve(refs)
+        connection.onReferences(async (params: ReferenceParams): Promise<Location[]> => {
+            return getRefs(params)
         });
 
         connection.onRequest(notifications.colorRequest.type, params => {
@@ -246,11 +248,7 @@ export class StylableLanguageService {
             if (word.startsWith('value(')) { return [] };
 
             const wordStart = new ProviderPosition(params.range.start.line + 1, params.range.start.character + 1);
-
             let noPicker = false;
-
-
-
             meta.rawAst.walkDecls(valueMapping.named, (node) => {
                 if (
                     ((wordStart.line === node.source.start!.line && wordStart.character >= node.source.start!.column) || wordStart.line > node.source.start!.line)
@@ -264,8 +262,21 @@ export class StylableLanguageService {
             const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(document);
             const colors = cssService.getColorPresentations(document, stylesheet, params.color, params.range)
             return colors;
-
         });
+
+        connection.onRenameRequest((params): WorkspaceEdit => {
+            let edit: WorkspaceEdit = { changes: {} };
+            getRefs({ context: { includeDeclaration: true }, position: params.position, textDocument: params.textDocument })
+                .forEach(ref => {
+                    if (edit.changes![ref.uri]) {
+                        edit.changes![ref.uri].push({ range: ref.range, newText: params.newName })
+                    } else {
+                        edit.changes![ref.uri] = [{ range: ref.range, newText: params.newName }]
+                    }
+                })
+
+            return edit;
+        })
 
         connection.onSignatureHelp((params): Thenable<SignatureHelp> => {
 
@@ -280,6 +291,96 @@ export class StylableLanguageService {
             return lines[rng.start.line].slice(rng.start.character, rng.end.character);
         }
 
+        function findClassRefs(word: string, uri: string): Location[] {
+            const refs: Location[] = [];
+            const src = fs.get(uri).getText();
+            const { processed: { meta } } = fixAndProcess(src, new ProviderPosition(0, 0), fromVscodePath(uri))
+            const regex = RegExp('(\\.' + word + ')(\\s|$|\\:)', 'g');
+            const regex2 = RegExp('(\\.' + word + ')(\\s|$|\\:)', 'g'); //because walkRules eats up a regex match
+            meta!.rawAst.walkRules(regex, (rule) => {
+                let match;
+                while ((match = regex2.exec(rule.selector)) !== null) {
+                    refs.push({
+                        uri,
+                        range: {
+                            start: {
+                                line: rule.source.start!.line - 1,
+                                character: rule.source.start!.column + match.index
+                            },
+                            end: {
+                                line: rule.source.start!.line - 1,
+                                character: rule.source.start!.column + match.index + word.length
+                            }
+                        }
+                    })
+                }
+            });
+            meta!.rawAst.walkDecls(valueMapping.extends, (decl) => {
+                if (decl.value === word) {
+                    refs.push({
+                        uri,
+                        range: {
+                            start: {
+                                line: decl.source.start!.line - 1,
+                                character: decl.source.start!.column + valueMapping.extends.length + (decl.raws.between ? decl.raws.between.length : 0) -1
+                            },
+                            end: {
+                                line: decl.source.start!.line - 1,
+                                character: decl.source.start!.column + valueMapping.extends.length + (decl.raws.between ? decl.raws.between.length : 0) + word.length -1
+                            }
+                        }
+                    })
+                }
+            })
+            return refs;
+        }
+
+        function getRefs(params: ReferenceParams) {
+            const cssRefs = cssService.findReferences(fs.get(params.textDocument.uri), params.position, cssService.parseStylesheet(fs.get(params.textDocument.uri)))
+
+            const doc = fs.loadTextFileSync(params.textDocument.uri);
+            const pos = { line: params.position.line + 1, character: params.position.character };
+            const { meta } = createMeta(doc, params.textDocument.uri);
+            const node = last(pathFromPosition(meta!.rawAst, pos))!;
+            let inner: NodeBase | undefined;
+            let word: string = '';
+            const proc = psp();
+            let refs: Location[] = [];
+
+            if (isRoot(node)) {
+                inner = (node.nodes || []).find(n => {
+                    return (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
+                        &&
+                        (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
+                })
+                if (inner && isSelector(inner)) {
+                    const relPos = { line: pos.line - inner.source.start!.line + 1, character: pos.character - inner.source.start!.column + 1 }
+                    const parsed: ContainerBase = proc.astSync(inner.selector);
+
+                    const wordNode = ((parsed).nodes![0] as ContainerBase).nodes!
+                        .find(n => {
+                            return (n.source.start!.line < relPos.line || (n.source.start!.line === relPos.line && n.source.start!.column <= pos.character))
+                                &&
+                                (n.source.end!.line > relPos.line || (n.source.end!.line === relPos.line && n.source.end!.column >= pos.character))
+                        });
+                    if (wordNode) {
+                        word = (wordNode as Declaration).value;
+                        refs = findClassRefs(word, params.textDocument.uri);
+                    }
+                }
+            }
+
+            return refs.length ? dedupeRefs(refs) : dedupeRefs(cssRefs)
+        }
+        function dedupeRefs(refs: Location[]): Location[] {
+            let res: Location[] = [];
+            refs.forEach(ref => {
+                if (!res.find(r => r.range.start.line === ref.range.start.line && r.range.start.character === ref.range.start.character && r.uri === ref.uri)) {
+                    res.push(ref);
+                }
+            })
+            return res;
+        }
     }
 }
 

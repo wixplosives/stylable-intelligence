@@ -1,5 +1,6 @@
 import * as PostCss from 'postcss';
 import { ProviderPosition } from '../completion-providers'
+import { last } from 'lodash';
 
 export function isInNode(position: ProviderPosition, node: PostCss.NodeBase): boolean {
     if (!node.source) {
@@ -67,6 +68,9 @@ export function isComment(node: PostCss.NodeBase): node is PostCss.Comment {
     return node.hasOwnProperty('type') && (node as PostCss.Comment).type === 'comment';
 }
 
+export function isRoot(node: PostCss.NodeBase): node is PostCss.Root {
+    return node.hasOwnProperty('type') && (node as PostCss.Root).type === 'root';
+}
 
 export function pathFromPosition(ast: PostCss.NodeBase, position: ProviderPosition, res: PostCss.NodeBase[] = []): PostCss.NodeBase[] {
     let currentNode = ast;
@@ -81,6 +85,7 @@ export function pathFromPosition(ast: PostCss.NodeBase, position: ProviderPositi
     }
     return res
 }
+
 
 export function getPositionInSrc(src: string, position: ProviderPosition) {
     const lines = src.split('\n');

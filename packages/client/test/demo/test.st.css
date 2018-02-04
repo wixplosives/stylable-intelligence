@@ -1,10 +1,12 @@
-:import {
-    -st-from: "./import.st.css";
-    -st-named: redColor,
-     blueColor
+  .gaga {
+    -st-states: active;
+    color: red;
 }
 
-.gaga {
-    color: red;
-    background-color: value(blueColor);
+.gaga:active .gaga {
+    background-color: fuchsia;
+}
+
+.local {
+    -st-extends: gaga;
 }

@@ -69,7 +69,7 @@ export default class Provider {
             let options = this.createProviderOptions(src, pos, res.processed.meta!, res.processed.fakes, res.currentLine, res.cursorLineIndex, fs);
             this.providers.forEach(p => { completions.push(...p.provide(options)) });
         } catch (e) { }
-        return Promise.resolve(this.dedupe(completions));
+        return Promise.resolve(this.dedupeComps(completions));
     }
 
     private createProviderOptions(
@@ -130,8 +130,7 @@ export default class Provider {
         }
     }
 
-
-    private dedupe(completions: Completion[]): Completion[] {
+    private dedupeComps(completions: Completion[]): Completion[] {
         let uniqs = new Map<string, Completion>();
         completions.forEach(comp => {
             if (!uniqs.has(comp.label)) {
@@ -413,10 +412,7 @@ export default class Provider {
             signatures: [sigInfo]
         } as SignatureHelp
     }
-
-
 }
-
 
 function isIllegalLine(line: string): boolean {
     return /^\s*[-\.:]+\s*$/.test(line)
@@ -604,3 +600,4 @@ export function getExistingNames(lineText: string, position: ProviderPosition) {
     const lastName: string = (parsed.nodes.length && rev[0].type === 'word') ? rev[0].value : '';
     return { names, lastName };
 }
+

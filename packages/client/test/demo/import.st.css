@@ -3,12 +3,16 @@
     -st-states: active;
 }
 
+.btn:active {
+    color:red;
+}
+
 :import {
     -st-from: "./top-import.st.css";
     -st-named: topVar;
 }
 
 :vars {
-    redColor: value(topVar);
+    red1: value(topVar);
     blueColor: blue;
 }

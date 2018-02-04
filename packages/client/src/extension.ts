@@ -36,7 +36,6 @@ export function activate(context: ExtensionContext) {
     return client
         .onReady()
         .then(_ => {
-            // register color provider
             context.subscriptions.push(languages.registerColorProvider('stylable', {
                 provideDocumentColors(document: TextDocument): Thenable<ColorInformation[]> {
                     let params: DocumentColorParams = {
@@ -68,16 +67,12 @@ export function activate(context: ExtensionContext) {
             }));
         })
         .then(() => workspace.findFiles('**/*.st.css', ))
-        // .then(files => new Promise(resolve => {setTimeout(() => resolve(files), 1000)}))
-        .then((files:any) => Promise.all(files.map((file: any) => workspace.openTextDocument(file.fsPath))))
+        .then((files: any) => Promise.all(files.map((file: any) => workspace.openTextDocument(file.fsPath))))
         .then(() => client.onNotification(OpenDocNotification.type, (uri: string) => workspace.openTextDocument(Uri.parse(uri)).then((doc) => {
-            // console.log(doc.fileName)
             if (doc.fileName.endsWith('.js')) {
                 workspace.findFiles('**/' + path.basename(doc.fileName).slice(0, -3) + '.d.ts').then((uris) => {
                     uris.forEach(u => {
-                        console.log('opening: ' + u);
                         workspace.openTextDocument(u);
-                        console.log('opened: ' + u);
                     })
                 })
             }
