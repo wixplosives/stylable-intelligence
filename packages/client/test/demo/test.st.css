@@ -7,10 +7,10 @@
     background-color: fuchsia;
 }
 
-.local {
+.lokal {
     -st-extends: gaga;
 }
 
 .mixed {
-    -st-mixin: gaga;
+    -st-mixin: lokal, gaga, lokal;
 }

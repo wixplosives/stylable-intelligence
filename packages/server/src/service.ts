@@ -11,7 +11,7 @@ import { Command, Position, Range, Location, TextEdit, CompletionItem, Parameter
 import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest, ColorInformation } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
 import { valueMapping } from 'stylable';
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
-import { createMeta, fixAndProcess } from './provider';
+import { createMeta, fixAndProcess, getRefs } from './provider';
 import { Stylable, evalDeclarationValue } from 'stylable';
 import * as ts from 'typescript'
 import { FileSystemReadSync, Directory, DirectoryContent } from 'kissfs';
@@ -22,7 +22,7 @@ import { isInNode, pathFromPosition, isRoot, isSelector, } from './utils/postcss
 import { last } from 'lodash';
 import { LocalSyncFs } from './local-sync-fs';
 import { NodeBase, ContainerBase, Rule, Declaration } from 'postcss';
-const psp = require('postcss-selector-parser');
+import { CSSResolve } from 'stylable/dist/src/stylable-resolver';
 
 //exporting types for use in playground
 export { ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes } from './types'
@@ -30,12 +30,11 @@ export { ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes } from
 export class StylableLanguageService {
     constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
 
-
-
         const provider = createProvider(services.styl, services.tsLanguageService);
         const processor = provider.styl.fileProcessor;
         const cssService = VCL.getCSSLanguageService();
         let base: string;
+        let symbolMap: Map<CSSResolve, string[]>;
 
         connection.onInitialize((params): InitializeResult => {
             base = params.rootUri!;
@@ -146,7 +145,9 @@ export class StylableLanguageService {
         });
 
         connection.onReferences(async (params: ReferenceParams): Promise<Location[]> => {
-            return getRefs(params)
+            const cssRefs = cssService.findReferences(fs.get(params.textDocument.uri), params.position, cssService.parseStylesheet(fs.get(params.textDocument.uri)));
+            const refs = getRefs(params,fs);
+            return refs.length ? dedupeRefs(refs) : dedupeRefs(cssRefs)
         });
 
         connection.onRequest(notifications.colorRequest.type, params => {
@@ -266,7 +267,7 @@ export class StylableLanguageService {
 
         connection.onRenameRequest((params): WorkspaceEdit => {
             let edit: WorkspaceEdit = { changes: {} };
-            getRefs({ context: { includeDeclaration: true }, position: params.position, textDocument: params.textDocument })
+            getRefs({ context: { includeDeclaration: true }, position: params.position, textDocument: params.textDocument }, fs)
                 .forEach(ref => {
                     if (edit.changes![ref.uri]) {
                         edit.changes![ref.uri].push({ range: ref.range, newText: params.newName })
@@ -291,104 +292,8 @@ export class StylableLanguageService {
             return lines[rng.start.line].slice(rng.start.character, rng.end.character);
         }
 
-        function findClassRefs(word: string, uri: string): Location[] {
-            const refs: Location[] = [];
-            const src = fs.get(uri).getText();
-            const { processed: { meta } } = fixAndProcess(src, new ProviderPosition(0, 0), fromVscodePath(uri))
-            const regex = RegExp('(\\.' + word + ')(\\s|$|\\:)', 'g');
-            const regex2 = RegExp('(\\.' + word + ')(\\s|$|\\:)', 'g'); //because walkRules eats up a regex match
-            meta!.rawAst.walkRules(regex, (rule) => {
-                let match;
-                while ((match = regex2.exec(rule.selector)) !== null) {
-                    refs.push({
-                        uri,
-                        range: {
-                            start: {
-                                line: rule.source.start!.line - 1,
-                                character: rule.source.start!.column + match.index
-                            },
-                            end: {
-                                line: rule.source.start!.line - 1,
-                                character: rule.source.start!.column + match.index + word.length
-                            }
-                        }
-                    })
-                }
-            });
-            meta!.rawAst.walkDecls(valueMapping.extends, (decl) => {
-                if (decl.value === word) {
-                    refs.push({
-                        uri,
-                        range: {
-                            start: {
-                                line: decl.source.start!.line - 1,
-                                character: decl.source.start!.column + valueMapping.extends.length + (decl.raws.between ? decl.raws.between.length : 0) -1
-                            },
-                            end: {
-                                line: decl.source.start!.line - 1,
-                                character: decl.source.start!.column + valueMapping.extends.length + (decl.raws.between ? decl.raws.between.length : 0) + word.length -1
-                            }
-                        }
-                    })
-                }
-            });
-            meta!.rawAst.walkDecls(valueMapping.mixin, (decl) => {
-                if (decl.value === word) {
-                    refs.push({
-                        uri,
-                        range: {
-                            start: {
-                                line: decl.source.start!.line - 1,
-                                character: decl.source.start!.column + valueMapping.mixin.length + (decl.raws.between ? decl.raws.between.length : 0) -1
-                            },
-                            end: {
-                                line: decl.source.start!.line - 1,
-                                character: decl.source.start!.column + valueMapping.mixin.length + (decl.raws.between ? decl.raws.between.length : 0) + word.length -1
-                            }
-                        }
-                    })
-                }
-            })
-            return refs;
-        }
 
-        function getRefs(params: ReferenceParams) {
-            const cssRefs = cssService.findReferences(fs.get(params.textDocument.uri), params.position, cssService.parseStylesheet(fs.get(params.textDocument.uri)))
 
-            const doc = fs.loadTextFileSync(params.textDocument.uri);
-            const pos = { line: params.position.line + 1, character: params.position.character };
-            const { meta } = createMeta(doc, params.textDocument.uri);
-            const node = last(pathFromPosition(meta!.rawAst, pos))!;
-            let inner: NodeBase | undefined;
-            let word: string = '';
-            const proc = psp();
-            let refs: Location[] = [];
-
-            if (isRoot(node)) {
-                inner = (node.nodes || []).find(n => {
-                    return (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
-                        &&
-                        (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
-                })
-                if (inner && isSelector(inner)) {
-                    const relPos = { line: pos.line - inner.source.start!.line + 1, character: pos.character - inner.source.start!.column + 1 }
-                    const parsed: ContainerBase = proc.astSync(inner.selector);
-
-                    const wordNode = ((parsed).nodes![0] as ContainerBase).nodes!
-                        .find(n => {
-                            return (n.source.start!.line < relPos.line || (n.source.start!.line === relPos.line && n.source.start!.column <= pos.character))
-                                &&
-                                (n.source.end!.line > relPos.line || (n.source.end!.line === relPos.line && n.source.end!.column >= pos.character))
-                        });
-                    if (wordNode) {
-                        word = (wordNode as Declaration).value;
-                        refs = findClassRefs(word, params.textDocument.uri);
-                    }
-                }
-            }
-
-            return refs.length ? dedupeRefs(refs) : dedupeRefs(cssRefs)
-        }
         function dedupeRefs(refs: Location[]): Location[] {
             let res: Location[] = [];
             refs.forEach(ref => {

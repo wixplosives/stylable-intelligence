@@ -2,9 +2,9 @@
 import { MinimalDocs } from './provider-factory';
 import * as PostCss from 'postcss';
 const pvp = require('postcss-value-parser');
-// const psp = require('postcss-selector-parser');
+const psp = require('postcss-selector-parser');
 import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping, StylableTransformer, Diagnostics, expandCustomSelectors as RemoveWhenWorks, expandCustomSelectors } from 'stylable';
-import { isSelector, pathFromPosition, isDeclaration } from './utils/postcss-ast-utils';
+import { isSelector, pathFromPosition, isDeclaration, isRoot, isContainer } from './utils/postcss-ast-utils';
 import {
     createRange,
     ExtendCompletionProvider,
@@ -28,18 +28,19 @@ import {
 } from './completion-providers';
 import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
-import { Declaration } from 'postcss';
+import { Declaration, NodeBase, ContainerBase } from 'postcss';
 import * as path from 'path';
-import { Position, SignatureHelp, SignatureInformation, ParameterInformation } from 'vscode-languageserver';
+import { Position, SignatureHelp, SignatureInformation, ParameterInformation, ReferenceParams, Location } from 'vscode-languageserver';
 import * as ts from 'typescript';
 import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, QualifiedName, Identifier, LiteralTypeNode } from 'typescript';
 import { toVscodePath } from './utils/uri-utils';
 import { resolve } from 'url';
-import { keys, values } from 'lodash';
+import { keys, values, last } from 'lodash';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
 import { createLanguageServiceHost } from './utils/temp-language-service-host';
 import { fromVscodePath } from './utils/uri-utils';
 import { ClassSymbol } from 'stylable/dist/src/stylable-processor';
+import { exec } from 'child_process';
 
 
 export default class Provider {
@@ -152,12 +153,6 @@ export default class Provider {
 
         const parsed: any[] = pvp(res.currentLine).nodes;
 
-        function findNode(nodes: any[], index: number): any {
-            return nodes
-                .filter(n => n.sourceIndex <= index)
-                .reduce((m, n) => { return (m.sourceIndex > n.sourceIndex) ? m : n }, { sourceIndex: -1 })
-        }
-
         let val = findNode(parsed, position.character);
         while (val.nodes && val.nodes.length > 0) {
             if (findNode(val.nodes, position.character).sourceIndex >= 0) {
@@ -256,6 +251,7 @@ export default class Provider {
             return createRange(0, 0, 0, 0)
         }
     }
+
 
     escapeRegExp(re: string) {
         return re.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
@@ -601,3 +597,120 @@ export function getExistingNames(lineText: string, position: ProviderPosition) {
     return { names, lastName };
 }
 
+
+function findNode(nodes: any[], index: number): any {
+    return nodes
+        .filter(n => n.sourceIndex <= index)
+        .reduce((m, n) => { return (m.sourceIndex > n.sourceIndex) ? m : n }, { sourceIndex: -1 })
+}
+
+export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
+
+    const doc = fs.loadTextFileSync(params.textDocument.uri);
+    const pos = { line: params.position.line + 1, character: params.position.character };
+    const { meta } = createMeta(doc, params.textDocument.uri);
+    const node = last(pathFromPosition(meta!.rawAst, pos))!;
+    let inner: NodeBase | undefined;
+    let word: string = '';
+    let refs: Location[] = [];
+
+    if (isRoot(node)) {
+        inner = (node.nodes || []).find(n => {
+            return (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
+                &&
+                (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
+        })
+        if (inner && isSelector(inner)) {
+            const relPos = { line: pos.line - inner.source.start!.line + 1, character: pos.character - inner.source.start!.column + 1 }
+            const proc = psp();
+            const parsed: ContainerBase = proc.astSync(inner.selector);
+            const wordNode = ((parsed).nodes![0] as ContainerBase).nodes!
+                .find(n => {
+                    return (n.source.start!.line < relPos.line || (n.source.start!.line === relPos.line && n.source.start!.column <= pos.character))
+                        &&
+                        (n.source.end!.line > relPos.line || (n.source.end!.line === relPos.line && n.source.end!.column >= pos.character))
+                });
+            if (wordNode) {
+                word = (wordNode as Declaration).value;
+            }
+        }
+    } else if (isContainer(node)) {
+        inner = (node.nodes || []).find(n => {
+            return isDeclaration(n) &&
+            (n.prop === valueMapping.mixin || n.prop === valueMapping.extends) && (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
+            && (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
+        })
+        if (inner) {
+            const parsed = pvp((inner as Declaration).value);
+            let val = findNode(parsed.nodes, pos.character - (inner.source.start!.column + (inner as Declaration).prop.length + (inner.raws.between ? inner.raws.between.length : 0)));
+            if (val) {
+                word = val.value
+            }
+        }
+    }
+
+    refs = findClassRefs(word, params.textDocument.uri, fs);
+    return refs;
+}
+
+function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[] {
+    const refs: Location[] = [];
+    const src = fs.get(uri).getText();
+    const { processed: { meta } } = fixAndProcess(src, new ProviderPosition(0, 0), fromVscodePath(uri))
+    const filterRegex = RegExp('(\\.?' + word + ')(\\s|$|\\:)', 'g');
+    const valueRegex = RegExp('(\\.?' + word + ')(\\s|$|\\:|,)', 'g');
+    meta!.rawAst.walkRules(filterRegex, (rule) => {
+        let match;
+        while ((match = valueRegex.exec(rule.selector)) !== null) {
+            refs.push({
+                uri,
+                range: {
+                    start: {
+                        line: rule.source.start!.line - 1,
+                        character: rule.source.start!.column + match.index
+                    },
+                    end: {
+                        line: rule.source.start!.line - 1,
+                        character: rule.source.start!.column + match.index + word.length
+                    }
+                }
+            })
+        }
+    });
+    meta!.rawAst.walkDecls(valueMapping.extends, (decl) => {
+        if (decl.value === word) {
+            refs.push({
+                uri,
+                range: {
+                    start: {
+                        line: decl.source.start!.line - 1,
+                        character: decl.source.start!.column + valueMapping.extends.length + (decl.raws.between ? decl.raws.between.length : 0) - 1
+                    },
+                    end: {
+                        line: decl.source.start!.line - 1,
+                        character: decl.source.start!.column + valueMapping.extends.length + (decl.raws.between ? decl.raws.between.length : 0) + word.length - 1
+                    }
+                }
+            })
+        }
+    });
+    meta!.rawAst.walkDecls(valueMapping.mixin, (decl) => {
+        const match = valueRegex.exec(decl.value);
+        if (match) {
+            refs.push({
+                uri,
+                range: {
+                    start: {
+                        line: decl.source.start!.line - 1,
+                        character: decl.source.start!.column + valueMapping.mixin.length + match.index + (decl.raws.between ? decl.raws.between.length : 0) - 1
+                    },
+                    end: {
+                        line: decl.source.start!.line - 1,
+                        character: decl.source.start!.column + valueMapping.mixin.length + match.index + (decl.raws.between ? decl.raws.between.length : 0) + word.length - 1
+                    }
+                }
+            })
+        }
+    })
+    return refs;
+}
