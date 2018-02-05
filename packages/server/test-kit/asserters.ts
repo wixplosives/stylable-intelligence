@@ -11,7 +11,7 @@ import { pathFromPosition } from '../src/utils/postcss-ast-utils'
 import { NodeBase } from 'postcss';
 import { Provider } from '../src/index';
 import { SignatureHelp, TextDocumentPositionParams, TextDocumentIdentifier, ParameterInformation, Location } from 'vscode-languageserver';
-import { fromVscodePath } from '../src/utils/uri-utils';
+import { fromVscodePath, toVscodePath } from '../src/utils/uri-utils';
 import { Stylable } from 'stylable';
 import { LocalSyncFs } from '../src/local-sync-fs';
 import { createDocFs } from '../src/server';
@@ -125,7 +125,7 @@ export function getDefinition(fileName: string): Thenable<ProviderLocation[]> {
 export function getReferences(fileName: string, pos: ProviderPosition): Location[] {
     const fullPath = path.join(__dirname, '/../test/cases/', fileName);
     let src: string = fs.readFileSync(fullPath).toString();
-    let doc = TextDocument.create('file://'+fullPath, 'stylable', 1, src)
+    let doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src)
     return provider.getRefs({ context: { includeDeclaration: true }, position: pos, textDocument: doc }, docsFs)
 }
 
