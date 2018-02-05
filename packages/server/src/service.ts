@@ -11,7 +11,7 @@ import { Command, Position, Range, Location, TextEdit, CompletionItem, Parameter
 import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest, ColorInformation } from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
 import { valueMapping } from 'stylable';
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
-import { createMeta, fixAndProcess, getRefs } from './provider';
+import { createMeta, fixAndProcess } from './provider';
 import { Stylable, evalDeclarationValue } from 'stylable';
 import * as ts from 'typescript'
 import { FileSystemReadSync, Directory, DirectoryContent } from 'kissfs';
@@ -146,7 +146,7 @@ export class StylableLanguageService {
 
         connection.onReferences(async (params: ReferenceParams): Promise<Location[]> => {
             const cssRefs = cssService.findReferences(fs.get(params.textDocument.uri), params.position, cssService.parseStylesheet(fs.get(params.textDocument.uri)));
-            const refs = getRefs(params,fs);
+            const refs = provider.getRefs(params,fs);
             return refs.length ? dedupeRefs(refs) : dedupeRefs(cssRefs)
         });
 
@@ -267,7 +267,7 @@ export class StylableLanguageService {
 
         connection.onRenameRequest((params): WorkspaceEdit => {
             let edit: WorkspaceEdit = { changes: {} };
-            getRefs({ context: { includeDeclaration: true }, position: params.position, textDocument: params.textDocument }, fs)
+            provider.getRefs({ context: { includeDeclaration: true }, position: params.position, textDocument: params.textDocument }, fs)
                 .forEach(ref => {
                     if (edit.changes![ref.uri]) {
                         edit.changes![ref.uri].push({ range: ref.range, newText: params.newName })

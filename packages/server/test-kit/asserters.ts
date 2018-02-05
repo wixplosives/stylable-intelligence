@@ -10,7 +10,7 @@ import { createMeta, ProviderLocation } from '../src/provider';
 import { pathFromPosition } from '../src/utils/postcss-ast-utils'
 import { NodeBase } from 'postcss';
 import { Provider } from '../src/index';
-import { SignatureHelp, TextDocumentPositionParams, TextDocumentIdentifier, ParameterInformation } from 'vscode-languageserver';
+import { SignatureHelp, TextDocumentPositionParams, TextDocumentIdentifier, ParameterInformation, Location } from 'vscode-languageserver';
 import { fromVscodePath } from '../src/utils/uri-utils';
 import { Stylable } from 'stylable';
 import { LocalSyncFs } from '../src/local-sync-fs';
@@ -120,6 +120,13 @@ export function getDefinition(fileName: string): Thenable<ProviderLocation[]> {
     return provider.getDefinitionLocation(src, pos, fullPath, docsFs).then((res) => {
         return res;
     })
+}
+
+export function getReferences(fileName: string, pos: ProviderPosition): Location[] {
+    const fullPath = path.join(__dirname, '/../test/cases/', fileName);
+    let src: string = fs.readFileSync(fullPath).toString();
+    let doc = TextDocument.create('file://'+fullPath, 'stylable', 1, src)
+    return provider.getRefs({ context: { includeDeclaration: true }, position: pos, textDocument: doc }, docsFs)
 }
 
 export function getSignatureHelp(fileName: string, prefix: string): SignatureHelp | null {
