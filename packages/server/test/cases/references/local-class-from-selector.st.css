@@ -13,5 +13,6 @@
 
 .mixed {
     -st-mixin: lokal,
-    gaga, lokal;
+    gaga, lokal,
+    gaga;
 }

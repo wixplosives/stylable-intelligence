@@ -412,7 +412,7 @@ export default class Provider {
     getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
 
         const doc = fs.get(params.textDocument.uri).getText();
-        const pos = { line: params.position.line + 1, character: params.position.character };
+        const pos = { line: params.position.line + 1, character: params.position.character  };
         const { meta } = createMeta(doc, params.textDocument.uri);
         const node = last(pathFromPosition(meta!.rawAst, pos))!;
         let inner: NodeBase | undefined;
@@ -442,12 +442,15 @@ export default class Provider {
         } else if (isContainer(node)) {
             inner = (node.nodes || []).find(n => {
                 return isDeclaration(n) &&
-                (n.prop === valueMapping.mixin || n.prop === valueMapping.extends) && (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
-                && (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
+                    (n.prop === valueMapping.mixin || n.prop === valueMapping.extends) && (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
+                    && (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
             })
             if (inner) {
                 const parsed = pvp((inner as Declaration).value);
-                let val = findNode(parsed.nodes, pos.character - (inner.source.start!.column + (inner as Declaration).prop.length + (inner.raws.between ? inner.raws.between.length : 0)));
+                const relPos = inner.source.start!.line === pos.line
+                    ? pos.character - (inner.source.start!.column + (inner as Declaration).prop.length + (inner.raws.between ? inner.raws.between.length : 0))
+                    : pos.character + (inner as Declaration).value.split('\n').slice(0,pos.line-inner.source.start!.line).reduce((acc,cur) => { acc += cur.length; return acc;} ,0)
+                let val = findNode(parsed.nodes, relPos);
                 if (val) {
                     word = val.value
                 }
@@ -500,22 +503,30 @@ export default class Provider {
             }
         });
         meta!.rawAst.walkDecls(valueMapping.mixin, (decl) => {
-            const match = valueRegex.exec(decl.value);
-            if (match) {
-                refs.push({
-                    uri,
-                    range: {
-                        start: {
-                            line: decl.source.start!.line - 1,
-                            character: decl.source.start!.column + valueMapping.mixin.length + match.index + (decl.raws.between ? decl.raws.between.length : 0) - 1
-                        },
-                        end: {
-                            line: decl.source.start!.line - 1,
-                            character: decl.source.start!.column + valueMapping.mixin.length + match.index + (decl.raws.between ? decl.raws.between.length : 0) + word.length - 1
+            const lines = decl.value.split('\n');
+            lines.forEach((line, index) => {
+                let match;
+                while ((match = valueRegex.exec(line)) !== null) {
+                    refs.push({
+                        uri,
+                        range: {
+                            start: {
+                                line: decl.source.start!.line - 1 + index,
+                                character: index
+                                    ? match.index
+                                    : decl.source.start!.column + valueMapping.mixin.length + match.index + (decl.raws.between ? decl.raws.between.length : 0) - 1
+                            },
+                            end: {
+                                line: decl.source.start!.line - 1 + index,
+                                character: word.length + (index
+                                    ? match.index
+                                    : decl.source.start!.column + valueMapping.mixin.length + match.index + (decl.raws.between ? decl.raws.between.length : 0) - 1)
+                            }
                         }
-                    }
-                })
-            }
+                    })
+                }
+            })
+
         })
         return refs;
     }

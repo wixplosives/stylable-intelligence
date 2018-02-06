@@ -6,9 +6,44 @@ import { getReferences } from '../test-kit/asserters';
 
 describe("References", function () {
     describe("Local classes", function () {
-        it.only("should return all instances of local class when called from selector ", function () {
+        it("should return all instances of local class when called from selector ", function () {
             const refs = getReferences('references/local-class-from-selector.st.css', { line: 5, character: 16 });
-            expect(refs.length).to.equal(5);
+            expect(refs.length).to.equal(6);
+            expect(refs[0].range).to.deep.equal(createRange(0,3,0,7));
+            expect(refs[1].range).to.deep.equal(createRange(5,1,5,5));
+            expect(refs[2].range).to.deep.equal(createRange(5,14,5,18));
+            expect(refs[3].range).to.deep.equal(createRange(10,22,10,26));
+            expect(refs[4].range).to.deep.equal(createRange(15,4,15,8));
+            expect(refs[5].range).to.deep.equal(createRange(16,4,16,8));
+            refs.forEach(ref => {
+                expect(ref.uri).to.equal('file:///home/wix/projects/stylable-intelligence/packages/client/server/test/cases/references/local-class-from-selector.st.css')
+            })
+        });
+        it("should return all instances of local class when called from -st-mixin ", function () {
+            const refs = getReferences('references/local-class-from-selector.st.css', { line: 15, character: 6 });
+            expect(refs.length).to.equal(6);
+            expect(refs[0].range).to.deep.equal(createRange(0,3,0,7));
+            expect(refs[1].range).to.deep.equal(createRange(5,1,5,5));
+            expect(refs[2].range).to.deep.equal(createRange(5,14,5,18));
+            expect(refs[3].range).to.deep.equal(createRange(10,22,10,26));
+            expect(refs[4].range).to.deep.equal(createRange(15,4,15,8));
+            expect(refs[5].range).to.deep.equal(createRange(16,4,16,8));
+            refs.forEach(ref => {
+                expect(ref.uri).to.equal('file:///home/wix/projects/stylable-intelligence/packages/client/server/test/cases/references/local-class-from-selector.st.css')
+            })
+        });
+        it("should return all instances of local class when called from -st-extends ", function () {
+            const refs = getReferences('references/local-class-from-selector.st.css', { line: 10, character: 25 });
+            expect(refs.length).to.equal(6);
+            expect(refs[0].range).to.deep.equal(createRange(0,3,0,7));
+            expect(refs[1].range).to.deep.equal(createRange(5,1,5,5));
+            expect(refs[2].range).to.deep.equal(createRange(5,14,5,18));
+            expect(refs[3].range).to.deep.equal(createRange(10,22,10,26));
+            expect(refs[4].range).to.deep.equal(createRange(15,4,15,8));
+            expect(refs[5].range).to.deep.equal(createRange(16,4,16,8));
+            refs.forEach(ref => {
+                expect(ref.uri).to.equal('file:///home/wix/projects/stylable-intelligence/packages/client/server/test/cases/references/local-class-from-selector.st.css')
+            })
         });
     });
 });
