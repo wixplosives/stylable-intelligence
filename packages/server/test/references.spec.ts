@@ -3,6 +3,7 @@ import * as asserters from '../test-kit/asserters';
 import { expect } from 'chai';
 import * as path from 'path';
 import { getReferences } from '../test-kit/asserters';
+import { toVscodePath } from '../src/utils/uri-utils';
 
 describe("References", function () {
     describe("Local classes", function () {
@@ -16,7 +17,7 @@ describe("References", function () {
             expect(refs[4].range).to.deep.equal(createRange(15,4,15,8));
             expect(refs[5].range).to.deep.equal(createRange(16,4,16,8));
             refs.forEach(ref => {
-                expect(ref.uri).to.equal('file:///home/wix/projects/stylable-intelligence/packages/client/server/test/cases/references/local-class-from-selector.st.css')
+                expect(ref.uri).to.equal(toVscodePath(path.join(__dirname, '/../test/cases/', 'references/local-class-from-selector.st.css')));
             })
         });
         it("should return all instances of local class when called from -st-mixin ", function () {
@@ -29,7 +30,7 @@ describe("References", function () {
             expect(refs[4].range).to.deep.equal(createRange(15,4,15,8));
             expect(refs[5].range).to.deep.equal(createRange(16,4,16,8));
             refs.forEach(ref => {
-                expect(ref.uri).to.equal('file:///home/wix/projects/stylable-intelligence/packages/client/server/test/cases/references/local-class-from-selector.st.css')
+                expect(ref.uri).to.equal(toVscodePath(path.join(__dirname, '/../test/cases/', 'references/local-class-from-selector.st.css')));
             })
         });
         it("should return all instances of local class when called from -st-extends ", function () {
@@ -42,7 +43,7 @@ describe("References", function () {
             expect(refs[4].range).to.deep.equal(createRange(15,4,15,8));
             expect(refs[5].range).to.deep.equal(createRange(16,4,16,8));
             refs.forEach(ref => {
-                expect(ref.uri).to.equal('file:///home/wix/projects/stylable-intelligence/packages/client/server/test/cases/references/local-class-from-selector.st.css')
+                expect(ref.uri).to.equal(toVscodePath(path.join(__dirname, '/../test/cases/', 'references/local-class-from-selector.st.css')));
             })
         });
     });
