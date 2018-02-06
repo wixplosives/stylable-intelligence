@@ -548,10 +548,13 @@ export const StateCompletionProvider: CompletionProvider = {
             const lastNode = resolvedElements[0][resolvedElements[0].length - 1];
             const chunk = Array.isArray(target.focusChunk) ? last(target.focusChunk) : target.focusChunk
             const chunkyStates = (chunk && (chunk as SelectorChunk).states) ? (chunk as SelectorChunk).states : [];
+
             const allStates = lastNode.resolved.reduce((acc, cur) => {
-                acc.push(...keys((cur.symbol as ClassSymbol)[valueMapping.states]))
+                keys((cur.symbol as ClassSymbol)[valueMapping.states]).forEach(k => {
+                    acc[k] = (cur.symbol as ClassSymbol)[valueMapping.states][k]
+                })
                 return acc;
-            }, [] as string[])
+            }, {} as { [key: string]: any })
 
             const newStates = lastNode.resolved.reduce((acc, cur) => {
                 let relPath = path.relative(path.dirname(meta.source), cur.meta.source)
@@ -561,21 +564,31 @@ export const StateCompletionProvider: CompletionProvider = {
                         !acc[k] &&
                         (
                             k.slice(0, -1).startsWith(lastSelectoid.replace(':', '')) || //selectoid is a substring of current state
-                            allStates.includes(lastSelectoid.replace(':', '')) //selectoid is a valid state TODO: selectoid is both
+                            allStates.hasOwnProperty(lastSelectoid.replace(':', ''))
                         ) &&
                         (chunkyStates.every(cs => cs !== k))
-                    ) { acc[k] = meta.source === cur.meta.source ? 'Local file' : relPath }
+                    ) {
+                    acc[k] =
+                        {
+                            path: meta.source === cur.meta.source ? 'Local file' : relPath,
+                            hasParam: !!(cur.symbol as ClassSymbol)[valueMapping.states][k]
+                        }
+                    }
                 })
                 return acc;
-            }, {} as { [k: string]: string });
+            }, {} as { [k: string]: { path: string, hasParam: boolean } });
 
-            let states = keys(newStates).map(k => [k, newStates[k]]);
+            let states = keys(newStates).map(k => { return { name: k, state: newStates[k] } });
+
+
             if (states.length === 0) { return [] };
 
             const lastState = lastSelectoid.replace(':', '');
-            const realState = allStates.includes(lastState);
+            const realState = allStates.hasOwnProperty(lastState);
+
+
             return states.reduce((acc: Completion[], st) => {
-                acc.push(stateCompletion(st[0], st[1], (new ProviderRange(
+                acc.push(stateCompletion(st.name, st.state.path, (new ProviderRange(
                     new ProviderPosition(
                         position.line,
                         lastState
@@ -585,7 +598,9 @@ export const StateCompletionProvider: CompletionProvider = {
                             : position.character - (lineChunkAtCursor.endsWith(':') ? 1 : 0)
                     ),
                     position)
-                )));
+                ),
+                st.state.hasParam
+            ));
                 return acc;
             }, [])
         } else {

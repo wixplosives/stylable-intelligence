@@ -87,6 +87,22 @@ describe('States', function () {
         });
     });
 
+    describe('State with param', function () {
+        it('should complete available states from same file', function () {
+            const rng = createRange(4, 5, 4, 5);
+            const createComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateCompletion(str.slice(1), rng, path, true);
+
+            return asserters.getCompletions('states/local-state-param.st.css').then((asserter) => {
+                let exp: Partial<Completion>[] = [];
+                let notExp: Partial<Completion>[] = [];
+
+                exp.push(createComp(':hello', rng));
+
+                asserter.suggested(exp);
+            });
+        });
+    });
+
     describe('Imported states', function () {
 
         const str1 = ':state';

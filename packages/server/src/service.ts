@@ -67,8 +67,8 @@ export class StylableLanguageService {
                 cssService.parseStylesheet(fs.get(params.textDocument.uri))
             )
             const cssComps = cssCompsRaw ? cssCompsRaw.items : []
-            const doc = fs.get(params.textDocument.uri).getText();
 
+            const doc = fs.get(params.textDocument.uri).getText();
             const pos = params.position;
 
             return provider.provideCompletionItemsFromSrc(doc, { line: pos.line, character: pos.character }, params.textDocument.uri, fs)
@@ -121,10 +121,10 @@ export class StylableLanguageService {
             connection.sendDiagnostics({ uri: document.uri, diagnostics: diagnostics.concat(cssDiags) })
         }
 
-
         docsDispatcher.onDidOpen(function (params) {
             diagnose(params.document);
         });
+
         docsDispatcher.onDidChangeContent(function (params) {
             diagnose(params.document);
         });
@@ -291,8 +291,6 @@ export class StylableLanguageService {
             let lines = doc.getText().split('\n');
             return lines[rng.start.line].slice(rng.start.character, rng.end.character);
         }
-
-
 
         function dedupeRefs(refs: Location[]): Location[] {
             let res: Location[] = [];
