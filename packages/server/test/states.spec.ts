@@ -94,9 +94,21 @@ describe('States', function () {
 
             return asserters.getCompletions('states/local-state-param.st.css').then((asserter) => {
                 let exp: Partial<Completion>[] = [];
-                let notExp: Partial<Completion>[] = [];
 
                 exp.push(createComp(':hello', rng));
+
+                asserter.suggested(exp);
+            });
+        });
+
+        it('should complete imported state', function () {
+            const rng = createRange(9, 5, 9, 5);
+            const createComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateCompletion(str.slice(1), rng, path, true);
+
+            return asserters.getCompletions('states/imported-state-param.st.css').then((asserter) => {
+                let exp: Partial<Completion>[] = [];
+
+                exp.push(createComp(':shmover', rng, './comp-to-import-with-param.st.css'));
 
                 asserter.suggested(exp);
             });

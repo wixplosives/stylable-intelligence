@@ -1,8 +1,5 @@
-:import {
-    -st-from: "./my-mixins.ts";
-    -st-named: paramfulMixin;
+.gaga {
+    -st-states: shmover(enum(a,b));
 }
 
-.gaga {
-    -st-mixin: paramfulMixin(as);
-}
+.gaga:shmover( )
