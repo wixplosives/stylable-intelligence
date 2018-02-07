@@ -258,16 +258,19 @@ export default class Provider {
     }
 
     getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
+
         if (!filePath.endsWith('.st.css')) { return null }
-        const res = fixAndProcess(src, pos, filePath);
-        const meta = res.processed.meta;
+        const { processed: { meta } } = fixAndProcess(src, pos, filePath);
         if (!meta) return null;
 
         const split = src.split('\n');
         const line = split[pos.line];
         let value: string = '';
 
-        if (line.slice(0, pos.character).trim().startsWith(valueMapping.mixin)) {
+
+        const path = pathFromPosition(meta.rawAst, { line: pos.line + 1, character: pos.character + 1 });
+
+        if (line.slice(0, pos.character).trim().startsWith(valueMapping.mixin)) { //TODO: handle multiple lines as well
             value = line.slice(0, pos.character).trim().slice(valueMapping.mixin.length + 1).trim();
         } else if (line.slice(0, pos.character).trim().includes(':')) {
             value = line.slice(0, pos.character).trim().slice(line.slice(0, pos.character).trim().indexOf(':') + 1).trim();
@@ -278,7 +281,9 @@ export default class Provider {
         const rev = parsed.nodes.reverse()[0];
         if (rev.type === 'function' && !!rev.unclosed) {
             mixin = rev.value;
-        } else { return null };
+        } else {
+            return null
+        };
         let activeParam = parsed.nodes.reverse()[0].nodes.reduce((acc: number, cur: any) => { return (cur.type === 'div' ? acc + 1 : acc) }, 0);
         if (mixin === 'value') { return null }
 
@@ -302,9 +307,11 @@ export default class Provider {
 
     getSignatureForTsModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean, paramInfo: typeof ParameterInformation): SignatureHelp | null {
         let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault, this.tsLangService)
+
         let ptypes = sig!.parameters.map(p => {
             return p.name + ":" + ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
         });
+
         let rtype = sig!.declaration.type
             ? ((sig!.declaration.type as TypeReferenceNode).typeName as Identifier).getFullText()
             : "";
@@ -412,7 +419,7 @@ export default class Provider {
     getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
 
         const doc = fs.get(params.textDocument.uri).getText();
-        const pos = { line: params.position.line + 1, character: params.position.character  };
+        const pos = { line: params.position.line + 1, character: params.position.character };
         const { meta } = createMeta(doc, params.textDocument.uri);
         const node = last(pathFromPosition(meta!.rawAst, pos))!;
         let inner: NodeBase | undefined;
@@ -449,7 +456,7 @@ export default class Provider {
                 const parsed = pvp((inner as Declaration).value);
                 const relPos = inner.source.start!.line === pos.line
                     ? pos.character - (inner.source.start!.column + (inner as Declaration).prop.length + (inner.raws.between ? inner.raws.between.length : 0))
-                    : pos.character + (inner as Declaration).value.split('\n').slice(0,pos.line-inner.source.start!.line).reduce((acc,cur) => { acc += cur.length; return acc;} ,0)
+                    : pos.character + (inner as Declaration).value.split('\n').slice(0, pos.line - inner.source.start!.line).reduce((acc, cur) => { acc += cur.length; return acc; }, 0)
                 let val = findNode(parsed.nodes, relPos);
                 if (val) {
                     word = val.value
@@ -625,7 +632,7 @@ export function extractTsSignature(filePath: string, mixin: string, isDefault: b
     return tc.getSignatureFromDeclaration(mix!.declarations![0] as SignatureDeclaration);
 }
 
-export function extractJsModifierRetrunType(mixin: string, activeParam: number, fileSrc: string): string {
+export function extractJsModifierReturnType(mixin: string, activeParam: number, fileSrc: string): string {
 
     let lines = fileSrc.split('\n');
     let mixinLine: number = lines.findIndex(l => l.trim().startsWith('exports.' + mixin));

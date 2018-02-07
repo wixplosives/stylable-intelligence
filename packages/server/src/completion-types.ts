@@ -102,7 +102,7 @@ export function pseudoElementCompletion(elementName: string, from: string, rng: 
 }
 
 export function stateCompletion(stateName: string, from: string, rng: ProviderRange, hasParam?: boolean) {
-    return new Completion(':' + stateName + (hasParam ? '()' : ''), 'from: ' + from, 'a', new snippet(':' + stateName + (hasParam ? '($1)$0' : '')), rng);
+    return new Completion(':' + stateName + (hasParam ? '()' : ''), 'from: ' + from, 'a', new snippet(':' + stateName + (hasParam ? '($1)$0' : '')), rng, false, hasParam);
 }
 
 export function valueCompletion(name: string, from: string, value: string, rng: ProviderRange) {

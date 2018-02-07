@@ -23,7 +23,7 @@ import {
 import { isContainer, isDeclaration, isComment, isVars } from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
-import Provider, { extractTsSignature, extractJsModifierRetrunType, isDirective, getNamedValues, isInValue, getExistingNames } from './provider';
+import Provider, { extractTsSignature, extractJsModifierReturnType, isDirective, getNamedValues, isInValue, getExistingNames } from './provider';
 import { TypeReferenceNode, Identifier } from 'typescript';
 import { MinimalDocs } from './provider-factory';
 const pvp = require('postcss-value-parser');
@@ -669,7 +669,7 @@ function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLan
             : "";
         return (/(\w+.)?stCssFrag/.test(rtype.trim()));
     } if (importSymbol.import.fromRelative.endsWith('.js')) {
-        return (extractJsModifierRetrunType(name, 0, fs.get(toVscodePath(importSymbol.import.from)).getText()) === 'stCssFrag')
+        return (extractJsModifierReturnType(name, 0, fs.get(toVscodePath(importSymbol.import.from)).getText()) === 'stCssFrag')
     }
     return false;
 }

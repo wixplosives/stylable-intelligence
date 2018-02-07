@@ -1,5 +1,8 @@
-.gaga {
-    -st-states: hello(string(minLength(3), contains(user)));
+:import {
+    -st-from: "./my-mixins.ts";
+    -st-named: paramfulMixin;
 }
 
-.gaga:hello(x) {}
+.gaga {
+    -st-mixin: paramfulMixin(as);
+}
