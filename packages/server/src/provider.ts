@@ -430,20 +430,21 @@ export default class Provider {
             let length = 0;
             parsed.nodes[0].nodes.forEach((node: any) => {
                 length += node.name.length + 1;
-                if (node.type === 'pseudo-class' && (posChar > length + 1) && (posChar <= length + 1 + node.content.length)) {
+                if (node.type === 'pseudo-class' && (posChar > length + 1) && (posChar <= length + 2 + node.content.length)) {
                     word = node.name;
                 }
             })
         }
-        let resolvedElements;
-        let stateDef: StateParsedValue | null = null;
+
+        let stateDef = null as StateParsedValue | null;
+
         if (word) {
             const transformer = new StylableTransformer({
                 diagnostics: new Diagnostics(),
                 fileProcessor: this.styl.fileProcessor,
                 requireModule: () => { throw new Error('Not implemented, why are we here') }
             })
-            resolvedElements = transformer.resolveSelectorElements(meta, line);
+            let resolvedElements = transformer.resolveSelectorElements(meta, line);
             resolvedElements[0][0].resolved.forEach(el => {
                 const symbolStates = (el.symbol as ClassSymbol)[valueMapping.states]
                 if (symbolStates && typeof symbolStates[word] === 'object') {
@@ -451,9 +452,11 @@ export default class Provider {
                 }
             })
             if (stateDef) {
+                const parameters = resolveStateParams(stateDef);
+
                 const sigInfo: SignatureInformation = {
-                    label: word + '(' + (stateDef as StateParsedValue).type + ')',
-                    parameters: [{label: (stateDef as StateParsedValue).type}] as ParameterInformation[]
+                    label: `${word}(${parameters})`,
+                    parameters: [{label: parameters}] as ParameterInformation[]
                 }
 
                 return {
@@ -588,6 +591,24 @@ export default class Provider {
         return refs;
     }
 
+}
+
+function resolveStateParams(stateDef: StateParsedValue) {
+    const typeArguments: string[] = [];
+    if (stateDef.arguments.length > 0) {
+        stateDef.arguments.forEach((arg) => {
+            if (typeof arg === 'object') {
+                if (arg.args.length > 0) {
+                    typeArguments.push(`${arg.name}(${arg.args.join(', ')})`);
+                }
+            }
+            else if (typeof arg === 'string') {
+                typeArguments.push(arg);
+            }
+        });
+    }
+    const parameters = typeArguments.length > 0 ? `${stateDef.type}(${typeArguments.join(', ')})` : stateDef.type;
+    return parameters;
 }
 
 function isIllegalLine(line: string): boolean {
