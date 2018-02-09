@@ -121,10 +121,10 @@ export class StylableLanguageService {
             connection.sendDiagnostics({ uri: document.uri, diagnostics: diagnostics.concat(cssDiags) })
         }
 
-
         docsDispatcher.onDidOpen(function (params) {
             diagnose(params.document);
         });
+        
         docsDispatcher.onDidChangeContent(function (params) {
             diagnose(params.document);
         });

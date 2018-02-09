@@ -56,7 +56,7 @@ function assertExact(actualCompletions: Completion[], expectedCompletions: Parti
 
 function assertNotPresent(actualCompletions: Completion[], nonCompletions: Partial<Completion>[], prefix: string = '') {
     nonCompletions.forEach(notAllowed => {
-        const actual = actualCompletions.find((comp) => comp.label === notAllowed.label);
+        const actual = actualCompletions.find((comp) => comp.label === notAllowed.label && comp.range === notAllowed.range);
         expect(actual, prefix + 'unallowed completion found: ' + notAllowed.label + ' ').to.be.equal(undefined);
     });
 }

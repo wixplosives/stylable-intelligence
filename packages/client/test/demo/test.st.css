@@ -1,18 +1,11 @@
-  .gaga {
-    -st-states: active;
-    color: red;
+:import {
+    -st-from: "./import.st.css";
+    -st-named: shlomo, momo;
+    -st-default: Comp;
 }
 
-.gaga:active .gaga {
-    background-color: fuchsia;
+.gaga {
+    -st-extends: Comp;
 }
 
-.lokal {
-    -st-extends:      gaga;
-}
-
-.mixed {
-    -st-mixin: lokal,
-    gaga, lokal,
-    gaga;
-}
+.gaga::shlomo

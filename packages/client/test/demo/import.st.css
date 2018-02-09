@@ -1,5 +1,11 @@
-.btn {
-    color: fuchsia;
-    -st-states: active;
+.shlomo {
+    color: black;
 }
 
+.momo{
+    -st-states: anotherState,oneMoreState;
+}
+
+.root {
+    -st-states : state,otherState;
+}

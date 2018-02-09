@@ -508,7 +508,7 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
                 return acc;
             }, cssPseudoClasses)
 
-            const filter = lastNode.resolved.length
+            let filter = lastNode.resolved.length
                 ? states.includes(lastSelectoid.replace(':', ''))
                     ? ''
                     : lastSelectoid.replace(':', '')
@@ -519,6 +519,7 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
                 : lastNode;
 
             const colons = lineChunkAtCursor.match(/:*$/)![0].length;
+
 
             scope.resolved.forEach(res => {
                 if (!(res.symbol as ClassSymbol)[valueMapping.root]) { return }
@@ -536,6 +537,31 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
                         ));
                     }));
             });
+
+
+            let otherScope;
+            if (!filter && lineChunkAtCursor.split('::').length > 1 && last(lineChunkAtCursor.split('::')) === scope.name) {
+                otherScope = resolvedElements[0][resolvedElements[0].length - 2];
+                filter = scope.name;
+            }
+            if (otherScope) {
+                otherScope.resolved.forEach(res => {
+                    if (!(res.symbol as ClassSymbol)[valueMapping.root]) { return }
+
+                    comps = comps.concat(keys(res.meta.classes)
+                        .concat(keys(res.meta.customSelectors).map(s => s.slice(':--'.length)))
+                        .filter(e => e.startsWith(filter) && e !== 'root')
+                        .map(c => {
+                            let relPath = path.relative(path.dirname(meta.source), res.meta.source)
+                            if (!relPath.startsWith('.')) { relPath = './' + relPath }
+
+                            return pseudoElementCompletion(c, relPath, new ProviderRange(
+                                new ProviderPosition(position.line, position.character - (filter ? filter.length + 2 : colons)),
+                                new ProviderPosition(position.line, position.character),
+                            ));
+                        }));
+                });
+            }
         }
         return comps;
     },
