@@ -1,5 +1,8 @@
-.gaga {
-    -st-states: shmover(string);
+:vars {
+    redd: red;
 }
 
-.gaga:shmover( )
+/* .gaga {
+    color: value(redd)
+} */
+

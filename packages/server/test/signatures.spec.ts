@@ -224,7 +224,7 @@ describe('Signature Help', function () {
 
                 expect(sig).to.not.be.null;
                 expect(sig).to.deep.equal(exp);
-            }).timeout(5000);
+            });
         });
 
         str.split('').forEach((c, i) => {
@@ -246,7 +246,7 @@ describe('Signature Help', function () {
 
                 expect(sig).to.not.be.null;
                 expect(sig).to.deep.equal(exp);
-            }).timeout(5000);
+            });
         });
 
         str.split('').forEach((c, i) => {
@@ -268,7 +268,7 @@ describe('Signature Help', function () {
 
                 expect(sig).to.not.be.null;
                 expect(sig).to.deep.equal(exp);
-            }).timeout(5000);
+            });
         });
     });
 });
