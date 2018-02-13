@@ -203,72 +203,100 @@ describe('Signature Help', function () {
     });
 
     describe('State with parameters', () => {
-        let str = "hello";
+        describe('usage', () => {
+            let str = "hello";
 
-        str.split('').forEach((c, i) => {
-            let prefix = str.slice(0, i);
-            it('Provides signature help and identifies local state type definition, with prefix ' + prefix, function () {
-                let filePath = 'states/with-param/local-state-param-suggestion.st.css';
+            str.split('').forEach((c, i) => {
+                let prefix = str.slice(0, i);
+                it('Provides signature help and identifies local state type definition, with prefix ' + prefix, function () {
+                    let filePath = 'states/with-param/local-state-param-suggestion.st.css';
 
-                let sig = getSignatureHelp(filePath, prefix);
+                    let sig = getSignatureHelp(filePath, prefix);
 
-                let exp: SignatureHelp = {
-                    activeSignature: 0,
-                    activeParameter: 0,
-                    signatures: [SignatureInformation.create(
-                        "hello(string)",
-                        undefined,
-                        ParameterInformation.create("string")
-                    )]
-                };
+                    let exp: SignatureHelp = {
+                        activeSignature: 0,
+                        activeParameter: 0,
+                        signatures: [SignatureInformation.create(
+                            "hello(string)",
+                            undefined,
+                            ParameterInformation.create("string")
+                        )]
+                    };
 
-                expect(sig).to.not.be.null;
-                expect(sig).to.deep.equal(exp);
-            }).timeout(5000);
+                    expect(sig).to.not.be.null;
+                    expect(sig).to.deep.equal(exp);
+                }).timeout(5000);
+            });
+
+            str.split('').forEach((c, i) => {
+                let prefix = str.slice(0, i);
+                it('Provides signature help and identifies imported state type definition, with prefix ' + prefix, function () {
+                    let filePath = 'states/with-param/imported-state-param-suggestion.st.css';
+
+                    let sig = getSignatureHelp(filePath, prefix);
+
+                    let exp: SignatureHelp = {
+                        activeSignature: 0,
+                        activeParameter: 0,
+                        signatures: [SignatureInformation.create(
+                            "shmover(number)",
+                            undefined,
+                            ParameterInformation.create("number")
+                        )]
+                    };
+
+                    expect(sig).to.not.be.null;
+                    expect(sig).to.deep.equal(exp);
+                }).timeout(5000);
+            });
+
+            str.split('').forEach((c, i) => {
+                let prefix = str.slice(0, i);
+                it('Provides signature help and identifies imported state type definition and validators, with prefix ' + prefix, function () {
+                    let filePath = 'states/with-param/imported-state-param-and-validators-suggestion.st.css';
+
+                    let sig = getSignatureHelp(filePath, prefix);
+
+                    let exp: SignatureHelp = {
+                        activeSignature: 0,
+                        activeParameter: 0,
+                        signatures: [SignatureInformation.create(
+                            "shmover(number(min(3), max(42)))",
+                            undefined,
+                            ParameterInformation.create("number(min(3), max(42))")
+                        )]
+                    };
+
+                    expect(sig).to.not.be.null;
+                    expect(sig).to.deep.equal(exp);
+                }).timeout(5000);
+            });
         });
 
-        str.split('').forEach((c, i) => {
-            let prefix = str.slice(0, i);
-            it('Provides signature help and identifies imported state type definition, with prefix ' + prefix, function () {
-                let filePath = 'states/with-param/imported-state-param-suggestion.st.css';
+        describe('definition', () => {
+            const types = ['string'];
 
-                let sig = getSignatureHelp(filePath, prefix);
+            types.forEach(str => str.split('').forEach((c, i) => {
+                let prefix = str.slice(0, i);
+                it('Provides signature help and identifies state definition and validators, with prefix ' + prefix, function () {
+                    let filePath = 'states/with-param/state-def-with-param-suggestion.st.css';
 
-                let exp: SignatureHelp = {
-                    activeSignature: 0,
-                    activeParameter: 0,
-                    signatures: [SignatureInformation.create(
-                        "shmover(number)",
-                        undefined,
-                        ParameterInformation.create("number")
-                    )]
-                };
+                    let sig = getSignatureHelp(filePath, prefix);
 
-                expect(sig).to.not.be.null;
-                expect(sig).to.deep.equal(exp);
-            }).timeout(5000);
-        });
+                    let exp: SignatureHelp = {
+                        activeSignature: 0,
+                        activeParameter: 0,
+                        signatures: [SignatureInformation.create(
+                            'Supported state types: "string | number | enum | tag"',
+                            undefined,
+                            ParameterInformation.create("string | number | enum | tag")
+                        )]
+                    };
 
-        str.split('').forEach((c, i) => {
-            let prefix = str.slice(0, i);
-            it('Provides signature help and identifies imported state type definition and validators, with prefix ' + prefix, function () {
-                let filePath = 'states/with-param/imported-state-param-and-validators-suggestion.st.css';
-
-                let sig = getSignatureHelp(filePath, prefix);
-
-                let exp: SignatureHelp = {
-                    activeSignature: 0,
-                    activeParameter: 0,
-                    signatures: [SignatureInformation.create(
-                        "shmover(number(min(3), max(42)))",
-                        undefined,
-                        ParameterInformation.create("number(min(3), max(42))")
-                    )]
-                };
-
-                expect(sig).to.not.be.null;
-                expect(sig).to.deep.equal(exp);
-            }).timeout(5000);
+                    expect(sig).to.not.be.null;
+                    expect(sig).to.deep.equal(exp);
+                }).timeout(5000);
+            }));
         });
     });
 });

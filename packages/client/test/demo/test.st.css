@@ -1,5 +1,5 @@
 .gaga {
-    -st-states: shmover(string);
+    -st-states: shmover();
 }
 
 .gaga:shmover( )

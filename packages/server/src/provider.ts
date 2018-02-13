@@ -4,7 +4,7 @@ import * as PostCss from 'postcss';
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
 const cst = require('css-selector-tokenizer');
-import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping, StylableTransformer, Diagnostics, expandCustomSelectors as RemoveWhenWorks, expandCustomSelectors, StateParsedValue } from 'stylable';
+import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping, StylableTransformer, Diagnostics, expandCustomSelectors as RemoveWhenWorks, expandCustomSelectors, StateParsedValue, ParsedValue } from 'stylable';
 import { isSelector, pathFromPosition, isDeclaration, isRoot, isContainer } from './utils/postcss-ast-utils';
 import {
     createRange,
@@ -43,6 +43,7 @@ import { fromVscodePath } from './utils/uri-utils';
 import { ClassSymbol } from 'stylable/dist/src/stylable-processor';
 import { exec } from 'child_process';
 
+import { systemValidators } from 'stylable/dist/src/state-validators'; // TODO: export these properly from stylable
 
 export default class Provider {
     constructor(public styl: Stylable, public tsLangService: ExtendedTsLanguageService) { }
@@ -272,7 +273,9 @@ export default class Provider {
         const path = pathFromPosition(meta.rawAst, { line: pos.line + 1, character: pos.character + 1 });
 
         if (isRoot(last(path)!)) {
-            return this.getSignatureForStateWithParam(meta, pos, line)
+            return this.getSignatureForStateWithParamSelector(meta, pos, line)
+        } else if (line.slice(0, pos.character).trim().startsWith(valueMapping.states)) {
+            return this.getSignatureForStateWithParamDefinition(meta, pos, line);
         }
 
         //If last node is not root, we're in a declaration [TODO: or a mdeia query]
@@ -422,7 +425,7 @@ export default class Provider {
         } as SignatureHelp
     }
 
-    getSignatureForStateWithParam(meta: StylableMeta, pos: ProviderPosition, line: string): SignatureHelp | null {
+    getSignatureForStateWithParamSelector(meta: StylableMeta, pos: ProviderPosition, line: string): SignatureHelp | null {
         let word: string = '';
         const posChar = pos.character + 1;
         const parsed = cst.parse(line);
@@ -466,6 +469,59 @@ export default class Provider {
                 } as SignatureHelp
             }
         }
+        return null;
+    }
+
+    getSignatureForStateWithParamDefinition(meta: StylableMeta, pos: ProviderPosition, line: string): SignatureHelp | null {
+        const value = line.slice(0, pos.character).trim().slice(line.slice(0, pos.character).trim().indexOf(':') + 1);
+        const valueStartChar = line.indexOf(':') + 1;
+        const parsed = pvp(value);
+        let needsTypeHinting: boolean = false;
+
+        if (parsed.nodes.some((node: ParsedValue) => node.type === 'function')) {
+            let length = valueStartChar;
+
+            parsed.nodes.forEach((statePart: ParsedValue) => {
+                length += statePart.value.length;
+
+                if (statePart.type === 'function') {
+                    length++;
+                }
+
+                const stateNodes = statePart.nodes;
+                if (stateNodes && stateNodes.length === 0 && pos.character === length) {
+                    needsTypeHinting = true;
+                } else {
+                    stateNodes && stateNodes.forEach((node: ParsedValue) => {
+                        if (pos.character > length && (pos.character <= length + 1 + node.value.length)) {
+                            if (node.type === 'function' || node.type === 'word') {
+                                needsTypeHinting = true;
+                            }
+                        }
+                    });
+                }
+
+            });
+        } else {
+            return null;
+        }
+
+        if (needsTypeHinting) {
+            const stateTypes = Object.keys(systemValidators).join(' | ');
+
+            const sigInfo: SignatureInformation = {
+                label: `Supported state types: "${stateTypes}"`,
+                parameters: [{label: stateTypes}] as ParameterInformation[]
+            }
+
+            return {
+                activeParameter: 0,
+                activeSignature: 0,
+                signatures: [sigInfo]
+            } as SignatureHelp
+
+        }
+        
         return null;
     }
 
