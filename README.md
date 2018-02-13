@@ -7,7 +7,7 @@ Readme for the extension itself is at https://github.com/wix/stylable-intelligen
 
 # Project Setup
 * Clone this repo
-* Run yarn in packages/server/, packages/client/ and project root
+* Run yarn (in this order) in: packages/server/, packages/client/ and project root
 * To build server and copy to client: yarn start in packages/server/
 * To build server and run tests: yarn test in packages/server/
 * To run client tests from command line: yarn test in packages/client/
@@ -18,3 +18,10 @@ Readme for the extension itself is at https://github.com/wix/stylable-intelligen
   1. open vscode in packages/client/ and in packages/server/. 
   2. Choose the 'Launch Extension' configuration in the client vscode. 
   3. Once the extension is launched, choose the 'Attach' configuration in the server vscode. 
+
+## Brain Dump
+* CSS Language Service: https://github.com/Microsoft/vscode-css-languageservice
+* CSS Syntax Highlighter (TextMate format, base for our own): https://github.com/Microsoft/vscode/blob/master/extensions/css/syntaxes/css.tmLanguage.json
+* Color Icon and Color Picker: https://github.com/Microsoft/vscode/issues/38959
+* Allow disabling Color Picker: https://github.com/Microsoft/vscode/issues/42344
+* Why no file icon in VScode? : https://github.com/Microsoft/vscode/issues/14662
