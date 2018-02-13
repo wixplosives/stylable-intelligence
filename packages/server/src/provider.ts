@@ -521,14 +521,14 @@ export default class Provider {
             } as SignatureHelp
 
         }
-        
+
         return null;
     }
 
     getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
 
         const doc = fs.get(params.textDocument.uri).getText();
-        const pos = { line: params.position.line + 1, character: params.position.character };
+        const pos = { line: params.position.line + 1, character: params.position.character + 1 };
         const { meta } = createMeta(doc, params.textDocument.uri);
         const node = last(pathFromPosition(meta!.rawAst, pos))!;
         let inner: NodeBase | undefined;
@@ -565,8 +565,10 @@ export default class Provider {
                 const parsed = pvp((inner as Declaration).value);
                 const relPos = inner.source.start!.line === pos.line
                     ? pos.character - (inner.source.start!.column + (inner as Declaration).prop.length + (inner.raws.between ? inner.raws.between.length : 0))
-                    : pos.character + (inner as Declaration).value.split('\n').slice(0, pos.line - inner.source.start!.line).reduce((acc, cur) => { acc += cur.length; return acc; }, 0)
+                    : pos.character - 1 + (inner as Declaration).value.split('\n').slice(0, pos.line - inner.source.start!.line).reduce((acc, cur) => { acc += (cur.length +1); return acc; }, 0)
                 let val = findNode(parsed.nodes, relPos);
+                if (val.type !== 'word') { val = findNode(parsed.nodes, relPos - 1); }
+
                 if (val) {
                     word = val.value
                 }
@@ -578,6 +580,7 @@ export default class Provider {
     }
 
     findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[] {
+        if (!word) {return []};
         const refs: Location[] = [];
         const src = fs.get(uri).getText();
         const { processed: { meta } } = fixAndProcess(src, new ProviderPosition(0, 0), fromVscodePath(uri))

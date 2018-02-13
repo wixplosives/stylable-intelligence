@@ -1,5 +1,12 @@
-.gaga {
-    -st-states: shmover();
+:import {
+    -st-from: "./import.st.css";
+    -st-named: shlomo, momo;
+    -st-default: Comp;
 }
 
-.gaga:shmover( )
+.gaga {
+    -st-extends: Comp;
+    -st-states: blah();
+}
+
+.gaga::shlomo
