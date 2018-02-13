@@ -20,6 +20,8 @@ Readme for the extension itself is at https://github.com/wix/stylable-intelligen
   3. Once the extension is launched, choose the 'Attach' configuration in the server vscode. 
 
 ## Brain Dump
+* VSCode example client/server: https://code.visualstudio.com/docs/extensions/example-language-server
+* VSCode extension reference: https://code.visualstudio.com/docs/extensionAPI/overview
 * CSS Language Service: https://github.com/Microsoft/vscode-css-languageservice
 * CSS Syntax Highlighter (TextMate format, base for our own): https://github.com/Microsoft/vscode/blob/master/extensions/css/syntaxes/css.tmLanguage.json
 * Color Icon and Color Picker: https://github.com/Microsoft/vscode/issues/38959
