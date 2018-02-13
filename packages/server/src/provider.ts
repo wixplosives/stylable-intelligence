@@ -751,7 +751,7 @@ export function extractTsSignature(filePath: string, mixin: string, isDefault: b
     let program = tsLangService.ts.getProgram();
     let tc = program.getTypeChecker();
     let sf = program.getSourceFile(filePath);
-    let mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function).find(f => {
+    let mix = tc.getSymbolsInScope(sf!, ts.SymbolFlags.Function).find(f => {
         if (isDefault) {
             return (f as any).exportSymbol && (f as any).exportSymbol.escapedName === 'default'
         } else {
