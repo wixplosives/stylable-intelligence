@@ -2,6 +2,7 @@
   "name": "stylable-intelligence-service",
   "version": "0.0.62",
   "description": "Stylable Language Server",
+  "license": "MIT",
   "author": "Nadav Abraami (nadav@wix.com)",
   "publisher": "Nadav Abraami (nadav@wix.com)",
   "main": "./dist/src/service.js",
