@@ -10,11 +10,7 @@
     "noImplicitReturns": true,
     "strictNullChecks": true,
     "sourceMap": true,
-    "outDir": "./dist",
-    "typeRoots": [
-      "./node_modules/@types",
-      "../../custom-typings"
-    ]
+    "outDir": "./dist"
   },
   "exclude": [
     "node_modules",
