@@ -7,7 +7,6 @@
   "exclude": [
     "node_modules",
     "test",
-    "test-kit",
-    "custom-typings"
+    "test-kit"
   ]
 }
