@@ -11,11 +11,7 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "sourceMap": true,
-    "outDir": "../client/server",
-    "typeRoots": [
-      "./node_modules/@types",
-      "../../custom-typings"
-    ]
+    "outDir": "../client/server"
   },
   "exclude": [
     "node_modules",

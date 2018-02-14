@@ -1,10 +1,22 @@
 {
   "name": "stylable-intelligence",
+  "license": "MIT",
   "version": "0.0.3",
   "description": "Stylable Language Services",
+  "scripts": {
+    "postinstall": "lerna bootstrap",
+    "test": "lerna run test",
+    "build": "echo Not Implemented",
+    "test:node": "npm run test",
+    "test:ci": "npm run test"
+  },
+  "devDependencies": {
+    "lerna": "^2.8.0",
+    "typescript": "~2.6.2",
+    "vsce": "^1.36.2"
+  },
   "author": "Nadav Abraami (nadav@wix.com)",
   "publisher": "Nadav Abraami (nadav@wix.com)",
-  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git@github.com:wixplosives/stylable-intelligence.git"
@@ -16,23 +28,5 @@
   "keywords": [
     "typescript",
     "tdd"
-  ],
-  "devDependencies": {
-    "lerna": "^2.5.1",
-    "typescript": "~2.6.1",
-    "vsce": "^1.33.2"
-  },
-  "scripts": {
-    "postinstall": "lerna exec npm install",
-    "test": "lerna run test",
-    "build": "echo Not Implemented",
-    "test:node": "npm run test",
-    "test:ci": "npm run test"
-  },
-  "dependencies": {
-    "js-beautify": "^1.7.4",
-    "kissfs": "^0.5.3",
-    "postcss-value-parser": "^3.3.0",
-    "types": "js-beautify"
-  }
+  ]
 }

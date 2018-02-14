@@ -748,10 +748,13 @@ export class ProviderLocation {
 export function extractTsSignature(filePath: string, mixin: string, isDefault: boolean, tsLangService: ExtendedTsLanguageService): ts.Signature | undefined {
 
     tsLangService.setOpenedFiles([filePath])
-    let program = tsLangService.ts.getProgram();
-    let tc = program.getTypeChecker();
-    let sf = program.getSourceFile(filePath);
-    let mix = tc.getSymbolsInScope(sf!, ts.SymbolFlags.Function).find(f => {
+    const program = tsLangService.ts.getProgram();
+    const tc = program.getTypeChecker();
+    const sf = program.getSourceFile(filePath);
+    if (!sf) {
+        return undefined;
+    }
+    const mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function).find(f => {
         if (isDefault) {
             return (f as any).exportSymbol && (f as any).exportSymbol.escapedName === 'default'
         } else {
