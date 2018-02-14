@@ -4,7 +4,7 @@
     "version": "0.0.53",
     "description": "Code completion, reference detection, diagnostics and other features for Stylable CSS.",
     "author": "Ory Henn (ory@wix.com)",
-    "publisher": "Wix.com",
+    "publisher": "wix",
     "icon": "images/logo.png",
     "main": "./dist/src/extension.js",
     "browser": "./dist/src/index.js",
