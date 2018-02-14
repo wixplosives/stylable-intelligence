@@ -2,3 +2,4 @@
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/wix/stylable-intelligence?branch=master&svg=true)](https://ci.appveyor.com/project/qballer/stylable-intelligence)
 
 Readme at https://github.com/wix/stylable-intelligence/tree/master/packages/client/
+
