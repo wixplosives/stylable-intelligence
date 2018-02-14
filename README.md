@@ -27,7 +27,7 @@ Readme for the extension itself is at https://github.com/wix/stylable-intelligen
 * Color Icon and Color Picker: https://github.com/Microsoft/vscode/issues/38959
 * Allow disabling Color Picker: https://github.com/Microsoft/vscode/issues/42344
 * Why no file icon in VScode? : https://github.com/Microsoft/vscode/issues/14662
-* Issues regardnig completion display/filtering:
+* Issues regarding completion display/filtering:
   * Bug in completion text matching (mine): https://github.com/Microsoft/vscode/issues/34542
   * Lots of explanations and links to code about how completions are ordered and filtered: https://github.com/Microsoft/vscode/issues/26096
   * Link to activating completion ranking display: https://github.com/Microsoft/vscode/issues/41060#issuecomment-357879748
