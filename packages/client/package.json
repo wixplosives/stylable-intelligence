@@ -25,7 +25,7 @@
         "glob": "^7.1.2",
         "lodash": "^4.17.5",
         "postcss": "^6.0.17",
-        "stylable": "5.2.0-rc.4",
+        "stylable": "5.2.0",
         "tslib": "^1.9.0",
         "vscode": "^1.1.10",
         "vscode-languageclient": "^3.5.0",

@@ -2505,9 +2505,9 @@ strip-bom@^2.0.0:
   dependencies:
     is-utf8 "^0.2.0"
 
-stylable@5.2.0-rc.4:
-  version "5.2.0-rc.4"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.2.0-rc.4.tgz#6a0bbe278b88e083244fafb57ceadb2e7a3a98fd"
+stylable@5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.2.0.tgz#c28d6d8a980b1304d5efdf275c394bb26c9f1953"
   dependencies:
     css-selector-tokenizer "^0.7.0"
     deindent "^0.1.0"
