@@ -1,22 +1,9 @@
-language: node_js
-
 sudo: false
 
-node_js:
-  - 9
-  - 8
-
 os:
+  - osx
   - linux
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - libsecret-1-dev
-      - g++-4.9
-      
 before_install:
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
       export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
@@ -24,7 +11,9 @@ before_install:
       sleep 3;
     fi
 
-cache:
-  yarn: true
-  
+install:
+  - npm install
+  - npm run vscode:prepublish
 
+script:
+  - npm test --silent
