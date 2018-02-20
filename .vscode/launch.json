@@ -1,0 +1,56 @@
+{
+  "version": "0.1.0",
+  "configurations": [
+    {
+      "name": "Launch Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "${workspaceRoot}/fixtures/demo",
+        "--extensionDevelopmentPath=${workspaceRoot}"
+      ],
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "preLaunchTask": "compile"
+    },
+    {
+      "name": "Attach to running server",
+      "type": "node",
+      "request": "attach",
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/dist/src/server/**/*.js"
+      ],
+      "protocol": "inspector"
+    },
+    {
+      "name": "Test e2e",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "${workspaceRoot}/fixtures/e2e-cases",
+        "--extensionDevelopmentPath=${workspaceRoot}",
+        "--extensionTestsPath=${workspaceRoot}/dist/test/e2e"
+      ],
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "preLaunchTask": "compile"
+    },
+    {
+      "name": "Test server",
+      "request": "launch",
+      "type": "node",
+      "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+      "stopOnEntry": false,
+      "args": [
+        "--require",
+        "ts-node/register",
+        "test/server/**/*.spec.ts"
+      ],
+      "cwd": "${workspaceRoot}",
+      "protocol": "inspector"
+    }
+  ]
+}
