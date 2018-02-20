@@ -3,6 +3,7 @@ import { CompletionItem,  IConnection, InitializeResult,  TextDocuments, TextEdi
 import { ServerCapabilities as CPServerCapabilities, DocumentColorRequest, ColorPresentationRequest} from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
 import { FileSystemReadSync } from 'kissfs';
 import * as ts from 'typescript';
+import { ParsedValue } from 'stylable';
 export interface NotificationTypes{
     openDoc:NotificationType<string, void>;
     colorRequest:typeof DocumentColorRequest
@@ -27,4 +28,9 @@ export type ExtendedFSReadSync = {
 export type ExtendedTsLanguageService = {
     setOpenedFiles:(files:string[])=>void;
     ts:ts.LanguageService
+}
+
+export interface ParsedFuncOrDivValue extends ParsedValue {
+    before: string;
+    after: string;
 }

@@ -37,7 +37,7 @@ import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, Qualifie
 import { toVscodePath } from './utils/uri-utils';
 import { resolve } from 'url';
 import { keys, values, last } from 'lodash';
-import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
+import { ExtendedFSReadSync, ExtendedTsLanguageService, ParsedFuncOrDivValue } from './types';
 import { createLanguageServiceHost } from './utils/temp-language-service-host';
 import { fromVscodePath } from './utils/uri-utils';
 import { ClassSymbol } from 'stylable/dist/src/stylable-processor';
@@ -271,7 +271,7 @@ export default class Provider {
 
         const path = pathFromPosition(meta.rawAst, { line: pos.line + 1, character: pos.character + 1 });
 
-        if (isRoot(last(path)!)) {
+        if (isRoot(last(path)!)) { // TODO: check your actually on a selector
             return this.getSignatureForStateWithParamSelector(meta, pos, line)
         } else if (line.slice(0, pos.character).trim().startsWith(valueMapping.states)) {
             return this.getSignatureForStateWithParamDefinition(meta, pos, line);
@@ -431,6 +431,10 @@ export default class Provider {
         if (parsed.nodes[0].type === 'selector') {
             let length = 0;
             parsed.nodes[0].nodes.forEach((node: any) => {
+                if (node.type === 'invalid') {
+                    return; // TODO: refactor - handles places outside of a selector
+                }
+
                 length += node.name.length + 1;
                 if (node.type === 'pseudo-class' && (posChar > length + 1) && (posChar <= length + 2 + node.content.length)) {
                     word = node.name;
@@ -472,40 +476,49 @@ export default class Provider {
     }
 
     getSignatureForStateWithParamDefinition(meta: StylableMeta, pos: ProviderPosition, line: string): SignatureHelp | null {
-        const value = line.slice(0, pos.character).trim().slice(line.slice(0, pos.character).trim().indexOf(':') + 1);
         const valueStartChar = line.indexOf(':') + 1;
+        const value = line.slice(valueStartChar);
         const parsed = pvp(value);
-        let needsTypeHinting: boolean = false;
+        let requiredHinting: 'type' | 'validator' | null = null;
 
         if (parsed.nodes.some((node: ParsedValue) => node.type === 'function')) {
             let length = valueStartChar;
 
             parsed.nodes.forEach((statePart: ParsedValue) => {
                 length += statePart.value.length;
-
-                if (statePart.type === 'function') {
-                    length++;
-                }
-
                 const stateNodes = statePart.nodes;
-                if (stateNodes && stateNodes.length === 0 && pos.character === length) {
-                    needsTypeHinting = true;
-                } else {
-                    stateNodes && stateNodes.forEach((node: ParsedValue) => {
-                        if (pos.character > length && (pos.character <= length + 1 + node.value.length)) {
-                            if (node.type === 'function' || node.type === 'word') {
-                                needsTypeHinting = true;
-                            }
-                        }
-                    });
-                }
 
+                if (isParsedNodeFunction(statePart)) {
+                    length++; // opening parenthesis
+
+                    if (isBetweenLengths(pos.character, length, statePart.before)) {
+                        requiredHinting = 'type';
+                    }
+                    length = length + statePart.before.length;
+
+                    stateNodes.forEach((node: ParsedValue) => {
+                        if (isBetweenLengths(pos.character, length, statePart.value)) {
+                            requiredHinting = 'type';
+                        }
+                        length += node.value.length;
+                    });
+
+                    if (isBetweenLengths(pos.character, length, statePart.after)) {
+                        requiredHinting = 'type';
+                    }
+
+                    length = length + statePart.after.length;
+
+                    length++; // closing parenthesis
+                } else if (isParsedNodeDiv(statePart)) {
+                    length = length + statePart.before.length + statePart.after.length;
+                }
             });
         } else {
             return null;
         }
 
-        if (needsTypeHinting) {
+        if (requiredHinting) {
             const stateTypes = Object.keys(systemValidators).join(' | ');
 
             const sigInfo: SignatureInformation = {
@@ -649,6 +662,18 @@ export default class Provider {
         return refs;
     }
 
+}
+
+function isParsedNodeFunction(node: ParsedValue): node is ParsedFuncOrDivValue {
+    return node.type === 'function';
+}
+
+function isParsedNodeDiv(node: ParsedValue): node is ParsedFuncOrDivValue {
+    return node.type === 'div';
+}
+
+function isBetweenLengths(location: number, length: number, modifier: { length: number }) {
+    return location >= length && ( location <= length + modifier.length );
 }
 
 function resolveStateParams(stateDef: StateParsedValue) {
