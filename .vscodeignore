@@ -1,7 +1,11 @@
 **/*.ts
 .vscode/**/*
 .vscode-test/**/*
+src/**/*
 test/**/*
+test-kit/**/*
+dist/test/**/*
+dist/test-kit/**/*
 run-test.js
 tsconfig.json
 tsconfig.publish.json

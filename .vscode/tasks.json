@@ -14,7 +14,7 @@
         {
             "identifier": "compile",
             "type": "npm",
-            "script": "compile",
+            "script": "build",
             "problemMatcher": [
                 "$tsc-watch"
             ]

@@ -7,14 +7,12 @@
   "scripts": {
     "reset": "yarn clear && rimraf node_modules && yarn install && yarn test",
     "clear": "rimraf dist",
-    "vscode:prepublish": "rimraf dist && npm install && tsc -d -p ./tsconfig.publish.json && npm install --prod",
     "build": "tsc -d",
-    "compile": "tsc -d",
-    "prepublish": "tsc -d -p ./tsconfig.publish-npm.json",
-    "postinstall": "node ./node_modules/vscode/bin/install",
+    "install": "node ./node_modules/vscode/bin/install",
     "test": "yarn test:server && yarn build && yarn test:e2e",
     "test:e2e": "node ./run-test",
-    "test:server": "mocha --require ts-node/register --reporter mocha-env-reporter test/**/*.spec.ts"
+    "test:server": "mocha --require ts-node/register test/**/*.spec.ts",
+    "test:ci": "mocha --require ts-node/register --reporter mocha-env-reporter test/**/*.spec.ts && node ./run-test"
   },
   "dependencies": {
     "bignumber": "^1.1.0",
