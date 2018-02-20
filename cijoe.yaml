@@ -1,2 +1,2 @@
 buildcmd: "build"
-testcmd: "test:ci"
+testcmd: "test"
