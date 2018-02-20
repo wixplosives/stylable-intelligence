@@ -252,7 +252,6 @@ export default class Provider {
         }
     }
 
-
     escapeRegExp(re: string) {
         return re.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
     }

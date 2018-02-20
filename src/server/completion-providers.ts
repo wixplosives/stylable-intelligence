@@ -235,7 +235,7 @@ export const ValueDirectiveProvider: CompletionProvider & { isInsideValueDirecti
                 return [valueDirective(new ProviderRange(
                     new ProviderPosition(
                         position.line,
-                        fullLineText.includes(',')
+                        ~fullLineText.indexOf(',')
                             ? fullLineText.lastIndexOf(',') + 1
                             : fullLineText.indexOf(':') + 1),
                     position
@@ -418,7 +418,7 @@ export const FormatterCompletionProvider: CompletionProvider = {
         if (
             meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) &&
             !fullLineText.trim().startsWith(valueMapping.from) && !fullLineText.trim().startsWith(valueMapping.extends) && !fullLineText.trim().startsWith(valueMapping.named) &&
-            parentSelector && fullLineText.includes(':') && fullLineText.indexOf(':') < position.character &&
+            parentSelector && ~fullLineText.indexOf(':') && fullLineText.indexOf(':') < position.character &&
             !lineChunkAtCursor.startsWith(valueMapping.mixin + ':')
         ) {
             const { names, lastName } = getExistingNames(fullLineText, position)
@@ -429,7 +429,7 @@ export const FormatterCompletionProvider: CompletionProvider = {
                     const res = styl.resolver.resolve(meta.mappedSymbols[ms])
                     return res && res._kind === 'js'
                 })
-                // .filter(ms => names.length === 0 || !names.includes(ms))
+                // .filter(ms => names.length === 0 || !~names.indexOf(ms))
                 .filter(ms => !isMixin(ms, meta, fs, tsLangService))
                 .map(ms => createCodeMixinCompletion(ms, lastName, position, meta));
         } else {
@@ -463,7 +463,7 @@ export const NamedCompletionProvider: CompletionProvider & { resolveImport: (imp
                         ...keys(resolvedImport.mappedSymbols)
                             .filter(ms => (resolvedImport.mappedSymbols[ms]._kind === 'class' || resolvedImport.mappedSymbols[ms]._kind === 'var') && ms !== 'root')
                             .filter(ms => ms.slice(0, -1).startsWith(lastName))
-                            .filter(ms => !namedValues.includes(ms))
+                            .filter(ms => !~namedValues.indexOf(ms))
                             .map(ms => [
                                 ms,
                                 path.relative(meta.source, resolvedImport.source).slice(1).replace(/\\/g, '/'),
@@ -509,7 +509,7 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
             }, cssPseudoClasses)
 
             let filter = lastNode.resolved.length
-                ? states.includes(lastSelectoid.replace(':', ''))
+                ? ~states.indexOf(lastSelectoid.replace(':', ''))
                     ? ''
                     : lastSelectoid.replace(':', '')
                 : lastNode.name;
@@ -587,7 +587,7 @@ export const StateCompletionProvider: CompletionProvider = {
                         !acc[k] &&
                         (
                             k.slice(0, -1).startsWith(lastSelectoid.replace(':', '')) || //selectoid is a substring of current state
-                            allStates.includes(lastSelectoid.replace(':', '')) //selectoid is a valid state TODO: selectoid is both
+                            ~allStates.indexOf(lastSelectoid.replace(':', '')) //selectoid is a valid state TODO: selectoid is both
                         ) &&
                         (chunkyStates.every(cs => cs !== k))
                     ) { acc[k] = meta.source === cur.meta.source ? 'Local file' : relPath }
@@ -599,7 +599,7 @@ export const StateCompletionProvider: CompletionProvider = {
             if (states.length === 0) { return [] };
 
             const lastState = lastSelectoid.replace(':', '');
-            const realState = allStates.includes(lastState);
+            const realState = ~allStates.indexOf(lastState);
             return states.reduce((acc: Completion[], st) => {
                 acc.push(stateCompletion(st[0], st[1], (new ProviderRange(
                     new ProviderPosition(
@@ -627,7 +627,7 @@ export const ValueCompletionProvider: CompletionProvider = {
 
             let comps: Completion[] = [];
             meta.vars.forEach(v => {
-                if (v.name.startsWith(inner) && !fullLineText.slice(0, fullLineText.indexOf(':')).includes(v.name)) {
+                if (v.name.startsWith(inner) && !~fullLineText.slice(0, fullLineText.indexOf(':')).indexOf(v.name)) {
                     const value = evalDeclarationValue(styl.resolver, v.text, meta, v.node)
                     comps.push(valueCompletion(v.name, 'Local variable', value, new ProviderRange(
                         new ProviderPosition(position.line, position.character - inner.length),

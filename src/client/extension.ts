@@ -11,8 +11,8 @@ namespace OpenDocNotification {
 }
 
 export function activate(context: ExtensionContext) {
-
-    let serverModule = path.join(__dirname, '..', 'server', 'server.js'); //context.asAbsolutePath(path.join('server', 'src', 'server.js'));
+ // path.join(__dirname, '..', 'server', 'server.js'); //
+    let serverModule = path.join(__dirname, '..', 'server', 'server.js'); //context.asAbsolutePath(path.join('dist', 'src', 'server', 'server.js'));
     let debugOptions = { execArgv: ['--inspect'] };
 
     let serverOptions: ServerOptions = {

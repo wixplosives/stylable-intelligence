@@ -9,7 +9,7 @@
     "clear": "rimraf dist",
     "vscode:prepublish": "rimraf dist && npm install && tsc -d -p ./tsconfig.publish.json && npm install --prod",
     "build": "tsc -d",
-    "compile": "tsc",
+    "compile": "tsc -d",
     "prepublish": "tsc -d -p ./tsconfig.publish-npm.json",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "yarn test:server && yarn build && yarn test:e2e",
