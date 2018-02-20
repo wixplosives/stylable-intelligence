@@ -1,4 +1,8 @@
+language: node_js
 sudo: false
+
+cache:
+  yarn: true
 
 os:
   - osx
@@ -16,4 +20,4 @@ install:
   - npm run vscode:prepublish
 
 script:
-  - npm test --silent
+  - npm test
