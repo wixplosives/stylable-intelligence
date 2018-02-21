@@ -4,7 +4,7 @@ import * as PostCss from 'postcss';
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
 const cst = require('css-selector-tokenizer');
-import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping, StylableTransformer, Diagnostics, expandCustomSelectors as RemoveWhenWorks, expandCustomSelectors, StateParsedValue, ParsedValue } from 'stylable';
+import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping, StylableTransformer, Diagnostics, expandCustomSelectors as RemoveWhenWorks, expandCustomSelectors, StateParsedValue, ParsedValue, systemValidators } from 'stylable';
 import { isSelector, pathFromPosition, isDeclaration, isRoot, isContainer } from './utils/postcss-ast-utils';
 import {
     createRange,
@@ -42,8 +42,6 @@ import { createLanguageServiceHost } from './utils/temp-language-service-host';
 import { fromVscodePath } from './utils/uri-utils';
 import { ClassSymbol } from 'stylable/dist/src/stylable-processor';
 import { exec } from 'child_process';
-
-import { systemValidators } from 'stylable/dist/src/state-validators'; // TODO: export these properly from stylable
 
 export default class Provider {
     constructor(public styl: Stylable, public tsLangService: ExtendedTsLanguageService) { }
@@ -277,7 +275,7 @@ export default class Provider {
             return this.getSignatureForStateWithParamDefinition(meta, pos, line);
         }
 
-        //If last node is not root, we're in a declaration [TODO: or a mdeia query]
+        //If last node is not root, we're in a declaration [TODO: or a media query]
         if (line.slice(0, pos.character).trim().startsWith(valueMapping.mixin)) { //TODO: handle multiple lines as well
             value = line.slice(0, pos.character).trim().slice(valueMapping.mixin.length + 1).trim();
         } else if (line.slice(0, pos.character).trim().includes(':')) {
@@ -478,60 +476,36 @@ export default class Provider {
     getSignatureForStateWithParamDefinition(meta: StylableMeta, pos: ProviderPosition, line: string): SignatureHelp | null {
         const valueStartChar = line.indexOf(':') + 1;
         const value = line.slice(valueStartChar);
-        const parsed = pvp(value);
-        let requiredHinting: 'type' | 'validator' | null = null;
+        const stateParts = pvp(value).nodes;
+        let requiredHinting: boolean = false;
 
-        if (parsed.nodes.some((node: ParsedValue) => node.type === 'function')) {
+        if (stateParts.some(isParsedNodeFunction)) {
             let length = valueStartChar;
 
-            parsed.nodes.forEach((statePart: ParsedValue) => {
+            for (let statePart of stateParts) {
                 length += statePart.value.length;
-                const stateNodes = statePart.nodes;
 
                 if (isParsedNodeFunction(statePart)) {
+                    const stateNodes = statePart.nodes;
                     length++; // opening parenthesis
 
-                    if (isBetweenLengths(pos.character, length, statePart.before)) {
-                        requiredHinting = 'type';
-                    }
-                    length = length + statePart.before.length;
+                    ({ length, requiredHinting } = resolvePosInState(pos.character, length, statePart.before));
 
                     stateNodes.forEach((node: ParsedValue) => {
-                        if (isBetweenLengths(pos.character, length, statePart.value)) {
-                            requiredHinting = 'type';
-                        }
-                        length += node.value.length;
+                        ({ length, requiredHinting } = resolvePosInState(pos.character, length, node.value));
                     });
 
-                    if (isBetweenLengths(pos.character, length, statePart.after)) {
-                        requiredHinting = 'type';
-                    }
-
-                    length = length + statePart.after.length;
+                    ({ length, requiredHinting } = resolvePosInState(pos.character, length, statePart.after));
 
                     length++; // closing parenthesis
                 } else if (isParsedNodeDiv(statePart)) {
                     length = length + statePart.before.length + statePart.after.length;
                 }
-            });
-        } else {
-            return null;
-        }
-
-        if (requiredHinting) {
-            const stateTypes = Object.keys(systemValidators).join(' | ');
-
-            const sigInfo: SignatureInformation = {
-                label: `Supported state types: "${stateTypes}"`,
-                parameters: [{label: stateTypes}] as ParameterInformation[]
             }
 
-            return {
-                activeParameter: 0,
-                activeSignature: 0,
-                signatures: [sigInfo]
-            } as SignatureHelp
-
+            if (requiredHinting) {
+                return createStateSignature();
+            }
         }
 
         return null;
@@ -662,6 +636,28 @@ export default class Provider {
         return refs;
     }
 
+}
+
+function createStateSignature() {
+    const stateTypes = Object.keys(systemValidators).join(' | ');
+    const sigInfo: SignatureInformation = {
+        label: `Supported state types: "${stateTypes}"`,
+        parameters: [{ label: stateTypes }] as ParameterInformation[]
+    };
+    return {
+        activeParameter: 0,
+        activeSignature: 0,
+        signatures: [sigInfo]
+    } as SignatureHelp;
+}
+
+function resolvePosInState(character: number, length: number, arg: string) {
+    let requiredHinting = false;
+    if (isBetweenLengths(character, length, arg)) {
+        requiredHinting = true;
+    }
+    length = length + arg.length;
+    return { length, requiredHinting };
 }
 
 function isParsedNodeFunction(node: ParsedValue): node is ParsedFuncOrDivValue {
