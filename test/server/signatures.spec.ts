@@ -118,7 +118,7 @@ describe('Signature Help', function () {
                 activeParameter: 0,
                 signatures: [SignatureInformation.create(
                     "aBareMixin(): stCssFrag",
-                    "A mixin with no params",
+                    "A mixin with no params FAIL",
                 )]
             }
 
