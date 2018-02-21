@@ -6,10 +6,10 @@
   "version": "0.1.0",
   "description": "Stylable Language Services",
   "scripts": {
-    "reset": "yarn clear && rimraf node_modules && yarn install && yarn test",
+    "reset": "yarn clear && rimraf node_modules .vscode-test && yarn install && yarn test",
     "clear": "rimraf dist",
     "build": "tsc -d",
-    "install": "node ./node_modules/vscode/bin/install",
+    "prepublish": "node ./node_modules/vscode/bin/install",
     "test": "yarn test:server && yarn build && yarn test:e2e",
     "test:e2e": "node ./run-test",
     "test:server": "mocha --require ts-node/register test/**/*.spec.ts",
