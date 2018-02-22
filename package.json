@@ -109,7 +109,9 @@
     "onLanguage:stylable"
   ],
   "files": [
-    "dist/src"
+    "dist/src",
+    "service.js",
+    "service.d.ts"
   ],
   "testGlob": "./dist/test/**/*.test.js?(x)",
   "homepage": "https://github.com/wix/stylable-intelligence#readme",
