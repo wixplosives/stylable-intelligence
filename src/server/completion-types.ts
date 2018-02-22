@@ -2,7 +2,7 @@ import { ProviderRange } from './completion-providers';
 import { valueMapping } from 'stylable'
 
 export class
-Completion {
+    Completion {
     constructor(public label: string, public detail: string = "", public sortText: string = 'd', public insertText: string | snippet = label,
         public range: ProviderRange, public additionalCompletions: boolean = false, public triggerSignature: boolean = false) {
     }
@@ -69,7 +69,7 @@ export function valueDirective(rng: ProviderRange) {
 }
 
 export function globalCompletion(rng: ProviderRange) {
-    return new Completion(':global()', 'Target a global selector','a', new snippet(':global($0)'), rng)
+    return new Completion(':global()', 'Target a global selector', 'a', new snippet(':global($0)'), rng)
 }
 
 //semantic
@@ -90,19 +90,19 @@ export function cssMixinCompletion(symbolName: string, rng: ProviderRange, from:
 }
 
 export function codeMixinCompletion(symbolName: string, rng: ProviderRange, from: string) {
-    return new Completion(symbolName, 'from: ' + from, 'a', new snippet(symbolName+"($0)"), rng, false, true)
+    return new Completion(symbolName, 'from: ' + from, 'a', new snippet(symbolName + "($0)"), rng, false, true)
 }
 
 export function formatterCompletion(symbolName: string, rng: ProviderRange, from: string) {
-    return new Completion(symbolName, 'from: ' + from, 'a', new snippet(symbolName+"($0)"), rng, false, true)
+    return new Completion(symbolName, 'from: ' + from, 'a', new snippet(symbolName + "($0)"), rng, false, true)
 }
 
 export function pseudoElementCompletion(elementName: string, from: string, rng: ProviderRange) {
     return new Completion('::' + elementName, 'from: ' + from, 'a', '::' + elementName, rng)
 }
 
-export function stateCompletion(stateName: string, from: string, rng: ProviderRange) {
-    return new Completion(':' + stateName, 'from: ' + from, 'a', new snippet(':' + stateName), rng);
+export function stateCompletion(stateName: string, from: string, rng: ProviderRange, hasParam?: boolean) {
+    return new Completion(':' + stateName + (hasParam ? '()' : ''), 'from: ' + from, 'a', new snippet(':' + stateName + (hasParam ? '($1)$0' : '')), rng, false, hasParam);
 }
 
 export function valueCompletion(name: string, from: string, value: string, rng: ProviderRange) {

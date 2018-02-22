@@ -6,6 +6,9 @@
 
 .gaga {
     -st-extends: Comp;
+    -st-states: blah(enum(a,b,c));
 }
 
-.gaga::shlomo
+.gaga:xxx(b){
+
+}

@@ -243,8 +243,9 @@ export const codeMixinCompletion: (symbolName: string, rng: ProviderRange, from:
 export const formatterCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
     return new Completion(symbolName, 'from: ' + from, 'a', new snippet(symbolName + "($0)"), rng, false, true)
 }
-export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (stateName, rng, from = 'Local file') => {
-    return { label: ':' + stateName, sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName, range: rng }
+export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string, hasParam?: boolean) => Partial<Completion> = (stateName, rng, from = 'Local file', hasParam = false) => {
+    return { label: ':' + stateName + (hasParam ? '()' : ''), sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName + (hasParam ? '($1)$0' : ''), range: rng, triggerSignature: hasParam }
+
 }
 export const pseudoElementCompletion: (elementName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (elementName, rng, from?) => {
     return { label: '::' + elementName, sortText: 'a', detail: 'from: ' + from, insertText: '::' + elementName, range: rng }

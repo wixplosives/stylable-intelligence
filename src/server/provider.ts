@@ -3,7 +3,8 @@ import { MinimalDocs } from './provider-factory';
 import * as PostCss from 'postcss';
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
-import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping, StylableTransformer, Diagnostics, expandCustomSelectors as RemoveWhenWorks, expandCustomSelectors } from 'stylable';
+const cst = require('css-selector-tokenizer');
+import { StylableMeta, process as stylableProcess, safeParse, SRule, Stylable, CSSResolve, ImportSymbol, valueMapping, StylableTransformer, Diagnostics, expandCustomSelectors as RemoveWhenWorks, expandCustomSelectors, StateParsedValue, ParsedValue, systemValidators } from 'stylable';
 import { isSelector, pathFromPosition, isDeclaration, isRoot, isContainer } from './utils/postcss-ast-utils';
 import {
     createRange,
@@ -36,12 +37,11 @@ import { SignatureDeclaration, ParameterDeclaration, TypeReferenceNode, Qualifie
 import { toVscodePath } from './utils/uri-utils';
 import { resolve } from 'url';
 import { keys, values, last } from 'lodash';
-import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
+import { ExtendedFSReadSync, ExtendedTsLanguageService, ParsedFuncOrDivValue } from './types';
 import { createLanguageServiceHost } from './utils/temp-language-service-host';
 import { fromVscodePath } from './utils/uri-utils';
 import { ClassSymbol } from 'stylable/dist/src/stylable-processor';
 import { exec } from 'child_process';
-
 
 export default class Provider {
     constructor(public styl: Stylable, public tsLangService: ExtendedTsLanguageService) { }
@@ -257,16 +257,26 @@ export default class Provider {
     }
 
     getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
+
         if (!filePath.endsWith('.st.css')) { return null }
-        const res = fixAndProcess(src, pos, filePath);
-        const meta = res.processed.meta;
+        const { processed: { meta } } = fixAndProcess(src, pos, filePath);
         if (!meta) return null;
 
         const split = src.split('\n');
         const line = split[pos.line];
         let value: string = '';
 
-        if (line.slice(0, pos.character).trim().startsWith(valueMapping.mixin)) {
+
+        const path = pathFromPosition(meta.rawAst, { line: pos.line + 1, character: pos.character + 1 });
+
+        if (isRoot(last(path)!)) { // TODO: check your actually on a selector
+            return this.getSignatureForStateWithParamSelector(meta, pos, line)
+        } else if (line.slice(0, pos.character).trim().startsWith(valueMapping.states)) {
+            return this.getSignatureForStateWithParamDefinition(meta, pos, line);
+        }
+
+        //If last node is not root, we're in a declaration [TODO: or a media query]
+        if (line.slice(0, pos.character).trim().startsWith(valueMapping.mixin)) { //TODO: handle multiple lines as well
             value = line.slice(0, pos.character).trim().slice(valueMapping.mixin.length + 1).trim();
         } else if (line.slice(0, pos.character).trim().includes(':')) {
             value = line.slice(0, pos.character).trim().slice(line.slice(0, pos.character).trim().indexOf(':') + 1).trim();
@@ -277,7 +287,9 @@ export default class Provider {
         const rev = parsed.nodes.reverse()[0];
         if (rev.type === 'function' && !!rev.unclosed) {
             mixin = rev.value;
-        } else { return null };
+        } else {
+            return null
+        };
         let activeParam = parsed.nodes.reverse()[0].nodes.reduce((acc: number, cur: any) => { return (cur.type === 'div' ? acc + 1 : acc) }, 0);
         if (mixin === 'value') { return null }
 
@@ -301,9 +313,11 @@ export default class Provider {
 
     getSignatureForTsModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean, paramInfo: typeof ParameterInformation): SignatureHelp | null {
         let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault, this.tsLangService)
+
         let ptypes = sig!.parameters.map(p => {
             return p.name + ":" + ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
         });
+
         let rtype = sig!.declaration.type
             ? ((sig!.declaration.type as TypeReferenceNode).typeName as Identifier).getFullText()
             : "";
@@ -406,6 +420,95 @@ export default class Provider {
             activeSignature: 0,
             signatures: [sigInfo]
         } as SignatureHelp
+    }
+
+    getSignatureForStateWithParamSelector(meta: StylableMeta, pos: ProviderPosition, line: string): SignatureHelp | null {
+        let word: string = '';
+        const posChar = pos.character + 1;
+        const parsed = cst.parse(line);
+        if (parsed.nodes[0].type === 'selector') {
+            let length = 0;
+            parsed.nodes[0].nodes.forEach((node: any) => {
+                if (node.type === 'invalid') {
+                    return; // TODO: refactor - handles places outside of a selector
+                }
+
+                length += node.name.length + 1;
+                if (node.type === 'pseudo-class' && (posChar > length + 1) && (posChar <= length + 2 + node.content.length)) {
+                    word = node.name;
+                }
+            })
+        }
+
+        let stateDef = null as StateParsedValue | null;
+
+        if (word) {
+            const transformer = new StylableTransformer({
+                diagnostics: new Diagnostics(),
+                fileProcessor: this.styl.fileProcessor,
+                requireModule: () => { throw new Error('Not implemented, why are we here') }
+            })
+            let resolvedElements = transformer.resolveSelectorElements(meta, line);
+            resolvedElements[0][0].resolved.forEach(el => {
+                const symbolStates = (el.symbol as ClassSymbol)[valueMapping.states]
+                if (symbolStates && typeof symbolStates[word] === 'object') {
+                    stateDef = symbolStates[word];
+                }
+            })
+            if (stateDef) {
+                const parameters = resolveStateParams(stateDef);
+
+                const sigInfo: SignatureInformation = {
+                    label: `${word}(${parameters})`,
+                    parameters: [{label: parameters}] as ParameterInformation[]
+                }
+
+                return {
+                    activeParameter: 0,
+                    activeSignature: 0,
+                    signatures: [sigInfo]
+                } as SignatureHelp
+            }
+        }
+        return null;
+    }
+
+    getSignatureForStateWithParamDefinition(meta: StylableMeta, pos: ProviderPosition, line: string): SignatureHelp | null {
+        const valueStartChar = line.indexOf(':') + 1;
+        const value = line.slice(valueStartChar);
+        const stateParts = pvp(value).nodes;
+        let requiredHinting: boolean = false;
+
+        if (stateParts.some(isParsedNodeFunction)) {
+            let length = valueStartChar;
+
+            for (let statePart of stateParts) {
+                length += statePart.value.length;
+
+                if (isParsedNodeFunction(statePart)) {
+                    const stateNodes = statePart.nodes;
+                    length++; // opening parenthesis
+
+                    ({ length, requiredHinting } = resolvePosInState(pos.character, length, statePart.before));
+
+                    stateNodes.forEach((node: ParsedValue) => {
+                        ({ length, requiredHinting } = resolvePosInState(pos.character, length, node.value));
+                    });
+
+                    ({ length, requiredHinting } = resolvePosInState(pos.character, length, statePart.after));
+
+                    length++; // closing parenthesis
+                } else if (isParsedNodeDiv(statePart)) {
+                    length = length + statePart.before.length + statePart.after.length;
+                }
+            }
+
+            if (requiredHinting) {
+                return createStateSignature();
+            }
+        }
+
+        return null;
     }
 
     getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
@@ -535,6 +638,58 @@ export default class Provider {
 
 }
 
+function createStateSignature() {
+    const stateTypes = Object.keys(systemValidators).join(' | ');
+    const sigInfo: SignatureInformation = {
+        label: `Supported state types: "${stateTypes}"`,
+        parameters: [{ label: stateTypes }] as ParameterInformation[]
+    };
+    return {
+        activeParameter: 0,
+        activeSignature: 0,
+        signatures: [sigInfo]
+    } as SignatureHelp;
+}
+
+function resolvePosInState(character: number, length: number, arg: string) {
+    let requiredHinting = false;
+    if (isBetweenLengths(character, length, arg)) {
+        requiredHinting = true;
+    }
+    length = length + arg.length;
+    return { length, requiredHinting };
+}
+
+function isParsedNodeFunction(node: ParsedValue): node is ParsedFuncOrDivValue {
+    return node.type === 'function';
+}
+
+function isParsedNodeDiv(node: ParsedValue): node is ParsedFuncOrDivValue {
+    return node.type === 'div';
+}
+
+function isBetweenLengths(location: number, length: number, modifier: { length: number }) {
+    return location >= length && ( location <= length + modifier.length );
+}
+
+function resolveStateParams(stateDef: StateParsedValue) {
+    const typeArguments: string[] = [];
+    if (stateDef.arguments.length > 0) {
+        stateDef.arguments.forEach((arg) => {
+            if (typeof arg === 'object') {
+                if (arg.args.length > 0) {
+                    typeArguments.push(`${arg.name}(${arg.args.join(', ')})`);
+                }
+            }
+            else if (typeof arg === 'string') {
+                typeArguments.push(arg);
+            }
+        });
+    }
+    const parameters = typeArguments.length > 0 ? `${stateDef.type}(${typeArguments.join(', ')})` : stateDef.type;
+    return parameters;
+}
+
 function isIllegalLine(line: string): boolean {
     return /^\s*[-\.:]+\s*$/.test(line)
 }
@@ -630,7 +785,7 @@ export function extractTsSignature(filePath: string, mixin: string, isDefault: b
     return tc.getSignatureFromDeclaration(mix!.declarations![0] as SignatureDeclaration);
 }
 
-export function extractJsModifierRetrunType(mixin: string, activeParam: number, fileSrc: string): string {
+export function extractJsModifierReturnType(mixin: string, activeParam: number, fileSrc: string): string {
 
     let lines = fileSrc.split('\n');
     let mixinLine: number = lines.findIndex(l => l.trim().startsWith('exports.' + mixin));
