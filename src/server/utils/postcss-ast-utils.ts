@@ -1,6 +1,5 @@
 import * as PostCss from 'postcss';
-import { ProviderPosition } from '../completion-providers'
-import { last } from 'lodash';
+import {ProviderPosition} from '../completion-providers'
 
 export function isInNode(position: ProviderPosition, node: PostCss.NodeBase): boolean {
     if (!node.source) {
@@ -35,16 +34,24 @@ export function isInNode(position: ProviderPosition, node: PostCss.NodeBase): bo
 
 export function isBeforeRuleset(position: ProviderPosition, node: PostCss.NodeBase) {
     const part = ((node.source.input as any).css as string).split('\n').slice(node.source.start!.line - 1, node.source.end ? node.source.end.line : undefined);
-    if (part.findIndex(s => s.indexOf('{') !== -1) + node.source.start!.line > position.line) { return true }
-    if (part[position.line - node.source.start!.line].indexOf('{') >= position.character) { return true }
+    if (part.findIndex(s => s.indexOf('{') !== -1) + node.source.start!.line > position.line) {
+        return true
+    }
+    if (part[position.line - node.source.start!.line].indexOf('{') >= position.character) {
+        return true
+    }
     return false;
 }
 
 export function isAfterRuleset(position: ProviderPosition, node: PostCss.NodeBase) {
     const part = ((node.source.input as any).css as string).split('\n').slice(node.source.start!.line - 1, node.source.end!.line);
-    if (part.findIndex(s => s.indexOf('}') !== -1) + node.source.start!.line < position.line) { return true }
+    if (part.findIndex(s => s.indexOf('}') !== -1) + node.source.start!.line < position.line) {
+        return true
+    }
     if (part[position.line - node.source.start!.line].indexOf('}') > -1 &&
-        part[position.line - node.source.start!.line].indexOf('}') < position.character) { return true }
+        part[position.line - node.source.start!.line].indexOf('}') < position.character) {
+        return true
+    }
     return false;
 }
 

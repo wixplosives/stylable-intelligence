@@ -6,6 +6,9 @@ export const fromVscodePath = (uri: string) => {
     return uri;
 }
 export const toVscodePath = (path: string): string => {
-    if (path.startsWith('file://')) { return path };
+    if (path.startsWith('file://')) {
+        return path
+    }
+    ;
     return 'file://' + (isWindows ? `/${path.replace(/\\/g, '/').replace(':', '%3A')}` : path)
 }
