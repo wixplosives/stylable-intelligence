@@ -1,14 +1,16 @@
 'use strict';
-import { TextDocument, TextDocuments, TextDocumentChangeEvent } from 'vscode-languageserver';
+import {TextDocument, TextDocumentChangeEvent, TextDocuments, Event} from 'vscode-languageserver';
 import {
-    cachedProcessFile, process as stylableProcess, safeParse, StylableMeta, FileProcessor, Stylable
+    cachedProcessFile,
+    FileProcessor,
+    process as stylableProcess,
+    safeParse,
+    Stylable,
+    StylableMeta
 } from 'stylable';
 import Provider from './provider';
-import { htap } from 'htap';
-import { FileSystemReadSync, EventEmitter } from 'kissfs';
-import { ExtendedTsLanguageService } from './types';
-import { Event } from 'vscode-jsonrpc';
-
+import {FileSystemReadSync} from 'kissfs';
+import {ExtendedTsLanguageService} from './types';
 
 export function createProvider(stylable: Stylable, tsLangService: ExtendedTsLanguageService, withFilePrefix: boolean = true): Provider {
     // const styl = new Stylable('/', createFs(docs, fileSystem, withFilePrefix), () => ({ default: {} }))
@@ -30,7 +32,7 @@ export function createFs(fileSystem: FileSystemReadSync, withFilePrefix: boolean
 
 export function createProcessor(fileSystem: FileSystemReadSync, withFilePrefix: boolean = true): FileProcessor<StylableMeta> {
     let proccesor = cachedProcessFile<StylableMeta>((fullpath, content) => {
-        return stylableProcess(safeParse(content, { from: fullpath }))
+        return stylableProcess(safeParse(content, {from: fullpath}))
     }, createFs(fileSystem, withFilePrefix))
     return proccesor;
 }

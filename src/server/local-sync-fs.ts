@@ -1,4 +1,4 @@
-import { LocalFileSystem, FileSystemReadSync, Directory, ShallowDirectory, File, DirectoryContent } from 'kissfs'
+import {Directory, DirectoryContent, File, FileSystemReadSync, LocalFileSystem, ShallowDirectory} from 'kissfs'
 import * as fs from 'fs';
 
 export class LocalSyncFs extends LocalFileSystem implements FileSystemReadSync {

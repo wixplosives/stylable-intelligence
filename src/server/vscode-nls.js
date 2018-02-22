@@ -5,22 +5,27 @@
 'use strict';
 import * as path from "path";
 // var fs = require("fs");
-var _options = { locale: undefined, cacheLanguageResolution: true };
+var _options = {locale: undefined, cacheLanguageResolution: true};
 var _isPseudo = false;
 var _resolvedLanguage = null;
 var toString = Object.prototype.toString;
+
 function isDefined(value) {
     return typeof value !== 'undefined';
 }
+
 function isNumber(value) {
     return toString.call(value) === '[object Number]';
 }
+
 function isString(value) {
     return toString.call(value) === '[object String]';
 }
+
 function isBoolean(value) {
     return value === true || value === false;
 }
+
 function format(message, args) {
     var result;
     if (_isPseudo) {
@@ -38,6 +43,7 @@ function format(message, args) {
     }
     return result;
 }
+
 function createScopedLocalizeFunction(messages) {
     return function (key, message) {
         var args = [];
@@ -62,6 +68,7 @@ function createScopedLocalizeFunction(messages) {
         }
     };
 }
+
 function localize(key, message) {
     var args = [];
     for (var _i = 2; _i < arguments.length; _i++) {
@@ -69,6 +76,7 @@ function localize(key, message) {
     }
     return format(message, args);
 }
+
 function resolveLanguage(file) {
     var ext = path.extname(file);
     if (ext) {
@@ -108,6 +116,7 @@ function resolveLanguage(file) {
     }
     return file + resolvedLanguage;
 }
+
 function loadMessageBundle(file) {
     if (!file) {
         return localize;
@@ -135,7 +144,9 @@ function loadMessageBundle(file) {
         }
     }
 }
-export { loadMessageBundle };
+
+export {loadMessageBundle};
+
 function config(opt) {
     var options;
     if (isString(opt)) {
@@ -161,5 +172,6 @@ function config(opt) {
     _isPseudo = _options.locale === 'pseudo';
     return loadMessageBundle;
 }
-export { config };
+
+export {config};
 //# sourceMappingURL=main.js.map

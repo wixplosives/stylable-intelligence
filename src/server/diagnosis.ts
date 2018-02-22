@@ -1,19 +1,22 @@
-import { StylableMeta } from 'stylable/dist/src/stylable-processor';
-import { Diagnostic, Range, TextDocument } from 'vscode-languageserver-types';
+import {StylableMeta} from 'stylable/dist/src/stylable-processor';
+import {Diagnostic, Range, TextDocument} from 'vscode-languageserver-types';
 import * as path from 'path';
-import { safeParse, Diagnostics, process as stylableProcess, StylableTransformer, FileProcessor } from 'stylable';
-import { Diagnostic as Report } from 'stylable/src/diagnostics'
-import { FileSystemReadSync } from 'kissfs';
-import { fromVscodePath } from './utils/uri-utils';
+import {Diagnostics, FileProcessor, process as stylableProcess, safeParse, StylableTransformer} from 'stylable';
+import {Diagnostic as Report} from 'stylable/src/diagnostics'
+import {FileSystemReadSync} from 'kissfs';
+import {fromVscodePath} from './utils/uri-utils';
 
 export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileProcessor: FileProcessor<StylableMeta>): Diagnostic[] {
 
-    if (!doc.uri.endsWith('.st.css')) { return [] };
+    if (!doc.uri.endsWith('.st.css')) {
+        return []
+    }
+    ;
     const file = fromVscodePath(doc.uri);
 
     function requireModule(path: string) {
         try {
-            const m = { exports: {} };
+            const m = {exports: {}};
             new Function('module', 'exports', 'require', fs.loadTextFileSync(path))(m, m.exports, requireModule);
             return m.exports;
         } catch (err) {
@@ -28,14 +31,15 @@ export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileP
         requireModule
     })
 
-    let docPostCSSRoot = safeParse(doc.getText(), { from: path.resolve(file) })
+    let docPostCSSRoot = safeParse(doc.getText(), {from: path.resolve(file)})
     let meta = stylableProcess(docPostCSSRoot)
 
     fileProcessor.add(file, meta);
 
     try {
         transformer.transform(meta)
-    } catch (e) { }
+    } catch (e) {
+    }
     return meta.diagnostics.reports.concat(meta.transformDiagnostics ? meta.transformDiagnostics.reports : [])
         .map(reportToDiagnostic)
 
@@ -51,8 +55,8 @@ export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileP
 
 function createRange(report: Report) {
     let source = report.node.source
-    let start = { line: 0, character: 0 }
-    let end = { line: 0, character: 0 }
+    let start = {line: 0, character: 0}
+    let end = {line: 0, character: 0}
     if (report.options.word && source) {
         let lines: string[] = (source.input as any).css.split('\n')
         const searchStart = source.start!.line - 1

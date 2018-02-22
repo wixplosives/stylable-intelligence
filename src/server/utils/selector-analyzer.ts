@@ -4,17 +4,23 @@ export interface SelectorQuery {
     _type: string;
     text: string[];
 }
+
 export interface SelectorChunk extends SelectorQuery {
     type: string;
     classes: string[];
     customSelectors: string[];
     states: string[];
 }
+
 export interface SelectorInternalChunk extends SelectorChunk {
     name: string;
 }
-export interface SelectorDescendent extends SelectorQuery { }
-export interface SelectorDirectChild extends SelectorQuery { }
+
+export interface SelectorDescendent extends SelectorQuery {
+}
+
+export interface SelectorDirectChild extends SelectorQuery {
+}
 
 export interface CursorPosition {
     focusChunk: SelectorQuery | Array<SelectorChunk | SelectorInternalChunk>;
@@ -23,28 +29,33 @@ export interface CursorPosition {
 }
 
 export function createSelectorChunk(value?: Partial<SelectorChunk>): SelectorChunk {
-    return { type: '*', classes: [], customSelectors: [], states: [], text: [], ...value, _type: 'chunk' };
+    return {type: '*', classes: [], customSelectors: [], states: [], text: [], ...value, _type: 'chunk'};
 }
 
 export function createSelectorInternalChunk(value?: Partial<SelectorInternalChunk>): SelectorInternalChunk {
-    return { name: '', ...createSelectorChunk(value), _type: 'internal-chunk' };
+    return {name: '', ...createSelectorChunk(value), _type: 'internal-chunk'};
 }
+
 export function createSelectorDescendent(): SelectorDescendent {
-    return { _type: 'descendent', text: [] };
+    return {_type: 'descendent', text: []};
 }
+
 export function createSelectorDirectChild(): SelectorDirectChild {
-    return { _type: 'direct-child', text: [] };
+    return {_type: 'direct-child', text: []};
 }
 
 export function isSelectorChunk(chunk: SelectorQuery): chunk is SelectorInternalChunk {
     return chunk && chunk._type === 'chunk';
 }
+
 export function isSelectorInternalChunk(chunk: SelectorQuery): chunk is SelectorInternalChunk {
     return chunk && chunk._type === 'internal-chunk';
 }
+
 export function isSelectorDescendent(chunk: SelectorQuery): chunk is SelectorDescendent {
     return chunk && chunk._type === 'descendent';
 }
+
 export function isSelectorDirectChild(chunk: SelectorQuery): chunk is SelectorDirectChild {
     return chunk && chunk._type === 'direct-child';
 }
@@ -52,7 +63,7 @@ export function isSelectorDirectChild(chunk: SelectorQuery): chunk is SelectorDi
 export function parseSelector(inputSelector: string, cursorIndex: number = 0): { selector: SelectorQuery[], target: CursorPosition, lastSelector: string } {
     const res: SelectorQuery[] = [];
     const textArr: string[] = [];
-    let cursorTarget = { focusChunk: {} as any, text: textArr, index: -1, internalIndex: 0 };
+    let cursorTarget = {focusChunk: {} as any, text: textArr, index: -1, internalIndex: 0};
     const tokenizedSelectors = selectorTokenizer.parse(inputSelector);
 
     if (tokenizedSelectors.type !== 'selectors') {
@@ -122,7 +133,10 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                     }
                 case 'pseudo-element':
                     currentSourceQuery = '::' + selectorQueryItem.name;
-                    currentTarget = createSelectorInternalChunk({ name: selectorQueryItem.name, type: selectorQueryItem.name });
+                    currentTarget = createSelectorInternalChunk({
+                        name: selectorQueryItem.name,
+                        type: selectorQueryItem.name
+                    });
                     currentTarget.text.push(currentSourceQuery);
                     res.push(currentTarget);
                     chunkInternalPos = 0;

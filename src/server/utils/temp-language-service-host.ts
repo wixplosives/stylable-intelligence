@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import {FileSystemReadSync, checkExistsSync} from 'kissfs';
+import {checkExistsSync, FileSystemReadSync} from 'kissfs';
 import * as path from 'path';
 
 declare module 'typescript' {
@@ -78,7 +78,9 @@ export function createBaseHost(syncFs: FileSystemReadSync, systemPath: typeof pa
 export interface LanguageServicesHostOptions {
     baseHost: BaseHost;
     compilerOptions: ts.CompilerOptions;
+
     getOpenedDocs(): string[];
+
     cwd: string;
     defaultLibDirectory: string;
     customTransformers?: ts.CustomTransformers;
