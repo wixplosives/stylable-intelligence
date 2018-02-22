@@ -13,6 +13,7 @@
     "outDir": "dist"
   },
   "exclude": [
+    "service.d.ts",
     "node_modules",
     "dist"
   ]
