@@ -101,7 +101,7 @@
       {
         "language": "stylable",
         "scopeName": "source.stylable",
-        "path": "./src/client/stylable.tmLanguage.json"
+        "path": "./syntaxes/stylable.tmLanguage.json"
       }
     ]
   },
