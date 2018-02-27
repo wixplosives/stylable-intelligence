@@ -541,6 +541,8 @@ export default class Provider {
         const value = line.slice(valueStartChar);
         const stateParts = pvp(value).nodes;
         let requiredHinting: boolean = false;
+        let validator = { length: 0, requiredHinting: false };
+        let stateTypeValidatorToHint: string | null = null;
 
         if (stateParts.some(isParsedNodeFunction)) {
             let length = valueStartChar;
@@ -550,24 +552,66 @@ export default class Provider {
 
                 if (isParsedNodeFunction(statePart)) {
                     const stateNodes = statePart.nodes;
-                    length++; // opening parenthesis
+                    length++; // opening state parenthesis
 
                     ({length, requiredHinting} = resolvePosInState(pos.character, length, statePart.before));
+                    if (requiredHinting || stateTypeValidatorToHint) {
+                        continue;
+                    }
 
-                    stateNodes.forEach((node: ParsedValue) => {
-                        ({length, requiredHinting} = resolvePosInState(pos.character, length, node.value));
-                    });
+                    for (let typeNode of stateNodes) {
+                    // stateNodes.forEach((typeNode: ParsedValue) => {
+                        ({length, requiredHinting} = resolvePosInState(pos.character, length, typeNode.value));
 
-                    ({length, requiredHinting} = resolvePosInState(pos.character, length, statePart.after));
+                        if (isParsedNodeFunction(typeNode)) {
+                            length++; // opening type parenthesis
 
-                    length++; // closing parenthesis
+                            validator = resolvePosInState(pos.character, length, typeNode.before);
+                            stateTypeValidatorToHint = isValidatorsHintingRequired(validator.requiredHinting, stateTypeValidatorToHint, typeNode.value);
+                            length = validator.length;
+
+                            typeNode.nodes.forEach((valNode: ParsedValue) => {
+                                validator = resolvePosInState(pos.character, length, valNode.value);
+                                stateTypeValidatorToHint = isValidatorsHintingRequired(validator.requiredHinting, stateTypeValidatorToHint, typeNode.value);
+
+                                if (isParsedNodeFunction(valNode)) {
+                                    length++; // opening arg parenthesis
+
+                                    const argsLength = valNode.nodes.reduce((sum: number, node: any) => {
+                                        const quotes = (node.quote && 2) || 0;
+                                        const before = node.before && node.before.length || 0;
+                                        const after = node.after && node.after.length || 0;
+                                        return sum + node.value.length + before + after + quotes;
+                                    }, 0);
+
+                                    length = validator.length + argsLength;
+                                    length++; // closing arg parenthesis
+                                }
+                            });
+
+                            validator = resolvePosInState(pos.character, length, typeNode.after);
+                            stateTypeValidatorToHint = isValidatorsHintingRequired(validator.requiredHinting, stateTypeValidatorToHint, typeNode.value);
+                            length = validator.length;
+
+                            length++; // closing type parenthesis
+                        }
+                    };
+
+                    if (requiredHinting || stateTypeValidatorToHint) {
+                        continue;
+                    } else {
+                        ({length, requiredHinting} = resolvePosInState(pos.character, length, statePart.after));
+                    }
+
+                    length++; // closing state parenthesis
                 } else if (isParsedNodeDiv(statePart)) {
                     length = length + statePart.before.length + statePart.after.length;
                 }
             }
-
-            if (requiredHinting) {
-                return createStateSignature();
+            if (stateTypeValidatorToHint) {
+                return createStateValidatorSignature(stateTypeValidatorToHint);
+            } else if (requiredHinting) {
+                return createStateTypeSignature();
             }
         }
 
@@ -712,10 +756,40 @@ export default class Provider {
 
 }
 
-function createStateSignature() {
+type StateSuggestionType = 'type' | 'validator' | null;
+
+function isValidatorsHintingRequired(requiredHinting: boolean, stateTypeValidatorToHint: string | null, type: string) {
+    if (requiredHinting) {
+        stateTypeValidatorToHint = type;
+    }
+    return stateTypeValidatorToHint;
+}
+
+function createStateValidatorSignature(type: string) {
+    const valiadtors = systemValidators[type].subValidators;
+
+    if (valiadtors) {
+        const validatorsString = Object.keys(valiadtors).join(', ');
+        const sigInfo: SignatureInformation = {
+            label: `Supported "${type}" validator types:\n- "${validatorsString}"`,
+            parameters: [{label: validatorsString}] as ParameterInformation[]
+        };
+
+        return {
+            activeParameter: 0,
+            activeSignature: 0,
+            signatures: [sigInfo]
+        } as SignatureHelp;
+    } else {
+        return null;
+    }
+}
+
+
+function createStateTypeSignature() {
     const stateTypes = Object.keys(systemValidators).join(' | ');
     const sigInfo: SignatureInformation = {
-        label: `Supported state types: "${stateTypes}"`,
+        label: `Supported state types:\n- "${stateTypes}"`,
         parameters: [{label: stateTypes}] as ParameterInformation[]
     };
     return {
@@ -727,10 +801,12 @@ function createStateSignature() {
 
 function resolvePosInState(character: number, length: number, arg: string) {
     let requiredHinting = false;
+
     if (isBetweenLengths(character, length, arg)) {
         requiredHinting = true;
     }
     length = length + arg.length;
+
     return {length, requiredHinting};
 }
 

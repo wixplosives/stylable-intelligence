@@ -6,9 +6,9 @@
 
 .gaga {
     -st-extends: Comp;
-    -st-states: blah(enum(a,b,c));
+    -st-states: blah( string( regex() ) );
 }
 
-.gaga:xxx(b){
+.gaga:blah(user){
 
 }
