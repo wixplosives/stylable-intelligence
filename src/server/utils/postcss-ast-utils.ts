@@ -46,11 +46,11 @@ export function isBeforeRuleset(position: ProviderPosition, node: PostCss.NodeBa
 export function isAfterRuleset(position: ProviderPosition, node: PostCss.NodeBase) {
     const part = ((node.source.input as any).css as string).split('\n').slice(node.source.start!.line - 1, node.source.end!.line);
     if (part.findIndex(s => s.indexOf('}') !== -1) + node.source.start!.line < position.line) {
-        return true
+        return true;
     }
     if (part[position.line - node.source.start!.line].indexOf('}') > -1 &&
         part[position.line - node.source.start!.line].indexOf('}') < position.character) {
-        return true
+        return true;
     }
     return false;
 }
@@ -90,9 +90,8 @@ export function pathFromPosition(ast: PostCss.NodeBase, position: ProviderPositi
             return pathFromPosition(childNode, position, res);
         }
     }
-    return res
+    return res;
 }
-
 
 export function getPositionInSrc(src: string, position: ProviderPosition) {
     const lines = src.split('\n');

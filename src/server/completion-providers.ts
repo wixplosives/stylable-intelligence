@@ -6,6 +6,7 @@ import {
     SRule,
     Stylable,
     StylableMeta,
+    systemValidators,
     valueMapping,
     VarSymbol
 } from 'stylable';
@@ -28,8 +29,9 @@ import {
     topLevelDirectives,
     valueCompletion,
     valueDirective,
+    stateTypeCompletion,
 } from './completion-types';
-import {isComment, isDeclaration} from './utils/postcss-ast-utils';
+import {isComment, isDeclaration, isInNode} from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
 import {
@@ -46,6 +48,8 @@ import {toVscodePath} from './utils/uri-utils';
 import {ResolvedElement} from 'stylable/dist/src/stylable-transformer';
 import {keys, last} from 'lodash';
 import {ExtendedFSReadSync, ExtendedTsLanguageService} from './types';
+import { position } from 'polished';
+import { resolveStateTypeOrValidator } from './feature/pseudo-class';
 
 const pvp = require('postcss-value-parser');
 
@@ -605,6 +609,112 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
     },
 }
 
+function isNodeRule(node: any): node is PostCss.Rule {
+    if (node.type && node.type === 'rule') {
+        return true;
+    }
+    return false;
+}
+function isNodeDecl(node: any): node is PostCss.Declaration {
+    if (node.type && node.type === 'decl') {
+        return true;
+    }
+    return false;
+}
+
+function isPositionInDecl(position: ProviderPosition, decl: PostCss.Declaration) {
+    const srcStart = decl.source && decl.source.start;
+    const srcEnd = decl.source && decl.source.end;
+
+    if (srcStart && srcEnd) {
+        const srcStartLine = srcStart.line - 1;
+        const srcEndLine = srcEnd.line - 1;
+        const srcStartChar = srcStart.column - 1;
+        const srcEndChar = srcEnd.column - 1;
+
+        if ((srcStartLine < position.line) && (srcEndLine > position.line)) {
+            return true;
+        } else if ((srcStartLine === position.line) && (srcEndLine === position.line)) {
+            if (srcStartChar <= position.character && srcEndChar >= position.character) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+export const StateTypeCompletionProvider: CompletionProvider = {
+    provide({astAtCursor, fullLineText, meta, position}: ProviderOptions): Completion[] {
+        const acc: Completion[] = [];
+
+        if (isNodeRule(astAtCursor)) {
+            const declNodes = astAtCursor.nodes;
+
+            if (declNodes) {
+                const stateDeclInPos = declNodes.find((decl: PostCss.ChildNode) => {
+                    if (decl.type === 'decl' && decl.prop === valueMapping.states && isPositionInDecl(position, decl)) {
+                        return true;
+                    }
+
+                    return false;
+                });
+
+                if (stateDeclInPos) {
+                    const toSuggest = resolveStateTypeOrValidator(meta, position, fullLineText);
+                    const types = Object.keys(systemValidators);
+
+                    // validator completion
+                    if (typeof toSuggest === 'string') {
+                        let input = getStateDefinitionInput(fullLineText, position);
+                        const validators = systemValidators[toSuggest].subValidators;
+
+                        if (validators) {
+                            const validatorNames = Object.keys(validators);
+
+                            let relevantValidators = validatorNames.filter(t => t.startsWith(input));
+                            relevantValidators = relevantValidators.length ? relevantValidators : validatorNames;
+
+                            relevantValidators.forEach(validator => {
+                                acc.push(
+                                    stateTypeCompletion(
+                                        validator,
+                                        `Stylable pseudo-class ${toSuggest} validators`,
+                                        new ProviderRange(
+                                            new ProviderPosition(position.line, position.character - input.length),
+                                            position
+                                        )
+                                    )
+                                );
+                            });
+                        }
+                    // type completion
+                    } else if (typeof toSuggest === 'boolean' && toSuggest) {
+                        let input = getStateDefinitionInput(fullLineText, position);
+                        let relevantTypes = types.filter(t => t.startsWith(input));
+                        relevantTypes = relevantTypes.length ? relevantTypes : types;
+
+                        relevantTypes.forEach(type => {
+                            acc.push(
+                                stateTypeCompletion(
+                                    type,
+                                    'Stylable pseudo-class types',
+                                    new ProviderRange(
+                                        new ProviderPosition(position.line, position.character - input.length),
+                                        position
+                                    )
+                                )
+                            );
+                        });
+                    }
+                }
+            }
+        }
+
+        return acc;
+    },
+}
+
 export const StateCompletionProvider: CompletionProvider = {
     provide({parentSelector, lineChunkAtCursor, resolvedElements, target, lastSelectoid, meta, position}: ProviderOptions): Completion[] {
         if (!parentSelector && !lineChunkAtCursor.endsWith('::')) {
@@ -722,6 +832,13 @@ export const ValueCompletionProvider: CompletionProvider = {
             return [];
         }
     },
+}
+
+function getStateDefinitionInput(fullLineText: string, position: ProviderPosition) {
+    let input = fullLineText.slice(0, position.character);
+    const lastParenthesis = input.lastIndexOf('(');
+    input = input.slice(lastParenthesis + 1);
+    return input;
 }
 
 function createCodeMixinCompletion(name: string, lastName: string, position: ProviderPosition, meta: StylableMeta) {

@@ -256,7 +256,7 @@ describe('Signature Help', function () {
                 validators.forEach(validator => validator.split('').forEach((c, i) => {
                     let prefix = validator.slice(0, i);
                     it('Provides validator signature help for a local string state type definition, with prefix ' + prefix, () => {
-                        let filePath = 'states/with-param/local-state-string-validators.st.css';
+                        let filePath = 'states/with-param/string/local-state-string-validators.st.css';
 
                         let sig = getSignatureHelp(filePath, prefix);
 

@@ -88,29 +88,278 @@ describe('States', function () {
     });
 
     describe('State with param', function () {
-        it('should complete available states from same file', function () {
-            const rng = createRange(4, 5, 4, 5);
-            const createComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateCompletion(str.slice(1), rng, path, true);
+        describe('Definition', () => {
+            it('should complete available states param types', function () {
+                const rng = createRange(1, 22, 1, 22);
+                const createComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateTypeDefinitionCompletion(str, rng, path);
 
-            return asserters.getCompletions('states/with-param/local-state-param.st.css').then((asserter) => {
-                let exp: Partial<Completion>[] = [];
+                return asserters.getCompletions('states/with-param/state-def-with-param-start.st.css').then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
 
-                exp.push(createComp(':hello', rng));
+                    exp.push(createComp('string', rng));
+                    exp.push(createComp('number', rng));
+                    exp.push(createComp('enum', rng));
+                    exp.push(createComp('tag', rng));
 
-                asserter.suggested(exp);
+                    asserter.suggested(exp);
+                });
+            });
+
+            describe('String', () => {
+                it('should complete available state with the start of a "string" pre-written', function () {
+                    const rng = createRange(1, 22, 1, 23);
+                    const createComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateTypeDefinitionCompletion(str, rng, path);
+
+                    return asserters.getCompletions('states/with-param/string/state-def-with-param-string-start.st.css').then((asserter) => {
+                        let exp: Partial<Completion>[] = [];
+                        let unExp: Partial<Completion>[] = [];
+
+                        exp.push(createComp('string', rng));
+
+                        unExp.push(createComp('number', rng));
+                        unExp.push(createComp('enum', rng));
+                        unExp.push(createComp('tag', rng));
+
+                        asserter.suggested(exp);
+                        asserter.notSuggested(unExp);
+                    });
+                });
+
+                describe('Validators', () => {
+                    it('should complete available state string validators', function () {
+                        const rng = createRange(1, 29, 1, 29);
+                        const createComp = (validator: string, rng: ProviderRange, type: string, path?: string) => asserters.stateValidatorDefinitionCompletion(validator, rng, type, path);
+
+                        return asserters.getCompletions('states/with-param/string/local-state-string-validators.st.css').then((asserter) => {
+                            let exp: Partial<Completion>[] = [];
+
+                            exp.push(createComp('regex', rng, 'string'));
+                            exp.push(createComp('contains', rng, 'string'));
+                            exp.push(createComp('minLength', rng, 'string'));
+                            exp.push(createComp('maxLength', rng, 'string'));
+
+                            asserter.suggested(exp);
+                        });
+                    });
+
+                    it('should complete regex string validator', function () {
+                        const rng = createRange(1, 29, 1, 31);
+                        const createComp = (validator: string, rng: ProviderRange, type: string, path?: string) => asserters.stateValidatorDefinitionCompletion(validator, rng, type, path);
+
+                        return asserters.getCompletions('states/with-param/string/state-def-with-param-string-regex-start.st.css').then((asserter) => {
+                            let exp: Partial<Completion>[] = [];
+                            let unExp: Partial<Completion>[] = [];
+
+                            exp.push(createComp('regex', rng, 'string'));
+
+                            unExp.push(createComp('contains', rng, 'string'));
+                            unExp.push(createComp('minLength', rng, 'string'));
+                            unExp.push(createComp('maxLength', rng, 'string'));
+
+                            asserter.suggested(exp);
+                            asserter.notSuggested(unExp);
+                        });
+                    });
+
+                    it('should complete contains string validator', function () {
+                        const rng = createRange(1, 29, 1, 30);
+                        const createComp = (validator: string, rng: ProviderRange, type: string, path?: string) => asserters.stateValidatorDefinitionCompletion(validator, rng, type, path);
+
+                        return asserters.getCompletions('states/with-param/string/state-def-with-param-string-contains-start.st.css').then((asserter) => {
+                            let exp: Partial<Completion>[] = [];
+                            let unExp: Partial<Completion>[] = [];
+
+                            exp.push(createComp('contains', rng, 'string'));
+
+                            unExp.push(createComp('regex', rng, 'string'));
+                            unExp.push(createComp('minLength', rng, 'string'));
+                            unExp.push(createComp('maxLength', rng, 'string'));
+
+                            asserter.suggested(exp);
+                            asserter.notSuggested(unExp);
+                        });
+                    });
+
+                    it('should complete min/max Length string validators', function () {
+                        const rng = createRange(1, 29, 1, 30);
+                        const createComp = (validator: string, rng: ProviderRange, type: string, path?: string) => asserters.stateValidatorDefinitionCompletion(validator, rng, type, path);
+
+                        return asserters.getCompletions('states/with-param/string/state-def-with-param-string-m-start.st.css').then((asserter) => {
+                            let exp: Partial<Completion>[] = [];
+                            let unExp: Partial<Completion>[] = [];
+
+                            exp.push(createComp('minLength', rng, 'string'));
+                            exp.push(createComp('maxLength', rng, 'string'));
+
+                            unExp.push(createComp('regex', rng, 'string'));
+                            unExp.push(createComp('contains', rng, 'string'));
+
+                            asserter.suggested(exp);
+                            asserter.notSuggested(unExp);
+                        });
+                    });
+                });
+            });
+            describe('Number', () => {
+                it('should complete available state with the start of a "number" pre-written', function () {
+                    const rng = createRange(1, 22, 1, 23);
+                    const createComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateTypeDefinitionCompletion(str, rng, path);
+
+                    return asserters.getCompletions('states/with-param/number/state-def-with-param-number-start.st.css').then((asserter) => {
+                        let exp: Partial<Completion>[] = [];
+                        let unExp: Partial<Completion>[] = [];
+
+                        exp.push(createComp('number', rng));
+
+                        unExp.push(createComp('string', rng));
+                        unExp.push(createComp('enum', rng));
+                        unExp.push(createComp('tag', rng));
+
+                        asserter.suggested(exp);
+                        asserter.notSuggested(unExp);
+                    });
+                });
+
+                describe('Validators', () => {
+                    it('should complete available state number validators', function () {
+                        const rng = createRange(1, 29, 1, 29);
+                        const createComp = (validator: string, rng: ProviderRange, type: string, path?: string) => asserters.stateValidatorDefinitionCompletion(validator, rng, type, path);
+
+                        return asserters.getCompletions('states/with-param/number/local-state-number-validators.st.css').then((asserter) => {
+                            let exp: Partial<Completion>[] = [];
+
+                            exp.push(createComp('min', rng, 'number'));
+                            exp.push(createComp('max', rng, 'number'));
+                            exp.push(createComp('multipleOf', rng, 'number'));
+
+                            asserter.suggested(exp);
+                        });
+                    });
+
+                    it('should complete min number validator', function () {
+                        const rng = createRange(1, 29, 1, 31);
+                        const createComp = (validator: string, rng: ProviderRange, type: string, path?: string) => asserters.stateValidatorDefinitionCompletion(validator, rng, type, path);
+
+                        return asserters.getCompletions('states/with-param/number/state-def-with-param-number-min-start.st.css').then((asserter) => {
+                            let exp: Partial<Completion>[] = [];
+                            let unExp: Partial<Completion>[] = [];
+
+                            exp.push(createComp('min', rng, 'number'));
+
+                            unExp.push(createComp('max', rng, 'number'));
+                            unExp.push(createComp('multipleOf', rng, 'number'));
+
+                            asserter.suggested(exp);
+                            asserter.notSuggested(unExp);
+                        });
+                    });
+
+                    it('should complete max number validator', function () {
+                        const rng = createRange(1, 29, 1, 31);
+                        const createComp = (validator: string, rng: ProviderRange, type: string, path?: string) => asserters.stateValidatorDefinitionCompletion(validator, rng, type, path);
+
+                        return asserters.getCompletions('states/with-param/number/state-def-with-param-number-max-start.st.css').then((asserter) => {
+                            let exp: Partial<Completion>[] = [];
+                            let unExp: Partial<Completion>[] = [];
+
+                            exp.push(createComp('max', rng, 'number'));
+
+                            unExp.push(createComp('min', rng, 'number'));
+                            unExp.push(createComp('multipleOf', rng, 'number'));
+
+                            asserter.suggested(exp);
+                            asserter.notSuggested(unExp);
+                        });
+                    });
+
+                    it('should complete multipleOf number validator', function () {
+                        const rng = createRange(1, 29, 1, 31);
+                        const createComp = (validator: string, rng: ProviderRange, type: string, path?: string) => asserters.stateValidatorDefinitionCompletion(validator, rng, type, path);
+
+                        return asserters.getCompletions('states/with-param/number/state-def-with-param-number-multiple-start.st.css').then((asserter) => {
+                            let exp: Partial<Completion>[] = [];
+                            let unExp: Partial<Completion>[] = [];
+
+                            exp.push(createComp('multipleOf', rng, 'number'));
+
+                            unExp.push(createComp('min', rng, 'number'));
+                            unExp.push(createComp('max', rng, 'number'));
+
+                            asserter.suggested(exp);
+                            asserter.notSuggested(unExp);
+                        });
+                    });
+                });
+            });
+
+            describe('Enum', () => {
+                it('should complete available state with the start of a "enum" pre-written', function () {
+                    const rng = createRange(1, 22, 1, 23);
+                    const createComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateTypeDefinitionCompletion(str, rng, path);
+
+                    return asserters.getCompletions('states/with-param/enum/state-def-with-param-enum-start.st.css').then((asserter) => {
+                        let exp: Partial<Completion>[] = [];
+                        let unExp: Partial<Completion>[] = [];
+
+                        exp.push(createComp('enum', rng));
+
+                        unExp.push(createComp('number', rng));
+                        unExp.push(createComp('tag', rng));
+                        unExp.push(createComp('string', rng));
+
+                        asserter.suggested(exp);
+                        asserter.notSuggested(unExp);
+                    });
+                });
+            });
+
+            describe('Tag', () => {
+                it('should complete available state with the start of a "tag" pre-written', function () {
+                    const rng = createRange(1, 22, 1, 23);
+                    const createComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateTypeDefinitionCompletion(str, rng, path);
+
+                    return asserters.getCompletions('states/with-param/tag/state-def-with-param-tag-start.st.css').then((asserter) => {
+                        let exp: Partial<Completion>[] = [];
+                        let unExp: Partial<Completion>[] = [];
+
+                        exp.push(createComp('tag', rng));
+
+                        unExp.push(createComp('number', rng));
+                        unExp.push(createComp('enum', rng));
+                        unExp.push(createComp('string', rng));
+
+                        asserter.suggested(exp);
+                        asserter.notSuggested(unExp);
+                    });
+                });
             });
         });
 
-        it('should complete imported state', function () {
-            const rng = createRange(9, 5, 9, 5);
-            const createComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateCompletion(str.slice(1), rng, path, true);
+        describe('Usage', () => {
+            it('should complete available states from same file (with parenthesis)', function () {
+                const rng = createRange(4, 5, 4, 5);
+                const createComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateCompletion(str.slice(1), rng, path, true);
 
-            return asserters.getCompletions('states/with-param/imported-state-param.st.css').then((asserter) => {
-                let exp: Partial<Completion>[] = [];
+                return asserters.getCompletions('states/with-param/local-state-param.st.css').then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
 
-                exp.push(createComp(':shmover', rng, './comp-to-import-with-param.st.css'));
+                    exp.push(createComp(':hello', rng));
 
-                asserter.suggested(exp);
+                    asserter.suggested(exp);
+                });
+            });
+
+            it('should complete imported state (with parenthesis)', function () {
+                const rng = createRange(9, 5, 9, 5);
+                const createComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateCompletion(str.slice(1), rng, path, true);
+
+                return asserters.getCompletions('states/with-param/imported-state-param.st.css').then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+
+                    exp.push(createComp(':shmover', rng, './comp-to-import-with-param.st.css'));
+
+                    asserter.suggested(exp);
+                });
             });
         });
     });

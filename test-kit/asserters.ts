@@ -59,7 +59,12 @@ function assertExact(actualCompletions: Completion[], expectedCompletions: Parti
 
 function assertNotPresent(actualCompletions: Completion[], nonCompletions: Partial<Completion>[], prefix: string = '') {
     nonCompletions.forEach(notAllowed => {
-        const actual = actualCompletions.find((comp) => comp.label === notAllowed.label && comp.range === notAllowed.range);
+        const actual = actualCompletions.find((comp) => comp.label === notAllowed.label && !!notAllowed.range &&
+            comp.range.start.line === notAllowed.range.start.line &&
+            comp.range.start.character === notAllowed.range.start.character &&
+            comp.range.end.line === notAllowed.range.end.line &&
+            comp.range.end.character === notAllowed.range.end.character
+        );
         expect(actual, prefix + 'unallowed completion found: ' + notAllowed.label + ' ').to.be.equal(undefined);
     });
 }
@@ -243,9 +248,14 @@ export const codeMixinCompletion: (symbolName: string, rng: ProviderRange, from:
 export const formatterCompletion: (symbolName: string, rng: ProviderRange, from: string) => Partial<Completion> = (symbolName, rng, from) => {
     return new Completion(symbolName, 'from: ' + from, 'a', new snippet(symbolName + "($0)"), rng, false, true)
 }
+export const stateTypeDefinitionCompletion: (type: string, rng: ProviderRange, from?: string) => Partial<Completion> = (type, rng, from = 'Stylable pseudo-class types') => {
+    return { label: `${type}()`, sortText: 'a', detail: `from: ${from}`, insertText: `${type}($0)`, range: rng }
+}
+export const stateValidatorDefinitionCompletion: (validator: string, rng: ProviderRange, type: string, from?: string) => Partial<Completion> = (validator, rng, type, from = `Stylable pseudo-class ${type} validators`) => {
+    return { label: `${validator}()`, sortText: 'a', detail: `from: ${from}`, insertText: `${validator}($0)`, range: rng }
+}
 export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string, hasParam?: boolean) => Partial<Completion> = (stateName, rng, from = 'Local file', hasParam = false) => {
     return { label: ':' + stateName + (hasParam ? '()' : ''), sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName + (hasParam ? '($1)$0' : ''), range: rng, triggerSignature: hasParam }
-
 }
 export const pseudoElementCompletion: (elementName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (elementName, rng, from?) => {
     return { label: '::' + elementName, sortText: 'a', detail: 'from: ' + from, insertText: '::' + elementName, range: rng }

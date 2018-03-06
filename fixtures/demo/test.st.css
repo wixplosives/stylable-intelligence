@@ -6,9 +6,10 @@
 
 .gaga {
     -st-extends: Comp;
-    -st-states: blah( string( regex() ) );
+    -st-states: blah(enum(blah, bleh, blih));
+    color: rgb(var(b))
 }
 
-.gaga:blah(user){
+.gaga:blah() {
 
 }
