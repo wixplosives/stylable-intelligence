@@ -361,6 +361,63 @@ describe('States', function () {
                     asserter.suggested(exp);
                 });
             });
+
+            it('should complete enum state parameter options', function () {
+                const rng = createRange(4, 12, 4, 12);
+                const createComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateEnumCompletion(str, rng, path);
+
+                return asserters.getCompletions('states/with-param/enum/state-with-param-enum-suggestion.st.css').then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+
+                    exp.push(createComp('bob', rng));
+                    exp.push(createComp('alice', rng));
+                    exp.push(createComp('eve', rng));
+
+                    asserter.suggested(exp);
+                });
+            });
+
+            it('should complete pre-existing enum state parameter options from imported file', function () {
+                const rng = createRange(9, 12, 9, 13);
+                const createComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateEnumCompletion(str, rng, path);
+
+                return asserters.getCompletions('states/with-param/enum/imported-state-with-enum-middle.st.css').then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+                    let unExp: Partial<Completion>[] = [];
+
+                    exp.push(createComp('eve', rng, './state-with-enum.st.css'));
+
+                    unExp.push(createComp('alice', rng, './state-with-enum.st.css'));
+                    unExp.push(createComp('bob', rng, './state-with-enum.st.css'));
+
+                    asserter.suggested(exp);
+                    asserter.notSuggested(unExp);
+                });
+            });
+
+            it('should not complete pseudo-states and pseudo-elements when inside an enum (from imported file)', function () {
+                const rng = createRange(9, 12, 9, 12);
+                const createEnumComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateEnumCompletion(str, rng, path);
+                const createStateComp = (str: string, rng: ProviderRange, path?: string) => asserters.stateCompletion(str, rng, path);
+                const createElementComp = (str: string, rng: ProviderRange, path?: string) => asserters.pseudoElementCompletion(str, rng, path);
+                const createGlobalComp = (rng: ProviderRange) => asserters.globalCompletion(rng);
+
+                return asserters.getCompletions('states/with-param/enum/imported-state-with-enum-start.st.css').then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+                    let unExp: Partial<Completion>[] = [];
+
+                    exp.push(createEnumComp('eve', rng, './state-with-enum.st.css'));
+                    exp.push(createEnumComp('alice', rng, './state-with-enum.st.css'));
+                    exp.push(createEnumComp('bob', rng, './state-with-enum.st.css'));
+
+                    unExp.push(createStateComp('otherState', rng, './state-with-enum.st.css'));
+                    unExp.push(createElementComp('part', rng));
+                    unExp.push(createGlobalComp(rng));
+
+                    asserter.suggested(exp);
+                    asserter.notSuggested(unExp);
+                });
+            });
         });
     });
 

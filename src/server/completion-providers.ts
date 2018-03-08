@@ -8,7 +8,8 @@ import {
     StylableMeta,
     systemValidators,
     valueMapping,
-    VarSymbol
+    VarSymbol,
+    StateParsedValue
 } from 'stylable';
 import {CursorPosition, SelectorChunk} from "./utils/selector-analyzer";
 import {
@@ -25,6 +26,7 @@ import {
     rulesetDirectives,
     rulesetInternalDirective,
     stateCompletion,
+    stateEnumCompletion,
     topLevelDirective,
     topLevelDirectives,
     valueCompletion,
@@ -46,7 +48,7 @@ import * as ts from 'typescript';
 import {Identifier, TypeReferenceNode} from 'typescript';
 import {toVscodePath} from './utils/uri-utils';
 import {ResolvedElement} from 'stylable/dist/src/stylable-transformer';
-import {keys, last} from 'lodash';
+import {find, keys, last, some} from 'lodash';
 import {ExtendedFSReadSync, ExtendedTsLanguageService} from './types';
 import { position } from 'polished';
 import { resolveStateTypeOrValidator } from './feature/pseudo-class';
@@ -163,7 +165,6 @@ function createDirectiveRange(position: ProviderPosition, fullLineText: string, 
 const importDeclarations: (keyof typeof importDirectives)[] = ['default', 'named', 'from', 'theme']
 const simpleRulesetDeclarations: (keyof typeof rulesetDirectives)[] = ['extends', 'states', 'variant', 'mixin']
 const topLevelDeclarations: (keyof typeof topLevelDirectives)[] = ['root', 'namespace', 'vars', 'import', 'customSelector']
-
 
 //Providers
 //Syntactic
@@ -288,7 +289,7 @@ export const ValueDirectiveProvider: CompletionProvider & { isInsideValueDirecti
 // Selector level
 export const GlobalCompletionProvider: CompletionProvider = {
     provide({parentSelector, fullLineText, position, lineChunkAtCursor}: ProviderOptions): Completion[] {
-        if (!parentSelector && !lineChunkAtCursor.endsWith('::')) {
+        if (!parentSelector && !lineChunkAtCursor.endsWith('::') && !isBetweenChars(fullLineText, position, '(', ')')) {
 
             let offset = 0;
             if (fullLineText.lastIndexOf(':') !== -1) {
@@ -532,9 +533,9 @@ export const NamedCompletionProvider: CompletionProvider & { resolveImport: (imp
 }
 
 export const PseudoElementCompletionProvider: CompletionProvider = {
-    provide({parentSelector, resolved, resolvedElements, lastSelectoid, lineChunkAtCursor, meta, position}: ProviderOptions): Completion[] {
+    provide({parentSelector, resolved, resolvedElements, lastSelectoid, lineChunkAtCursor, meta, position, fullLineText}: ProviderOptions): Completion[] {
         let comps: any[] = [];
-        if (!parentSelector && resolved.length > 0) {
+        if (!parentSelector && resolved.length > 0 && !isBetweenChars(fullLineText, position, '(', ')')) {
 
             const lastNode = resolvedElements[0][resolvedElements[0].length - 1];
             const states = lastNode.resolved.reduce((acc, cur) => {
@@ -606,7 +607,7 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
             }
         }
         return comps;
-    },
+    }
 }
 
 function isNodeRule(node: any): node is PostCss.Rule {
@@ -615,6 +616,7 @@ function isNodeRule(node: any): node is PostCss.Rule {
     }
     return false;
 }
+
 function isNodeDecl(node: any): node is PostCss.Declaration {
     if (node.type && node.type === 'decl') {
         return true;
@@ -716,43 +718,36 @@ export const StateTypeCompletionProvider: CompletionProvider = {
 }
 
 export const StateCompletionProvider: CompletionProvider = {
-    provide({parentSelector, lineChunkAtCursor, resolvedElements, target, lastSelectoid, meta, position}: ProviderOptions): Completion[] {
-        if (!parentSelector && !lineChunkAtCursor.endsWith('::')) {
+    provide({parentSelector, lineChunkAtCursor, resolvedElements, target, lastSelectoid, meta, position, fullLineText}: ProviderOptions): Completion[] {
+        if (!parentSelector && !lineChunkAtCursor.endsWith('::') && !isBetweenChars(fullLineText, position, '(', ')')) {
 
             const lastNode = resolvedElements[0][resolvedElements[0].length - 1];
-            const chunk = Array.isArray(target.focusChunk) ? last(target.focusChunk) : target.focusChunk
+            const chunk = Array.isArray(target.focusChunk) ? last(target.focusChunk) : target.focusChunk;
             const chunkyStates = (chunk && (chunk as SelectorChunk).states) ? (chunk as SelectorChunk).states : [];
 
-            const allStates = lastNode.resolved.reduce((acc, cur) => {
-                keys((cur.symbol as ClassSymbol)[valueMapping.states]).forEach(k => {
-                    acc[k] = (cur.symbol as ClassSymbol)[valueMapping.states][k]
-                })
-                return acc;
-            }, {} as { [key: string]: any })
+            const allStates = collectStates(lastNode);
 
             const newStates = lastNode.resolved.reduce((acc, cur) => {
                 let relPath = path.relative(path.dirname(meta.source), cur.meta.source)
                 if (!relPath.startsWith('.')) {
-                    relPath = './' + relPath
+                    relPath = './' + relPath;
                 }
                 keys((cur.symbol as ClassSymbol)[valueMapping.states]).forEach(k => {
-                    if (
-                        !acc[k] &&
-                        (
-                            k.slice(0, -1).startsWith(lastSelectoid.replace(':', '')) || //selectoid is a substring of current state
-                            allStates.hasOwnProperty(lastSelectoid.replace(':', ''))
-                        ) &&
-                        (chunkyStates.every(cs => cs !== k))
-                    ) {
-                        acc[k] =
-                            {
-                                path: meta.source === cur.meta.source ? 'Local file' : relPath,
-                                hasParam: !!(cur.symbol as ClassSymbol)[valueMapping.states][k]
-                            }
+                    if (!acc[k] && (
+                        k.slice(0, -1).startsWith(lastSelectoid.replace(':', '')) || //selectoid is a substring of current state
+                        allStates.hasOwnProperty(lastSelectoid.replace(':', ''))) &&
+                        (chunkyStates.every(cs => cs !== k))) {
+
+                        const stateDef = (cur.symbol as ClassSymbol)[valueMapping.states][k];
+                        acc[k] = {
+                            path: meta.source === cur.meta.source ? 'Local file' : relPath,
+                            hasParam: !!stateDef,
+                            type: (stateDef && stateDef.type) || null
+                        }
                     }
                 })
                 return acc;
-            }, {} as { [k: string]: { path: string, hasParam: boolean } });
+            }, {} as { [k: string]: { path: string, hasParam: boolean, type: string | null } });
 
             let states = keys(newStates).map(k => {
                 return {name: k, state: newStates[k]}
@@ -760,15 +755,18 @@ export const StateCompletionProvider: CompletionProvider = {
 
 
             if (states.length === 0) {
-                return []
+                return [];
             }
-            ;
 
             const lastState = lastSelectoid.replace(':', '');
             const realState = allStates.hasOwnProperty(lastState);
 
             return states.reduce((acc: Completion[], st) => {
-                acc.push(stateCompletion(st.name, st.state.path, (new ProviderRange(
+                acc.push(
+                    stateCompletion(
+                        st.name,
+                        st.state.path,
+                        (new ProviderRange(
                         new ProviderPosition(
                             position.line,
                             lastState
@@ -779,6 +777,7 @@ export const StateCompletionProvider: CompletionProvider = {
                         ),
                         position)
                     ),
+                    st.state.type,
                     st.state.hasParam
                 ));
                 return acc;
@@ -788,6 +787,60 @@ export const StateCompletionProvider: CompletionProvider = {
         }
     },
 }
+
+export const StateEnumCompletionProvider: CompletionProvider = {
+    provide({meta, astAtCursor, fullLineText, lineChunkAtCursor, position, lastSelectoid, resolved, resolvedElements}: ProviderOptions): Completion[] {
+        let acc: Completion[] = [];
+        const ast = (astAtCursor as PostCss.Node);
+
+        if (!lineChunkAtCursor.endsWith('::') && (ast.type === 'root' || ast.type === 'atrule')) {
+            if (lastSelectoid.startsWith(':')) {
+                const stateName = lastSelectoid.slice(1);
+                const resolvedClass = resolved[0];
+                const lastNode = resolvedElements[0][resolvedElements[0].length - 1];
+                const resolvedStates: {[key: string]: StateParsedValue} = collectStates(lastNode)
+
+                if (Object.keys(resolvedStates).length) {
+                    const resolvedStateNode = find(lastNode.resolved, (node: any) => {
+                        const states = node.symbol[valueMapping.states];
+                        return states &&
+                            some(states, (def: StateParsedValue, name: string) => name === stateName && def && def.type === 'enum' );
+                    });
+                    if (resolvedStateNode) {
+                        const resolvedState: StateParsedValue = (resolvedStateNode as any).symbol[valueMapping.states][stateName];
+                        let existingInput = fullLineText.slice(0, position.character);
+                        existingInput = existingInput.slice(existingInput.lastIndexOf('(') + 1);
+
+                        if (resolvedState.arguments.every(opt => typeof opt === 'string')) {
+                            const options = (resolvedState.arguments as string[]);
+                            let filteredOptions = options.filter((opt: string) => opt.startsWith(existingInput));
+                            filteredOptions = filteredOptions.length ? filteredOptions : options;
+
+                            let from = 'Local file';
+                            if (meta.source !== resolvedStateNode.meta.source) {
+                                from = path.relative(path.dirname(meta.source), resolvedStateNode.meta.source);
+                                if (!from.startsWith('.')) {
+                                    from = './' + from;
+                                }
+                            }
+
+                            acc = filteredOptions.map((opt: string) => stateEnumCompletion(
+                                    opt,
+                                    from,
+                                    new ProviderRange(
+                                        new ProviderPosition(position.line, position.character - existingInput.length),
+                                        position)
+                                )
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        return acc;
+    }
+};
 
 export const ValueCompletionProvider: CompletionProvider = {
     provide({fullLineText, position, meta, styl}: ProviderOptions): Completion[] {
@@ -832,6 +885,27 @@ export const ValueCompletionProvider: CompletionProvider = {
             return [];
         }
     },
+}
+
+function collectStates(lastNode: ResolvedElement) {
+    return lastNode.resolved.reduce((acc, cur) => {
+        keys((cur.symbol as ClassSymbol)[valueMapping.states]).forEach(k => {
+            acc[k] = (cur.symbol as ClassSymbol)[valueMapping.states][k];
+        });
+        return acc;
+    }, {} as {
+        [key: string]: StateParsedValue;
+    });
+}
+
+function isBetweenChars(text: string, position: ProviderPosition, char1: string, char2: string) {
+    const posChar = position.character;
+    const textToPosition = text.slice(0, posChar);
+    const textfromPosition = text.slice(posChar);
+    const openingParenthesisIndex = textToPosition.lastIndexOf(char1);
+    const closingParenthesisIndex = textfromPosition.indexOf(char2) + posChar;
+
+    return posChar > openingParenthesisIndex && posChar <= closingParenthesisIndex;
 }
 
 function getStateDefinitionInput(fullLineText: string, position: ProviderPosition) {

@@ -36,6 +36,7 @@ import {
     SelectorCompletionProvider,
     StateTypeCompletionProvider,
     StateCompletionProvider,
+    StateEnumCompletionProvider,
     TopLevelDirectiveProvider,
     ValueCompletionProvider,
     ValueDirectiveProvider
@@ -81,6 +82,7 @@ export default class Provider {
         NamedCompletionProvider,
         StateTypeCompletionProvider,
         StateCompletionProvider,
+        StateEnumCompletionProvider,
         PseudoElementCompletionProvider,
         ValueCompletionProvider,
     ];

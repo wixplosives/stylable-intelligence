@@ -257,6 +257,9 @@ export const stateValidatorDefinitionCompletion: (validator: string, rng: Provid
 export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string, hasParam?: boolean) => Partial<Completion> = (stateName, rng, from = 'Local file', hasParam = false) => {
     return { label: ':' + stateName + (hasParam ? '()' : ''), sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName + (hasParam ? '($1)$0' : ''), range: rng, triggerSignature: hasParam }
 }
+export const stateEnumCompletion: (option: string, rng: ProviderRange, from?: string) => Partial<Completion> = (option, rng, from = 'Local file') => {
+    return { label: option, sortText: 'a', detail: 'from: ' + from, insertText: option, range: rng }
+}
 export const pseudoElementCompletion: (elementName: string, rng: ProviderRange, from?: string) => Partial<Completion> = (elementName, rng, from?) => {
     return { label: '::' + elementName, sortText: 'a', detail: 'from: ' + from, insertText: '::' + elementName, range: rng }
 }
