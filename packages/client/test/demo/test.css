@@ -1,6 +1,0 @@
-.root {
-    -st-mixin:
-        modifyFunc(
-            color1 = green
-        );
-}
