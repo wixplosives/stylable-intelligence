@@ -26,7 +26,7 @@ import {
 import {
     ColorInformation,
     ServerCapabilities as CPServerCapabilities
-} from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
+} from 'vscode-languageserver-protocol';
 import {evalDeclarationValue, Stylable, valueMapping} from 'stylable';
 import {fromVscodePath, toVscodePath} from './utils/uri-utils';
 import {createMeta, fixAndProcess} from './provider';
