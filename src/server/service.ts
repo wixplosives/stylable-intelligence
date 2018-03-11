@@ -40,6 +40,7 @@ export {MinimalDocs} from './provider-factory';
 //exporting types for use in playground
 export {ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes} from './types'
 
+
 export class StylableLanguageService {
     constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
 
