@@ -13,7 +13,7 @@ import {
 import {
     ColorPresentationRequest,
     DocumentColorRequest
-} from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
+} from 'vscode-languageserver-protocol';
 import {FileSystemReadSync} from 'kissfs';
 import * as ts from 'typescript';
 import {ParsedValue} from 'stylable';

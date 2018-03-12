@@ -1,6 +1,6 @@
 import {expect} from 'chai'
-import {TextDocument} from 'vscode-languageserver-types/lib/main'
-import {TextDocuments, Command,Location, Position, Range, TextEdit,CompletionItem,ParameterInformation,Diagnostic} from "vscode-languageserver/lib/main";
+import {TextDocument} from 'vscode-languageserver-types'
+import {TextDocuments, Command,Location, Position, Range, TextEdit,CompletionItem,ParameterInformation,Diagnostic} from "vscode-languageserver";
 import {createDiagnosis} from '../../src/server/diagnosis'
 import {createProcessor} from '../../src/server/provider-factory'
 import { LocalSyncFs } from '../../src/server/local-sync-fs';
