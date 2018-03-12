@@ -114,8 +114,16 @@ export function pseudoElementCompletion(elementName: string, from: string, rng: 
     return new Completion('::' + elementName, 'from: ' + from, 'a', '::' + elementName, rng)
 }
 
-export function stateCompletion(stateName: string, from: string, rng: ProviderRange, hasParam?: boolean) {
-    return new Completion(':' + stateName + (hasParam ? '()' : ''), 'from: ' + from, 'a', new snippet(':' + stateName + (hasParam ? '($1)$0' : '')), rng, false, hasParam);
+export function stateTypeCompletion(type: string, from: string, rng: ProviderRange) {
+    return new Completion(`${type}()`, `from: ${from}`, 'a', new snippet(`${type}($0)`), rng, false);
+}
+
+export function stateCompletion(stateName: string, from: string, rng: ProviderRange, type: string | null, hasParam?: boolean) {
+    return new Completion(':' + stateName + (hasParam ? '()' : ''), 'from: ' + from, 'a', new snippet(':' + stateName + (hasParam ? '($1)$0' : '')), rng, type === 'enum', hasParam);
+}
+
+export function stateEnumCompletion(option: string, from: string, rng: ProviderRange) {
+    return new Completion(option, 'from: ' + from, 'a', new snippet(option), rng, false);
 }
 
 export function valueCompletion(name: string, from: string, value: string, rng: ProviderRange) {

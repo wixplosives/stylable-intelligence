@@ -203,6 +203,98 @@ describe('Signature Help', function () {
     });
 
     describe('State with parameters', () => {
+        describe('definition', () => {
+            describe('type hinting', () => {
+                const types = ['string', 'number', 'enum', 'tag'];
+
+                types.forEach(str => str.split('').forEach((c, i) => {
+                    let prefix = str.slice(0, i);
+                    it('Provides signature help and identifies state definition, with prefix ' + prefix, () => {
+                        let filePath = 'states/with-param/state-def-with-param-start.st.css';
+
+                        let sig = getSignatureHelp(filePath, prefix);
+
+                        let exp: SignatureHelp = {
+                            activeSignature: 0,
+                            activeParameter: 0,
+                            signatures: [SignatureInformation.create(
+                                'Supported state types:\n- "string | number | enum | tag"',
+                                undefined,
+                                ParameterInformation.create("string | number | enum | tag")
+                            )]
+                        };
+
+                        expect(sig).to.not.be.null;
+                        expect(sig).to.deep.equal(exp);
+                    });
+                }));
+
+                it('Provides signature help and identifies state definition (caret at end of state definition)', () => {
+                    let filePath = 'states/with-param/state-def-with-param-end.st.css';
+
+                    let sig = getSignatureHelp(filePath, '');
+
+                    let exp: SignatureHelp = {
+                        activeSignature: 0,
+                        activeParameter: 0,
+                        signatures: [SignatureInformation.create(
+                            'Supported state types:\n- "string | number | enum | tag"',
+                            undefined,
+                            ParameterInformation.create("string | number | enum | tag")
+                        )]
+                    };
+
+                    expect(sig).to.not.be.null;
+                    expect(sig).to.deep.equal(exp);
+                });
+            });
+
+            describe('string validator hinting', () => {
+                const validators = ['regex', 'contains', 'minLength', 'maxLength'];
+
+                validators.forEach(validator => validator.split('').forEach((c, i) => {
+                    let prefix = validator.slice(0, i);
+                    it('Provides validator signature help for a local string state type definition, with prefix ' + prefix, () => {
+                        let filePath = 'states/with-param/string/local-state-string-validators.st.css';
+
+                        let sig = getSignatureHelp(filePath, prefix);
+
+                        let exp: SignatureHelp = {
+                            activeSignature: 0,
+                            activeParameter: 0,
+                            signatures: [SignatureInformation.create(
+                                'Supported "string" validator types:\n- "regex, contains, minLength, maxLength"',
+                                undefined,
+                                ParameterInformation.create("regex, contains, minLength, maxLength")
+                            )]
+                        };
+
+                        expect(sig).to.not.be.null;
+                        expect(sig).to.deep.equal(exp);
+                    });
+                }));
+
+                it('Provides signature help and identifies state definition (including validator)', () => {
+                    let filePath = 'states/with-param/state-def-with-param-middle.st.css';
+
+                    let sig = getSignatureHelp(filePath, '');
+
+                    let exp: SignatureHelp = {
+                        activeSignature: 0,
+                        activeParameter: 0,
+                        signatures: [SignatureInformation.create(
+                            'Supported state types:\n- "string | number | enum | tag"',
+                            undefined,
+                            ParameterInformation.create("string | number | enum | tag")
+                        )]
+                    };
+
+                    expect(sig).to.not.be.null;
+                    expect(sig).to.deep.equal(exp);
+                });
+            });
+        });
+
         describe('usage', () => {
             let str = "hello";
 
@@ -271,32 +363,6 @@ describe('Signature Help', function () {
                     expect(sig).to.deep.equal(exp);
                 });
             });
-        });
-
-        describe('definition', () => {
-            const types = ['string'];
-
-            types.forEach(str => str.split('').forEach((c, i) => {
-                let prefix = str.slice(0, i);
-                it('Provides signature help and identifies state definition and validators, with prefix ' + prefix, function () {
-                    let filePath = 'states/with-param/state-def-with-param-suggestion.st.css';
-
-                    let sig = getSignatureHelp(filePath, prefix);
-
-                    let exp: SignatureHelp = {
-                        activeSignature: 0,
-                        activeParameter: 0,
-                        signatures: [SignatureInformation.create(
-                            'Supported state types: "string | number | enum | tag"',
-                            undefined,
-                            ParameterInformation.create("string | number | enum | tag")
-                        )]
-                    };
-
-                    expect(sig).to.not.be.null;
-                    expect(sig).to.deep.equal(exp);
-                });
-            }));
         });
     });
 });

@@ -6,9 +6,10 @@
 
 .gaga {
     -st-extends: Comp;
-    -st-states: blah(enum(a,b,c));
+    -st-states: blah(enum(blah, bleh, blih));
+    color: rgb(var(b))
 }
 
-.gaga:xxx(b){
+.gaga:blah() {
 
 }

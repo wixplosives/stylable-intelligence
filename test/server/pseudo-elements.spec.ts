@@ -8,7 +8,7 @@ describe('Pseudo-elements', function () {
 
         const str1 = '::shlomo';
         const str2 = '::momo';
-        const createComp = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './import.st.css');
+        const createCompletion = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './import.st.css');
 
         [str1, str2].forEach((str, j, a) => {
 
@@ -22,11 +22,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -40,11 +40,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -58,11 +58,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -75,8 +75,8 @@ describe('Pseudo-elements', function () {
                     return asserters.getCompletions('pseudo-elements/default-import-as-tag-pseudo-element-exists.st.css', prefix).then((asserter) => {
                         let notExp: Partial<Completion>[] = [];
 
-                        notExp.push(createComp(a[0], rng));
-                        notExp.push(createComp(a[1], rng));
+                        notExp.push(createCompletion(a[0], rng));
+                        notExp.push(createCompletion(a[1], rng));
 
                         asserter.notSuggested(notExp);
                     });
@@ -89,7 +89,7 @@ describe('Pseudo-elements', function () {
 
         const str1 = '::shlomo';
         const str2 = '::momo';
-        const createComp = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './import.st.css');
+        const createCompletion = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './import.st.css');
 
         [str1, str2].forEach((str, j, a) => {
 
@@ -103,11 +103,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -122,11 +122,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -140,11 +140,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -158,11 +158,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -175,8 +175,8 @@ describe('Pseudo-elements', function () {
                     return asserters.getCompletions('pseudo-elements/default-import-extended-pseudo-element-exists.st.css', prefix).then((asserter) => {
                         let notExp: Partial<Completion>[] = [];
 
-                        notExp.push(createComp(a[0], rng));
-                        notExp.push(createComp(a[1], rng));
+                        notExp.push(createCompletion(a[0], rng));
+                        notExp.push(createCompletion(a[1], rng));
 
                         asserter.notSuggested(notExp);
                     });
@@ -189,7 +189,7 @@ describe('Pseudo-elements', function () {
 
         const str1 = '::shlomo';
         const str2 = '::momo';
-        const createComp = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './import.st.css');
+        const createCompletion = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './import.st.css');
 
         [str1, str2].forEach((str, j, a) => {
 
@@ -203,11 +203,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -222,11 +222,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -240,11 +240,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -258,11 +258,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -275,8 +275,8 @@ describe('Pseudo-elements', function () {
                     return asserters.getCompletions('pseudo-elements/default-import-extended-pseudo-element-exists.st.css', prefix).then((asserter) => {
                         let notExp: Partial<Completion>[] = [];
 
-                        notExp.push(createComp(a[0], rng));
-                        notExp.push(createComp(a[1], rng));
+                        notExp.push(createCompletion(a[0], rng));
+                        notExp.push(createCompletion(a[1], rng));
 
                         asserter.notSuggested(notExp);
                     });
@@ -296,7 +296,7 @@ describe('Pseudo-elements', function () {
     describe('Recursive imports', function () {
         const str1 = '::shlomo';
         const str2 = '::momo';
-        const createComp = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './recursive-import-1.st.css');
+        const createCompletion = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './recursive-import-1.st.css');
 
         [str1, str2].forEach((str, j, a) => {
 
@@ -310,11 +310,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -329,11 +329,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -347,11 +347,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -365,11 +365,11 @@ describe('Pseudo-elements', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
 
                         asserter.suggested(exp);
@@ -382,8 +382,8 @@ describe('Pseudo-elements', function () {
                     return asserters.getCompletions('pseudo-elements/recursive-import-3-pseudo-element-exists.st.css', prefix).then((asserter) => {
                         let notExp: Partial<Completion>[] = [];
 
-                        notExp.push(createComp(a[0], rng));
-                        notExp.push(createComp(a[1], rng));
+                        notExp.push(createCompletion(a[0], rng));
+                        notExp.push(createCompletion(a[1], rng));
 
                         asserter.notSuggested(notExp);
                     });
@@ -395,7 +395,7 @@ describe('Pseudo-elements', function () {
     describe('Deep Recursive imports', function () {
         let str = '::momi';
         let nonos = ['::momo', '::bobo', '::shlomo'];
-        let createComp = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './recursive-import-0.st.css');
+        let createCompletion = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './recursive-import-0.st.css');
 
         str.split('').forEach((c, i) => {
             let rng = createRange(10, 39, 10, 39 + i);
@@ -407,8 +407,8 @@ describe('Pseudo-elements', function () {
                     let exp: Partial<Completion>[] = [];
                     let notExp: Partial<Completion>[] = [];
 
-                    exp.push(createComp(str, rng));
-                    nonos.forEach(nono => notExp.push(createComp(nono, rng)))
+                    exp.push(createCompletion(str, rng));
+                    nonos.forEach(nono => notExp.push(createCompletion(nono, rng)))
 
                     asserter.suggested(exp);
                     asserter.notSuggested(notExp);
@@ -418,7 +418,7 @@ describe('Pseudo-elements', function () {
 
         let str1 = ':oompa';
         let nonos1 = [':state', ':otherState', ':lala', ':loompa'];
-        let createComp1 = (str: string, rng: ProviderRange) => asserters.stateCompletion(str.slice(1), rng, str === str1 ? './recursive-import-0.st.css' : './recursive-import-0.st.css');
+        createCompletion = (str: string, rng: ProviderRange) => asserters.stateSelectorCompletion(str.slice(1), rng, str === str1 ? './recursive-import-0.st.css' : './recursive-import-0.st.css');
 
         str1.split('').forEach((c, i) => {
             let prefix = '::momi' + str1.slice(0, i);
@@ -430,8 +430,8 @@ describe('Pseudo-elements', function () {
                     let exp: Partial<Completion>[] = [];
                     let notExp: Partial<Completion>[] = [];
 
-                    exp.push(createComp1(str1, rng));
-                    nonos1.forEach(nono => notExp.push(createComp1(nono, rng)))
+                    exp.push(createCompletion(str1, rng));
+                    nonos1.forEach(nono => notExp.push(createCompletion(nono, rng)))
 
                     asserter.suggested(exp);
                     asserter.notSuggested(notExp);

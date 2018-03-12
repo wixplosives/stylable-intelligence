@@ -34,7 +34,9 @@ import {
     PseudoElementCompletionProvider,
     RulesetInternalDirectivesProvider,
     SelectorCompletionProvider,
-    StateCompletionProvider,
+    StateTypeCompletionProvider,
+    StateSelectorCompletionProvider,
+    StateEnumCompletionProvider,
     TopLevelDirectiveProvider,
     ValueCompletionProvider,
     ValueDirectiveProvider
@@ -56,6 +58,7 @@ import {fromVscodePath, toVscodePath} from './utils/uri-utils';
 import {keys, last, values} from 'lodash';
 import {ExtendedFSReadSync, ExtendedTsLanguageService, ParsedFuncOrDivValue} from './types';
 import {ClassSymbol} from 'stylable/dist/src/stylable-processor';
+import { resolveStateTypeOrValidator, createStateValidatorSignature, createStateTypeSignature, resolveStateParams } from './feature/pseudo-class';
 
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
@@ -77,7 +80,9 @@ export default class Provider {
         CodeMixinCompletionProvider,
         FormatterCompletionProvider,
         NamedCompletionProvider,
-        StateCompletionProvider,
+        StateTypeCompletionProvider,
+        StateSelectorCompletionProvider,
+        StateEnumCompletionProvider,
         PseudoElementCompletionProvider,
         ValueCompletionProvider,
     ];
@@ -492,11 +497,13 @@ export default class Provider {
             parsed.nodes[0].nodes.forEach((node: any) => {
                 if (node.type === 'invalid') {
                     return; // TODO: refactor - handles places outside of a selector
-                }
-
-                length += node.name.length + 1;
-                if (node.type === 'pseudo-class' && (posChar > length + 1) && (posChar <= length + 2 + node.content.length)) {
-                    word = node.name;
+                } else if (node.type === 'spacing') {
+                    length += node.value.length;
+                } else {
+                    length += node.name.length + 1;
+                    if (node.type === 'pseudo-class' && (posChar > length + 1) && (posChar <= length + 2 + node.content.length)) {
+                        word = node.name;
+                    }
                 }
             })
         }
@@ -537,41 +544,15 @@ export default class Provider {
     }
 
     getSignatureForStateWithParamDefinition(meta: StylableMeta, pos: ProviderPosition, line: string): SignatureHelp | null {
-        const valueStartChar = line.indexOf(':') + 1;
-        const value = line.slice(valueStartChar);
-        const stateParts = pvp(value).nodes;
-        let requiredHinting: boolean = false;
+        const res = resolveStateTypeOrValidator(meta, pos, line);
 
-        if (stateParts.some(isParsedNodeFunction)) {
-            let length = valueStartChar;
-
-            for (let statePart of stateParts) {
-                length += statePart.value.length;
-
-                if (isParsedNodeFunction(statePart)) {
-                    const stateNodes = statePart.nodes;
-                    length++; // opening parenthesis
-
-                    ({length, requiredHinting} = resolvePosInState(pos.character, length, statePart.before));
-
-                    stateNodes.forEach((node: ParsedValue) => {
-                        ({length, requiredHinting} = resolvePosInState(pos.character, length, node.value));
-                    });
-
-                    ({length, requiredHinting} = resolvePosInState(pos.character, length, statePart.after));
-
-                    length++; // closing parenthesis
-                } else if (isParsedNodeDiv(statePart)) {
-                    length = length + statePart.before.length + statePart.after.length;
-                }
-            }
-
-            if (requiredHinting) {
-                return createStateSignature();
-            }
+        if (typeof res === 'string') {
+            return createStateValidatorSignature(res);
+        } else if (typeof res === 'boolean') {
+            return createStateTypeSignature();
+        } else {
+            return null;
         }
-
-        return null;
     }
 
     getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
@@ -709,59 +690,6 @@ export default class Provider {
         })
         return refs;
     }
-
-}
-
-function createStateSignature() {
-    const stateTypes = Object.keys(systemValidators).join(' | ');
-    const sigInfo: SignatureInformation = {
-        label: `Supported state types: "${stateTypes}"`,
-        parameters: [{label: stateTypes}] as ParameterInformation[]
-    };
-    return {
-        activeParameter: 0,
-        activeSignature: 0,
-        signatures: [sigInfo]
-    } as SignatureHelp;
-}
-
-function resolvePosInState(character: number, length: number, arg: string) {
-    let requiredHinting = false;
-    if (isBetweenLengths(character, length, arg)) {
-        requiredHinting = true;
-    }
-    length = length + arg.length;
-    return {length, requiredHinting};
-}
-
-function isParsedNodeFunction(node: ParsedValue): node is ParsedFuncOrDivValue {
-    return node.type === 'function';
-}
-
-function isParsedNodeDiv(node: ParsedValue): node is ParsedFuncOrDivValue {
-    return node.type === 'div';
-}
-
-function isBetweenLengths(location: number, length: number, modifier: { length: number }) {
-    return location >= length && ( location <= length + modifier.length );
-}
-
-function resolveStateParams(stateDef: StateParsedValue) {
-    const typeArguments: string[] = [];
-    if (stateDef.arguments.length > 0) {
-        stateDef.arguments.forEach((arg) => {
-            if (typeof arg === 'object') {
-                if (arg.args.length > 0) {
-                    typeArguments.push(`${arg.name}(${arg.args.join(', ')})`);
-                }
-            }
-            else if (typeof arg === 'string') {
-                typeArguments.push(arg);
-            }
-        });
-    }
-    const parameters = typeArguments.length > 0 ? `${stateDef.type}(${typeArguments.join(', ')})` : stateDef.type;
-    return parameters;
 }
 
 function isIllegalLine(line: string): boolean {
