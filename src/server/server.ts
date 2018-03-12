@@ -54,7 +54,7 @@ export function createDocFs(fileSystem: FileSystemReadSync, docs: MinimalDocs): 
 
 const docFs: ExtendedFSReadSync = createDocFs(fileSystem, docs);
 
-const styl = new Stylable('/', createFs(docFs, true), () => ({default: {}}))
+const styl = new Stylable('/', createFs(docFs, true), require);
 const OpenDocNotificationType = new NotificationType<string, void>('stylable/openDocumentNotification');
 let openedFiles: string[] = [];
 const tsLanguageServiceHost = createLanguageServiceHost({
@@ -75,7 +75,7 @@ const wrappedTs: ExtendedTsLanguageService = {
     ts: tsLanguageService
 };
 
-const service = new StylableLanguageService(connection, {styl, tsLanguageService: wrappedTs}, docFs, docs, {
+const service = new StylableLanguageService(connection, { styl, tsLanguageService: wrappedTs, requireModule:require }, docFs, docs, {
     openDoc: OpenDocNotificationType,
     colorPresentationRequest: ColorPresentationRequest,
     colorRequest: DocumentColorRequest
