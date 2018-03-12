@@ -11,6 +11,7 @@ describe('browser-compatible', () => {
         const rootPath = await pkgDir(__dirname);
 
         const compiler = webpack({
+            mode: 'development',
             entry: {
                 main: path.join(rootPath, 'service.js')
             },
