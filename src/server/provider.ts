@@ -497,11 +497,13 @@ export default class Provider {
             parsed.nodes[0].nodes.forEach((node: any) => {
                 if (node.type === 'invalid') {
                     return; // TODO: refactor - handles places outside of a selector
-                }
-
-                length += node.name.length + 1;
-                if (node.type === 'pseudo-class' && (posChar > length + 1) && (posChar <= length + 2 + node.content.length)) {
-                    word = node.name;
+                } else if (node.type === 'spacing') {
+                    length += node.value.length;
+                } else {
+                    length += node.name.length + 1;
+                    if (node.type === 'pseudo-class' && (posChar > length + 1) && (posChar <= length + 2 + node.content.length)) {
+                        word = node.name;
+                    }
                 }
             })
         }
