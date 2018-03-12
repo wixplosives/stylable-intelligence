@@ -104,7 +104,7 @@ describe('Completions', function () {
             return asserters.getCompletions('states/locally-imported-component.st.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.stateCompletion('shmover', createRange(10, 5, 10, 6), './comp-to-import.st.css')
+                        asserters.stateSelectorCompletion('shmover', createRange(10, 5, 10, 6), './comp-to-import.st.css')
                     ]);
                 });
         });
@@ -113,8 +113,8 @@ describe('Completions', function () {
             return asserters.getCompletions('states/locally-imported-component-with-states.st.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.stateCompletion('shmover', createRange(11, 5, 11, 6), './comp-to-import.st.css'),
-                        asserters.stateCompletion('clover', createRange(11, 5, 11, 6)),
+                        asserters.stateSelectorCompletion('shmover', createRange(11, 5, 11, 6), './comp-to-import.st.css'),
+                        asserters.stateSelectorCompletion('clover', createRange(11, 5, 11, 6)),
                     ]);
                 });
         });
@@ -123,9 +123,9 @@ describe('Completions', function () {
             return asserters.getCompletions('states/locally-imported-component-recursive.st.css')
                 .then((asserter) => {
                     asserter.suggested([
-                        asserters.stateCompletion('shmover', createRange(11, 11, 11, 12), './comp-to-import.st.css'),
-                        asserters.stateCompletion('hoover', createRange(11, 11, 11, 12), './mid-level-import.st.css'),
-                        asserters.stateCompletion('clover', createRange(11, 11, 11, 12)),
+                        asserters.stateSelectorCompletion('shmover', createRange(11, 11, 11, 12), './comp-to-import.st.css'),
+                        asserters.stateSelectorCompletion('hoover', createRange(11, 11, 11, 12), './mid-level-import.st.css'),
+                        asserters.stateSelectorCompletion('clover', createRange(11, 11, 11, 12)),
                     ]);
                 });
         });

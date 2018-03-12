@@ -254,7 +254,7 @@ export const stateTypeDefinitionCompletion: (type: string, rng: ProviderRange, f
 export const stateValidatorDefinitionCompletion: (validator: string, rng: ProviderRange, type: string, from?: string) => Partial<Completion> = (validator, rng, type, from = `Stylable pseudo-class ${type} validators`) => {
     return { label: `${validator}()`, sortText: 'a', detail: `from: ${from}`, insertText: `${validator}($0)`, range: rng }
 }
-export const stateCompletion: (stateName: string, rng: ProviderRange, from?: string, hasParam?: boolean) => Partial<Completion> = (stateName, rng, from = 'Local file', hasParam = false) => {
+export const stateSelectorCompletion: (stateName: string, rng: ProviderRange, from?: string, hasParam?: boolean) => Partial<Completion> = (stateName, rng, from = 'Local file', hasParam = false) => {
     return { label: ':' + stateName + (hasParam ? '()' : ''), sortText: 'a', detail: 'from: ' + from, insertText: ':' + stateName + (hasParam ? '($1)$0' : ''), range: rng, triggerSignature: hasParam }
 }
 export const stateEnumCompletion: (option: string, rng: ProviderRange, from?: string) => Partial<Completion> = (option, rng, from = 'Local file') => {

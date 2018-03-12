@@ -12,7 +12,7 @@ describe('Custom Selectors', function () {
         const str4 = ':rooroo';
         const str5 = ':state';
         const str6 = ':otherState';
-        const createComp = (str: string, rng: ProviderRange, path: string) => asserters.classCompletion(str, rng, true);
+        const createCompletion = (str: string, rng: ProviderRange, path: string) => asserters.classCompletion(str, rng, true);
 
         [str1, str2].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
@@ -24,11 +24,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, 'custom-selectors/local-selector.st.css'));
+                        exp.push(createCompletion(a[j], rng, 'custom-selectors/local-selector.st.css'));
                         if (prefix.length <= 5) {
-                            exp.push(createComp(a[1 - j], rng, 'custom-selectors/local-selector.st.css'));
+                            exp.push(createCompletion(a[1 - j], rng, 'custom-selectors/local-selector.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, 'custom-selectors/local-selector.st.css'));
+                            notExp.push(createCompletion(a[1 - j], rng, 'custom-selectors/local-selector.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -42,11 +42,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, 'custom-selectors/local-selector-complex.st.css'));
+                        exp.push(createCompletion(a[j], rng, 'custom-selectors/local-selector-complex.st.css'));
                         if (prefix.length <= 5) {
-                            exp.push(createComp(a[1 - j], rng, 'custom-selectors/local-selector-complex.st.css'));
+                            exp.push(createCompletion(a[1 - j], rng, 'custom-selectors/local-selector-complex.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, 'custom-selectors/local-selector-complex.st.css'));
+                            notExp.push(createCompletion(a[1 - j], rng, 'custom-selectors/local-selector-complex.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -66,11 +66,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, 'Local file'));
+                        exp.push(createCompletion(a[j], rng, 'Local file'));
                         if (prefix.length <= 1) {
-                            exp.push(createComp(a[1 - j], rng, 'Local file'));
+                            exp.push(createCompletion(a[1 - j], rng, 'Local file'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, 'Local file'));
+                            notExp.push(createCompletion(a[1 - j], rng, 'Local file'));
                         }
 
                         asserter.suggested(exp);
@@ -89,11 +89,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, 'Local file'));
+                        exp.push(createCompletion(a[j], rng, 'Local file'));
                         if (prefix.length <= 1) {
-                            exp.push(createComp(a[1 - j], rng, 'Local file'));
+                            exp.push(createCompletion(a[1 - j], rng, 'Local file'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, 'Local file'));
+                            notExp.push(createCompletion(a[1 - j], rng, 'Local file'));
                         }
 
                         asserter.suggested(exp);
@@ -116,7 +116,7 @@ describe('Custom Selectors', function () {
         [str1, str2].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
                 let prefix = str.slice(0, i);
-                const createComp = (str: string, rng: ProviderRange, path: string) => asserters.stateCompletion(str.slice(1), rng, path);
+                const createCompletion = (str: string, rng: ProviderRange, path: string) => asserters.stateSelectorCompletion(str.slice(1), rng, path);
 
                 it('should have relevant states, with prefix ' + prefix + ' ', function () {
                     let rng = createRange(10, 8, 10, 8 + i);
@@ -124,11 +124,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, './import.st.css'));
+                        exp.push(createCompletion(a[j], rng, './import.st.css'));
                         if (prefix.length <= 1) {
-                            exp.push(createComp(a[1 - j], rng, './import.st.css'));
+                            exp.push(createCompletion(a[1 - j], rng, './import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, './import.st.css'));
+                            notExp.push(createCompletion(a[1 - j], rng, './import.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -140,7 +140,7 @@ describe('Custom Selectors', function () {
 
         [str3, str4].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
-                const createComp = (str: string, rng: ProviderRange, path: string) => asserters.pseudoElementCompletion(str.slice(2), rng, path);
+                const createCompletion = (str: string, rng: ProviderRange, path: string) => asserters.pseudoElementCompletion(str.slice(2), rng, path);
                 let prefix = str.slice(0, i);
 
                 it('should have relevant pseudo-elements, with prefix ' + prefix + ' ', function () {
@@ -149,11 +149,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, './import.st.css'));
+                        exp.push(createCompletion(a[j], rng, './import.st.css'));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng, './import.st.css'));
+                            exp.push(createCompletion(a[1 - j], rng, './import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, './import.st.css'));
+                            notExp.push(createCompletion(a[1 - j], rng, './import.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -172,7 +172,7 @@ describe('Custom Selectors', function () {
         const str4 = ':otherState';
         const str5 = '::momo';
         const str6 = '::shlomo';
-        const createComp = (str: string, rng: ProviderRange, path: string) => asserters.pseudoElementCompletion(str.slice(2), rng, path);
+        const createCompletion = (str: string, rng: ProviderRange, path: string) => asserters.pseudoElementCompletion(str.slice(2), rng, path);
 
         [str1, str2].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
@@ -184,11 +184,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, './import.st.css'));
+                        exp.push(createCompletion(a[j], rng, './import.st.css'));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng, './import.st.css'));
+                            exp.push(createCompletion(a[1 - j], rng, './import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, './import.st.css'));
+                            notExp.push(createCompletion(a[1 - j], rng, './import.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -202,11 +202,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, './import.st.css'));
+                        exp.push(createCompletion(a[j], rng, './import.st.css'));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng, './import.st.css'));
+                            exp.push(createCompletion(a[1 - j], rng, './import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, './import.st.css'));
+                            notExp.push(createCompletion(a[1 - j], rng, './import.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -220,11 +220,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, './import.st.css'));
+                        exp.push(createCompletion(a[j], rng, './import.st.css'));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng, './import.st.css'));
+                            exp.push(createCompletion(a[1 - j], rng, './import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, './import.st.css'));
+                            notExp.push(createCompletion(a[1 - j], rng, './import.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -237,7 +237,7 @@ describe('Custom Selectors', function () {
         [str3, str4].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
                 let prefix = str.slice(0, i);
-                const createComp = (str: string, rng: ProviderRange, path: string) => asserters.stateCompletion(str.slice(1), rng, path);
+                const createCompletion = (str: string, rng: ProviderRange, path: string) => asserters.stateSelectorCompletion(str.slice(1), rng, path);
 
                 it('should have relevant states, with prefix ' + prefix + ' ', function () {
                     let rng = createRange(9, 12, 9, 12 + i);
@@ -245,11 +245,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, './top-import.st.css'));
+                        exp.push(createCompletion(a[j], rng, './top-import.st.css'));
                         if (prefix.length <= 1) {
-                            exp.push(createComp(a[1 - j], rng, './top-import.st.css'));
+                            exp.push(createCompletion(a[1 - j], rng, './top-import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, './top-import.st.css'));
+                            notExp.push(createCompletion(a[1 - j], rng, './top-import.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -263,11 +263,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, './top-import.st.css'));
+                        exp.push(createCompletion(a[j], rng, './top-import.st.css'));
                         if (prefix.length <= 1) {
-                            exp.push(createComp(a[1 - j], rng, './top-import.st.css'));
+                            exp.push(createCompletion(a[1 - j], rng, './top-import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, './top-import.st.css'));
+                            notExp.push(createCompletion(a[1 - j], rng, './top-import.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -280,8 +280,8 @@ describe('Custom Selectors', function () {
                     return asserters.getCompletions('custom-selectors/imported-selector-grouped.st.css', prefix).then((asserter) => {
                         let notExp: Partial<Completion>[] = [];
 
-                        notExp.push(createComp(str3, rng, './top-import.st.css'));
-                        notExp.push(createComp(str4, rng, './top-import.st.css'));
+                        notExp.push(createCompletion(str3, rng, './top-import.st.css'));
+                        notExp.push(createCompletion(str4, rng, './top-import.st.css'));
 
                         asserter.notSuggested(notExp);
                     });
@@ -291,7 +291,7 @@ describe('Custom Selectors', function () {
 
         [str5, str6].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
-                const createComp = (str: string, rng: ProviderRange, path: string) => asserters.pseudoElementCompletion(str.slice(2), rng, path);
+                const createCompletion = (str: string, rng: ProviderRange, path: string) => asserters.pseudoElementCompletion(str.slice(2), rng, path);
                 let prefix = str.slice(0, i);
 
                 it('should have relevant pseudo-elements, with prefix ' + prefix + ' ', function () {
@@ -300,11 +300,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, './top-import.st.css'));
+                        exp.push(createCompletion(a[j], rng, './top-import.st.css'));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng, './top-import.st.css'));
+                            exp.push(createCompletion(a[1 - j], rng, './top-import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, './top-import.st.css'));
+                            notExp.push(createCompletion(a[1 - j], rng, './top-import.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -318,11 +318,11 @@ describe('Custom Selectors', function () {
                         let exp: Partial<Completion>[] = [];
                         let notExp: Partial<Completion>[] = [];
 
-                        exp.push(createComp(a[j], rng, './top-import.st.css'));
+                        exp.push(createCompletion(a[j], rng, './top-import.st.css'));
                         if (prefix.length <= 2) {
-                            exp.push(createComp(a[1 - j], rng, './top-import.st.css'));
+                            exp.push(createCompletion(a[1 - j], rng, './top-import.st.css'));
                         } else {
-                            notExp.push(createComp(a[1 - j], rng, './top-import.st.css'));
+                            notExp.push(createCompletion(a[1 - j], rng, './top-import.st.css'));
                         }
 
                         asserter.suggested(exp);
@@ -335,8 +335,8 @@ describe('Custom Selectors', function () {
                     return asserters.getCompletions('custom-selectors/imported-selector-grouped.st.css', prefix).then((asserter) => {
                         let notExp: Partial<Completion>[] = [];
 
-                        notExp.push(createComp(str5, rng, './top-import.st.css'));
-                        notExp.push(createComp(str6, rng, './top-import.st.css'));
+                        notExp.push(createCompletion(str5, rng, './top-import.st.css'));
+                        notExp.push(createCompletion(str6, rng, './top-import.st.css'));
 
                         asserter.notSuggested(notExp);
                     });

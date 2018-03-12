@@ -1,3 +1,4 @@
+import * as PostCss from 'postcss';
 import { StylableMeta, ParsedValue, systemValidators, StateParsedValue } from 'stylable';
 import { ProviderPosition } from '../completion-providers';
 import {
@@ -9,56 +10,60 @@ import { ParsedFuncOrDivValue } from '../types';
 
 const pvp = require('postcss-value-parser');
 
+// Goes over an '-st-states' declaration value
+// parses the state and position to resolve if inside a state with a parameter
+// returns: `-st-states: someState([1] str[2]ing([a] re[b]gex( [args] ) [c]) [3])
+// caret positions:
+// 1, 2, 3 - requires typing information (string, number, enum, tag)
+// a, b, c - require validator informationbased on type defined
+// args - TODO: should return validator function information
 export function resolveStateTypeOrValidator(meta: StylableMeta, pos: ProviderPosition, line: string): string | boolean | null {
     const valueStartChar = line.indexOf(':') + 1;
     const value = line.slice(valueStartChar);
-    const stateParts = pvp(value).nodes;
+    const stateParts: ParsedValue[]  = pvp(value).nodes;
     let requiredHinting: boolean = false;
     let validator = { length: 0, requiredHinting: false };
     let stateTypeValidatorToHint: string | null = null;
+    let length = valueStartChar;
 
-    if (stateParts.some(isParsedNodeFunction)) {
-        let length = valueStartChar;
+    for (let statePart of stateParts) {
+        length += statePart.value.length;
 
-        for (let statePart of stateParts) {
-            length += statePart.value.length;
+        if (isParsedNodeFunction(statePart)) {
+            const stateNodes = statePart.nodes;
+            length++; // opening state parenthesis
 
-            if (isParsedNodeFunction(statePart)) {
-                const stateNodes = statePart.nodes;
-                length++; // opening state parenthesis
-
-                ({length, requiredHinting} = resolvePosInState(pos.character, length, statePart.before));
-                if (requiredHinting || stateTypeValidatorToHint) {
-                    continue;
-                }
-
-                ({ length, requiredHinting, stateTypeValidatorToHint } = resolveStateType(stateNodes, length, requiredHinting, pos, validator, stateTypeValidatorToHint));
-
-                if (requiredHinting || stateTypeValidatorToHint) {
-                    continue;
-                } else {
-                    ({length, requiredHinting} = resolvePosInState(pos.character, length, statePart.after));
-                }
-
-                length++; // closing state parenthesis
-            } else if (isParsedNodeDiv(statePart)) {
-                length = length + statePart.before.length + statePart.after.length;
+            ({length, requiredHinting} = resolvePosInState(pos.character, length, statePart.before));
+            if (requiredHinting || stateTypeValidatorToHint) {
+                continue;
             }
+
+            ({ length, requiredHinting, stateTypeValidatorToHint } = resolveStateType(stateNodes, length, requiredHinting, pos, validator, stateTypeValidatorToHint));
+
+            if (requiredHinting || stateTypeValidatorToHint) {
+                continue;
+            } else {
+                ({length, requiredHinting} = resolvePosInState(pos.character, length, statePart.after));
+            }
+
+            length++; // closing state parenthesis
+        } else if (isParsedNodeDiv(statePart)) {
+            length = length + statePart.before.length + statePart.after.length;
         }
-        if (stateTypeValidatorToHint) {
-            return stateTypeValidatorToHint;
-        } else if (requiredHinting) {
-            return requiredHinting;
-        }
+    }
+    if (stateTypeValidatorToHint) {
+        return stateTypeValidatorToHint;
+    } else if (requiredHinting) {
+        return requiredHinting;
     }
 
     return null;
 }
 
-function resolveStateType(stateNodes: any, length: number, requiredHinting: boolean, pos: ProviderPosition, validator: { length: number; requiredHinting: boolean; }, stateTypeValidatorToHint: string | null) {
+function resolveStateType(stateNodes: ParsedValue[], length: number, requiredHinting: boolean, pos: ProviderPosition, validator: { length: number; requiredHinting: boolean; }, stateTypeValidatorToHint: string | null) {
     for (let typeNode of stateNodes) {
-        // stateNodes.forEach((typeNode: ParsedValue) => {
         ({ length, requiredHinting } = resolvePosInState(pos.character, length, typeNode.value));
+
         if (!requiredHinting && isParsedNodeFunction(typeNode)) {
             length++; // opening type parenthesis
             validator = resolvePosInState(pos.character, length, typeNode.before);
@@ -95,10 +100,9 @@ function resolveStateValidator(pos: ProviderPosition, length: number, valNode: P
 }
 
 function isValidatorsHintingRequired(requiredHinting: boolean, stateTypeValidatorToHint: string | null, type: string) {
-    if (requiredHinting) {
-        stateTypeValidatorToHint = type;
-    }
-    return stateTypeValidatorToHint;
+    return requiredHinting ?
+        type :
+        stateTypeValidatorToHint;
 }
 
 export function createStateValidatorSignature(type: string) {

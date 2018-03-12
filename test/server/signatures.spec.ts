@@ -251,7 +251,6 @@ describe('Signature Help', function () {
 
             describe('string validator hinting', () => {
                 const validators = ['regex', 'contains', 'minLength', 'maxLength'];
-                // const validatorArg = '\"^blah\"';
 
                 validators.forEach(validator => validator.split('').forEach((c, i) => {
                     let prefix = validator.slice(0, i);
@@ -293,27 +292,6 @@ describe('Signature Help', function () {
                     expect(sig).to.not.be.null;
                     expect(sig).to.deep.equal(exp);
                 });
-
-                // validatorArg.split('').forEach((c, i) => {
-                //     let prefix = validatorArg.slice(0, i);
-                //     it('Provides validator signature counting in args in quotes, with prefix ' + prefix, () => {
-                //         let filePath = 'states/with-param/state-def-with-regex-start.st.css';
-
-                //         let sig = getSignatureHelp(filePath, prefix);
-
-                //         let exp: SignatureHelp = {
-                //             activeSignature: 0,
-                //             activeParameter: 0,
-                //             signatures: [SignatureInformation.create(
-                //                 'Supported "string" validator types:\n- "regex, contains, minLength, maxLength"',
-                //                 undefined,
-                //                 ParameterInformation.create("regex, contains, minLength, maxLength")
-                //             )]
-                //         };
-
-                //         expect(sig).to.be.null;
-                //     });
-                // });
             });
         });
 

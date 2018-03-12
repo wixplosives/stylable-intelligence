@@ -611,17 +611,11 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
 }
 
 function isNodeRule(node: any): node is PostCss.Rule {
-    if (node.type && node.type === 'rule') {
-        return true;
-    }
-    return false;
+    return node.type === 'rule';
 }
 
 function isNodeDecl(node: any): node is PostCss.Declaration {
-    if (node.type && node.type === 'decl') {
-        return true;
-    }
-    return false;
+    return node.type === 'decl';
 }
 
 function isPositionInDecl(position: ProviderPosition, decl: PostCss.Declaration) {
@@ -665,10 +659,10 @@ export const StateTypeCompletionProvider: CompletionProvider = {
                 if (stateDeclInPos) {
                     const toSuggest = resolveStateTypeOrValidator(meta, position, fullLineText);
                     const types = Object.keys(systemValidators);
+                    let input = getStateDefinitionInput(fullLineText, position);
 
                     // validator completion
                     if (typeof toSuggest === 'string') {
-                        let input = getStateDefinitionInput(fullLineText, position);
                         const validators = systemValidators[toSuggest].subValidators;
 
                         if (validators) {
@@ -692,7 +686,6 @@ export const StateTypeCompletionProvider: CompletionProvider = {
                         }
                     // type completion
                     } else if (typeof toSuggest === 'boolean' && toSuggest) {
-                        let input = getStateDefinitionInput(fullLineText, position);
                         let relevantTypes = types.filter(t => t.startsWith(input));
                         relevantTypes = relevantTypes.length ? relevantTypes : types;
 
@@ -717,7 +710,7 @@ export const StateTypeCompletionProvider: CompletionProvider = {
     },
 }
 
-export const StateCompletionProvider: CompletionProvider = {
+export const StateSelectorCompletionProvider: CompletionProvider = {
     provide({parentSelector, lineChunkAtCursor, resolvedElements, target, lastSelectoid, meta, position, fullLineText}: ProviderOptions): Completion[] {
         if (!parentSelector && !lineChunkAtCursor.endsWith('::') && !isBetweenChars(fullLineText, position, '(', ')')) {
 
@@ -803,8 +796,7 @@ export const StateEnumCompletionProvider: CompletionProvider = {
                 if (Object.keys(resolvedStates).length) {
                     const resolvedStateNode = find(lastNode.resolved, (node: any) => {
                         const states = node.symbol[valueMapping.states];
-                        return states &&
-                            some(states, (def: StateParsedValue, name: string) => name === stateName && def && def.type === 'enum' );
+                        return states && states[stateName] && states[stateName].type === 'enum';
                     });
                     if (resolvedStateNode) {
                         const resolvedState: StateParsedValue = (resolvedStateNode as any).symbol[valueMapping.states][stateName];
