@@ -13,7 +13,7 @@ import {createFs, MinimalDocs,} from './provider-factory';
 import {
     ColorPresentationRequest,
     DocumentColorRequest
-} from 'vscode-languageserver-protocol/lib/protocol.colorProvider.proposed';
+} from 'vscode-languageserver-protocol';
 import {fromVscodePath, toVscodePath} from './utils/uri-utils';
 import {StylableLanguageService} from './service'
 import {Stylable} from 'stylable';
