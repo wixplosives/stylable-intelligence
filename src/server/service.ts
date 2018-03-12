@@ -40,8 +40,9 @@ export {MinimalDocs} from './provider-factory';
 //exporting types for use in playground
 export {ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes} from './types'
 
+
 export class StylableLanguageService {
-    constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
+    constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
 
         const provider = createProvider(services.styl, services.tsLanguageService);
         const processor = provider.styl.fileProcessor;
@@ -141,7 +142,7 @@ export class StylableLanguageService {
                         })
                     : [];
 
-            let diagnostics = createDiagnosis(document, fs, processor).map(diag => {
+            let diagnostics = createDiagnosis(document, fs, processor, services.requireModule).map(diag => {
                 diag.source = 'stylable';
                 return diag;
             });
