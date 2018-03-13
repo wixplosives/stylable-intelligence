@@ -1,7 +1,7 @@
 # Development Environment
 
 This document describes the stylable-intelligence project setup and development process.
-Readme for the extension itself is at [./readme.md](https://github.com/wix/stylable-intelligence/blob/master/README.md)
+Readme for the extension itself can be found [here](https://github.com/wix/stylable-intelligence/blob/master/README.md).
 
 ## Project Setup
 
