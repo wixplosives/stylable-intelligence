@@ -27,5 +27,5 @@ Known issues may be found in the [Stylable Intelligence repo](https://github.com
 
 ### Development
 
-Information about running the Stylable Intelligence development enviroment can be found [here](./dev.md).
+Information about running the Stylable Intelligence development enviroment can be found [here](https://github.com/wix/stylable-intelligence/blob/master/dev.md).
 
