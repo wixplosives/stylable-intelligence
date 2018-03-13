@@ -13,7 +13,7 @@ Stylable Intelligence is currently only supported in VSCode (version 1.18.0 and 
 
 Currently supported: Code Completions, Diagnostics, Go to Definition, Syntax Highlighting
 
-All CSS language support functionality is also supported (hover hints, inline color picker, etc.). Some CSS diagnostics no longer apply in Stylable and are filtered out.
+All CSS language support functionality is also supported (hover hints, inline color picker, etc.). Some CSS diagnostics were removed in order to support custom Stylable syntax.
 
 ## Installation
 
