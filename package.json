@@ -3,7 +3,7 @@
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "license": "MIT",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Stylable Language Services",
   "scripts": {
     "reset": "yarn clear && rimraf node_modules .vscode-test && yarn install && yarn test",
