@@ -19,7 +19,7 @@ All CSS language support functionality is also supported (hover hints, inline co
 
 ### From VSCode Marketplace
 
-Install ['Stylable Intelligence'](https://marketplace.visualstudio.com/items?itemName=wix.stylable-intelligence) from the VSCode Extension Marketplace or inside VSCode in the Extension panel, search for "stylable-intlligence".
+Install ['Stylable Intelligence'](https://marketplace.visualstudio.com/items?itemName=wix.stylable-intelligence) from the VSCode Extension Marketplace or inside VSCode in the Extension panel, search for "stylable-intelligence".
 
 ## Known Issues
 
