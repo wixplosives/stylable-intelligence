@@ -2,6 +2,12 @@
 
 ## v0.2.2
 
+### Documentation
+
+* Main `README.md` now describes the extension, all development related content moved to `dev.md`
+
+## v0.2.2
+
 ### Pseudo-class support
 
 * Add completions for state type definitions
