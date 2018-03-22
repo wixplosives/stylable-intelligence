@@ -52,31 +52,52 @@ export function createDocFs(fileSystem: FileSystemReadSync, docs: MinimalDocs): 
     } as any;
 }
 
-const docFs: ExtendedFSReadSync = createDocFs(fileSystem, docs);
 
-const styl = new Stylable('/', createFs(docFs, true), require);
-const OpenDocNotificationType = new NotificationType<string, void>('stylable/openDocumentNotification');
-let openedFiles: string[] = [];
-const tsLanguageServiceHost = createLanguageServiceHost({
-    cwd: '/',
-    getOpenedDocs: () => openedFiles,
-    compilerOptions: {
-        target: ts.ScriptTarget.ES5, sourceMap: false, declaration: true, outDir: 'dist',
-        lib: [],
-        module: ts.ModuleKind.CommonJS,
-        typeRoots: ["./node_modules/@types"]
+const { docFs, wrappedTs, notificationTypes } = createTsLanguageService();
+
+const service = new StylableLanguageService(
+    connection,
+    {
+        styl: createStylable,
+        tsLanguageService: wrappedTs,
+        requireModule:require
     },
-    defaultLibDirectory: '',
-    baseHost: createBaseHost(docFs, path)
-});
-const tsLanguageService = ts.createLanguageService(tsLanguageServiceHost);
-const wrappedTs: ExtendedTsLanguageService = {
-    setOpenedFiles: (files: string[]) => openedFiles = files,
-    ts: tsLanguageService
-};
+    docFs,
+    docs,
+    notificationTypes
+);
 
-const service = new StylableLanguageService(connection, { styl, tsLanguageService: wrappedTs, requireModule:require }, docFs, docs, {
-    openDoc: OpenDocNotificationType,
-    colorPresentationRequest: ColorPresentationRequest,
-    colorRequest: DocumentColorRequest
-});
+
+function createStylable(path: string) {
+    return new Stylable(path, require('fs'), require, undefined, undefined, undefined, undefined, undefined, {symlinks: false}); // TODO: REMOVE PATH?
+}
+
+function createTsLanguageService() {
+    const docFs: ExtendedFSReadSync = createDocFs(fileSystem, docs);
+    const OpenDocNotificationType = new NotificationType<string, void>('stylable/openDocumentNotification');
+    let openedFiles: string[] = [];
+    const tsLanguageServiceHost = createLanguageServiceHost({
+        cwd: '/',
+        getOpenedDocs: () => openedFiles,
+        compilerOptions: {
+            target: ts.ScriptTarget.ES5, sourceMap: false, declaration: true, outDir: 'dist',
+            lib: [],
+            module: ts.ModuleKind.CommonJS,
+            typeRoots: ["./node_modules/@types"]
+        },
+        defaultLibDirectory: '',
+        baseHost: createBaseHost(docFs, path)
+    });
+    const tsLanguageService = ts.createLanguageService(tsLanguageServiceHost);
+    const wrappedTs: ExtendedTsLanguageService = {
+        setOpenedFiles: (files: string[]) => openedFiles = files,
+        ts: tsLanguageService
+    };
+    const notificationTypes = {
+        openDoc: OpenDocNotificationType,
+        colorPresentationRequest: ColorPresentationRequest,
+        colorRequest: DocumentColorRequest
+    }
+    return { docFs, wrappedTs, notificationTypes };
+}
+

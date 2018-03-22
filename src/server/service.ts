@@ -9,7 +9,7 @@ import {
     TextDocumentPositionParams,
     WorkspaceEdit
 } from 'vscode-languageserver-protocol';
-import {createProvider, MinimalDocs, MinimalDocsDispatcher,} from './provider-factory';
+import {createProvider, MinimalDocs, MinimalDocsDispatcher} from './provider-factory';
 import {ProviderPosition, ProviderRange} from './completion-providers';
 import {Completion} from './completion-types';
 import {createDiagnosis} from './diagnosis';
@@ -27,9 +27,9 @@ import {
     ColorInformation,
     ServerCapabilities as CPServerCapabilities
 } from 'vscode-languageserver-protocol';
-import {evalDeclarationValue, Stylable, valueMapping} from 'stylable';
+import {evalDeclarationValue, Stylable, valueMapping, FileProcessor, StylableMeta, StylableProcessor} from 'stylable';
 import {fromVscodePath, toVscodePath} from './utils/uri-utils';
-import {createMeta, fixAndProcess} from './provider';
+import Provider, { createMeta, fixAndProcess } from './provider';
 import {ExtendedFSReadSync, ExtendedTsLanguageService, NotificationTypes} from './types'
 import {last} from 'lodash';
 import {CSSResolve} from 'stylable/dist/src/stylable-resolver';
@@ -40,18 +40,33 @@ export {MinimalDocs} from './provider-factory';
 //exporting types for use in playground
 export {ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes} from './types'
 
+export type CreateStylable = (path: string) => Stylable;
 
 export class StylableLanguageService {
-    constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
+    constructor(connection: IConnection, services: { styl: Stylable | CreateStylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
 
-        const provider = createProvider(services.styl, services.tsLanguageService);
-        const processor = provider.styl.fileProcessor;
+        let provider: Provider, processor: FileProcessor<StylableMeta>;
+
+        // rabbit use-case
+        if (typeof services.styl !== 'function') {
+            provider = createProvider(services.styl, services.tsLanguageService);
+            processor = services.styl.fileProcessor;
+        }
+
         const cssService = VCL.getCSSLanguageService();
         let base: string;
         let symbolMap: Map<CSSResolve, string[]>;
 
         connection.onInitialize((params): InitializeResult => {
             base = params.rootUri!;
+
+            // extension use-case
+            if (typeof services.styl === 'function') {
+                services.styl = services.styl(params.rootPath || '/');
+                provider = createProvider(services.styl, services.tsLanguageService);
+                processor = services.styl.fileProcessor;
+            }
+
             return {
                 capabilities: ({
                     textDocumentSync: 1,//documents.syncKind,
@@ -199,7 +214,7 @@ export class StylableLanguageService {
                     const result = regexResult[1];
                     const sym = meta.mappedSymbols[result];
                     if (sym && sym._kind === 'var') {
-                        const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(services.styl.resolver, sym.text, meta, sym.node) + '}');
+                        const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue((services.styl as Stylable).resolver, sym.text, meta, sym.node) + '}');
                         const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(doc);
                         const colors = cssService.findDocumentColors(doc, stylesheet);
                         const color = colors.length ? colors[0].color : null;
@@ -212,7 +227,7 @@ export class StylableLanguageService {
                         }
                     } else if (sym && sym._kind === 'import' && sym.type === 'named') {
                         const impMeta = processor.process(sym.import.from);
-                        const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(services.styl.resolver, 'value(' + sym.name + ')', impMeta, impMeta.vars.find(v => v.name === sym.name)!.node) + '}');
+                        const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue((services.styl as Stylable).resolver, 'value(' + sym.name + ')', impMeta, impMeta.vars.find(v => v.name === sym.name)!.node) + '}');
                         const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(doc);
                         const colors = cssService.findDocumentColors(doc, stylesheet);
                         const color = colors.length ? colors[0].color : null;
@@ -232,7 +247,7 @@ export class StylableLanguageService {
                 const impMeta = processor.process(imp.from);
                 const vars = impMeta.vars;
                 vars.forEach(v => {
-                    const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(services.styl.resolver, v.text, impMeta, v.node) + '}');
+                    const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue((services.styl as Stylable).resolver, v.text, impMeta, v.node) + '}');
                     const stylesheet: VCL.Stylesheet = cssService.parseStylesheet(doc);
                     const colors = cssService.findDocumentColors(doc, stylesheet);
                     const color = colors.length ? colors[0].color : null;
