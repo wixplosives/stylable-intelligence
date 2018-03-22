@@ -66,6 +66,14 @@ suite("Extension Tests", () => {
         return testCompletion('advanced-completion.st.css', testCases);
     });
 
+    test("third-party completion", function () {
+        this.timeout(30000)
+        const testCases: [vscode.Position, string[]][] = [
+            [new vscode.Position(7, 16), ['Comp', 'part1']]
+        ];
+        return testCompletion('third-party-completion.st.css', testCases);
+    });
+
 
     //Fix it so it tests something real (no :import)
     test.skip("No completions on .css files", function () {

@@ -19,7 +19,7 @@ import { createLanguageServiceHost, createBaseHost } from '../src/server/utils/t
 import { ExtendedTsLanguageService } from '../src/server/types';
 const pkgDir = require('pkg-dir');
 
-export const CASES_PATH = path.join(pkgDir.sync(__dirname), 'fixtures', 'server-cases');
+export const CASES_PATH = path.join(pkgDir.sync(path.join(__dirname, '..')), 'fixtures', 'server-cases');
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {
@@ -152,7 +152,7 @@ const minDocs: MinimalDocs = {
     },
     keys(): string[] {
         return fs.readdirSync(path.join(CASES_PATH, 'imports'));
-    },
+    }
 
 };
 const docsFs = createDocFs(new LocalSyncFs(''), minDocs);
@@ -176,7 +176,7 @@ const wrappedTs: ExtendedTsLanguageService = {
 };
 
 
-const provider = createProvider(new Stylable('/', createFs(docsFs, true), () => ({ default: {} })), wrappedTs);
+const provider = createProvider(new Stylable(CASES_PATH, createFs(docsFs, true), () => ({ default: {} }), undefined,undefined,undefined,undefined,undefined,{symlinks: false}), wrappedTs);
 
 
 

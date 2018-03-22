@@ -1,8 +1,20 @@
-:import {
+/* :import {
     -st-from: "./import.st.css";
     -st-named: shlomo, momo;
     -st-default: Comp;
+} */
+
+:import {
+    -st-from: "fake-stylable-package/stylesheet.st.css";
+    -st-default: Comp2;
+    -st-named: part1;
 }
+
+.blah {
+    -st-extends: part1;
+}
+
+.blah:
 
 .gaga {
     -st-extends: Comp;
