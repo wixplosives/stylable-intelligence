@@ -4,12 +4,12 @@ import {
     evalDeclarationValue,
     ImportSymbol,
     SRule,
+    StateParsedValue,
     Stylable,
     StylableMeta,
     systemValidators,
     valueMapping,
-    VarSymbol,
-    StateParsedValue
+    VarSymbol
 } from 'stylable';
 import {CursorPosition, SelectorChunk} from "./utils/selector-analyzer";
 import {
@@ -27,13 +27,13 @@ import {
     rulesetInternalDirective,
     stateCompletion,
     stateEnumCompletion,
+    stateTypeCompletion,
     topLevelDirective,
     topLevelDirectives,
     valueCompletion,
     valueDirective,
-    stateTypeCompletion,
 } from './completion-types';
-import {isComment, isDeclaration, isInNode} from './utils/postcss-ast-utils';
+import {isComment, isDeclaration} from './utils/postcss-ast-utils';
 import * as PostCss from 'postcss';
 import * as path from 'path';
 import {
@@ -48,29 +48,28 @@ import * as ts from 'typescript';
 import {Identifier, TypeReferenceNode} from 'typescript';
 import {toVscodePath} from './utils/uri-utils';
 import {ResolvedElement} from 'stylable/dist/src/stylable-transformer';
-import {find, keys, last, some} from 'lodash';
+import {find, keys, last} from 'lodash';
 import {ExtendedFSReadSync, ExtendedTsLanguageService} from './types';
-import { position } from 'polished';
-import { resolveStateTypeOrValidator } from './feature/pseudo-class';
+import {resolveStateTypeOrValidator} from './feature/pseudo-class';
 
 const pvp = require('postcss-value-parser');
 
 export interface ProviderOptions {
     meta: StylableMeta,
-    fs: ExtendedFSReadSync,
-    styl: Stylable,
-    src: string,
-    tsLangService: ExtendedTsLanguageService,
-    resolvedElements: ResolvedElement[][],
+    fs: ExtendedFSReadSync,  // candidate for removal
+    styl: Stylable, // candidate for removal
+    src: string, // candidate for removal : meta.source
+    tsLangService: ExtendedTsLanguageService, // candidate for removal
+    resolvedElements: ResolvedElement[][], // candidate for removal
     parentSelector: SRule | null,
-    astAtCursor: PostCss.NodeBase,
+    astAtCursor: PostCss.NodeBase, // candidate for removal
     lineChunkAtCursor: string,
-    lastSelectoid: string,
+    lastSelectoid: string,// candidate for removal
     fullLineText: string,
     position: ProviderPosition,
-    resolved: CSSResolve[],
-    currentSelector: string,
-    target: CursorPosition
+    resolved: CSSResolve[],// candidate for removal
+    currentSelector: string,// candidate for removal
+    target: CursorPosition, // candidate for removal
     isMediaQuery: boolean,
     fakes: PostCss.Rule[],
 }
@@ -684,7 +683,7 @@ export const StateTypeCompletionProvider: CompletionProvider = {
                                 );
                             });
                         }
-                    // type completion
+                        // type completion
                     } else if (typeof toSuggest === 'boolean' && toSuggest) {
                         let relevantTypes = types.filter(t => t.startsWith(input));
                         relevantTypes = relevantTypes.length ? relevantTypes : types;
@@ -727,8 +726,8 @@ export const StateSelectorCompletionProvider: CompletionProvider = {
                 }
                 keys((cur.symbol as ClassSymbol)[valueMapping.states]).forEach(k => {
                     if (!acc[k] && (
-                        k.slice(0, -1).startsWith(lastSelectoid.replace(':', '')) || //selectoid is a substring of current state
-                        allStates.hasOwnProperty(lastSelectoid.replace(':', ''))) &&
+                            k.slice(0, -1).startsWith(lastSelectoid.replace(':', '')) || //selectoid is a substring of current state
+                            allStates.hasOwnProperty(lastSelectoid.replace(':', ''))) &&
                         (chunkyStates.every(cs => cs !== k))) {
 
                         const stateDef = (cur.symbol as ClassSymbol)[valueMapping.states][k];
@@ -760,19 +759,19 @@ export const StateSelectorCompletionProvider: CompletionProvider = {
                         st.name,
                         st.state.path,
                         (new ProviderRange(
-                        new ProviderPosition(
-                            position.line,
-                            lastState
-                                ? realState
-                                ? position.character - (lineChunkAtCursor.endsWith(':') ? 1 : 0)
-                                : position.character - (lastState.length + 1) - (lineChunkAtCursor.endsWith(':') ? 1 : 0)
-                                : position.character - (lineChunkAtCursor.endsWith(':') ? 1 : 0)
+                                new ProviderPosition(
+                                    position.line,
+                                    lastState
+                                        ? realState
+                                        ? position.character - (lineChunkAtCursor.endsWith(':') ? 1 : 0)
+                                        : position.character - (lastState.length + 1) - (lineChunkAtCursor.endsWith(':') ? 1 : 0)
+                                        : position.character - (lineChunkAtCursor.endsWith(':') ? 1 : 0)
+                                ),
+                                position)
                         ),
-                        position)
-                    ),
-                    st.state.type,
-                    st.state.hasParam
-                ));
+                        st.state.type,
+                        st.state.hasParam
+                    ));
                 return acc;
             }, [])
         } else {
@@ -791,7 +790,7 @@ export const StateEnumCompletionProvider: CompletionProvider = {
                 const stateName = lastSelectoid.slice(1);
                 const resolvedClass = resolved[0];
                 const lastNode = resolvedElements[0][resolvedElements[0].length - 1];
-                const resolvedStates: {[key: string]: StateParsedValue} = collectStates(lastNode)
+                const resolvedStates: { [key: string]: StateParsedValue } = collectStates(lastNode)
 
                 if (Object.keys(resolvedStates).length) {
                     const resolvedStateNode = find(lastNode.resolved, (node: any) => {
@@ -817,11 +816,11 @@ export const StateEnumCompletionProvider: CompletionProvider = {
                             }
 
                             acc = filteredOptions.map((opt: string) => stateEnumCompletion(
-                                    opt,
-                                    from,
-                                    new ProviderRange(
-                                        new ProviderPosition(position.line, position.character - existingInput.length),
-                                        position)
+                                opt,
+                                from,
+                                new ProviderRange(
+                                    new ProviderPosition(position.line, position.character - existingInput.length),
+                                    position)
                                 )
                             );
                         }
