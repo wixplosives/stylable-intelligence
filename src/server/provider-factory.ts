@@ -26,8 +26,8 @@ export function createFs(fileSystem: ExtendedFSReadSync, withFilePrefix: boolean
             let isDir = false;
             let isFile = false;
             try{
-                checkExistsSync('dir', fileSystem, path)
-                fileSystem.get(path)
+                checkExistsSync('dir', fileSystem, path);
+                fileSystem.get(path);
                 isFile = true;
             } catch(e){
                 isDir = true;

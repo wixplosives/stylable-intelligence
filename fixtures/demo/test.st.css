@@ -7,16 +7,37 @@
 :import {
     -st-from: "fake-stylable-package/stylesheet.st.css";
     -st-default: Comp2;
-    -st-named: part1;
+    -st-named: color1, part1;
+}
+
+/* :import {
+    -st-from: "fake-stylable-package/mixin.js";
+    -st-named: formatter;
+} */
+
+.root {
+
 }
 
 .blah {
-    -st-extends: part1;
+    -st-extends: Comp2;
 }
 
-.blah:
+.part1:bleh(b) {
+    
+}
 
-.gaga {
+.blah::part1 {
+
+}
+
+.blah::part1
+
+.blah:blah() {
+
+}
+
+/* .gaga {
     -st-extends: Comp;
     -st-states: blah(enum(blah, bleh, blih));
     color: rgb(var(b))
@@ -24,4 +45,4 @@
 
 .gaga:blah() {
 
-}
+} */
