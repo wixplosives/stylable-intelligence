@@ -1,6 +1,6 @@
 import * as asserters from '../../test-kit/asserters';
-import { createRange } from '../../src/server/completion-providers'
-import { topLevelDirectives } from '../../src/server/completion-types';
+import { createRange } from '../../src/lib/completion-providers'
+import { topLevelDirectives } from '../../src/lib/completion-types';
 
 describe('Variables Directive', function () {
 

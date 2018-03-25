@@ -3,20 +3,19 @@ import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
 import { TextDocument } from 'vscode-languageserver-types';
-import { createProvider, MinimalDocs, createFs } from '../src/server/provider-factory'
-import { Completion, snippet } from '../src/server/completion-types';
-import { ProviderPosition, ProviderRange } from '../src/server/completion-providers';
-import { createMeta, ProviderLocation } from '../src/server/provider';
-import { pathFromPosition } from '../src/server/utils/postcss-ast-utils'
+import { createProvider, MinimalDocs, createFs } from '../src/lib/provider-factory'
+import { Completion, snippet } from '../src/lib/completion-types';
+import { ProviderPosition, ProviderRange } from '../src/lib/completion-providers';
+import {createMeta, default as Provider, ProviderLocation} from '../src/lib/provider';
+import { pathFromPosition } from '../src/lib/utils/postcss-ast-utils'
 import { NodeBase } from 'postcss';
-import { Provider } from '../src/server/index';
 import { SignatureHelp, ParameterInformation, Location } from 'vscode-languageserver';
-import { fromVscodePath, toVscodePath } from '../src/server/utils/uri-utils';
+import { fromVscodePath, toVscodePath } from '../src/lib/utils/uri-utils';
 import { Stylable } from 'stylable';
-import { LocalSyncFs } from '../src/server/local-sync-fs';
-import { createDocFs } from '../src/server/server';
-import { createLanguageServiceHost, createBaseHost } from '../src/server/utils/temp-language-service-host';
-import { ExtendedTsLanguageService } from '../src/server/types';
+import { LocalSyncFs } from '../src/lib/local-sync-fs';
+import { createDocFs } from '../src/lib/server';
+import { createLanguageServiceHost, createBaseHost } from '../src/lib/utils/temp-language-service-host';
+import { ExtendedTsLanguageService } from '../src/lib/types';
 const pkgDir = require('pkg-dir');
 
 export const CASES_PATH = path.join(pkgDir.sync(__dirname), 'fixtures', 'server-cases');
@@ -76,27 +75,26 @@ export interface Assertable {
     notSuggested: (nonCompletions: Partial<Completion>[]) => void
 }
 
-export function getCompletions(fileName: string, prefix: string = ''): Thenable<Assertable> {
+// TODO : remove async (no need for it) and fix all breaking tests
+export async function getCompletions(fileName: string, prefix: string = ''): Promise<Assertable> {
     const fullPath = path.join(CASES_PATH, fileName);
     const src: string = fs.readFileSync(fullPath).toString();
 
-    return completionsIntenal(provider, fullPath, src, prefix)
-        .then((completions) => {
-            return {
-                suggested: (expectedCompletions: Partial<Completion>[]) => {
-                    assertPresent(completions, expectedCompletions, prefix);
-                },
-                exactSuggested: (expectedCompletions: Partial<Completion>[]) => {
-                    assertExact(completions, expectedCompletions);
-                },
-                notSuggested: (expectedNoCompletions: Partial<Completion>[]) => {
-                    assertNotPresent(completions, expectedNoCompletions);
-                }
-            }
-        })
+    const completions =  completionsIntenal(provider, fullPath, src, prefix);
+    return {
+        suggested: (expectedCompletions: Partial<Completion>[]) => {
+            assertPresent(completions, expectedCompletions, prefix);
+        },
+        exactSuggested: (expectedCompletions: Partial<Completion>[]) => {
+            assertExact(completions, expectedCompletions);
+        },
+        notSuggested: (expectedNoCompletions: Partial<Completion>[]) => {
+            assertNotPresent(completions, expectedNoCompletions);
+        }
+    }
 }
 
-function completionsIntenal(provider: Provider, fileName: string, src: string, prefix: string): Thenable<Completion[]> {
+function completionsIntenal(provider: Provider, fileName: string, src: string, prefix: string): Completion[] {
     let pos = getCaretPosition(src);
     src = src.replace('|', prefix);
     pos.character += prefix.length;

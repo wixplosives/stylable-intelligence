@@ -1,5 +1,5 @@
 import * as asserters from '../../test-kit/asserters';
-import { createRange } from '../../src/server/completion-providers'
+import { createRange } from '../../src/lib/completion-providers'
 
 describe('Variables', function () {
 

@@ -1,6 +1,6 @@
 import * as asserters from '../../test-kit/asserters';
-import { createRange } from '../../src/server/completion-providers'
-import { importDirectives, rulesetDirectives } from '../../src/server/completion-types';
+import { createRange } from '../../src/lib/completion-providers'
+import { importDirectives, rulesetDirectives } from '../../src/lib/completion-types';
 
 describe('Inner Directives', function () {
 

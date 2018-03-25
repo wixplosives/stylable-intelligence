@@ -6,7 +6,6 @@ import {
     Diagnostics,
     expandCustomSelectors,
     ImportSymbol,
-    ParsedValue,
     process as stylableProcess,
     safeParse,
     SRule,
@@ -14,7 +13,6 @@ import {
     Stylable,
     StylableMeta,
     StylableTransformer,
-    systemValidators,
     valueMapping
 } from 'stylable';
 import {isContainer, isDeclaration, isRoot, isSelector, pathFromPosition} from './utils/postcss-ast-utils';
@@ -34,9 +32,9 @@ import {
     PseudoElementCompletionProvider,
     RulesetInternalDirectivesProvider,
     SelectorCompletionProvider,
-    StateTypeCompletionProvider,
-    StateSelectorCompletionProvider,
     StateEnumCompletionProvider,
+    StateSelectorCompletionProvider,
+    StateTypeCompletionProvider,
     TopLevelDirectiveProvider,
     ValueCompletionProvider,
     ValueDirectiveProvider
@@ -56,19 +54,24 @@ import * as ts from 'typescript';
 import {Identifier, ParameterDeclaration, SignatureDeclaration, TypeReferenceNode} from 'typescript';
 import {fromVscodePath, toVscodePath} from './utils/uri-utils';
 import {keys, last, values} from 'lodash';
-import {ExtendedFSReadSync, ExtendedTsLanguageService, ParsedFuncOrDivValue} from './types';
+import {ExtendedFSReadSync, ExtendedTsLanguageService} from './types';
 import {ClassSymbol} from 'stylable/dist/src/stylable-processor';
-import { resolveStateTypeOrValidator, createStateValidatorSignature, createStateTypeSignature, resolveStateParams } from './feature/pseudo-class';
+import {
+    createStateTypeSignature,
+    createStateValidatorSignature,
+    resolveStateParams,
+    resolveStateTypeOrValidator
+} from './feature/pseudo-class';
 
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
 const cst = require('css-selector-tokenizer');
 
 export default class Provider {
-    constructor(public styl: Stylable, public tsLangService: ExtendedTsLanguageService) {
+    constructor(private styl: Stylable, private tsLangService: ExtendedTsLanguageService) {
     }
 
-    public providers: CompletionProvider[] = [
+    private providers: CompletionProvider[] = [
         RulesetInternalDirectivesProvider,
         ImportInternalDirectivesProvider,
         TopLevelDirectiveProvider,
@@ -87,7 +90,7 @@ export default class Provider {
         ValueCompletionProvider,
     ];
 
-    public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, fs: ExtendedFSReadSync): Thenable<Completion[]> {
+    public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, fs: ExtendedFSReadSync): Completion[] {
         let res = fixAndProcess(src, pos, fileName);
         const completions: Completion[] = [];
         try {
@@ -97,84 +100,7 @@ export default class Provider {
             });
         } catch (e) {
         }
-        return Promise.resolve(this.dedupeComps(completions));
-    }
-
-    private createProviderOptions(src: string,
-                                  position: ProviderPosition,
-                                  meta: StylableMeta,
-                                  fakeRules: PostCss.Rule[],
-                                  fullLineText: string,
-                                  cursorPosInLine: number,
-                                  fs: ExtendedFSReadSync): ProviderOptions {
-
-        const transformer = new StylableTransformer({
-            diagnostics: new Diagnostics(),
-            fileProcessor: this.styl.fileProcessor,
-            requireModule: () => {
-                throw new Error('Not implemented, why are we here')
-            }
-        })
-
-        const path = pathFromPosition(meta.rawAst, {line: position.line + 1, character: position.character});
-        const astAtCursor: PostCss.NodeBase = path[path.length - 1];
-        const parentAst: PostCss.NodeBase | undefined = (astAtCursor as PostCss.Declaration).parent ? (astAtCursor as PostCss.Declaration).parent : undefined;
-        const parentSelector: SRule | null = parentAst && isSelector(parentAst) && fakeRules.findIndex((f) => {
-            return f.selector === parentAst.selector
-        }) === -1
-            ? <SRule>parentAst
-            : astAtCursor && isSelector(astAtCursor) && fakeRules.findIndex((f) => {
-                return f.selector === astAtCursor.selector
-            }) === -1
-                ? <SRule>astAtCursor
-                : null;
-
-        const {lineChunkAtCursor, fixedCharIndex} = getChunkAtCursor(fullLineText, cursorPosInLine);
-        const ps = parseSelector(lineChunkAtCursor, fixedCharIndex);
-        const chunkStrings: string[] = ps.selector.reduce((acc, s) => {
-            return acc.concat(s.text)
-        }, ([] as string[]));
-        const currentSelector = (ps.selector[0] as SelectorChunk).classes[0] || (ps.selector[0] as SelectorChunk).customSelectors[0] || chunkStrings[0];
-        const expandedLine: string = expandCustomSelectors(PostCss.rule({selector: lineChunkAtCursor}), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
-        const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
-
-        let resolved: CSSResolve[] = [];
-        if (currentSelector && resolvedElements[0].length) {
-            const clas = resolvedElements[0].find(e => e.type === 'class' || (e.type === 'element' && e.resolved.length > 1));  //TODO: better type parsing
-            resolved = clas ? clas.resolved : [];
-        }
-
-        return {
-            meta: meta,
-            fs: fs,
-            styl: this.styl,
-            src: src,
-            tsLangService: this.tsLangService,
-            resolvedElements: resolvedElements,
-            parentSelector: parentSelector,
-            astAtCursor: astAtCursor,
-            lineChunkAtCursor: lineChunkAtCursor,
-            lastSelectoid: ps.lastSelector,
-            fullLineText: fullLineText,
-            position: position,
-            resolved: resolved,
-            currentSelector: currentSelector,
-            target: ps.target,
-            isMediaQuery: isInMediaQuery(path),
-            fakes: fakeRules,
-        }
-    }
-
-    private dedupeComps(completions: Completion[]): Completion[] {
-        let uniqs = new Map<string, Completion>();
-        completions.forEach(comp => {
-            if (!uniqs.has(comp.label)) {
-                uniqs.set(comp.label, comp);
-            }
-        });
-        let res: Completion[] = [];
-        uniqs.forEach(v => res.push(v));
-        return res;
+        return this.dedupeComps(completions);
     }
 
     public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string, fs: ExtendedFSReadSync): Thenable<ProviderLocation[]> {
@@ -276,38 +202,7 @@ export default class Provider {
         return Promise.resolve(defs.filter(def => !this.inDef(position, def)));
     }
 
-    inDef(position: ProviderPosition, def: ProviderLocation): boolean {
-        return (position.line > def.range.start.line || (position.line === def.range.start.line && position.character >= def.range.start.character))
-            && (position.line < def.range.end.line || (position.line === def.range.end.line && position.character <= def.range.end.character))
-    }
-
-    findWord(word: string, src: string, position: Position): ProviderRange {
-        let split = src.split('\n');
-        let regex = '\\b' + '\\.?' + this.escapeRegExp(word.replace('.', '').replace(':--', '')) + '\\b';
-        let lineIndex = split.findIndex(l => RegExp(regex).test(l));
-        if (lineIndex === -1 || lineIndex === position.line) {
-            lineIndex = split.findIndex(l => l.trim().indexOf(word) !== -1)
-        }
-        if (lineIndex === -1 || lineIndex === position.line) {
-            return createRange(0, 0, 0, 0)
-        }
-        ;
-        let line = split[lineIndex];
-
-        const match = line.match(RegExp(regex))
-
-        if (match) {
-            return createRange(lineIndex, line.lastIndexOf(word), lineIndex, line.lastIndexOf(word) + word.length)
-        } else {
-            return createRange(0, 0, 0, 0)
-        }
-    }
-
-    escapeRegExp(re: string) {
-        return re.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
-    }
-
-    getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
+    public getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
 
         if (!filePath.endsWith('.st.css')) {
             return null
@@ -369,7 +264,100 @@ export default class Provider {
         }
     }
 
-    getSignatureForTsModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean, paramInfo: typeof ParameterInformation): SignatureHelp | null {
+    public getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
+
+        const doc = fs.get(params.textDocument.uri).getText();
+        const pos = {line: params.position.line + 1, character: params.position.character + 1};
+        const {meta} = createMeta(doc, params.textDocument.uri);
+        const node = last(pathFromPosition(meta!.rawAst, pos))!;
+        let inner: NodeBase | undefined;
+        let word: string = '';
+        let refs: Location[] = [];
+
+        if (isRoot(node)) {
+            inner = (node.nodes || []).find(n => {
+                return (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
+                    &&
+                    (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
+            })
+            if (inner && isSelector(inner)) {
+                const relPos = {
+                    line: pos.line - inner.source.start!.line + 1,
+                    character: pos.character - inner.source.start!.column + 1
+                }
+                const proc = psp();
+                const parsed: ContainerBase = proc.astSync(inner.selector);
+                const wordNode = ((parsed).nodes![0] as ContainerBase).nodes!
+                    .find(n => {
+                        return (n.source.start!.line < relPos.line || (n.source.start!.line === relPos.line && n.source.start!.column <= pos.character))
+                            &&
+                            (n.source.end!.line > relPos.line || (n.source.end!.line === relPos.line && n.source.end!.column >= pos.character))
+                    });
+                if (wordNode) {
+                    word = (wordNode as Declaration).value;
+                }
+            }
+        } else if (isContainer(node)) {
+            inner = (node.nodes || []).find(n => {
+                return isDeclaration(n) &&
+                    (n.prop === valueMapping.mixin || n.prop === valueMapping.extends) && (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
+                    && (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
+            })
+            if (inner) {
+                const parsed = pvp((inner as Declaration).value);
+                const relPos = inner.source.start!.line === pos.line
+                    ? pos.character - (inner.source.start!.column + (inner as Declaration).prop.length + (inner.raws.between ? inner.raws.between.length : 0))
+                    : pos.character - 1 + (inner as Declaration).value.split('\n').slice(0, pos.line - inner.source.start!.line).reduce((acc, cur) => {
+                    acc += (cur.length + 1);
+                    return acc;
+                }, 0)
+                let val = findNode(parsed.nodes, relPos);
+                if (val.type !== 'word') {
+                    val = findNode(parsed.nodes, relPos - 1);
+                }
+
+                if (val) {
+                    word = val.value
+                }
+            }
+        }
+
+        refs = this.findClassRefs(word, params.textDocument.uri, fs);
+        return refs;
+    }
+
+    private inDef(position: ProviderPosition, def: ProviderLocation): boolean {
+        return (position.line > def.range.start.line || (position.line === def.range.start.line && position.character >= def.range.start.character))
+            && (position.line < def.range.end.line || (position.line === def.range.end.line && position.character <= def.range.end.character))
+    }
+
+    private findWord(word: string, src: string, position: Position): ProviderRange {
+        let split = src.split('\n');
+        let regex = '\\b' + '\\.?' + this.escapeRegExp(word.replace('.', '').replace(':--', '')) + '\\b';
+        let lineIndex = split.findIndex(l => RegExp(regex).test(l));
+        if (lineIndex === -1 || lineIndex === position.line) {
+            lineIndex = split.findIndex(l => l.trim().indexOf(word) !== -1)
+        }
+        if (lineIndex === -1 || lineIndex === position.line) {
+            return createRange(0, 0, 0, 0)
+        }
+        ;
+        let line = split[lineIndex];
+
+        const match = line.match(RegExp(regex))
+
+        if (match) {
+            return createRange(lineIndex, line.lastIndexOf(word), lineIndex, line.lastIndexOf(word) + word.length)
+        } else {
+            return createRange(0, 0, 0, 0)
+        }
+    }
+
+    private escapeRegExp(re: string) {
+        return re.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+    }
+
+    private getSignatureForTsModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean, paramInfo: typeof ParameterInformation): SignatureHelp | null {
         let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault, this.tsLangService)
 
         let ptypes = sig!.parameters.map(p => {
@@ -397,7 +385,7 @@ export default class Provider {
         } as SignatureHelp
     }
 
-    getSignatureForJsModifier(mixin: string, activeParam: number, fileSrc: string, paramInfo: typeof ParameterInformation): SignatureHelp | null {
+    private getSignatureForJsModifier(mixin: string, activeParam: number, fileSrc: string, paramInfo: typeof ParameterInformation): SignatureHelp | null {
 
         let lines = fileSrc.split('\n');
         let mixinLine: number = lines.findIndex(l => l.trim().startsWith('exports.' + mixin));
@@ -488,7 +476,7 @@ export default class Provider {
         } as SignatureHelp
     }
 
-    getSignatureForStateWithParamSelector(meta: StylableMeta, pos: ProviderPosition, line: string): SignatureHelp | null {
+    private getSignatureForStateWithParamSelector(meta: StylableMeta, pos: ProviderPosition, line: string): SignatureHelp | null {
         let word: string = '';
         const posChar = pos.character + 1;
         const parsed = cst.parse(line);
@@ -543,7 +531,7 @@ export default class Provider {
         return null;
     }
 
-    getSignatureForStateWithParamDefinition(meta: StylableMeta, pos: ProviderPosition, line: string): SignatureHelp | null {
+    private getSignatureForStateWithParamDefinition(meta: StylableMeta, pos: ProviderPosition, line: string): SignatureHelp | null {
         const res = resolveStateTypeOrValidator(meta, pos, line);
 
         if (typeof res === 'string') {
@@ -555,69 +543,7 @@ export default class Provider {
         }
     }
 
-    getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
-
-        const doc = fs.get(params.textDocument.uri).getText();
-        const pos = {line: params.position.line + 1, character: params.position.character + 1};
-        const {meta} = createMeta(doc, params.textDocument.uri);
-        const node = last(pathFromPosition(meta!.rawAst, pos))!;
-        let inner: NodeBase | undefined;
-        let word: string = '';
-        let refs: Location[] = [];
-
-        if (isRoot(node)) {
-            inner = (node.nodes || []).find(n => {
-                return (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
-                    &&
-                    (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
-            })
-            if (inner && isSelector(inner)) {
-                const relPos = {
-                    line: pos.line - inner.source.start!.line + 1,
-                    character: pos.character - inner.source.start!.column + 1
-                }
-                const proc = psp();
-                const parsed: ContainerBase = proc.astSync(inner.selector);
-                const wordNode = ((parsed).nodes![0] as ContainerBase).nodes!
-                    .find(n => {
-                        return (n.source.start!.line < relPos.line || (n.source.start!.line === relPos.line && n.source.start!.column <= pos.character))
-                            &&
-                            (n.source.end!.line > relPos.line || (n.source.end!.line === relPos.line && n.source.end!.column >= pos.character))
-                    });
-                if (wordNode) {
-                    word = (wordNode as Declaration).value;
-                }
-            }
-        } else if (isContainer(node)) {
-            inner = (node.nodes || []).find(n => {
-                return isDeclaration(n) &&
-                    (n.prop === valueMapping.mixin || n.prop === valueMapping.extends) && (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
-                    && (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
-            })
-            if (inner) {
-                const parsed = pvp((inner as Declaration).value);
-                const relPos = inner.source.start!.line === pos.line
-                    ? pos.character - (inner.source.start!.column + (inner as Declaration).prop.length + (inner.raws.between ? inner.raws.between.length : 0))
-                    : pos.character - 1 + (inner as Declaration).value.split('\n').slice(0, pos.line - inner.source.start!.line).reduce((acc, cur) => {
-                    acc += (cur.length + 1);
-                    return acc;
-                }, 0)
-                let val = findNode(parsed.nodes, relPos);
-                if (val.type !== 'word') {
-                    val = findNode(parsed.nodes, relPos - 1);
-                }
-
-                if (val) {
-                    word = val.value
-                }
-            }
-        }
-
-        refs = this.findClassRefs(word, params.textDocument.uri, fs);
-        return refs;
-    }
-
-    findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[] {
+    private findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[] {
         if (!word) {
             return []
         }
@@ -690,6 +616,84 @@ export default class Provider {
         })
         return refs;
     }
+
+    private createProviderOptions(src: string,
+                                  position: ProviderPosition,
+                                  meta: StylableMeta,
+                                  fakeRules: PostCss.Rule[],
+                                  fullLineText: string,
+                                  cursorPosInLine: number,
+                                  fs: ExtendedFSReadSync): ProviderOptions {
+
+        const transformer = new StylableTransformer({
+            diagnostics: new Diagnostics(),
+            fileProcessor: this.styl.fileProcessor,
+            requireModule: () => {
+                throw new Error('Not implemented, why are we here')
+            }
+        });
+
+        const path = pathFromPosition(meta.rawAst, {line: position.line + 1, character: position.character});
+        const astAtCursor: PostCss.NodeBase = path[path.length - 1];
+        const parentAst: PostCss.NodeBase | undefined = (astAtCursor as PostCss.Declaration).parent ? (astAtCursor as PostCss.Declaration).parent : undefined;
+        const parentSelector: SRule | null = parentAst && isSelector(parentAst) && fakeRules.findIndex((f) => {
+            return f.selector === parentAst.selector
+        }) === -1
+            ? <SRule>parentAst
+            : astAtCursor && isSelector(astAtCursor) && fakeRules.findIndex((f) => {
+                return f.selector === astAtCursor.selector
+            }) === -1
+                ? <SRule>astAtCursor
+                : null;
+
+        const {lineChunkAtCursor, fixedCharIndex} = getChunkAtCursor(fullLineText, cursorPosInLine);
+        const ps = parseSelector(lineChunkAtCursor, fixedCharIndex);
+        const chunkStrings: string[] = ps.selector.reduce((acc, s) => {
+            return acc.concat(s.text)
+        }, ([] as string[]));
+        const currentSelector = (ps.selector[0] as SelectorChunk).classes[0] || (ps.selector[0] as SelectorChunk).customSelectors[0] || chunkStrings[0];
+        const expandedLine: string = expandCustomSelectors(PostCss.rule({selector: lineChunkAtCursor}), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
+        const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
+
+        let resolved: CSSResolve[] = [];
+        if (currentSelector && resolvedElements[0].length) {
+            const clas = resolvedElements[0].find(e => e.type === 'class' || (e.type === 'element' && e.resolved.length > 1));  //TODO: better type parsing
+            resolved = clas ? clas.resolved : [];
+        }
+
+        return {
+            meta: meta,
+            fs: fs,
+            styl: this.styl,
+            src: src,
+            tsLangService: this.tsLangService,
+            resolvedElements: resolvedElements,
+            parentSelector: parentSelector,
+            astAtCursor: astAtCursor,
+            lineChunkAtCursor: lineChunkAtCursor,
+            lastSelectoid: ps.lastSelector,
+            fullLineText: fullLineText,
+            position: position,
+            resolved: resolved,
+            currentSelector: currentSelector,
+            target: ps.target,
+            isMediaQuery: isInMediaQuery(path),
+            fakes: fakeRules,
+        }
+    }
+
+    private dedupeComps(completions: Completion[]): Completion[] {
+        let uniqs = new Map<string, Completion>();
+        completions.forEach(comp => {
+            if (!uniqs.has(comp.label)) {
+                uniqs.set(comp.label, comp);
+            }
+        });
+        let res: Completion[] = [];
+        uniqs.forEach(v => res.push(v));
+        return res;
+    }
+
 }
 
 function isIllegalLine(line: string): boolean {

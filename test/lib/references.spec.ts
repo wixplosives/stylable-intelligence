@@ -1,9 +1,9 @@
-import { createRange } from '../../src/server/completion-providers';
+import { createRange } from '../../src/lib/completion-providers';
 import * as asserters from '../../test-kit/asserters';
 import { expect } from 'chai';
 import * as path from 'path';
 import { getReferences, CASES_PATH } from '../../test-kit/asserters';
-import { toVscodePath } from '../../src/server/utils/uri-utils';
+import { toVscodePath } from '../../src/lib/utils/uri-utils';
 
 describe("References", function () {
     describe("Local classes", function () {

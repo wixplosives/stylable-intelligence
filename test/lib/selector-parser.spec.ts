@@ -1,4 +1,4 @@
-import { parseSelector, SelectorChunk, SelectorInternalChunk } from '../../src/server/utils/selector-analyzer';
+import { parseSelector, SelectorChunk, SelectorInternalChunk } from '../../src/lib/utils/selector-analyzer';
 import { expect } from 'chai';
 
 describe('Selector Parser', function () {

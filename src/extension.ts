@@ -30,11 +30,12 @@ namespace OpenDocNotification {
 }
 
 /**
+ * vs-code plugin API implementation
  * this is the main entry point for the vs studio code extension API
  * see https://code.visualstudio.com/docs/extensionAPI/activation-events
  */
 export async function activate(context: ExtensionContext) {
-    let serverModule = path.resolve(__dirname, '..', 'server', 'server.js'); //context.asAbsolutePath(path.join('dist', 'src', 'server', 'server.js'));
+    let serverModule = require.resolve('./lib/server.js'); //context.asAbsolutePath(path.join('dist', 'src', 'server', 'server.js'));
     let debugOptions = {execArgv: ['--inspect']};
 
     let serverOptions: ServerOptions = {
@@ -95,6 +96,7 @@ export async function activate(context: ExtensionContext) {
 }
 
 /**
+ * vs-code plugin API implementation
  * deactivation cleanup
  */
 export async function deactivate() {
