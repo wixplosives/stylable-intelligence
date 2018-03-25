@@ -1,4 +1,4 @@
-import { createRange } from '../../src/server/completion-providers';
+import { createRange } from '../../src/lib/completion-providers';
 import * as asserters from '../../test-kit/asserters';
 import { expect } from 'chai';
 import * as path from 'path';

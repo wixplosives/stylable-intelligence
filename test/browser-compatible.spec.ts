@@ -5,7 +5,7 @@ import * as path from "path";
 const pkgDir = require('pkg-dir');
 
 describe('browser-compatible', () => {
-    it('browser-compatible', async function () {
+    it('bundleable by webpack with no errors', async function () {
         this.timeout(50000);
         const memoryFS = new MemoryFS();
         const rootPath = await pkgDir(__dirname);
@@ -13,7 +13,7 @@ describe('browser-compatible', () => {
         const compiler = webpack({
             mode: 'development',
             entry: {
-                main: path.join(rootPath, 'service.js')
+                main: path.join(rootPath, 'dist', 'src', 'lib', 'service.js')
             },
             node: {
                 path: 'empty', // users should provide alias to path-webpack
@@ -25,7 +25,7 @@ describe('browser-compatible', () => {
 
         compiler.outputFileSystem = memoryFS;
 
-        await new Promise((res, rej)=> compiler.run((err, stats) => {
+        await new Promise((res, rej) => compiler.run((err, stats) => {
             if (err || stats.hasErrors()) {
                 rej(err || new Error(stats.toString()));
             } else {

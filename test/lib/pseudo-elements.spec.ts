@@ -1,6 +1,6 @@
 import * as asserters from '../../test-kit/asserters';
-import { createRange, ProviderRange } from '../../src/server/completion-providers';
-import { Completion } from '../../src/server/index';
+import { createRange, ProviderRange } from '../../src/lib/completion-providers';
+import {Completion} from "../../src/lib/completion-types";
 
 describe('Pseudo-elements', function () {
 
