@@ -1,6 +1,6 @@
 //must remain independent from vscode
 import * as PostCss from 'postcss';
-import {ContainerBase, Declaration, NodeBase} from 'postcss';
+import {ContainerBase, Declaration, NodeBase, Rule} from 'postcss';
 import {
     CSSResolve,
     Diagnostics,
@@ -18,7 +18,6 @@ import {
 import {isContainer, isDeclaration, isRoot, isSelector, pathFromPosition} from './utils/postcss-ast-utils';
 import {
     CodeMixinCompletionProvider,
-    CompletionProvider,
     createRange,
     CssMixinCompletionProvider,
     ExtendCompletionProvider,
@@ -26,7 +25,6 @@ import {
     GlobalCompletionProvider,
     ImportInternalDirectivesProvider,
     NamedCompletionProvider,
-    ProviderOptions,
     ProviderPosition,
     ProviderRange,
     PseudoElementCompletionProvider,
@@ -40,7 +38,7 @@ import {
     ValueDirectiveProvider
 } from './completion-providers';
 import {Completion,} from './completion-types';
-import {parseSelector, SelectorChunk,} from './utils/selector-analyzer';
+import {parseSelector} from './utils/selector-analyzer';
 import * as path from 'path';
 import {
     Location,
@@ -62,43 +60,59 @@ import {
     resolveStateParams,
     resolveStateTypeOrValidator
 } from './feature/pseudo-class';
+import {ResolvedElement} from "stylable/dist/src/stylable-transformer";
 
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
 const cst = require('css-selector-tokenizer');
 
+function findAstByFakeRules(astAtCursor: NodeBase | null, fakeRules: Rule[], fallback: () => SRule | null): SRule | null {
+    return astAtCursor && isSelector(astAtCursor) && !~fakeRules.findIndex(f => f.selector === astAtCursor.selector) ? <SRule>astAtCursor : fallback();
+}
+
 export default class Provider {
     constructor(private styl: Stylable, private tsLangService: ExtendedTsLanguageService) {
     }
 
-    private providers: CompletionProvider[] = [
-        RulesetInternalDirectivesProvider,
-        ImportInternalDirectivesProvider,
-        TopLevelDirectiveProvider,
-        ValueDirectiveProvider,
-        GlobalCompletionProvider,
-        SelectorCompletionProvider,
-        ExtendCompletionProvider,
-        CssMixinCompletionProvider,
-        CodeMixinCompletionProvider,
-        FormatterCompletionProvider,
-        NamedCompletionProvider,
-        StateTypeCompletionProvider,
-        StateSelectorCompletionProvider,
-        StateEnumCompletionProvider,
-        PseudoElementCompletionProvider,
-        ValueCompletionProvider,
-    ];
-
-    public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, fs: ExtendedFSReadSync): Completion[] {
-        let res = fixAndProcess(src, pos, fileName);
-        const completions: Completion[] = [];
+    public provideCompletionItemsFromSrc(src: string, position: Position, fileName: string, fs: ExtendedFSReadSync): Completion[] {
+        let res = fixAndProcess(src, position, fileName);
+        let completions: Completion[] = [];
         try {
-            let options = this.createProviderOptions(src, pos, res.processed.meta!, res.processed.fakes, res.currentLine, res.cursorLineIndex, fs);
-            this.providers.forEach(p => {
-                completions.push(...p.provide(options))
-            });
-        } catch (e) {
+            const meta = res.processed.meta!;
+            const fakes = res.processed.fakes;
+            const path = pathFromPosition(meta.rawAst, {line: position.line + 1, character: position.character});
+            const astAtCursor: NodeBase = path[path.length - 1];
+            const isMediaQuery = isInMediaQuery(path);
+            const parentSelector: SRule | null = findAstByFakeRules((astAtCursor as Declaration).parent || null, res.processed.fakes, () => findAstByFakeRules(astAtCursor, res.processed.fakes, () => null));
+            const {lineChunkAtCursor, fixedCharIndex} = getChunkAtCursor(res.currentLine, res.cursorLineIndex);
+
+            // WARNING : as some providers throw exceptions, the order matters. this should be fixed
+            completions = completions.concat(RulesetInternalDirectivesProvider.provide(parentSelector, isMediaQuery, res.currentLine, position, lineChunkAtCursor));
+            completions = completions.concat(ImportInternalDirectivesProvider.provide(parentSelector, isMediaQuery, res.currentLine, position, lineChunkAtCursor));
+            completions = completions.concat(TopLevelDirectiveProvider.provide(parentSelector, isMediaQuery, res.currentLine, position, lineChunkAtCursor, meta));
+            completions = completions.concat(ValueDirectiveProvider.provide(parentSelector, res.currentLine, position));
+            completions = completions.concat(GlobalCompletionProvider.provide(parentSelector, res.currentLine, position, lineChunkAtCursor));
+            completions = completions.concat(SelectorCompletionProvider.provide(parentSelector, res.currentLine, position, lineChunkAtCursor, meta, fakes, this.styl));
+            completions = completions.concat(ExtendCompletionProvider.provide(position, lineChunkAtCursor, meta, this.styl));
+            completions = completions.concat(CssMixinCompletionProvider.provide(res.currentLine, position, lineChunkAtCursor, meta));
+            completions = completions.concat(CodeMixinCompletionProvider.provide(parentSelector, res.currentLine, position, lineChunkAtCursor, meta, this.styl, fs, this.tsLangService));
+            completions = completions.concat(FormatterCompletionProvider.provide(parentSelector, res.currentLine, position, lineChunkAtCursor, meta, this.styl, fs, this.tsLangService));
+            completions = completions.concat(NamedCompletionProvider.provide(parentSelector, res.currentLine, position, meta, this.styl, astAtCursor, src));
+            completions = completions.concat(StateTypeCompletionProvider.provide(res.currentLine, position, meta, astAtCursor));
+
+            const ps = parseSelector(lineChunkAtCursor, fixedCharIndex);
+            const resolvedElements = this.resolveElements(meta, lineChunkAtCursor);
+
+            completions = completions.concat(StateSelectorCompletionProvider.provide(parentSelector, res.currentLine, position, lineChunkAtCursor, meta, resolvedElements, ps.target, ps.lastSelector));
+            completions = completions.concat(StateEnumCompletionProvider.provide(res.currentLine, position, lineChunkAtCursor, meta, astAtCursor, resolvedElements, ps.lastSelector));
+
+            const resolved: CSSResolve[] = getResolvedFromElements(resolvedElements[0]);
+            completions = completions.concat(PseudoElementCompletionProvider.provide(parentSelector, res.currentLine, position, lineChunkAtCursor, meta, resolvedElements, ps.lastSelector, resolved));
+            completions = completions.concat(ValueCompletionProvider.provide(res.currentLine, position, meta, this.styl));
+        }
+        catch (e) {
+            // TODO code quality : this catch block should not be part of a valid use case
+            // console.warn('error', e);
         }
         return this.dedupeComps(completions);
     }
@@ -114,7 +128,6 @@ export default class Provider {
         if (!meta) {
             return Promise.resolve([])
         }
-        ;
 
         const parsed: any[] = pvp(res.currentLine).nodes;
 
@@ -129,14 +142,14 @@ export default class Provider {
 
         let word = val.value;
 
-        const {lineChunkAtCursor, fixedCharIndex} = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
+        const {lineChunkAtCursor} = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
         const transformer = new StylableTransformer({
             diagnostics: new Diagnostics(),
             fileProcessor: this.styl.fileProcessor,
             requireModule: () => {
                 throw new Error('Not implemented, why are we here')
             }
-        })
+        });
         const expandedLine: string = expandCustomSelectors(PostCss.rule({selector: lineChunkAtCursor}), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
         const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
 
@@ -144,7 +157,7 @@ export default class Provider {
 
         const reso = resolvedElements[0][resolvedElements[0].length - 1].resolved.find(res => {
             return res.symbol.name === word.replace('.', '') || keys((res.symbol as ClassSymbol)[valueMapping.states]).some(k => k === word)
-        })
+        });
 
         if (reso) {
             meta = reso.meta;
@@ -178,7 +191,6 @@ export default class Provider {
                             )
                         )
                     }
-                    ;
                     break;
                 }
             }
@@ -238,7 +250,6 @@ export default class Provider {
         } else {
             return null
         }
-        ;
         let activeParam = parsed.nodes.reverse()[0].nodes.reduce((acc: number, cur: any) => {
             return (cur.type === 'div' ? acc + 1 : acc)
         }, 0);
@@ -272,19 +283,18 @@ export default class Provider {
         const node = last(pathFromPosition(meta!.rawAst, pos))!;
         let inner: NodeBase | undefined;
         let word: string = '';
-        let refs: Location[] = [];
 
         if (isRoot(node)) {
             inner = (node.nodes || []).find(n => {
                 return (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
                     &&
                     (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
-            })
+            });
             if (inner && isSelector(inner)) {
                 const relPos = {
                     line: pos.line - inner.source.start!.line + 1,
                     character: pos.character - inner.source.start!.column + 1
-                }
+                };
                 const proc = psp();
                 const parsed: ContainerBase = proc.astSync(inner.selector);
                 const wordNode = ((parsed).nodes![0] as ContainerBase).nodes!
@@ -302,7 +312,7 @@ export default class Provider {
                 return isDeclaration(n) &&
                     (n.prop === valueMapping.mixin || n.prop === valueMapping.extends) && (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
                     && (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
-            })
+            });
             if (inner) {
                 const parsed = pvp((inner as Declaration).value);
                 const relPos = inner.source.start!.line === pos.line
@@ -310,7 +320,7 @@ export default class Provider {
                     : pos.character - 1 + (inner as Declaration).value.split('\n').slice(0, pos.line - inner.source.start!.line).reduce((acc, cur) => {
                     acc += (cur.length + 1);
                     return acc;
-                }, 0)
+                }, 0);
                 let val = findNode(parsed.nodes, relPos);
                 if (val.type !== 'word') {
                     val = findNode(parsed.nodes, relPos - 1);
@@ -322,13 +332,13 @@ export default class Provider {
             }
         }
 
-        refs = this.findClassRefs(word, params.textDocument.uri, fs);
-        return refs;
+        return this.findClassRefs(word, params.textDocument.uri, fs);
     }
 
+    // TODO extract to static
     private inDef(position: ProviderPosition, def: ProviderLocation): boolean {
         return (position.line > def.range.start.line || (position.line === def.range.start.line && position.character >= def.range.start.character))
-            && (position.line < def.range.end.line || (position.line === def.range.end.line && position.character <= def.range.end.character))
+            && (position.line < def.range.end.line || (position.line === def.range.end.line && position.character <= def.range.end.character));
     }
 
     private findWord(word: string, src: string, position: Position): ProviderRange {
@@ -341,10 +351,9 @@ export default class Provider {
         if (lineIndex === -1 || lineIndex === position.line) {
             return createRange(0, 0, 0, 0)
         }
-        ;
         let line = split[lineIndex];
 
-        const match = line.match(RegExp(regex))
+        const match = line.match(RegExp(regex));
 
         if (match) {
             return createRange(lineIndex, line.lastIndexOf(word), lineIndex, line.lastIndexOf(word) + word.length)
@@ -353,12 +362,13 @@ export default class Provider {
         }
     }
 
+    // TODO extract to static
     private escapeRegExp(re: string) {
         return re.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
     }
 
     private getSignatureForTsModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean, paramInfo: typeof ParameterInformation): SignatureHelp | null {
-        let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault, this.tsLangService)
+        let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault, this.tsLangService);
 
         let ptypes = sig!.parameters.map(p => {
             return p.name + ":" + ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
@@ -376,21 +386,21 @@ export default class Provider {
         let sigInfo: SignatureInformation = {
             label: mixin + '(' + ptypes.join(', ') + '): ' + rtype,
             parameters
-        }
+        };
 
         return {
             activeParameter: activeParam,
             activeSignature: 0,
             signatures: [sigInfo]
-        } as SignatureHelp
+        } as SignatureHelp;
     }
 
     private getSignatureForJsModifier(mixin: string, activeParam: number, fileSrc: string, paramInfo: typeof ParameterInformation): SignatureHelp | null {
 
         let lines = fileSrc.split('\n');
         let mixinLine: number = lines.findIndex(l => l.trim().startsWith('exports.' + mixin));
-        let docStartLine: number = lines.slice(0, mixinLine).lastIndexOf(lines.slice(0, mixinLine).reverse().find(l => l.trim().startsWith('/**'))!)
-        let docLines = lines.slice(docStartLine, mixinLine)
+        let docStartLine: number = lines.slice(0, mixinLine).lastIndexOf(lines.slice(0, mixinLine).reverse().find(l => l.trim().startsWith('/**'))!);
+        let docLines = lines.slice(docStartLine, mixinLine);
         let formattedLines: string[] = [];
 
         docLines.forEach(l => {
@@ -403,7 +413,7 @@ export default class Provider {
             if (l.trim().startsWith('*')) {
                 formattedLines.push(l.trim().slice(1).trim())
             }
-        })
+        });
 
         const returnStart: number = formattedLines.findIndex(l => l.startsWith('@returns'));
         const returnEnd: number = formattedLines.slice(returnStart + 1).findIndex(l => l.startsWith('@')) === -1
@@ -411,20 +421,17 @@ export default class Provider {
             : formattedLines.slice(returnStart + 1).findIndex(l => l.startsWith('@')) + returnStart;
 
         const returnLines = formattedLines.slice(returnStart, returnEnd + 1);
-        formattedLines.splice(returnStart, returnLines.length)
+        formattedLines.splice(returnStart, returnLines.length);
         const returnType = /@returns *{(\w+)}/.exec(returnLines[0])
             ? /@returns *{(\w+)}/.exec(returnLines[0])![1]
             : '';
 
         const summaryStart: number = formattedLines.findIndex(l => l.startsWith('@summary'));
-        let summaryLines: string[] = [];
         if (summaryStart !== -1) {
             const summaryEnd: number = formattedLines.slice(summaryStart + 1).findIndex(l => l.startsWith('@')) === -1
                 ? formattedLines.length - 1
                 : formattedLines.slice(summaryStart + 1).findIndex(l => l.startsWith('@')) + summaryStart;
-
-            summaryLines = formattedLines.slice(summaryStart, summaryEnd + 1);
-            formattedLines.splice(summaryStart, summaryLines.length)
+            formattedLines.splice(summaryStart, summaryEnd);
         }
 
         let params: [string, string, string][] = [];
@@ -462,13 +469,13 @@ export default class Provider {
             descLines[0] = descLines[0].slice(12).trim()
         }
 
-        let parameters: ParameterInformation[] = params.map(p => paramInfo.create(p[1] + ': ' + p[0], p[2].trim()))
+        let parameters: ParameterInformation[] = params.map(p => paramInfo.create(p[1] + ': ' + p[0], p[2].trim()));
 
         let sigInfo: SignatureInformation = {
             label: mixin + '(' + parameters.map(p => p.label).join(', ') + '): ' + returnType,
             documentation: descLines.join('\n'),
             parameters
-        }
+        };
         return {
             activeParameter: activeParam,
             activeSignature: 0,
@@ -505,21 +512,21 @@ export default class Provider {
                 requireModule: () => {
                     throw new Error('Not implemented, why are we here')
                 }
-            })
+            });
             let resolvedElements = transformer.resolveSelectorElements(meta, line);
             resolvedElements[0][0].resolved.forEach(el => {
-                const symbolStates = (el.symbol as ClassSymbol)[valueMapping.states]
+                const symbolStates = (el.symbol as ClassSymbol)[valueMapping.states];
                 if (symbolStates && typeof symbolStates[word] === 'object') {
                     stateDef = symbolStates[word];
                 }
-            })
+            });
             if (stateDef) {
                 const parameters = resolveStateParams(stateDef);
 
                 const sigInfo: SignatureInformation = {
                     label: `${word}(${parameters})`,
                     parameters: [{label: parameters}] as ParameterInformation[]
-                }
+                };
 
                 return {
                     activeParameter: 0,
@@ -531,6 +538,7 @@ export default class Provider {
         return null;
     }
 
+    // TODO extract to static
     private getSignatureForStateWithParamDefinition(meta: StylableMeta, pos: ProviderPosition, line: string): SignatureHelp | null {
         const res = resolveStateTypeOrValidator(meta, pos, line);
 
@@ -547,10 +555,9 @@ export default class Provider {
         if (!word) {
             return []
         }
-        ;
         const refs: Location[] = [];
         const src = fs.get(uri).getText();
-        const {processed: {meta}} = fixAndProcess(src, new ProviderPosition(0, 0), fromVscodePath(uri))
+        const {processed: {meta}} = fixAndProcess(src, new ProviderPosition(0, 0), fromVscodePath(uri));
         const filterRegex = RegExp('(\\.?' + word + ')(\\s|$|\\:)', 'g');
         const valueRegex = RegExp('(\\.?' + word + ')(\\s|$|\\:|,)', 'g');
         meta!.rawAst.walkRules(filterRegex, (rule) => {
@@ -613,17 +620,11 @@ export default class Provider {
                 }
             })
 
-        })
+        });
         return refs;
     }
 
-    private createProviderOptions(src: string,
-                                  position: ProviderPosition,
-                                  meta: StylableMeta,
-                                  fakeRules: PostCss.Rule[],
-                                  fullLineText: string,
-                                  cursorPosInLine: number,
-                                  fs: ExtendedFSReadSync): ProviderOptions {
+    private resolveElements(meta: StylableMeta, lineChunkAtCursor: string) {
 
         const transformer = new StylableTransformer({
             diagnostics: new Diagnostics(),
@@ -632,54 +633,8 @@ export default class Provider {
                 throw new Error('Not implemented, why are we here')
             }
         });
-
-        const path = pathFromPosition(meta.rawAst, {line: position.line + 1, character: position.character});
-        const astAtCursor: PostCss.NodeBase = path[path.length - 1];
-        const parentAst: PostCss.NodeBase | undefined = (astAtCursor as PostCss.Declaration).parent ? (astAtCursor as PostCss.Declaration).parent : undefined;
-        const parentSelector: SRule | null = parentAst && isSelector(parentAst) && fakeRules.findIndex((f) => {
-            return f.selector === parentAst.selector
-        }) === -1
-            ? <SRule>parentAst
-            : astAtCursor && isSelector(astAtCursor) && fakeRules.findIndex((f) => {
-                return f.selector === astAtCursor.selector
-            }) === -1
-                ? <SRule>astAtCursor
-                : null;
-
-        const {lineChunkAtCursor, fixedCharIndex} = getChunkAtCursor(fullLineText, cursorPosInLine);
-        const ps = parseSelector(lineChunkAtCursor, fixedCharIndex);
-        const chunkStrings: string[] = ps.selector.reduce((acc, s) => {
-            return acc.concat(s.text)
-        }, ([] as string[]));
-        const currentSelector = (ps.selector[0] as SelectorChunk).classes[0] || (ps.selector[0] as SelectorChunk).customSelectors[0] || chunkStrings[0];
-        const expandedLine: string = expandCustomSelectors(PostCss.rule({selector: lineChunkAtCursor}), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
-        const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
-
-        let resolved: CSSResolve[] = [];
-        if (currentSelector && resolvedElements[0].length) {
-            const clas = resolvedElements[0].find(e => e.type === 'class' || (e.type === 'element' && e.resolved.length > 1));  //TODO: better type parsing
-            resolved = clas ? clas.resolved : [];
-        }
-
-        return {
-            meta: meta,
-            fs: fs,
-            styl: this.styl,
-            src: src,
-            tsLangService: this.tsLangService,
-            resolvedElements: resolvedElements,
-            parentSelector: parentSelector,
-            astAtCursor: astAtCursor,
-            lineChunkAtCursor: lineChunkAtCursor,
-            lastSelectoid: ps.lastSelector,
-            fullLineText: fullLineText,
-            position: position,
-            resolved: resolved,
-            currentSelector: currentSelector,
-            target: ps.target,
-            isMediaQuery: isInMediaQuery(path),
-            fakes: fakeRules,
-        }
+        const expandedLine = expandCustomSelectors(PostCss.rule({selector: lineChunkAtCursor}), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
+        return transformer.resolveSelectorElements(meta, expandedLine);
     }
 
     private dedupeComps(completions: Completion[]): Completion[] {
@@ -697,16 +652,16 @@ export default class Provider {
 }
 
 function isIllegalLine(line: string): boolean {
-    return /^\s*[-\.:]+\s*$/.test(line)
+    return /^\s*[-.:]+\s*$/.test(line)
 }
 
-const lineEndsRegexp = /({|}|;)/;
+const lineEndsRegexp = /[{};]/;
 
 export function createMeta(src: string, path: string) {
     let meta: StylableMeta;
     let fakes: PostCss.Rule[] = [];
     try {
-        let ast: PostCss.Root = safeParse(src, {from: fromVscodePath(path)})
+        let ast: PostCss.Root = safeParse(src, {from: fromVscodePath(path)});
         ast.nodes && ast.nodes.forEach((node) => {
             if (node.type === 'decl') {
                 let r = PostCss.rule({selector: node.prop + ':' + node.value});
@@ -714,9 +669,9 @@ export function createMeta(src: string, path: string) {
                 node.replaceWith(r);
                 fakes.push(r)
             }
-        })
+        });
         if (ast.raws.after && ast.raws.after.trim()) {
-            let r = PostCss.rule({selector: ast.raws.after.trim()})
+            let r = PostCss.rule({selector: ast.raws.after.trim()});
             ast.append(r);
             fakes.push(r);
         }
@@ -739,12 +694,12 @@ export function fixAndProcess(src: string, position: ProviderPosition, filePath:
     if (currentLine.match(lineEndsRegexp)) {
         let currentLocation = 0;
         let splitLine = currentLine.split(lineEndsRegexp);
-        for (var i = 0; i < splitLine.length; i += 2) {
+        for (let i = 0; i < splitLine.length; i += 2) {
             currentLocation += splitLine[i].length + 1;
             if (currentLocation >= position.character) {
                 currentLine = splitLine[i];
                 if (isIllegalLine(currentLine)) {
-                    splitLine[i] = '\n'
+                    splitLine[i] = '\n';
                     lines.splice(position.line, 1, splitLine.join(''));
                     fixedSrc = lines.join('\n');
                 }
@@ -774,7 +729,7 @@ export class ProviderLocation {
 
 export function extractTsSignature(filePath: string, mixin: string, isDefault: boolean, tsLangService: ExtendedTsLanguageService): ts.Signature | undefined {
 
-    tsLangService.setOpenedFiles([filePath])
+    tsLangService.setOpenedFiles([filePath]);
     const program = tsLangService.ts.getProgram();
     const tc = program.getTypeChecker();
     const sf = program.getSourceFile(filePath);
@@ -794,12 +749,13 @@ export function extractTsSignature(filePath: string, mixin: string, isDefault: b
     return tc.getSignatureFromDeclaration(mix!.declarations![0] as SignatureDeclaration);
 }
 
-export function extractJsModifierReturnType(mixin: string, activeParam: number, fileSrc: string): string {
+const returnRegExp = /@returns *{(\w+)}/;
 
+export function extractJsModifierReturnType(mixin: string, fileSrc: string): string {
     let lines = fileSrc.split('\n');
     let mixinLine: number = lines.findIndex(l => l.trim().startsWith('exports.' + mixin));
-    let docStartLine: number = lines.slice(0, mixinLine).lastIndexOf(lines.slice(0, mixinLine).reverse().find(l => l.trim().startsWith('/**'))!)
-    let docLines = lines.slice(docStartLine, mixinLine)
+    let docStartLine: number = lines.slice(0, mixinLine).lastIndexOf(lines.slice(0, mixinLine).reverse().find(l => l.trim().startsWith('/**'))!);
+    let docLines = lines.slice(docStartLine, mixinLine);
     let formattedLines: string[] = [];
 
     docLines.forEach(l => {
@@ -812,7 +768,7 @@ export function extractJsModifierReturnType(mixin: string, activeParam: number, 
         if (l.trim().startsWith('*')) {
             formattedLines.push(l.trim().slice(1).trim())
         }
-    })
+    });
 
     const returnStart: number = formattedLines.findIndex(l => l.startsWith('@returns'));
     const returnEnd: number = formattedLines.slice(returnStart + 1).findIndex(l => l.startsWith('@')) === -1
@@ -820,24 +776,21 @@ export function extractJsModifierReturnType(mixin: string, activeParam: number, 
         : formattedLines.slice(returnStart + 1).findIndex(l => l.startsWith('@')) + returnStart;
 
     const returnLines = formattedLines.slice(returnStart, returnEnd + 1);
-    formattedLines.splice(returnStart, returnLines.length)
-    const returnType = /@returns *{(\w+)}/.exec(returnLines[0])
-        ? /@returns *{(\w+)}/.exec(returnLines[0])![1]
-        : '';
-    return returnType;
+    formattedLines.splice(returnStart, returnLines.length);
+    return returnRegExp.exec(returnLines[0]) ? returnRegExp.exec(returnLines[0])![1] : '';
 }
 
 function isInMediaQuery(path: PostCss.NodeBase[]) {
     return path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media')
-};
+}
 
 export function isDirective(line: string) {
     return keys(valueMapping).some(k => line.trim().startsWith((valueMapping as any)[k]))
-};
+}
 
 function isNamedDirective(line: string) {
     return line.indexOf(valueMapping.named) !== -1
-};
+}
 
 export function isInValue(lineText: string, position: ProviderPosition) {
     let isInValue: boolean = false;
@@ -916,4 +869,10 @@ function findNode(nodes: any[], index: number): any {
 }
 
 
-
+function getResolvedFromElements(elements: ResolvedElement[]) {
+    if (elements.length) {
+        const clas = elements.find(e => e.type === 'class' || (e.type === 'element' && e.resolved.length > 1));  //TODO: better type parsing
+        return clas ? clas.resolved : [];
+    }
+    return [];
+}
