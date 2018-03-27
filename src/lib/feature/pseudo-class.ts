@@ -14,8 +14,8 @@ const pvp = require('postcss-value-parser');
 // parses the state and position to resolve if inside a state with a parameter
 // returns: `-st-states: someState([1] str[2]ing([a] re[b]gex( [args] ) [c]) [3])
 // caret positions:
-// 1, 2, 3 - requires typing information (string, number, enum, tag)
-// a, b, c - require validator informationbased on type defined
+// 1, 2, 3 - returns typing information (string, number, enum, tag)
+// a, b, c - returns validator information based on type defined
 // args - TODO: should return validator function information
 export function resolveStateTypeOrValidator(meta: StylableMeta, pos: ProviderPosition, line: string): string | boolean | null {
     const valueStartChar = line.indexOf(':') + 1;

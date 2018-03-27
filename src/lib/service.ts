@@ -8,7 +8,7 @@ import {
     TextDocumentPositionParams,
     WorkspaceEdit
 } from 'vscode-languageserver-protocol';
-import {createProvider, MinimalDocs, MinimalDocsDispatcher,} from './provider-factory';
+import {MinimalDocs, MinimalDocsDispatcher,} from './provider-factory';
 import {ProviderPosition, ProviderRange} from './completion-providers';
 import {Completion} from './completion-types';
 import {createDiagnosis} from './diagnosis';
@@ -16,7 +16,7 @@ import {Color} from 'vscode-css-languageservice';
 import {Command, CompletionItem, Location, ParameterInformation, TextEdit} from 'vscode-languageserver-types';
 import {evalDeclarationValue, Stylable, valueMapping} from 'stylable';
 import {fromVscodePath, toVscodePath} from './utils/uri-utils';
-import {fixAndProcess} from './provider';
+import {default as Provider, fixAndProcess} from './provider';
 import {ExtendedFSReadSync, ExtendedTsLanguageService, NotificationTypes} from './types'
 import {last} from 'lodash';
 import {IConnection} from "vscode-languageserver";
@@ -37,7 +37,7 @@ export class StylableLanguageService {
 }
 
 export function initStylableLanguageService(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
-    const provider = createProvider(services.styl, services.tsLanguageService);
+    const provider = new Provider(services.styl, services.tsLanguageService, fs);
     const processor = services.styl.fileProcessor;
     const newCssService = new CssService(fs);
 
@@ -53,10 +53,10 @@ export function initStylableLanguageService(connection: IConnection, services: {
 
         const document = fs.get(documentUri);
 
-        const res = provider.provideCompletionItemsFromSrc( document.getText(), {
+        const res = provider.provideCompletionItemsFromSrc(document.getText(), {
             line: position.line,
             character: position.character
-        }, documentUri, fs);
+        }, documentUri);
 
         return res.map((com: Completion) => {
             let lspCompletion: CompletionItem = CompletionItem.create(com.label);
@@ -100,7 +100,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
         return provider.getDefinitionLocation(doc, {
             line: pos.line,
             character: pos.character
-        }, fromVscodePath(params.textDocument.uri), fs)
+        }, fromVscodePath(params.textDocument.uri))
             .then((res) => {
                 return res.map(loc => Location.create(toVscodePath(loc.uri), loc.range))
             });
@@ -111,7 +111,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
     });
 
     connection.onReferences((params: ReferenceParams): Location[] => {
-        const refs = provider.getRefs(params, fs);
+        const refs = provider.getRefs(params);
         if (refs.length) {
             return dedupeRefs(refs);
         } else {
@@ -221,28 +221,27 @@ export function initStylableLanguageService(connection: IConnection, services: {
     });
 
     connection.onRenameRequest((params): WorkspaceEdit => {
-        let edit: WorkspaceEdit = {changes: {}};
+        const changes: { [uri: string]: TextEdit[] } = {};
         provider.getRefs({
             context: {includeDeclaration: true},
             position: params.position,
             textDocument: params.textDocument
-        }, fs)
-            .forEach(ref => {
-                if (edit.changes![ref.uri]) {
-                    edit.changes![ref.uri].push({range: ref.range, newText: params.newName})
-                } else {
-                    edit.changes![ref.uri] = [{range: ref.range, newText: params.newName}]
-                }
-            })
-
-        return edit;
+        }).forEach((ref: Location) => {
+            const nameChange = {range: ref.range, newText: params.newName};
+            if (changes[ref.uri]) {
+                changes[ref.uri].push(nameChange)
+            } else {
+                changes[ref.uri] = [nameChange]
+            }
+        });
+        return {changes};
     });
 
     connection.onSignatureHelp((params): Thenable<SignatureHelp> => {
 
         const doc: string = fs.loadTextFileSync(params.textDocument.uri);
 
-        let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, fs, ParameterInformation);
+        let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, ParameterInformation);
         return Promise.resolve(sig!)
     });
 

@@ -71,10 +71,10 @@ function findAstByFakeRules(astAtCursor: NodeBase | null, fakeRules: Rule[], fal
 }
 
 export default class Provider {
-    constructor(private styl: Stylable, private tsLangService: ExtendedTsLanguageService) {
+    constructor(private styl: Stylable, private tsLangService: ExtendedTsLanguageService, private fs: ExtendedFSReadSync) {
     }
 
-    public provideCompletionItemsFromSrc(src: string, position: Position, fileName: string, fs: ExtendedFSReadSync): Completion[] {
+    public provideCompletionItemsFromSrc(src: string, position: Position, fileName: string ): Completion[] {
         let res = fixAndProcess(src, position, fileName);
         let completions: Completion[] = [];
         try {
@@ -95,8 +95,8 @@ export default class Provider {
             completions = completions.concat(SelectorCompletionProvider.provide(parentSelector, res.currentLine, position, lineChunkAtCursor, meta, fakes, this.styl));
             completions = completions.concat(ExtendCompletionProvider.provide(position, lineChunkAtCursor, meta, this.styl));
             completions = completions.concat(CssMixinCompletionProvider.provide(res.currentLine, position, lineChunkAtCursor, meta));
-            completions = completions.concat(CodeMixinCompletionProvider.provide(parentSelector, res.currentLine, position, lineChunkAtCursor, meta, this.styl, fs, this.tsLangService));
-            completions = completions.concat(FormatterCompletionProvider.provide(parentSelector, res.currentLine, position, lineChunkAtCursor, meta, this.styl, fs, this.tsLangService));
+            completions = completions.concat(CodeMixinCompletionProvider.provide(parentSelector, res.currentLine, position, lineChunkAtCursor, meta, this.styl, this.fs, this.tsLangService));
+            completions = completions.concat(FormatterCompletionProvider.provide(parentSelector, res.currentLine, position, lineChunkAtCursor, meta, this.styl, this.fs, this.tsLangService));
             completions = completions.concat(NamedCompletionProvider.provide(parentSelector, res.currentLine, position, meta, this.styl, astAtCursor, src));
             completions = completions.concat(StateTypeCompletionProvider.provide(res.currentLine, position, meta, astAtCursor));
 
@@ -117,7 +117,7 @@ export default class Provider {
         return this.dedupeComps(completions);
     }
 
-    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string, fs: ExtendedFSReadSync): Thenable<ProviderLocation[]> {
+    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string): Thenable<ProviderLocation[]> {
 
         if (!filePath.endsWith('.st.css')) {
             return Promise.resolve([])
@@ -169,19 +169,19 @@ export default class Provider {
             switch (symb._kind) {
                 case 'class': {
                     defs.push(
-                        new ProviderLocation(meta.source, this.findWord(word, fs.get(meta.source).getText(), position))
+                        new ProviderLocation(meta.source, this.findWord(word, this.fs.get(meta.source).getText(), position))
                     );
                     break;
                 }
                 case 'var': {
                     defs.push(
-                        new ProviderLocation(meta.source, this.findWord(word, fs.get(meta.source).getText(), position))
+                        new ProviderLocation(meta.source, this.findWord(word, this.fs.get(meta.source).getText(), position))
                     );
                     break;
                 }
                 case 'import': {
                     const filePath: string = path.join(path.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
-                    const doc = fs.get(filePath);
+                    const doc = this.fs.get(filePath);
 
                     if (doc.getText() !== '') {
                         defs.push(
@@ -203,7 +203,7 @@ export default class Provider {
                 }
             })) {
             defs.push(
-                new ProviderLocation(meta.source, this.findWord(temp!.name, fs.get(meta.source).getText(), position))
+                new ProviderLocation(meta.source, this.findWord(temp!.name, this.fs.get(meta.source).getText(), position))
             )
         } else if (keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
             defs.push(
@@ -214,7 +214,7 @@ export default class Provider {
         return Promise.resolve(defs.filter(def => !this.inDef(position, def)));
     }
 
-    public getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
+    public getSignatureHelp(src: string, pos: Position, filePath: string, paramInfo: typeof ParameterInformation): SignatureHelp | null {
 
         if (!filePath.endsWith('.st.css')) {
             return null
@@ -260,13 +260,13 @@ export default class Provider {
         if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
             return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
         } else if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.js')) {
-            if (fs.getOpenedFiles().indexOf(toVscodePath((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts')) !== -1) {
+            if (this.fs.getOpenedFiles().indexOf(toVscodePath((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts')) !== -1) {
                 return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts', (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
             } else {
                 return this.getSignatureForJsModifier(
                     mixin,
                     activeParam,
-                    fs.get((meta.mappedSymbols[mixin]! as ImportSymbol).import.from).getText(),
+                    this.fs.get((meta.mappedSymbols[mixin]! as ImportSymbol).import.from).getText(),
                     paramInfo
                 )
             }
@@ -275,9 +275,9 @@ export default class Provider {
         }
     }
 
-    public getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
+    public getRefs(params: ReferenceParams) : Location[]{
 
-        const doc = fs.get(params.textDocument.uri).getText();
+        const doc = this.fs.get(params.textDocument.uri).getText();
         const pos = {line: params.position.line + 1, character: params.position.character + 1};
         const {meta} = createMeta(doc, params.textDocument.uri);
         const node = last(pathFromPosition(meta!.rawAst, pos))!;
@@ -332,7 +332,7 @@ export default class Provider {
             }
         }
 
-        return this.findClassRefs(word, params.textDocument.uri, fs);
+        return this.findClassRefs(word, params.textDocument.uri);
     }
 
     // TODO extract to static
@@ -551,12 +551,12 @@ export default class Provider {
         }
     }
 
-    private findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[] {
+    private findClassRefs(word: string, uri: string): Location[] {
         if (!word) {
             return []
         }
         const refs: Location[] = [];
-        const src = fs.get(uri).getText();
+        const src = this.fs.get(uri).getText();
         const {processed: {meta}} = fixAndProcess(src, new ProviderPosition(0, 0), fromVscodePath(uri));
         const filterRegex = RegExp('(\\.?' + word + ')(\\s|$|\\:)', 'g');
         const valueRegex = RegExp('(\\.?' + word + ')(\\s|$|\\:|,)', 'g');
