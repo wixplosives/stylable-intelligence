@@ -13,7 +13,7 @@ describe('browser-compatible', () => {
         const compiler = webpack({
             mode: 'development',
             entry: {
-                main: path.join(rootPath, 'dist', 'src', 'lib', 'service.js')
+                main: path.join(rootPath, 'service.js')
             },
             node: {
                 path: 'empty', // users should provide alias to path-webpack
