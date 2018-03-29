@@ -16,7 +16,7 @@ import {Color} from 'vscode-css-languageservice';
 import {Command, CompletionItem, Location, ParameterInformation, TextEdit} from 'vscode-languageserver-types';
 import {evalDeclarationValue, Stylable, valueMapping} from 'stylable';
 import {fromVscodePath, toVscodePath} from './utils/uri-utils';
-import {fixAndProcess} from './provider';
+import {fixAndProcess, getRefs} from './provider';
 import {ExtendedFSReadSync, ExtendedTsLanguageService, NotificationTypes} from './types'
 import {last} from 'lodash';
 import {IConnection} from "vscode-languageserver";
@@ -111,7 +111,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
     });
 
     connection.onReferences((params: ReferenceParams): Location[] => {
-        const refs = provider.getRefs(params, fs);
+        const refs = getRefs(params, fs);
         if (refs.length) {
             return dedupeRefs(refs);
         } else {
@@ -222,7 +222,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
 
     connection.onRenameRequest((params): WorkspaceEdit => {
         let edit: WorkspaceEdit = {changes: {}};
-        provider.getRefs({
+        getRefs({
             context: {includeDeclaration: true},
             position: params.position,
             textDocument: params.textDocument

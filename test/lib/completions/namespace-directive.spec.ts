@@ -1,6 +1,6 @@
-import * as asserters from '../../test-kit/asserters';
-import {createRange} from '../../src/lib/completion-providers'
-import { topLevelDirectives } from '../../src/lib/completion-types';
+import * as asserters from './asserters';
+import {createRange} from '../../../src/lib/completion-providers'
+import { topLevelDirectives } from '../../../src/lib/completion-types';
 
 describe('Namespace Directive', function () {
 
