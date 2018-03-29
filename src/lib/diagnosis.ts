@@ -6,21 +6,16 @@ import {Diagnostic as Report} from 'stylable/src/diagnostics'
 import {FileSystemReadSync} from 'kissfs';
 import {fromVscodePath} from './utils/uri-utils';
 
-export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileProcessor: FileProcessor<StylableMeta>, requireModule:typeof require): Diagnostic[] {
-
-    if (!doc.uri.endsWith('.st.css')) {
-        return []
-    }
-    ;
+export function createDiagnosis(doc: TextDocument, fileProcessor: FileProcessor<StylableMeta>, requireModule:typeof require): Diagnostic[] {
     const file = fromVscodePath(doc.uri);
 
     const transformer = new StylableTransformer({
         diagnostics: new Diagnostics(),
         fileProcessor: fileProcessor,
         requireModule
-    })
+    });
 
-    let docPostCSSRoot = safeParse(doc.getText(), {from: path.resolve(file)})
+    let docPostCSSRoot = safeParse(doc.getText(), {from: path.resolve(file)});
     let meta = stylableProcess(docPostCSSRoot)
 
     fileProcessor.add(file, meta);
@@ -29,14 +24,13 @@ export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileP
         transformer.transform(meta)
     } catch (e) {
     }
-    return meta.diagnostics.reports.concat(meta.transformDiagnostics ? meta.transformDiagnostics.reports : [])
-        .map(reportToDiagnostic)
+    return meta.diagnostics.reports.concat(meta.transformDiagnostics ? meta.transformDiagnostics.reports : []).map(reportToDiagnostic);
 
     //stylable diagnostic to protocol diagnostic
     function reportToDiagnostic(report: Report) {
-        let severity = report.type === 'error' ? 1 : 2
-        let range = createRange(report)
-        return Diagnostic.create(range, report.message, severity as any)
+        let severity = report.type === 'error' ? 1 : 2;
+        let range = createRange(report);
+        return Diagnostic.create(range, report.message, severity as any);
     }
 
 }

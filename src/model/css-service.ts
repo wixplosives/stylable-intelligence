@@ -2,12 +2,31 @@ import {ColorInformation, TextDocument} from 'vscode-languageserver-protocol';
 import * as VCL from 'vscode-css-languageservice';
 import {Color, ColorPresentation} from 'vscode-css-languageservice';
 import {CompletionItem, Diagnostic, Hover, Location, Position, Range} from 'vscode-languageserver-types';
-import {createMeta} from '../lib/provider';
-import {ExtendedFSReadSync} from '../lib/types'
+import {createMeta} from "./provider-processing";
 
 function readDocRange(doc: TextDocument, rng: Range): string {
     let lines = doc.getText().split('\n');
     return lines[rng.start.line].slice(rng.start.character, rng.end.character);
+}
+
+function getDiagnosticsFilter(document: TextDocument){
+    return (diag: Diagnostic) => {
+        switch (diag.code) {
+            case 'emptyRules' :
+                return false;
+            case 'css-unknownatrule' :
+                return readDocRange(document, diag.range) !== '@custom-selector';
+            case 'css-lcurlyexpected' :
+                return !readDocRange(document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector');
+            case 'unknownProperties' :
+                let meta = createMeta(document.getText(), document.uri).meta;
+                if (meta) {
+                    let prop = diag.message.match(/'(.*)'/)![1];
+                    return Object.keys(meta.mappedSymbols).every(ms => ms !== prop);
+                }
+        }
+        return true;
+    }
 }
 
 /**
@@ -15,9 +34,6 @@ function readDocRange(doc: TextDocument, rng: Range): string {
  */
 export class CssService {
     private inner = VCL.getCSSLanguageService();
-
-    constructor(private fs: ExtendedFSReadSync) {
-    }
 
     getCompletions(document: TextDocument, position: Position): CompletionItem[] {
         const cssCompsRaw = this.inner.doComplete(
@@ -29,36 +45,8 @@ export class CssService {
     }
 
     getDiagnostics(document: TextDocument): Diagnostic[] {
-        if (document.uri.endsWith('.css')) {
-            return [];
-        }
         const stylesheet = this.inner.parseStylesheet(document);
-
-        return this.inner.doValidation(document, stylesheet)
-            .filter(diag => {
-                if (diag.code === 'emptyRules') {
-                    return false;
-                }
-                if (diag.code === 'css-unknownatrule' && readDocRange(document, diag.range) === '@custom-selector') {
-                    return false;
-                }
-                if (diag.code === 'css-lcurlyexpected' && readDocRange(document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) {
-                    return false;
-                }
-                if (diag.code === 'unknownProperties') {
-                    let prop = diag.message.match(/'(.*)'/)![1]
-                    let src = this.fs.loadTextFileSync(document.uri);
-                    let meta = createMeta(src, document.uri).meta;
-                    if (meta && Object.keys(meta.mappedSymbols).some(ms => ms === prop)) {
-                        return false;
-                    }
-                }
-                return true;
-            })
-            .map(diag => {
-                diag.source = 'css';
-                return diag;
-            })
+        return this.inner.doValidation(document, stylesheet).filter(getDiagnosticsFilter(document));
     }
 
     doHover(document: TextDocument, position: Position): Hover | null {
@@ -72,12 +60,12 @@ export class CssService {
     }
 
     getColorPresentations(document: TextDocument, color: Color, range: Range): ColorPresentation[] {
-        const stylesheet: VCL.Stylesheet = this.inner.parseStylesheet(document);
+        const stylesheet = this.inner.parseStylesheet(document);
         return this.inner.getColorPresentations(document, stylesheet, color, range)
     }
 
     findColors(document: TextDocument): ColorInformation[] {
-        const stylesheet: VCL.Stylesheet = this.inner.parseStylesheet(document);
+        const stylesheet = this.inner.parseStylesheet(document);
         return this.inner.findDocumentColors(document, stylesheet);
     }
 

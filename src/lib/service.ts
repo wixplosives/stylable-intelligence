@@ -8,21 +8,21 @@ import {
     TextDocumentPositionParams,
     WorkspaceEdit
 } from 'vscode-languageserver-protocol';
-import {createProvider, MinimalDocs, MinimalDocsDispatcher,} from './provider-factory';
+import {MinimalDocs, MinimalDocsDispatcher,} from './provider-factory';
 import {ProviderPosition, ProviderRange} from './completion-providers';
-import {Completion} from './completion-types';
 import {createDiagnosis} from './diagnosis';
 import {Color} from 'vscode-css-languageservice';
-import {Command, CompletionItem, Location, ParameterInformation, TextEdit} from 'vscode-languageserver-types';
+import {CompletionItem, Location, ParameterInformation, TextEdit} from 'vscode-languageserver-types';
 import {evalDeclarationValue, Stylable, valueMapping} from 'stylable';
 import {fromVscodePath, toVscodePath} from './utils/uri-utils';
-import {fixAndProcess} from './provider';
+import {default as Provider} from './provider';
 import {ExtendedFSReadSync, ExtendedTsLanguageService, NotificationTypes} from './types'
 import {last} from 'lodash';
 import {IConnection} from "vscode-languageserver";
-import {initializeResult} from "../view";
+import {initializeResult, modelToLspCompletion} from "../view";
 import {CompletionParams} from 'vscode-languageclient/lib/main';
 import {CssService} from "../model/css-service";
+import {fixAndProcess} from "../model/provider-processing";
 
 export {MinimalDocs} from './provider-factory';
 
@@ -36,86 +36,82 @@ export class StylableLanguageService {
     }
 }
 
+// todo extract to util (+ unit test?)
+function dedupeLocations(inputLocations: Location[]): Location[] {
+    let dedupedLocations: Location[] = [];
+    inputLocations.forEach(location1 => {
+        if (!dedupedLocations.find(l => isLocationEqual(location1, l))) {
+            dedupedLocations.push(location1);
+        }
+    });
+    return dedupedLocations;
+}
+
+function isStylableDocument(documentUri: string) {
+    return documentUri.endsWith('.st.css') || documentUri.startsWith('untitled:');
+}
+
+function isLocationEqual(location1:Location, location2:Location):boolean{
+    return location2.range.start.line === location1.range.start.line && location2.range.start.character === location1.range.start.character && location2.uri === location1.uri;
+}
+
 export function initStylableLanguageService(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
-    const provider = createProvider(services.styl, services.tsLanguageService);
+    const provider = new Provider(services.styl, services.tsLanguageService, fs);
     const processor = services.styl.fileProcessor;
-    const newCssService = new CssService(fs);
+    const cssService = new CssService();
 
     connection.onInitialize(() => initializeResult);
 
-    connection.onCompletion((params: CompletionParams): CompletionItem[] => {
-        const documentUri = params.textDocument.uri;
-        const position = params.position;
+    connection.onCompletion(codeCompletion);
 
-        if (!documentUri.endsWith('.st.css') && !documentUri.startsWith('untitled:')) {
-            return [];
+    docsDispatcher.onDidOpen(diagnose);
+
+    function codeCompletion(params: CompletionParams): CompletionItem[] | undefined {
+        if (isStylableDocument(params.textDocument.uri)) {
+            const document = fs.get(params.textDocument.uri);
+            return provider.provideCompletionItemsFromSrc(document.getText(), params.position, params.textDocument.uri)
+                .map(modelToLspCompletion(params.position))
+                .concat(cssService.getCompletions(document, params.position));
+        } else {
+            return undefined;
         }
-
-        const document = fs.get(documentUri);
-
-        const res = provider.provideCompletionItemsFromSrc( document.getText(), {
-            line: position.line,
-            character: position.character
-        }, documentUri, fs);
-
-        return res.map((com: Completion) => {
-            let lspCompletion: CompletionItem = CompletionItem.create(com.label);
-            let ted: TextEdit = TextEdit.replace(
-                com.range ? com.range : new ProviderRange(new ProviderPosition(position.line, Math.max(position.character - 1, 0)), position),
-                typeof com.insertText === 'string' ? com.insertText : com.insertText.source);
-            lspCompletion.insertTextFormat = 2;
-            lspCompletion.detail = com.detail;
-            lspCompletion.textEdit = ted;
-            lspCompletion.sortText = com.sortText;
-            lspCompletion.filterText = typeof com.insertText === 'string' ? com.insertText : com.insertText.source;
-            if (com.additionalCompletions) {
-                lspCompletion.command = Command.create("additional", "editor.action.triggerSuggest")
-            } else if (com.triggerSignature) {
-                lspCompletion.command = Command.create("additional", "editor.action.triggerParameterHints")
-            }
-            return lspCompletion;
-        }).concat(newCssService.getCompletions(document, position));
-    });
-
-    function diagnose(document: TextDocument) {
-        let diagnostics = createDiagnosis(document, fs, processor, services.requireModule).map(diag => {
-            diag.source = 'stylable';
-            return diag;
-        }).concat(newCssService.getDiagnostics(document));
-        connection.sendDiagnostics({uri: document.uri, diagnostics: diagnostics});
     }
 
-    docsDispatcher.onDidOpen(function (params) {
-        diagnose(params.document);
-    });
+    function diagnose({document}: { document: TextDocument }) {
+        if (isStylableDocument(document.uri)) {
+            let diagnostics = createDiagnosis(document, processor, services.requireModule);
+            diagnostics.forEach(diag => diag.source = 'stylable');
+            if (!document.uri.endsWith('.css')){
+                const cssDiagnostics = cssService.getDiagnostics(document);
+                cssDiagnostics.forEach(diag => diag.source = 'css');
+                diagnostics = diagnostics.concat(cssDiagnostics)
+            }
+            connection.sendDiagnostics({uri: document.uri, diagnostics});
+        }
+    }
 
-    docsDispatcher.onDidChangeContent(function (params) {
-        diagnose(params.document);
-    });
+    // TODO anything below this point is not tested
 
-    connection.onDefinition((params): Thenable<Definition> => {
-        const doc = fs.loadTextFileSync(params.textDocument.uri);
-        const pos = params.position;
+    async function definitions(params: TextDocumentPositionParams): Promise<Definition> {
+        const doc = await fs.loadTextFile(params.textDocument.uri);
+        const res = await provider.getDefinitionLocation(doc, params.position, fromVscodePath(params.textDocument.uri));
+        return res.map(loc => Location.create(toVscodePath(loc.uri), loc.range));
+    }
 
-        return provider.getDefinitionLocation(doc, {
-            line: pos.line,
-            character: pos.character
-        }, fromVscodePath(params.textDocument.uri), fs)
-            .then((res) => {
-                return res.map(loc => Location.create(toVscodePath(loc.uri), loc.range))
-            });
-    });
+    docsDispatcher.onDidChangeContent(diagnose);
+
+    connection.onDefinition(definitions);
 
     connection.onHover((params: TextDocumentPositionParams): Hover | null => {
-        return newCssService.doHover(fs.get(params.textDocument.uri), params.position);
+        return cssService.doHover(fs.get(params.textDocument.uri), params.position);
     });
-
     connection.onReferences((params: ReferenceParams): Location[] => {
-        const refs = provider.getRefs(params, fs);
+        const refs = provider.getRefs(params);
         if (refs.length) {
-            return dedupeRefs(refs);
+            return dedupeLocations(refs);
         } else {
-            return dedupeRefs(newCssService.findReferences(fs.get(params.textDocument.uri), params.position));
+            const cssRefs = cssService.findReferences(fs.get(params.textDocument.uri), params.position);
+            return dedupeLocations(cssRefs);
         }
     });
 
@@ -138,11 +134,11 @@ export function initStylableLanguageService(connection: IConnection, services: {
                 let color: Color | null = null;
                 if (sym && sym._kind === 'var') {
                     const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(services.styl.resolver, sym.text, meta, sym.node) + '}');
-                    color = newCssService.findColor(doc);
+                    color = cssService.findColor(doc);
                 } else if (sym && sym._kind === 'import' && sym.type === 'named') {
                     const impMeta = processor.process(sym.import.from);
                     const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(services.styl.resolver, 'value(' + sym.name + ')', impMeta, impMeta.vars.find(v => v.name === sym.name)!.node) + '}');
-                    color = newCssService.findColor(doc);
+                    color = cssService.findColor(doc);
                 }
                 if (color) {
                     const range = new ProviderRange(
@@ -159,7 +155,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
             const vars = impMeta.vars;
             vars.forEach(v => {
                 const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(services.styl.resolver, v.text, impMeta, v.node) + '}');
-                const color = newCssService.findColor(doc);
+                const color = cssService.findColor(doc);
                 if (color) {
                     meta.rawAst.walkDecls(valueMapping.named, (decl) => {
                         const lines = decl.value.split('\n');
@@ -188,7 +184,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
             });
         });
 
-        return colorComps.concat(newCssService.findColors(document));
+        return colorComps.concat(cssService.findColors(document));
     });
 
     connection.onRequest(notifications.colorPresentationRequest.type, params => {
@@ -217,44 +213,32 @@ export function initStylableLanguageService(connection: IConnection, services: {
         if (noPicker) {
             return []
         }
-        return newCssService.getColorPresentations(document, params.color, params.range);
+        return cssService.getColorPresentations(document, params.color, params.range);
     });
 
     connection.onRenameRequest((params): WorkspaceEdit => {
-        let edit: WorkspaceEdit = {changes: {}};
+        const changes: { [uri: string]: TextEdit[] } = {};
         provider.getRefs({
             context: {includeDeclaration: true},
             position: params.position,
             textDocument: params.textDocument
-        }, fs)
-            .forEach(ref => {
-                if (edit.changes![ref.uri]) {
-                    edit.changes![ref.uri].push({range: ref.range, newText: params.newName})
-                } else {
-                    edit.changes![ref.uri] = [{range: ref.range, newText: params.newName}]
-                }
-            })
-
-        return edit;
+        }).forEach((ref: Location) => {
+            const nameChange = {range: ref.range, newText: params.newName};
+            if (changes[ref.uri]) {
+                changes[ref.uri].push(nameChange)
+            } else {
+                changes[ref.uri] = [nameChange]
+            }
+        });
+        return {changes};
     });
 
     connection.onSignatureHelp((params): Thenable<SignatureHelp> => {
 
         const doc: string = fs.loadTextFileSync(params.textDocument.uri);
 
-        let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, fs, ParameterInformation);
+        let sig = provider.getSignatureHelp(doc, params.position, params.textDocument.uri, ParameterInformation);
         return Promise.resolve(sig!)
     });
-
-
-    function dedupeRefs(refs: Location[]): Location[] {
-        let res: Location[] = [];
-        refs.forEach(ref => {
-            if (!res.find(r => r.range.start.line === ref.range.start.line && r.range.start.character === ref.range.start.character && r.uri === ref.uri)) {
-                res.push(ref);
-            }
-        });
-        return res;
-    }
 }
 

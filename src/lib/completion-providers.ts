@@ -54,29 +54,6 @@ import {resolveStateTypeOrValidator} from './feature/pseudo-class';
 
 const pvp = require('postcss-value-parser');
 
-export interface ProviderOptions {
-    meta: StylableMeta,
-    fs: ExtendedFSReadSync,  // candidate for removal
-    styl: Stylable, // candidate for removal
-    src: string, // candidate for removal : meta.source
-    tsLangService: ExtendedTsLanguageService, // candidate for removal
-    resolvedElements: ResolvedElement[][], // candidate for removal
-    parentSelector: SRule | null,
-    astAtCursor: PostCss.NodeBase, // candidate for removal
-    lineChunkAtCursor: string,
-    lastSelectoid: string,// candidate for removal
-    fullLineText: string,
-    position: ProviderPosition,
-    resolved: CSSResolve[],// candidate for removal
-    currentSelector: string,// candidate for removal
-    target: CursorPosition, // candidate for removal
-    isMediaQuery: boolean,
-    fakes: PostCss.Rule[],
-}
-
-export interface CompletionProvider {
-    provide(options: ProviderOptions): Completion[]
-}
 
 export class ProviderPosition {
     constructor(public line: number, public character: number) {
@@ -85,11 +62,6 @@ export class ProviderPosition {
 
 export class ProviderRange {
     constructor(public start: ProviderPosition, public end: ProviderPosition) {
-    }
-}
-
-export class ProviderLocation {
-    constructor(public uri: string, public range: ProviderRange) {
     }
 }
 
@@ -161,17 +133,17 @@ function createDirectiveRange(position: ProviderPosition, fullLineText: string, 
     );
 }
 
-const importDeclarations: (keyof typeof importDirectives)[] = ['default', 'named', 'from', 'theme']
-const simpleRulesetDeclarations: (keyof typeof rulesetDirectives)[] = ['extends', 'states', 'variant', 'mixin']
-const topLevelDeclarations: (keyof typeof topLevelDirectives)[] = ['root', 'namespace', 'vars', 'import', 'customSelector']
+const importDeclarations: (keyof typeof importDirectives)[] = ['default', 'named', 'from', 'theme'];
+const simpleRulesetDeclarations: (keyof typeof rulesetDirectives)[] = ['extends', 'states', 'variant', 'mixin'];
+const topLevelDeclarations: (keyof typeof topLevelDirectives)[] = ['root', 'namespace', 'vars', 'import', 'customSelector'];
 
 //Providers
 //Syntactic
 
 // Inside :import ruleset, which is not inside media query
 // If directive doesn't already exist
-export const ImportInternalDirectivesProvider: CompletionProvider = {
-    provide({parentSelector, isMediaQuery, fullLineText, position, lineChunkAtCursor}: ProviderOptions): Completion[] {
+export const ImportInternalDirectivesProvider = {
+    provide(parentSelector: SRule | null, isMediaQuery: boolean, fullLineText: string, position: ProviderPosition, lineChunkAtCursor: string): Completion[] {
         if (parentSelector && parentSelector.selector === ':import'
             && !isMediaQuery
         ) {
@@ -181,19 +153,20 @@ export const ImportInternalDirectivesProvider: CompletionProvider = {
                     && importDirectives[name].indexOf(fullLineText.trim()) === 0) {
                     res.push(importInternalDirective(name, createDirectiveRange(position, fullLineText, lineChunkAtCursor)))
                 }
-            })
+            });
             return res;
         } else {
             return [];
         }
     }
-}
+};
 
 // Inside ruleset, which is not :import or :vars
 // Only inside simple selector, except -st-mixin
 // If directive doesn't already exist
-export const RulesetInternalDirectivesProvider: CompletionProvider & { isSimpleSelector: (sel: string) => boolean } = {
-    provide({parentSelector, isMediaQuery, fullLineText, position, lineChunkAtCursor}: ProviderOptions): Completion[] {
+const simpleSelectorRegExp = /^\s*\.?[\w-]*$/;
+export const RulesetInternalDirectivesProvider = {
+    provide(parentSelector: SRule | null, isMediaQuery: boolean, fullLineText: string, position: ProviderPosition, lineChunkAtCursor: string): Completion[] {
         let res: Completion[] = [];
         if (parentSelector && !(parentSelector.selector === ':import' || parentSelector.selector === ':vars')) {
             if (parentSelector.nodes!.every(n => (isDeclaration(n) && rulesetDirectives.mixin !== n.prop) || isComment(n))
@@ -214,14 +187,14 @@ export const RulesetInternalDirectivesProvider: CompletionProvider & { isSimpleS
         }
     },
     isSimpleSelector(sel: string) {
-        return !!/^\s*\.?[\w-]*$/.test(sel) //Only a single class or element
+        return simpleSelectorRegExp.test(sel) //Only a single class or element
     }
-}
+};
 
 // Only top level
 // :vars, @namespace may not repeat
-export const TopLevelDirectiveProvider: CompletionProvider = {
-    provide({parentSelector, isMediaQuery, fullLineText, position, lineChunkAtCursor, meta}: ProviderOptions): Completion[] {
+export const TopLevelDirectiveProvider = {
+    provide(parentSelector: SRule | null, isMediaQuery: boolean, fullLineText: string, position: ProviderPosition, lineChunkAtCursor: string, meta: StylableMeta): Completion[] {
         if (!parentSelector) {
             if (!isMediaQuery) {
                 return topLevelDeclarations
@@ -235,14 +208,14 @@ export const TopLevelDirectiveProvider: CompletionProvider = {
             return [];
         }
     },
-}
+};
 
 // Inside ruleset, which is not :import
 // RHS of declaration
 // Declaration is not -st-directive (except -st-mixin)
 // Not inside another value()
-export const ValueDirectiveProvider: CompletionProvider & { isInsideValueDirective: (wholeLine: string, pos: number) => boolean } = {
-    provide({parentSelector, fullLineText, position}: ProviderOptions): Completion[] {
+export const ValueDirectiveProvider = {
+    provide(parentSelector: SRule | null, fullLineText: string, position: ProviderPosition): Completion[] {
         if (parentSelector && !isDirective(fullLineText) && !this.isInsideValueDirective(fullLineText, position.character)
             && fullLineText.indexOf(':') !== -1) {
             const parsed = pvp(fullLineText.slice(fullLineText.indexOf(':') + 1)).nodes;
@@ -283,11 +256,11 @@ export const ValueDirectiveProvider: CompletionProvider & { isInsideValueDirecti
         }
         return stack > 0;
     }
-}
+};
 
 // Selector level
-export const GlobalCompletionProvider: CompletionProvider = {
-    provide({parentSelector, fullLineText, position, lineChunkAtCursor}: ProviderOptions): Completion[] {
+export const GlobalCompletionProvider = {
+    provide(parentSelector: SRule | null, fullLineText: string, position: ProviderPosition, lineChunkAtCursor: string): Completion[] {
         if (!parentSelector && !lineChunkAtCursor.endsWith('::') && !isBetweenChars(fullLineText, position, '(', ')')) {
 
             let offset = 0;
@@ -309,14 +282,14 @@ export const GlobalCompletionProvider: CompletionProvider = {
             return [];
         }
     },
-}
+};
 
 //Semantic
 
 // Selector level
 // Not after :, unless entire chunk is :
-export const SelectorCompletionProvider: CompletionProvider = {
-    provide({parentSelector, fullLineText, position, lineChunkAtCursor, meta, fakes, styl}: ProviderOptions): Completion[] {
+export const SelectorCompletionProvider = {
+    provide(parentSelector: SRule | null, fullLineText: string, position: ProviderPosition, lineChunkAtCursor: string, meta: StylableMeta, fakes: PostCss.Rule[], styl: Stylable): Completion[] {
         if (!parentSelector && (lineChunkAtCursor === ':' || !lineChunkAtCursor.endsWith(':'))) {
             let comps: Completion[] = [];
             comps.push(...keys(meta.classes)
@@ -330,7 +303,7 @@ export const SelectorCompletionProvider: CompletionProvider = {
                     if (acc.every(comp => comp.label !== imp.defaultExport)) {
                         acc.push(classCompletion(imp.defaultExport, createDirectiveRange(position, fullLineText, lineChunkAtCursor), true))
                     }
-                    ;
+
                     keys(imp.named).forEach(exp => {
                         const res = styl.resolver.resolve(meta.mappedSymbols[exp]);
                         if (res && res._kind === 'css' && res.symbol && (res.symbol._kind === 'class' || res.symbol._kind === 'element') &&
@@ -339,36 +312,36 @@ export const SelectorCompletionProvider: CompletionProvider = {
                         }
                     });
                     return acc;
-                }, comps)
+                }, comps);
             return moreComps.filter(c => c.label.startsWith(lineChunkAtCursor));
         } else {
             return [];
         }
     },
-}
+};
 
 // Inside ruleset of simple selector, not :import or :vars
 // RHS of -st-extends
-export const ExtendCompletionProvider: CompletionProvider = {
-    provide({lineChunkAtCursor, position, meta, styl}: ProviderOptions): Completion[] {
+export const ExtendCompletionProvider = {
+    provide(position: ProviderPosition, lineChunkAtCursor: string, meta: StylableMeta, styl: Stylable): Completion[] {
         if (lineChunkAtCursor.startsWith(valueMapping.extends)) {
             let value = lineChunkAtCursor.slice((valueMapping.extends + ':').length);
             let spaces = value.search(/\S|$/);
             let str = value.slice(spaces);
             let comps: string[][] = [[]];
-            comps.push(...Object.keys(meta.classes).filter(s => s.startsWith(str)).map(s => [s, 'Local file']))
+            comps.push(...Object.keys(meta.classes).filter(s => s.startsWith(str)).map(s => [s, 'Local file']));
             meta.imports.forEach(i => {
                 if (i.defaultExport && i.defaultExport.startsWith(str) && i.from.endsWith('st.css')) {
                     comps.push([i.defaultExport, i.fromRelative])
                 }
-            })
+            });
             meta.imports.forEach(i => comps.push(...keys(i.named)
                 .filter(s => {
                     const res = styl.resolver.resolve(meta.mappedSymbols[s]);
                     return res && res._kind === 'css' && (res.symbol._kind === 'class' || res.symbol._kind === 'element')
                 })
                 .filter(s => s.startsWith(str))
-                .map(s => [s, i.fromRelative])))
+                .map(s => [s, i.fromRelative])));
             return comps.slice(1).map(c => extendCompletion(
                 c[0],
                 c[1],
@@ -381,15 +354,15 @@ export const ExtendCompletionProvider: CompletionProvider = {
             return [];
         }
     },
-}
+};
 
 // Inside ruleset, which is not :import or :vars
 // RHS of -st-extends
-export const CssMixinCompletionProvider: CompletionProvider = {
-    provide({lineChunkAtCursor, meta, position, fullLineText}: ProviderOptions): Completion[] {
+export const CssMixinCompletionProvider = {
+    provide(fullLineText: string, position: ProviderPosition, lineChunkAtCursor: string, meta: StylableMeta): Completion[] {
         if (lineChunkAtCursor.startsWith(valueMapping.mixin + ':')) {
 
-            const {names, lastName} = getExistingNames(fullLineText, position)
+            const {names, lastName} = getExistingNames(fullLineText, position);
             return Object.keys(meta.mappedSymbols)
                 .filter(ms => ((meta.mappedSymbols[ms]._kind === 'import' && (meta.mappedSymbols[ms] as ImportSymbol).import.fromRelative.endsWith('st.css')) || meta.mappedSymbols[ms]._kind === 'class'))
                 .filter(ms => ms.startsWith(lastName))
@@ -409,15 +382,15 @@ export const CssMixinCompletionProvider: CompletionProvider = {
         }
 
     },
-}
+};
 
 // Mixin completions
 // Inside ruleset, which is not :import or :vars
 // Only inside simple selector
 // RHS of -st-mixin
 // There is  a JS/TS import
-export const CodeMixinCompletionProvider: CompletionProvider = {
-    provide({parentSelector, meta, fullLineText, lineChunkAtCursor, position, fs, tsLangService, styl}: ProviderOptions): Completion[] {
+export const CodeMixinCompletionProvider = {
+    provide(parentSelector: SRule | null, fullLineText: string, position: ProviderPosition, lineChunkAtCursor: string, meta: StylableMeta, styl: Stylable, fs: ExtendedFSReadSync, tsLangService: ExtendedTsLanguageService): Completion[] {
         if (meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) &&
             !fullLineText.trim().startsWith(valueMapping.from) &&
             parentSelector && lineChunkAtCursor.startsWith(valueMapping.mixin + ':')
@@ -426,12 +399,12 @@ export const CodeMixinCompletionProvider: CompletionProvider = {
                 return []
             }
 
-            const {names, lastName} = getExistingNames(fullLineText, position)
+            const {lastName} = getExistingNames(fullLineText, position);
             return Object.keys(meta.mappedSymbols)
                 .filter(ms => meta.mappedSymbols[ms]._kind === 'import')
                 .filter(ms => ms.startsWith(lastName))
                 .filter(ms => {
-                    const res = styl.resolver.resolve(meta.mappedSymbols[ms])
+                    const res = styl.resolver.resolve(meta.mappedSymbols[ms]);
                     return res && res._kind === 'js'
                 })
                 .filter(ms => isMixin(ms, meta, fs, tsLangService))
@@ -440,24 +413,24 @@ export const CodeMixinCompletionProvider: CompletionProvider = {
             return [];
         }
     },
-}
+};
 
 // Inside ruleset, which is not :import
 // RHS of any rule except -st-extends, -st-from
-export const FormatterCompletionProvider: CompletionProvider = {
-    provide({meta, fullLineText, parentSelector, lineChunkAtCursor, position, fs, tsLangService, styl}: ProviderOptions): Completion[] {
+export const FormatterCompletionProvider = {
+    provide(parentSelector: SRule | null, fullLineText: string, position: ProviderPosition, lineChunkAtCursor: string, meta: StylableMeta, styl: Stylable, fs: ExtendedFSReadSync, tsLangService: ExtendedTsLanguageService): Completion[] {
         if (
             meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) &&
             !fullLineText.trim().startsWith(valueMapping.from) && !fullLineText.trim().startsWith(valueMapping.extends) && !fullLineText.trim().startsWith(valueMapping.named) &&
             parentSelector && ~fullLineText.indexOf(':') && fullLineText.indexOf(':') < position.character &&
             !lineChunkAtCursor.startsWith(valueMapping.mixin + ':')
         ) {
-            const {names, lastName} = getExistingNames(fullLineText, position)
+            const {lastName} = getExistingNames(fullLineText, position);
             return Object.keys(meta.mappedSymbols)
                 .filter(ms => (meta.mappedSymbols[ms]._kind === 'import'))
                 .filter(ms => ms.startsWith(lastName))
                 .filter(ms => {
-                    const res = styl.resolver.resolve(meta.mappedSymbols[ms])
+                    const res = styl.resolver.resolve(meta.mappedSymbols[ms]);
                     return res && res._kind === 'js'
                 })
                 // .filter(ms => names.length === 0 || !~names.indexOf(ms))
@@ -467,20 +440,20 @@ export const FormatterCompletionProvider: CompletionProvider = {
             return [];
         }
     },
-}
+};
 
 // Inside :import
 // RHS of -st-named
 // import exists
-export const NamedCompletionProvider: CompletionProvider & { resolveImport: (importName: string, styl: Stylable, meta: StylableMeta) => StylableMeta | null } = {
-    provide({parentSelector, astAtCursor, styl, meta, position, fullLineText, src}: ProviderOptions): Completion[] {
+export const NamedCompletionProvider = {
+    provide(parentSelector: SRule | null, fullLineText: string, position: ProviderPosition, meta: StylableMeta, styl: Stylable, astAtCursor: PostCss.NodeBase, src: string): Completion[] {
 
         const {isNamedValueLine, namedValues} = getNamedValues(src, position.line);
         if (isNamedValueLine) {
 
             let importName: string = '';
             if (parentSelector && parentSelector.selector === ':import' && (astAtCursor as PostCss.Rule).nodes && (astAtCursor as PostCss.Rule).nodes!.length) {
-                importName = ((astAtCursor as PostCss.Rule).nodes!.find(n => (n as PostCss.Declaration).prop === valueMapping.from) as PostCss.Declaration).value.replace(/'|"/g, '');
+                importName = ((astAtCursor as PostCss.Rule).nodes!.find(n => (n as PostCss.Declaration).prop === valueMapping.from) as PostCss.Declaration).value.replace(/['"]/g, '');
             } else {
                 return []
             }
@@ -491,7 +464,7 @@ export const NamedCompletionProvider: CompletionProvider & { resolveImport: (imp
 
                 const resolvedImport: StylableMeta | null = this.resolveImport(importName, styl, meta);
                 if (resolvedImport) {
-                    const {names, lastName} = getExistingNames(fullLineText, position)
+                    const {lastName} = getExistingNames(fullLineText, position);
                     comps.push(
                         ...keys(resolvedImport.mappedSymbols)
                             .filter(ms => (resolvedImport.mappedSymbols[ms]._kind === 'class' || resolvedImport.mappedSymbols[ms]._kind === 'var') && ms !== 'root')
@@ -502,7 +475,7 @@ export const NamedCompletionProvider: CompletionProvider & { resolveImport: (imp
                                 path.relative(meta.source, resolvedImport.source).slice(1).replace(/\\/g, '/'),
                                 resolvedImport.mappedSymbols[ms]._kind === 'var' ? (resolvedImport.mappedSymbols[ms] as VarSymbol).text : 'Stylable class'
                             ])
-                    )
+                    );
                     return comps.slice(1).map(c => namedCompletion(
                         c[0],
                         new ProviderRange(
@@ -529,18 +502,18 @@ export const NamedCompletionProvider: CompletionProvider & { resolveImport: (imp
         }
         return resolvedImport;
     },
-}
+};
 
-export const PseudoElementCompletionProvider: CompletionProvider = {
-    provide({parentSelector, resolved, resolvedElements, lastSelectoid, lineChunkAtCursor, meta, position, fullLineText}: ProviderOptions): Completion[] {
+export const PseudoElementCompletionProvider = {
+    provide(parentSelector: SRule | null, fullLineText: string, position: ProviderPosition, lineChunkAtCursor: string, meta: StylableMeta, resolvedElements: ResolvedElement[][], lastSelectoid: string, resolved: CSSResolve[]): Completion[] {
         let comps: any[] = [];
         if (!parentSelector && resolved.length > 0 && !isBetweenChars(fullLineText, position, '(', ')')) {
 
             const lastNode = resolvedElements[0][resolvedElements[0].length - 1];
             const states = lastNode.resolved.reduce((acc, cur) => {
-                acc = acc.concat(keys((cur.symbol as ClassSymbol)[valueMapping.states]))
+                acc = acc.concat(keys((cur.symbol as ClassSymbol)[valueMapping.states]));
                 return acc;
-            }, cssPseudoClasses)
+            }, cssPseudoClasses);
 
             let filter = lastNode.resolved.length
                 ? ~states.indexOf(lastSelectoid.replace(':', ''))
@@ -564,7 +537,7 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
                     .concat(keys(res.meta.customSelectors).map(s => s.slice(':--'.length)))
                     .filter(e => e.startsWith(filter) && e !== 'root')
                     .map(c => {
-                        let relPath = path.relative(path.dirname(meta.source), res.meta.source)
+                        let relPath = path.relative(path.dirname(meta.source), res.meta.source);
                         if (!relPath.startsWith('.')) {
                             relPath = './' + relPath
                         }
@@ -592,7 +565,7 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
                         .concat(keys(res.meta.customSelectors).map(s => s.slice(':--'.length)))
                         .filter(e => e.startsWith(filter) && e !== 'root')
                         .map(c => {
-                            let relPath = path.relative(path.dirname(meta.source), res.meta.source)
+                            let relPath = path.relative(path.dirname(meta.source), res.meta.source);
                             if (!relPath.startsWith('.')) {
                                 relPath = './' + relPath
                             }
@@ -607,14 +580,10 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
         }
         return comps;
     }
-}
+};
 
 function isNodeRule(node: any): node is PostCss.Rule {
     return node.type === 'rule';
-}
-
-function isNodeDecl(node: any): node is PostCss.Declaration {
-    return node.type === 'decl';
 }
 
 function isPositionInDecl(position: ProviderPosition, decl: PostCss.Declaration) {
@@ -639,21 +608,15 @@ function isPositionInDecl(position: ProviderPosition, decl: PostCss.Declaration)
     return false;
 }
 
-export const StateTypeCompletionProvider: CompletionProvider = {
-    provide({astAtCursor, fullLineText, meta, position}: ProviderOptions): Completion[] {
+export const StateTypeCompletionProvider = {
+    provide(fullLineText: string, position: ProviderPosition, meta: StylableMeta, astAtCursor: PostCss.NodeBase): Completion[] {
         const acc: Completion[] = [];
 
         if (isNodeRule(astAtCursor)) {
             const declNodes = astAtCursor.nodes;
 
             if (declNodes) {
-                const stateDeclInPos = declNodes.find((decl: PostCss.ChildNode) => {
-                    if (decl.type === 'decl' && decl.prop === valueMapping.states && isPositionInDecl(position, decl)) {
-                        return true;
-                    }
-
-                    return false;
-                });
+                const stateDeclInPos = declNodes.find(decl => decl.type === 'decl' && decl.prop === valueMapping.states && isPositionInDecl(position, decl));
 
                 if (stateDeclInPos) {
                     const toSuggest = resolveStateTypeOrValidator(meta, position, fullLineText);
@@ -707,10 +670,10 @@ export const StateTypeCompletionProvider: CompletionProvider = {
 
         return acc;
     },
-}
+};
 
-export const StateSelectorCompletionProvider: CompletionProvider = {
-    provide({parentSelector, lineChunkAtCursor, resolvedElements, target, lastSelectoid, meta, position, fullLineText}: ProviderOptions): Completion[] {
+export const StateSelectorCompletionProvider = {
+    provide(parentSelector: SRule | null, fullLineText: string, position: ProviderPosition, lineChunkAtCursor: string, meta: StylableMeta, resolvedElements: ResolvedElement[][], target: CursorPosition, lastSelectoid: string): Completion[] {
         if (!parentSelector && !lineChunkAtCursor.endsWith('::') && !isBetweenChars(fullLineText, position, '(', ')')) {
 
             const lastNode = resolvedElements[0][resolvedElements[0].length - 1];
@@ -720,7 +683,7 @@ export const StateSelectorCompletionProvider: CompletionProvider = {
             const allStates = collectStates(lastNode);
 
             const newStates = lastNode.resolved.reduce((acc, cur) => {
-                let relPath = path.relative(path.dirname(meta.source), cur.meta.source)
+                let relPath = path.relative(path.dirname(meta.source), cur.meta.source);
                 if (!relPath.startsWith('.')) {
                     relPath = './' + relPath;
                 }
@@ -737,7 +700,7 @@ export const StateSelectorCompletionProvider: CompletionProvider = {
                             type: (stateDef && stateDef.type) || null
                         }
                     }
-                })
+                });
                 return acc;
             }, {} as { [k: string]: { path: string, hasParam: boolean, type: string | null } });
 
@@ -778,19 +741,18 @@ export const StateSelectorCompletionProvider: CompletionProvider = {
             return [];
         }
     },
-}
+};
 
-export const StateEnumCompletionProvider: CompletionProvider = {
-    provide({meta, astAtCursor, fullLineText, lineChunkAtCursor, position, lastSelectoid, resolved, resolvedElements}: ProviderOptions): Completion[] {
+export const StateEnumCompletionProvider = {
+    provide(fullLineText: string, position: ProviderPosition, lineChunkAtCursor: string, meta: StylableMeta, astAtCursor: PostCss.NodeBase, resolvedElements: ResolvedElement[][], lastSelectoid: string): Completion[] {
         let acc: Completion[] = [];
         const ast = (astAtCursor as PostCss.Node);
 
         if (!lineChunkAtCursor.endsWith('::') && (ast.type === 'root' || ast.type === 'atrule')) {
             if (lastSelectoid.startsWith(':')) {
                 const stateName = lastSelectoid.slice(1);
-                const resolvedClass = resolved[0];
                 const lastNode = resolvedElements[0][resolvedElements[0].length - 1];
-                const resolvedStates: { [key: string]: StateParsedValue } = collectStates(lastNode)
+                const resolvedStates: { [key: string]: StateParsedValue } = collectStates(lastNode);
 
                 if (Object.keys(resolvedStates).length) {
                     const resolvedStateNode = find(lastNode.resolved, (node: any) => {
@@ -833,21 +795,21 @@ export const StateEnumCompletionProvider: CompletionProvider = {
     }
 };
 
-export const ValueCompletionProvider: CompletionProvider = {
-    provide({fullLineText, position, meta, styl}: ProviderOptions): Completion[] {
+export const ValueCompletionProvider = {
+    provide(fullLineText: string, position: ProviderPosition, meta: StylableMeta, styl: Stylable): Completion[] {
         if (isInValue(fullLineText, position)) {
             let inner = fullLineText.slice(0, fullLineText.indexOf(')', position.character) + 1).slice(fullLineText.slice(0, fullLineText.indexOf(')', position.character) + 1).lastIndexOf('(')).replace('(', '').replace(')', '').trim();
 
             let comps: Completion[] = [];
             meta.vars.forEach(v => {
                 if (v.name.startsWith(inner) && !~fullLineText.slice(0, fullLineText.indexOf(':')).indexOf(v.name)) {
-                    const value = evalDeclarationValue(styl.resolver, v.text, meta, v.node)
+                    const value = evalDeclarationValue(styl.resolver, v.text, meta, v.node);
                     comps.push(valueCompletion(v.name, 'Local variable', value, new ProviderRange(
                         new ProviderPosition(position.line, position.character - inner.length),
                         position,
                     )))
                 }
-            })
+            });
 
             const importVars: any[] = [];
             meta.imports.forEach(imp => {
@@ -860,23 +822,23 @@ export const ValueCompletionProvider: CompletionProvider = {
                     }))
                 } catch (e) {
                 }
-            })
+            });
 
             importVars.forEach(v => {
                 if (v.name.startsWith(inner) && meta.imports.some(imp => Object.keys(imp.named).some(key => key === v.name))) {
-                    const value = evalDeclarationValue(styl.resolver, v.value, meta, v.node)
+                    const value = evalDeclarationValue(styl.resolver, v.value, meta, v.node);
                     comps.push(valueCompletion(v.name, v.from, value, new ProviderRange(
                         new ProviderPosition(position.line, position.character - inner.length),
                         position,
                     )))
                 }
-            })
+            });
             return comps;
         } else {
             return [];
         }
     },
-}
+};
 
 function collectStates(lastNode: ResolvedElement) {
     return lastNode.resolved.reduce((acc, cur) => {
@@ -920,7 +882,7 @@ function createCodeMixinCompletion(name: string, lastName: string, position: Pro
 function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLangService: ExtendedTsLanguageService) {
     const importSymbol = (meta.mappedSymbols[name] as ImportSymbol);
     if (importSymbol.import.fromRelative.endsWith('.ts')) {
-        const sig = extractTsSignature(importSymbol.import.from, name, importSymbol.type === 'default', tsLangService)
+        const sig = extractTsSignature(importSymbol.import.from, name, importSymbol.type === 'default', tsLangService);
         if (!sig) {
             return false;
         }
@@ -930,7 +892,7 @@ function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLan
         return (/(\w+.)?stCssFrag/.test(rtype.trim()));
     }
     if (importSymbol.import.fromRelative.endsWith('.js')) {
-        return (extractJsModifierReturnType(name, 0, fs.get(toVscodePath(importSymbol.import.from)).getText()) === 'stCssFrag')
+        return (extractJsModifierReturnType(name, fs.get(toVscodePath(importSymbol.import.from)).getText()) === 'stCssFrag')
     }
     return false;
 }
