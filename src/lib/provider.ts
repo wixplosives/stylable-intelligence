@@ -6,8 +6,6 @@ import {
     Diagnostics,
     expandCustomSelectors,
     ImportSymbol,
-    process as stylableProcess,
-    safeParse,
     SRule,
     StateParsedValue,
     Stylable,
@@ -61,6 +59,7 @@ import {
     resolveStateTypeOrValidator
 } from './feature/pseudo-class';
 import {ResolvedElement} from "stylable/dist/src/stylable-transformer";
+import {createMeta, fixAndProcess} from "../model/provider-processing";
 
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
@@ -651,76 +650,7 @@ export default class Provider {
 
 }
 
-function isIllegalLine(line: string): boolean {
-    return /^\s*[-.:]+\s*$/.test(line)
-}
 
-const lineEndsRegexp = /[{};]/;
-
-export function createMeta(src: string, path: string) {
-    let meta: StylableMeta;
-    let fakes: PostCss.Rule[] = [];
-    try {
-        let ast: PostCss.Root = safeParse(src, {from: fromVscodePath(path)});
-        ast.nodes && ast.nodes.forEach((node) => {
-            if (node.type === 'decl') {
-                let r = PostCss.rule({selector: node.prop + ':' + node.value});
-                r.source = node.source;
-                node.replaceWith(r);
-                fakes.push(r)
-            }
-        });
-        if (ast.raws.after && ast.raws.after.trim()) {
-            let r = PostCss.rule({selector: ast.raws.after.trim()});
-            ast.append(r);
-            fakes.push(r);
-        }
-
-        meta = stylableProcess(ast);
-    } catch (error) {
-        return {meta: null, fakes: fakes};
-    }
-    return {
-        meta: meta,
-        fakes: fakes
-    }
-}
-
-export function fixAndProcess(src: string, position: ProviderPosition, filePath: string,) {
-    let cursorLineIndex: number = position.character;
-    let lines = src.replace(/\r\n/g, '\n').split('\n');
-    let currentLine = lines[position.line];
-    let fixedSrc = src;
-    if (currentLine.match(lineEndsRegexp)) {
-        let currentLocation = 0;
-        let splitLine = currentLine.split(lineEndsRegexp);
-        for (let i = 0; i < splitLine.length; i += 2) {
-            currentLocation += splitLine[i].length + 1;
-            if (currentLocation >= position.character) {
-                currentLine = splitLine[i];
-                if (isIllegalLine(currentLine)) {
-                    splitLine[i] = '\n';
-                    lines.splice(position.line, 1, splitLine.join(''));
-                    fixedSrc = lines.join('\n');
-                }
-                break;
-            } else {
-                cursorLineIndex -= splitLine[i].length + 1
-            }
-        }
-    }
-    else if (isIllegalLine(currentLine)) {
-        lines.splice(position.line, 1, "");
-        fixedSrc = lines.join('\n');
-    }
-
-    let processed = createMeta(fixedSrc, filePath);
-    return {
-        processed: processed,
-        currentLine: currentLine,
-        cursorLineIndex: cursorLineIndex,
-    }
-}
 
 export class ProviderLocation {
     constructor(public uri: string, public range: ProviderRange) {

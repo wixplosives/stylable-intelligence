@@ -6,7 +6,7 @@ import {TextDocument} from 'vscode-languageserver-types';
 import {createFs, MinimalDocs} from '../src/lib/provider-factory'
 import {Completion, snippet} from '../src/lib/completion-types';
 import {ProviderPosition, ProviderRange} from '../src/lib/completion-providers';
-import {createMeta, default as Provider, ProviderLocation} from '../src/lib/provider';
+import {default as Provider, ProviderLocation} from '../src/lib/provider';
 import {pathFromPosition} from '../src/lib/utils/postcss-ast-utils'
 import {NodeBase} from 'postcss';
 import {Location, ParameterInformation, SignatureHelp} from 'vscode-languageserver';
@@ -16,6 +16,7 @@ import {LocalSyncFs} from '../src/lib/local-sync-fs';
 import {createDocFs} from '../src/lib/server';
 import {createBaseHost, createLanguageServiceHost} from '../src/lib/utils/temp-language-service-host';
 import {ExtendedTsLanguageService} from '../src/lib/types';
+import {createMeta} from "../src/model/provider-processing";
 
 const pkgDir = require('pkg-dir');
 

@@ -92,9 +92,3 @@ export function pathFromPosition(ast: PostCss.NodeBase, position: ProviderPositi
     }
     return res;
 }
-
-export function getPositionInSrc(src: string, position: ProviderPosition) {
-    const lines = src.split('\n');
-    return lines.slice(0, position.line)
-        .reduce((total: number, line) => line.length + total + 1, -1) + position.character;
-}
