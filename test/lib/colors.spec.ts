@@ -1,14 +1,12 @@
 import { expect } from 'chai';
-import { getDocumentColors} from '../../test-kit/asserters';
+import { getDocumentColors } from '../../test-kit/asserters';
 
 describe('Colors', function () {
     describe('DocumentColor', () => {
         it('should resolve information for a single color', function () {
             const res = getDocumentColors('colors/single-color.st.css');
 
-            expect(res).to.exist;
-            expect(res!.length).to.equal(1);
-            expect(res![0]).to.eql({
+            expect(res).to.eql([{
                 range: {
                     start: {
                         line: 1,
@@ -25,7 +23,7 @@ describe('Colors', function () {
                     blue: 0,
                     alpha: 1
                 }
-            });
+            }]);
         });
 
         it('should resolve information for a variable color', function () {

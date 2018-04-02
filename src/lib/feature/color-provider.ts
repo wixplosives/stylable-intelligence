@@ -7,15 +7,14 @@ import { fixAndProcess } from '../provider';
 import { ExtendedFSReadSync } from '../..';
 import { last } from 'lodash';
 
-export function getDocumentColors(
+export function resolveDocumentColors(
     stylable: Stylable,
     cssService: CssService,
-    document: TextDocument,
-    params: DocumentColorParams) {
+    document: TextDocument) {
 
     const processor = stylable.fileProcessor;
     const src = document.getText();
-    const res = fixAndProcess(src, new ProviderPosition(0, 0), params.textDocument.uri);
+    const res = fixAndProcess(src, new ProviderPosition(0, 0), document.uri);
     const meta = res.processed.meta;
 
     let colorComps: ColorInformation[] = [];

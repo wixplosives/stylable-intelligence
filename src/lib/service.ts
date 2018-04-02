@@ -25,7 +25,7 @@ import {IConnection} from "vscode-languageserver";
 import {initializeResult} from "../view";
 import {CompletionParams} from 'vscode-languageclient/lib/main';
 import {CssService} from "../model/css-service";
-import { getDocumentColors, getColorPresentation } from './feature/color-provider';
+import { resolveDocumentColors, getColorPresentation } from './feature/color-provider';
 
 export {MinimalDocs} from './provider-factory';
 
@@ -123,11 +123,16 @@ export function initStylableLanguageService(connection: IConnection, services: {
     });
 
     connection.onDocumentColor((params: DocumentColorParams) => {
-        return provider.getDocumentColors(params, fs, newCssService);
+        const document = fs.get(params.textDocument.uri);
+
+        return resolveDocumentColors(services.styl, newCssService, document);
+
     });
 
     connection.onColorPresentation((params: ColorPresentationParams) => {
-        return provider.getColorPresentation(params, fs, newCssService);
+        const document = fs.get(params.textDocument.uri);
+
+        return getColorPresentation(newCssService, document, params);
     });
 
 

@@ -63,10 +63,6 @@ import {
     resolveStateParams,
     resolveStateTypeOrValidator
 } from './feature/pseudo-class';
-import { getDocumentColors, getColorPresentation } from './feature/color-provider';
-import { CssService } from '../model/css-service';
-import { ColorPresentationParams } from 'vscode-languageserver-protocol';
-import { ColorInformation, ColorPresentation } from 'vscode-css-languageservice';
 
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
@@ -329,18 +325,6 @@ export default class Provider {
 
         refs = this.findClassRefs(word, params.textDocument.uri, fs);
         return refs;
-    }
-
-    public getDocumentColors(params: DocumentColorParams, fs: ExtendedFSReadSync, cssService: CssService): ColorInformation[] {
-        const document = fs.get(params.textDocument.uri);
-
-        return getDocumentColors(this.styl, cssService, document, params);
-    }
-
-    public getColorPresentation(params: ColorPresentationParams, fs: ExtendedFSReadSync, cssService: CssService): ColorPresentation[] {
-        const document = fs.get(params.textDocument.uri);
-
-        return getColorPresentation(cssService, document, params);
     }
 
     private inDef(position: ProviderPosition, def: ProviderLocation): boolean {
