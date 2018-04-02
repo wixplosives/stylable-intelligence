@@ -10,6 +10,7 @@
     "noImplicitReturns": true,
     "strictNullChecks": true,
     "sourceMap": true,
+    "declaration": true,
     "outDir": "dist"
   },
   "exclude": [

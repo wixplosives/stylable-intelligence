@@ -1,15 +1,19 @@
 :import {
     -st-from: "./import.st.css";
-    -st-named: shlomo, momo;
+    -st-named: shlomo, momo, color1;
     -st-default: Comp;
 }
 
 .gaga {
     -st-extends: Comp;
     -st-states: blah(enum(blah, bleh, blih));
-    color: rgb(var(b))
+    /* color: rgb(var(b)); */
 }
 
-.gaga:blah() {
+:vars {
+    color2: rgb(0, 255, 136);
+}
 
+.gaga:blah(blah) {
+    color: value(color1);
 }
