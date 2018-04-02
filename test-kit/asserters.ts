@@ -17,6 +17,7 @@ import { createDocFs } from '../src/lib/server';
 import { createLanguageServiceHost, createBaseHost } from '../src/lib/utils/temp-language-service-host';
 import { ExtendedTsLanguageService } from '../src/lib/types';
 import { CssService } from '../src/model/css-service';
+import { Color, ColorInformation } from 'vscode-css-languageservice';
 const pkgDir = require('pkg-dir');
 
 export const CASES_PATH = path.join(pkgDir.sync(__dirname), 'fixtures', 'server-cases');
@@ -145,7 +146,7 @@ export function getSignatureHelp(fileName: string, prefix: string): SignatureHel
     return provider.getSignatureHelp(src, pos, fullPath, docsFs, ParameterInformation);
 }
 
-export function getDocumentColors(fileName: string) {
+export function getDocumentColors(fileName: string): ColorInformation[] {
     const fullPath = path.join(CASES_PATH, fileName);
     let src: string = fs.readFileSync(fullPath).toString();
     let doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src)

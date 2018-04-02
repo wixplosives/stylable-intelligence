@@ -1,7 +1,6 @@
-import { ColorInformation, DocumentColorParams, ColorPresentationParams } from 'vscode-languageserver-protocol';
-import { TextDocument } from 'vscode-languageserver/lib/main';
+import { DocumentColorParams, ColorPresentationParams, TextDocument } from 'vscode-languageserver-protocol';
 import { ProviderPosition, ProviderRange } from '../completion-providers';
-import { Color } from 'vscode';
+import { Color, ColorPresentation, ColorInformation } from 'vscode-css-languageservice';
 import { evalDeclarationValue, valueMapping, Stylable, StylableMeta, FileProcessor } from 'stylable';
 import { CssService } from '../../model/css-service';
 import { fixAndProcess } from '../provider';
@@ -86,13 +85,13 @@ export function getDocumentColors(
         return colorComps.concat(cssService.findColors(document));
     }
 
-    return null;
+    return [];
 }
 
 export function getColorPresentation(
     cssService: CssService,
     document: TextDocument,
-    params: ColorPresentationParams) {
+    params: ColorPresentationParams): ColorPresentation[] {
 
     const src = document.getText();
     const res = fixAndProcess(src, new ProviderPosition(0, 0), params.textDocument.uri);
