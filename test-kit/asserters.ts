@@ -6,7 +6,7 @@ import { TextDocument } from 'vscode-languageserver-types';
 import { createProvider, MinimalDocs, createFs } from '../src/lib/provider-factory'
 import { Completion, snippet } from '../src/lib/completion-types';
 import { ProviderPosition, ProviderRange } from '../src/lib/completion-providers';
-import {createMeta, default as Provider, ProviderLocation} from '../src/lib/provider';
+import { createMeta, default as Provider, ProviderLocation } from '../src/lib/provider';
 import { pathFromPosition } from '../src/lib/utils/postcss-ast-utils'
 import { NodeBase } from 'postcss';
 import { SignatureHelp, ParameterInformation, Location } from 'vscode-languageserver';
@@ -16,6 +16,7 @@ import { LocalSyncFs } from '../src/lib/local-sync-fs';
 import { createDocFs } from '../src/lib/server';
 import { createLanguageServiceHost, createBaseHost } from '../src/lib/utils/temp-language-service-host';
 import { ExtendedTsLanguageService } from '../src/lib/types';
+import { CssService } from '../src/model/css-service';
 const pkgDir = require('pkg-dir');
 
 export const CASES_PATH = path.join(pkgDir.sync(__dirname), 'fixtures', 'server-cases');
@@ -144,6 +145,17 @@ export function getSignatureHelp(fileName: string, prefix: string): SignatureHel
     return provider.getSignatureHelp(src, pos, fullPath, docsFs, ParameterInformation);
 }
 
+export function getDocumentColors(fileName: string) {
+    const fullPath = path.join(CASES_PATH, fileName);
+    let src: string = fs.readFileSync(fullPath).toString();
+    let doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src)
+
+    return provider.getDocumentColors(
+        { textDocument: doc },
+        docsFs,
+        newCssService);
+}
+
 const minDocs: MinimalDocs = {
     get(uri: string): TextDocument {
         return TextDocument.create(uri, 'css', 1, fs.readFileSync(fromVscodePath(uri)).toString());
@@ -175,7 +187,7 @@ const wrappedTs: ExtendedTsLanguageService = {
 
 
 const provider = createProvider(new Stylable('/', createFs(docsFs, true), () => ({ default: {} })), wrappedTs);
-
+const newCssService = new CssService(docsFs);
 
 
 //syntactic
