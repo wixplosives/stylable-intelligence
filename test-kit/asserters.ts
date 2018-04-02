@@ -2,21 +2,23 @@ import { expect } from 'chai';
 import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
-import { TextDocument } from 'vscode-languageserver-types';
-import { createProvider, MinimalDocs, createFs } from '../src/server/provider-factory'
-import { Completion, snippet } from '../src/server/completion-types';
-import { ProviderPosition, ProviderRange } from '../src/server/completion-providers';
-import { createMeta, ProviderLocation } from '../src/server/provider';
-import { pathFromPosition } from '../src/server/utils/postcss-ast-utils'
 import { NodeBase } from 'postcss';
-import { Provider } from '../src/server/index';
-import { SignatureHelp, ParameterInformation, Location } from 'vscode-languageserver';
-import { fromVscodePath, toVscodePath } from '../src/server/utils/uri-utils';
 import { Stylable } from 'stylable';
-import { LocalSyncFs } from '../src/server/local-sync-fs';
-import { createDocFs } from '../src/server/server';
-import { createLanguageServiceHost, createBaseHost } from '../src/server/utils/temp-language-service-host';
-import { ExtendedTsLanguageService } from '../src/server/types';
+import { TextDocument } from 'vscode-languageserver-types';
+import { SignatureHelp, ParameterInformation, Location } from 'vscode-languageserver';
+import { Color, ColorInformation } from 'vscode-css-languageservice';
+import { createProvider, MinimalDocs, createFs } from '../src/lib/provider-factory'
+import { Completion, snippet } from '../src/lib/completion-types';
+import { ProviderPosition, ProviderRange } from '../src/lib/completion-providers';
+import { createMeta, default as Provider, ProviderLocation } from '../src/lib/provider';
+import { pathFromPosition } from '../src/lib/utils/postcss-ast-utils'
+import { fromVscodePath, toVscodePath } from '../src/lib/utils/uri-utils';
+import { LocalSyncFs } from '../src/lib/local-sync-fs';
+import { createDocFs } from '../src/lib/server';
+import { createLanguageServiceHost, createBaseHost } from '../src/lib/utils/temp-language-service-host';
+import { ExtendedTsLanguageService } from '../src/lib/types';
+import { CssService } from '../src/model/css-service';
+import { resolveDocumentColors } from '../src/lib/feature/color-provider';
 const pkgDir = require('pkg-dir');
 
 export const CASES_PATH = path.join(pkgDir.sync(path.join(__dirname, '..')), 'fixtures', 'server-cases');
@@ -76,27 +78,26 @@ export interface Assertable {
     notSuggested: (nonCompletions: Partial<Completion>[]) => void
 }
 
-export function getCompletions(fileName: string, prefix: string = ''): Thenable<Assertable> {
+// TODO : remove async (no need for it) and fix all breaking tests
+export async function getCompletions(fileName: string, prefix: string = ''): Promise<Assertable> {
     const fullPath = path.join(CASES_PATH, fileName);
     const src: string = fs.readFileSync(fullPath).toString();
 
-    return completionsIntenal(provider, fullPath, src, prefix)
-        .then((completions) => {
-            return {
-                suggested: (expectedCompletions: Partial<Completion>[]) => {
-                    assertPresent(completions, expectedCompletions, prefix);
-                },
-                exactSuggested: (expectedCompletions: Partial<Completion>[]) => {
-                    assertExact(completions, expectedCompletions);
-                },
-                notSuggested: (expectedNoCompletions: Partial<Completion>[]) => {
-                    assertNotPresent(completions, expectedNoCompletions);
-                }
-            }
-        })
+    const completions =  completionsIntenal(provider, fullPath, src, prefix);
+    return {
+        suggested: (expectedCompletions: Partial<Completion>[]) => {
+            assertPresent(completions, expectedCompletions, prefix);
+        },
+        exactSuggested: (expectedCompletions: Partial<Completion>[]) => {
+            assertExact(completions, expectedCompletions);
+        },
+        notSuggested: (expectedNoCompletions: Partial<Completion>[]) => {
+            assertNotPresent(completions, expectedNoCompletions);
+        }
+    }
 }
 
-function completionsIntenal(provider: Provider, fileName: string, src: string, prefix: string): Thenable<Completion[]> {
+function completionsIntenal(provider: Provider, fileName: string, src: string, prefix: string): Completion[] {
     let pos = getCaretPosition(src);
     src = src.replace('|', prefix);
     pos.character += prefix.length;
@@ -146,6 +147,18 @@ export function getSignatureHelp(fileName: string, prefix: string): SignatureHel
     return provider.getSignatureHelp(src, pos, fullPath, docsFs, ParameterInformation);
 }
 
+export function getDocumentColors(fileName: string): ColorInformation[] {
+    const fullPath = path.join(CASES_PATH, fileName);
+    let src: string = fs.readFileSync(fullPath).toString();
+    let doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src)
+
+    return resolveDocumentColors(
+        stylable,
+        newCssService,
+        doc
+    );
+}
+
 const minDocs: MinimalDocs = {
     get(uri: string): TextDocument {
         return TextDocument.create(uri, 'css', 1, fs.readFileSync(fromVscodePath(uri)).toString());
@@ -175,10 +188,9 @@ const wrappedTs: ExtendedTsLanguageService = {
     setOpenedFiles: (files: string[]) => openedFiles = files
 };
 
-
-const provider = createProvider(new Stylable(CASES_PATH, createFs(docsFs, true), () => ({ default: {} }), undefined,undefined,undefined,undefined,undefined,{symlinks: false}), wrappedTs);
-
-
+const stylable = new Stylable(CASES_PATH, createFs(docsFs, true), () => ({ default: {} }));
+const provider = createProvider(stylable, wrappedTs);
+const newCssService = new CssService(docsFs);
 
 //syntactic
 

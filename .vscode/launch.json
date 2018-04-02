@@ -20,7 +20,7 @@
       "request": "attach",
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/dist/src/server/**/*.js"
+        "${workspaceRoot}/dist/src/lib/**/*.js"
       ],
       "protocol": "inspector"
     },
@@ -47,7 +47,7 @@
       "args": [
         "--require",
         "ts-node/register",
-        "test/server/**/*.spec.ts"
+        "test/lib/**/*.spec.ts"
       ],
       "cwd": "${workspaceRoot}",
       "protocol": "inspector"
