@@ -120,14 +120,14 @@ describe('Imported Values', function () {
         });
     });
 
-    describe('from node_modules package', () => {
-        const str1 = 'Comp';
-        const str2 = 'part1';
+    describe.only('from node_modules package', () => {
+        const defaultComp = ' Comp';
+        const namedComp = ' part1';
         const realPath = "fake-stylable-package/stylesheet.st.css";
         const createComp = (str: string, rng: ProviderRange, path: string) => asserters.extendsCompletion(str.slice(1), rng, path);
 
 
-        [' ' + str1, ' ' + str2].forEach((str, j, a) => {
+        [defaultComp, namedComp].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
 
                 let prefix = str.slice(0, i + 1);
