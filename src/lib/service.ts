@@ -11,7 +11,7 @@ import {
     ColorPresentationParams,
     InitializeParams
 } from 'vscode-languageserver-protocol';
-import {createProvider, MinimalDocs, MinimalDocsDispatcher,} from './provider-factory';
+import {createProvider, MinimalDocs, MinimalDocsDispatcher, createFs} from './provider-factory';
 import {ProviderPosition, ProviderRange} from './completion-providers';
 import {Completion} from './completion-types';
 import {createDiagnosis} from './diagnosis';
@@ -36,30 +36,26 @@ export {MinimalDocs} from './provider-factory';
 export {ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes} from './types'
 
 export class StylableLanguageService {
-    constructor(connection: IConnection, services: { styl: Stylable | CreateStylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
+    constructor(connection: IConnection, services: { styl?: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
         console.warn('StylableLanguageService class is deprecated and will be deleted soon. use initStylableLanguageService function instead');
         initStylableLanguageService(connection, services, fs, docsDispatcher, notifications);
     }
 }
 
-export function initStylableLanguageService(connection: IConnection, services: { styl: Stylable | CreateStylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
+export function initStylableLanguageService(connection: IConnection, services: { styl?: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
     let provider: Provider, processor: FileProcessor<StylableMeta>;
 
-    if (typeof services.styl !== 'function') {
-        provider = createProvider(services.styl, services.tsLanguageService);
-        processor = services.styl.fileProcessor;
-    }
     const newCssService = new CssService(fs);
 
 
     connection.onInitialize((params: InitializeParams) => {
         const basePath = params.rootPath || '/';
 
-        if (typeof services.styl === 'function') {
-            services.styl = services.styl(basePath);
-            provider = createProvider(services.styl, services.tsLanguageService);
-            processor = services.styl.fileProcessor;
+        if (!services.styl) {
+            services.styl = new Stylable(basePath, createFs(fs, true), require, undefined, undefined, undefined, undefined, undefined, {symlinks: false});
         }
+        provider = createProvider(services.styl, services.tsLanguageService);
+        processor = services.styl.fileProcessor;
 
         return initializeResult
     });

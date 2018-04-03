@@ -9,7 +9,7 @@ import {
     TextDocument,
     TextDocuments
 } from 'vscode-languageserver';
-import {MinimalDocs} from './provider-factory';
+import {createFs, MinimalDocs} from './provider-factory';
 import {
     ColorPresentationRequest,
     DocumentColorRequest
@@ -58,7 +58,6 @@ const { docFs, wrappedTs, notificationTypes } = createTsLanguageService();
 const service = new StylableLanguageService(
     connection,
     {
-        styl: createStylable,
         tsLanguageService: wrappedTs,
         requireModule:require
     },
@@ -66,11 +65,6 @@ const service = new StylableLanguageService(
     docs,
     notificationTypes
 );
-
-
-function createStylable(path: string) {
-    return new Stylable(path, require('fs'), require, undefined, undefined, undefined, undefined, undefined, {symlinks: false}); // TODO: REMOVE PATH?
-}
 
 function createTsLanguageService() {
     const docFs: ExtendedFSReadSync = createDocFs(fileSystem, docs);
