@@ -1,19 +1,22 @@
 import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
+import {NodeBase} from 'postcss';
+import {Stylable} from 'stylable';
 import {TextDocument} from 'vscode-languageserver-types';
+import {Location, ParameterInformation, SignatureHelp} from 'vscode-languageserver';
+import {ColorInformation} from 'vscode-css-languageservice';
 import {createFs, createProvider, MinimalDocs} from '../src/lib/provider-factory'
 import {ProviderPosition} from '../src/lib/completion-providers';
 import {createMeta, getRefs, ProviderLocation} from '../src/lib/provider';
 import {pathFromPosition} from '../src/lib/utils/postcss-ast-utils'
-import {NodeBase} from 'postcss';
-import {Location, ParameterInformation, SignatureHelp} from 'vscode-languageserver';
 import {fromVscodePath, toVscodePath} from '../src/lib/utils/uri-utils';
-import {Stylable} from 'stylable';
 import {LocalSyncFs} from '../src/lib/local-sync-fs';
+import {createDocFs} from '../src/lib/server-utils';
 import {createBaseHost, createLanguageServiceHost} from '../src/lib/utils/temp-language-service-host';
 import {ExtendedTsLanguageService} from '../src/lib/types';
-import {createDocFs} from "../src/lib/server-utils";
+import {CssService} from '../src/model/css-service';
+import {resolveDocumentColors} from '../src/lib/feature/color-provider';
 
 const pkgDir = require('pkg-dir');
 
@@ -62,6 +65,18 @@ export function getSignatureHelp(fileName: string, prefix: string): SignatureHel
     return provider.getSignatureHelp(src, pos, fullPath, docsFs, ParameterInformation);
 }
 
+export function getDocumentColors(fileName: string): ColorInformation[] {
+    const fullPath = path.join(CASES_PATH, fileName);
+    let src: string = fs.readFileSync(fullPath).toString();
+    let doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src)
+
+    return resolveDocumentColors(
+        stylable,
+        newCssService,
+        doc
+    );
+}
+
 const minDocs: MinimalDocs = {
     get(uri: string): TextDocument {
         return TextDocument.create(uri, 'css', 1, fs.readFileSync(fromVscodePath(uri)).toString());
@@ -91,5 +106,6 @@ const wrappedTs: ExtendedTsLanguageService = {
     setOpenedFiles: (files: string[]) => openedFiles = files
 };
 
-
-const provider = createProvider(new Stylable('/', createFs(docsFs, true), () => ({default: {}})), wrappedTs);
+const stylable = new Stylable('/', createFs(docsFs, true), () => ({default: {}}));
+const provider = createProvider(stylable, wrappedTs);
+const newCssService = new CssService(docsFs);
