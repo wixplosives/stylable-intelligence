@@ -8,7 +8,7 @@
   "scripts": {
     "reset": "yarn clear && rimraf node_modules .vscode-test && yarn install && yarn test",
     "clear": "rimraf dist",
-    "build": "tsc -d",
+    "build": "tsc",
     "prepublish": "node ./node_modules/vscode/bin/install",
     "test": "yarn test:server && yarn build && yarn test:e2e && yarn test:browser-compatible",
     "test:e2e": "node ./run-test",
@@ -32,7 +32,7 @@
     "tslib": "^1.9.0",
     "typescript": "~2.7.2",
     "vscode": "^1.1.13",
-    "vscode-css-languageservice": "3.0.5",
+    "vscode-css-languageservice": "3.0.8",
     "vscode-languageclient": "^4.0.0",
     "vscode-languageserver": "^4.0.0"
   },

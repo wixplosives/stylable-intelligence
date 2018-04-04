@@ -53,34 +53,6 @@ export async function activate(context: ExtensionContext) {
 
     context.subscriptions.push(client.start());
     await client.onReady();
-    const disposeColorProvider = languages.registerColorProvider('stylable', {
-        async provideDocumentColors(document: TextDocument): Promise<ColorInformation[]> {
-            let params: DocumentColorParams = {
-                textDocument: client.code2ProtocolConverter.asTextDocumentIdentifier(document)
-            };
-            const symbols = await client.sendRequest(DocumentColorRequest.type, params);
-            return symbols.map(symbol => {
-                let range = client.protocol2CodeConverter.asRange(symbol.range);
-                let color = new Color(symbol.color.red, symbol.color.green, symbol.color.blue, symbol.color.alpha);
-                return new ColorInformation(range, color);
-            });
-        },
-        async provideColorPresentations(color: Color, context): Promise<ColorPresentation[]> {
-            let params: ColorPresentationParams = {
-                textDocument: client.code2ProtocolConverter.asTextDocumentIdentifier(context.document),
-                color,
-                range: client.code2ProtocolConverter.asRange(context.range)
-            };
-            const presentations = await client.sendRequest(ColorPresentationRequest.type, params);
-            return presentations.map(p => {
-                let presentation = new ColorPresentation(p.label);
-                presentation.textEdit = p.textEdit && client.protocol2CodeConverter.asTextEdit(p.textEdit);
-                presentation.additionalTextEdits = p.additionalTextEdits && client.protocol2CodeConverter.asTextEdits(p.additionalTextEdits);
-                return presentation;
-            });
-        }
-    });
-    context.subscriptions.push(disposeColorProvider);
     const files = await workspace.findFiles('**/*.st.css');
     await Promise.all(files.map((file: any) => workspace.openTextDocument(file.fsPath)));
     client.onNotification(OpenDocNotification.type, async (uri: string) => {

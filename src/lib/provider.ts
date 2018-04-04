@@ -48,7 +48,8 @@ import {
     Position,
     ReferenceParams,
     SignatureHelp,
-    SignatureInformation
+    SignatureInformation,
+    DocumentColorParams
 } from 'vscode-languageserver';
 import * as ts from 'typescript';
 import {Identifier, ParameterDeclaration, SignatureDeclaration, TypeReferenceNode} from 'typescript';
