@@ -11,9 +11,9 @@ import {Location, ParameterInformation, SignatureHelp} from 'vscode-languageserv
 import {fromVscodePath, toVscodePath} from '../src/lib/utils/uri-utils';
 import {Stylable} from 'stylable';
 import {LocalSyncFs} from '../src/lib/local-sync-fs';
-import {createDocFs} from '../src/lib/server';
 import {createBaseHost, createLanguageServiceHost} from '../src/lib/utils/temp-language-service-host';
 import {ExtendedTsLanguageService} from '../src/lib/types';
+import {createDocFs} from "../src/lib/server-utils";
 
 const pkgDir = require('pkg-dir');
 

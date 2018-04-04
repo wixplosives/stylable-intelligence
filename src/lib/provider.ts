@@ -573,10 +573,9 @@ function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Locat
     if (!word) {
         return []
     }
-    ;
     const refs: Location[] = [];
     const src = fs.get(uri).getText();
-    const {processed: {meta}} = fixAndProcess(src, new ProviderPosition(0, 0), fromVscodePath(uri))
+    const {processed: {meta}} = fixAndProcess(src, new ProviderPosition(0, 0), fromVscodePath(uri));
     const filterRegex = RegExp('(\\.?' + word + ')(\\s|$|\\:)', 'g');
     const valueRegex = RegExp('(\\.?' + word + ')(\\s|$|\\:|,)', 'g');
     meta!.rawAst.walkRules(filterRegex, (rule) => {

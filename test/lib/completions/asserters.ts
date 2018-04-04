@@ -10,7 +10,7 @@ import {default as Provider} from '../../../src/lib/provider';
 import {fromVscodePath} from '../../../src/lib/utils/uri-utils';
 import {Stylable} from 'stylable';
 import {LocalSyncFs} from '../../../src/lib/local-sync-fs';
-import {createDocFs} from '../../../src/lib/server';
+import {createDocFs} from '../../../src/lib/server-utils';
 import {createBaseHost, createLanguageServiceHost} from '../../../src/lib/utils/temp-language-service-host';
 import {ExtendedTsLanguageService} from '../../../src/lib/types';
 
