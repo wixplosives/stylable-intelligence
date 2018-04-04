@@ -19,7 +19,7 @@
 
 import {Duplex} from 'stream';
 
-import {CompletionParams, createConnection, IConnection} from "vscode-languageserver";
+import {CompletionParams, createConnection, IConnection, InitializeResult} from "vscode-languageserver";
 import {expect, plan, obj} from "../testkit/chai.spec";
 import {
     CompletionItem,
@@ -82,7 +82,7 @@ class TestDuplex extends Duplex {
 }
 
 // adapted from https://github.com/Microsoft/vscode-languageserver-node/blob/master/client/src/client.ts
-class StreamConnectionClient {
+export class StreamConnectionClient {
     private readonly connection: IConnection;
 
     // 'inherited' method
@@ -104,7 +104,7 @@ class StreamConnectionClient {
     }
 
     // extend
-    async initialize(params: InitializeParams = {} as any) {
+    async initialize(params: InitializeParams = {} as any): Promise<InitializeResult> {
         if (!params.capabilities) {
             params.capabilities = {};
         }
@@ -191,7 +191,7 @@ class StreamConnectionClient {
     // }
 }
 
-class TestConnection {
+export class TestConnection {
     private duplexStream1 = new TestDuplex('ds1');
     private duplexStream2 = new TestDuplex('ds2');
 
@@ -209,12 +209,9 @@ class TestConnection {
     // }
 }
 
-
-// TODO: extend(driver => {driver.plan(2, 2000); ... driver.waitForPlan()})
-
 // adapted from https://github.com/Microsoft/vscode-languageserver-node/blob/master/jsonrpc/src/test/connection.test.ts
 
-describe("Service testkit", function () {
+describe("LSP connection test driver", function () {
 
     it('Test Duplex Stream', plan(1, () => {
         let stream = new TestDuplex('ds1');
