@@ -4,24 +4,34 @@ import {init} from "../../src/lib/server-utils";
 import {MemoryFileSystem} from "kissfs";
 import {toVscodePath} from "../../src/lib/utils/uri-utils";
 import {TextDocumentItem} from "vscode-languageserver-protocol"
+import {getRangeAndText} from "../testkit/text.spec";
+import {Diagnostic, Range} from 'vscode-languageserver-types';
 
-describe.only("Service component test", function () {
+function createDiagnosisNotification(range: Range, message: string, fileName: string) {
+    return {
+        diagnostics: [Diagnostic.create(range, message, 2, undefined, 'stylable')],
+        uri: toVscodePath('/' + fileName)
+    };
+}
+
+describe("Service component test", function () {
     let testCon: TestConnection;
     beforeEach(() => {
         testCon = new TestConnection();
         testCon.listen();
     });
-    it("diagnostics", plan(1, () => {
+
+    it("should support single file error", plan(1, () => {
+        const rangeAndText = getRangeAndText('|.gaga .root{}|');
+        const fileName = 'single-file-diag.st.css';
+        const fileSystem = new MemoryFileSystem('', {content: {[fileName]: rangeAndText.text}});
+
         testCon.client.onDiagnostics(d => {
-            expect(d).to.eql({});
+            expect(d).to.eql(createDiagnosisNotification(rangeAndText.range, ".root class cannot be used after spacing", fileName));
         });
-        const fileSystem = new MemoryFileSystem('', {
-            content: {
-                'single-file-diag.st.css': '.gaga .root{}'
-            }
-        });
+
         init(fileSystem, testCon.server);
-        const textDocument = TextDocumentItem.create(toVscodePath('single-file-diag.st.css'), '', 0, fileSystem.loadTextFileSync('single-file-diag.st.css'));
-        testCon.client.didOpenTextDocument({textDocument})
+        const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), '', 0, fileSystem.loadTextFileSync(fileName));
+        testCon.client.didOpenTextDocument({textDocument});
     }));
 });

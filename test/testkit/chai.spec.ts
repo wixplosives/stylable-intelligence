@@ -81,15 +81,6 @@ describe("chai testkit", function () {
             // this will execute after the plan finishes
             setTimeout(() => expect(3).to.equal(3), DEFAULT_TIMEOUT / 2);
         }));
-        it("waits for too many assertions and fails even if assertion is after promise", async function () {
-            const thePlan = plan(0, () => {
-                // this will execute after the plan finishes
-                setTimeout(() => expect(3).to.equal(3), NO_TESTS_GRACE / 2);
-            }, 10).bind(this);
-            const thrown = await thePlan().catch((e: Error) => e);
-            expect(thrown).to.be.instanceof(Error);
-            expect(thrown.message).to.equal('1 tests done but only 0 planned');
-        });
         it("fails when too many assertions", async function () {
             const thePlan = plan(0, () => {
                 expect(3).to.equal(3); // the plan was for 0 tests, this should fail
@@ -104,6 +95,15 @@ describe("chai testkit", function () {
             const thrown = await thePlan().catch((e: Error) => e);
             expect(thrown).to.be.instanceof(Error);
             expect(thrown.message).to.equal('only 0 tests done out of 1 planned');
+        });
+        it("waits for too many assertions and fails even if assertion is after promise", async function () {
+            const thePlan = plan(0, () => {
+                // this will execute after the plan finishes
+                setTimeout(() => expect(3).to.equal(3), NO_TESTS_GRACE / 2);
+            }, 10).bind(this);
+            const thrown = await thePlan().catch((e: Error) => e);
+            expect(thrown).to.be.instanceof(Error);
+            expect(thrown.message).to.equal('1 tests done but only 0 planned');
         });
         it("throws original error if assertion failed", async function () {
             const error = new Error('foo');

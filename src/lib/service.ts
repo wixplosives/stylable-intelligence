@@ -88,9 +88,9 @@ export function initStylableLanguageService(connection: IConnection, services: {
         connection.sendDiagnostics({uri: document.uri, diagnostics: diagnostics});
     }
 
-    docsDispatcher.onDidOpen(function (params) {
-        diagnose(params.document);
-    });
+    // docsDispatcher.onDidOpen(function (params) {
+    //     diagnose(params.document);
+    // });
 
     docsDispatcher.onDidChangeContent(function (params) {
         diagnose(params.document);
