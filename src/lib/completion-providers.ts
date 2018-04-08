@@ -361,14 +361,15 @@ export const ExtendCompletionProvider: CompletionProvider = {
                 if (i.defaultExport && i.defaultExport.startsWith(str) && i.from.endsWith('st.css')) {
                     comps.push([i.defaultExport, i.fromRelative])
                 }
-            })
+            });
             meta.imports.forEach(i => comps.push(...keys(i.named)
                 .filter(s => {
                     const res = styl.resolver.resolve(meta.mappedSymbols[s]);
-                    return res && res._kind === 'css' && (res.symbol._kind === 'class' || res.symbol._kind === 'element')
+                    return res && res._kind === 'css' && (res.symbol._kind === 'class' || res.symbol._kind === 'element');
                 })
                 .filter(s => s.startsWith(str))
-                .map(s => [s, i.fromRelative])))
+                .map(s => [s, i.fromRelative])));
+
             return comps.slice(1).map(c => extendCompletion(
                 c[0],
                 c[1],

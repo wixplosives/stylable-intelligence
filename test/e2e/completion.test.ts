@@ -66,7 +66,6 @@ suite("Extension Tests", () => {
         return testCompletion('advanced-completion.st.css', testCases);
     });
 
-
     //Fix it so it tests something real (no :import)
     test.skip("No completions on .css files", function () {
         let starr: string[] = [];

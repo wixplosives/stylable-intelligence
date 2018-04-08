@@ -1,10 +1,43 @@
-:import {
+/* :import {
     -st-from: "./import.st.css";
     -st-named: shlomo, momo, color1;
     -st-default: Comp;
+} */
+
+:import {
+    -st-from: "fake-stylable-package/stylesheet.st.css";
+    -st-default: Comp2;
+    -st-named: color1, part1;
 }
 
-.gaga {
+/* :import {
+    -st-from: "fake-stylable-package/mixin.js";
+    -st-named: formatter;
+} */
+
+.root {
+
+}
+
+.blah {
+    -st-extends: Comp2;
+}
+
+.part1:bleh(b) {
+
+}
+
+.blah::part1 {
+
+}
+
+.blah::part1
+
+.blah:blah() {
+
+}
+
+/* .gaga {
     -st-extends: Comp;
     -st-states: blah(enum(blah, bleh, blih));
     /* color: rgb(var(b)); */

@@ -1,0 +1,10 @@
+:import{
+    -st-from: 'fake-stylable-package/stylesheet.st.css';
+    -st-default: Comp;
+    -st-named: part1;
+}
+
+.gaga{
+    -st-extends:|
+}
+

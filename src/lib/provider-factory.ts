@@ -6,38 +6,42 @@ import {
     process as stylableProcess,
     safeParse,
     Stylable,
-    StylableMeta
+    StylableMeta,
+    MinimalFS
 } from 'stylable';
 import Provider from './provider';
-import {FileSystemReadSync} from 'kissfs';
-import {ExtendedTsLanguageService} from './types';
+import {checkExistsSync} from 'kissfs';
+import {ExtendedTsLanguageService, ExtendedFSReadSync} from './types';
 
 export function createProvider(stylable: Stylable, tsLangService: ExtendedTsLanguageService, withFilePrefix: boolean = true): Provider {
-    // const styl = new Stylable('/', createFs(docs, fileSystem, withFilePrefix), () => ({ default: {} }))
     return new Provider(stylable, tsLangService)
 }
 
-export function createFs(fileSystem: FileSystemReadSync, withFilePrefix: boolean = true): any {
+export function createFs(fileSystem: ExtendedFSReadSync, withFilePrefix: boolean = true): any {
     return {
         readFileSync(path: string) {
             return fileSystem.loadTextFileSync(path).toString();
         },
         statSync(path: string) {
+            let isDir = checkExistsSync('dir', fileSystem, path);
+            let isFile = checkExistsSync('file', fileSystem, path);
             return {
+                isDirectory(){return isDir},
+                isFile(){return isFile},
                 mtime: new Date(Date.now())
             }
         }
     }
 }
 
-export function createProcessor(fileSystem: FileSystemReadSync, withFilePrefix: boolean = true): FileProcessor<StylableMeta> {
+export function createProcessor(fileSystem: ExtendedFSReadSync, withFilePrefix: boolean = true): FileProcessor<StylableMeta> {
     let proccesor = cachedProcessFile<StylableMeta>((fullpath, content) => {
         return stylableProcess(safeParse(content, {from: fullpath}))
     }, createFs(fileSystem, withFilePrefix))
     return proccesor;
 }
 
-export interface MinimalDocs extends Partial<FileSystemReadSync> {
+export interface MinimalDocs extends Partial<ExtendedFSReadSync> {
     get: (uri: string) => TextDocument;
     keys: () => string[];
 }

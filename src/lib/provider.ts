@@ -713,11 +713,11 @@ export function createMeta(src: string, path: string) {
                 let r = PostCss.rule({selector: node.prop + ':' + node.value});
                 r.source = node.source;
                 node.replaceWith(r);
-                fakes.push(r)
+                fakes.push(r);
             }
-        })
+        });
         if (ast.raws.after && ast.raws.after.trim()) {
-            let r = PostCss.rule({selector: ast.raws.after.trim()})
+            let r = PostCss.rule({selector: ast.raws.after.trim()});
             ast.append(r);
             fakes.push(r);
         }

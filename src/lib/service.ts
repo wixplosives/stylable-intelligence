@@ -8,17 +8,18 @@ import {
     TextDocumentPositionParams,
     WorkspaceEdit,
     DocumentColorParams,
-    ColorPresentationParams
+    ColorPresentationParams,
+    InitializeParams
 } from 'vscode-languageserver-protocol';
-import {createProvider, MinimalDocs, MinimalDocsDispatcher,} from './provider-factory';
+import {createProvider, MinimalDocs, MinimalDocsDispatcher, createFs} from './provider-factory';
 import {ProviderPosition, ProviderRange} from './completion-providers';
 import {Completion} from './completion-types';
 import {createDiagnosis} from './diagnosis';
 import {Color} from 'vscode-css-languageservice';
 import {Command, CompletionItem, Location, ParameterInformation, TextEdit} from 'vscode-languageserver-types';
-import {evalDeclarationValue, Stylable, valueMapping} from 'stylable';
+import {evalDeclarationValue, Stylable, valueMapping, FileProcessor, StylableMeta} from 'stylable';
 import {fromVscodePath, toVscodePath} from './utils/uri-utils';
-import {fixAndProcess} from './provider';
+import Provider, { fixAndProcess } from './provider';
 import {ExtendedFSReadSync, ExtendedTsLanguageService, NotificationTypes} from './types'
 import {last} from 'lodash';
 import {IConnection} from "vscode-languageserver";
@@ -27,24 +28,37 @@ import {CompletionParams} from 'vscode-languageclient/lib/main';
 import {CssService} from "../model/css-service";
 import { resolveDocumentColors, getColorPresentation } from './feature/color-provider';
 
+export type CreateStylable = (path: string) => Stylable;
+
 export {MinimalDocs} from './provider-factory';
 
 //exporting types for use in playground
 export {ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes} from './types'
 
 export class StylableLanguageService {
-    constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
+    constructor(connection: IConnection, services: { styl?: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
         console.warn('StylableLanguageService class is deprecated and will be deleted soon. use initStylableLanguageService function instead');
         initStylableLanguageService(connection, services, fs, docsDispatcher, notifications);
     }
 }
 
-export function initStylableLanguageService(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
-    const provider = createProvider(services.styl, services.tsLanguageService);
-    const processor = services.styl.fileProcessor;
+export function initStylableLanguageService(connection: IConnection, services: { styl?: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
+    let provider: Provider, processor: FileProcessor<StylableMeta>;
+
     const newCssService = new CssService(fs);
 
-    connection.onInitialize(() => initializeResult);
+
+    connection.onInitialize((params: InitializeParams) => {
+        const basePath = params.rootPath || '/';
+
+        if (!services.styl) {
+            services.styl = new Stylable(basePath, createFs(fs, true), require, undefined, undefined, undefined, undefined, undefined, {symlinks: false});
+        }
+        provider = createProvider(services.styl, services.tsLanguageService);
+        processor = services.styl.fileProcessor;
+
+        return initializeResult
+    });
 
     connection.onCompletion((params: CompletionParams): CompletionItem[] => {
         const documentUri = params.textDocument.uri;
@@ -125,7 +139,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
     connection.onDocumentColor((params: DocumentColorParams) => {
         const document = fs.get(params.textDocument.uri);
 
-        return resolveDocumentColors(services.styl, newCssService, document);
+        return resolveDocumentColors((services.styl as Stylable), newCssService, document);
 
     });
 
