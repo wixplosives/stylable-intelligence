@@ -23,15 +23,8 @@ export function createFs(fileSystem: ExtendedFSReadSync, withFilePrefix: boolean
             return fileSystem.loadTextFileSync(path).toString();
         },
         statSync(path: string) {
-            let isDir = false;
-            let isFile = false;
-            try{
-                checkExistsSync('dir', fileSystem, path);
-                fileSystem.get(path);
-                isFile = true;
-            } catch(e){
-                isDir = true;
-            }
+            let isDir = checkExistsSync('dir', fileSystem, path);
+            let isFile = checkExistsSync('file', fileSystem, path);
             return {
                 isDirectory(){return isDir},
                 isFile(){return isFile},
