@@ -1,5 +1,15 @@
 # Change log
 
+## v0.2.4
+
+### Bug fix
+
+* Color providers (color picker icons) no longer appear twice
+
+### Infrastructure
+
+* Further restructuring of the project for better maintainability
+
 ## v0.2.3
 
 ### Documentation
