@@ -1,5 +1,11 @@
 # Change log
 
+## v0.2.5
+
+### Bug fix
+
+* Fix bug causing Stylable diagnosis to run on other file types
+
 ## v0.2.4
 
 ### Bug fix
