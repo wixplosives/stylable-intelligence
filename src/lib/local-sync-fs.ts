@@ -1,4 +1,4 @@
-import {Directory, DirectoryContent, File, FileSystemReadSync, LocalFileSystem, ShallowDirectory} from 'kissfs'
+import {Directory, DirectoryContent, File, FileSystemReadSync, LocalFileSystem, ShallowDirectory, SimpleStats, CacheFileSystem} from 'kissfs'
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -9,7 +9,6 @@ export class LocalSyncFs extends LocalFileSystem implements FileSystemReadSync {
         } catch (e) {
             return '';
         }
-
     }
 
     loadDirectoryTreeSync(fullPath?: string): Directory {
@@ -41,5 +40,12 @@ export class LocalSyncFs extends LocalFileSystem implements FileSystemReadSync {
 
     loadDirectoryContentSync(fullPath?: string): DirectoryContent {
         return {};
+    }
+
+    statSync(fullPath: string): SimpleStats {
+        const stats = fs.statSync(fullPath);
+        return stats.isFile() ?
+            { type: 'file' } :
+            { type: 'dir' };
     }
 }

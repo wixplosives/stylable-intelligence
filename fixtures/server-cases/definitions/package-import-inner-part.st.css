@@ -1,0 +1,6 @@
+:import {
+    -st-from: "fake-stylable-package/stylesheet.st.css";
+    -st-named: part1;
+}
+
+.pa|rt1 {}

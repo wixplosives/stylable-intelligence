@@ -19,6 +19,7 @@ import { createLanguageServiceHost, createBaseHost } from '../src/lib/utils/temp
 import { ExtendedTsLanguageService } from '../src/lib/types';
 import { CssService } from '../src/model/css-service';
 import { resolveDocumentColors } from '../src/lib/feature/color-provider';
+import { CacheFileSystem } from 'kissfs';
 const pkgDir = require('pkg-dir');
 
 export const CASES_PATH = path.join(pkgDir.sync(path.join(__dirname, '..')), 'fixtures', 'server-cases');
@@ -80,8 +81,12 @@ export interface Assertable {
 
 // TODO : remove async (no need for it) and fix all breaking tests
 export async function getCompletions(fileName: string, prefix: string = ''): Promise<Assertable> {
-    const fullPath = path.join(CASES_PATH, fileName);
-    const src: string = fs.readFileSync(fullPath).toString();
+
+    (cacheFs as any).isTreeCached = false;
+    await cacheFs.loadDirectoryTree();
+    // const fullPath = path.join(CASES_PATH, fileName);
+    const fullPath = fileName;
+    const src: string = fs.readFileSync(path.join(CASES_PATH, fileName)).toString();
 
     const completions =  completionsIntenal(provider, fullPath, src, prefix);
     return {
@@ -168,7 +173,10 @@ const minDocs: MinimalDocs = {
     }
 
 };
-const docsFs = createDocFs(new LocalSyncFs(''), minDocs);
+export const cacheFs = new CacheFileSystem(new LocalSyncFs(CASES_PATH));
+// cacheFs.loadDirectoryTree()
+const docsFs = createDocFs(cacheFs, minDocs);
+// const docsFs = createDocFs(new LocalSyncFs(''), minDocs);
 
 let openedFiles: string[] = [];
 const tsLanguageServiceHost = createLanguageServiceHost({

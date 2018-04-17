@@ -9,7 +9,7 @@ import {
     TextDocument,
     TextDocuments
 } from 'vscode-languageserver';
-import {createFs, MinimalDocs} from './provider-factory';
+import {MinimalDocs} from './provider-factory';
 import {
     ColorPresentationRequest,
     DocumentColorRequest

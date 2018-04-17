@@ -129,6 +129,7 @@ export default class Provider {
         }
 
         let word = val.value;
+        let wordValue = word.replace('.', '');
 
         const {lineChunkAtCursor, fixedCharIndex} = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
         const transformer = new StylableTransformer({
@@ -144,7 +145,7 @@ export default class Provider {
         let defs: ProviderLocation[] = [];
 
         const reso = resolvedElements[0][resolvedElements[0].length - 1].resolved.find(res => {
-            return res.symbol.name === word.replace('.', '') || keys((res.symbol as ClassSymbol)[valueMapping.states]).some(k => k === word)
+            return res.symbol.name === wordValue || keys((res.symbol as ClassSymbol)[valueMapping.states]).some(k => k === word)
         })
 
         if (reso) {
@@ -152,15 +153,10 @@ export default class Provider {
         }
         let temp: ClassSymbol | null = null;
 
-        if (keys(meta.mappedSymbols).find(sym => sym === word.replace('.', ''))) {
-            const symb = meta.mappedSymbols[word.replace('.', '')];
+        if (keys(meta.mappedSymbols).find(sym => sym === wordValue)) {
+            const symb = meta.mappedSymbols[wordValue];
             switch (symb._kind) {
-                case 'class': {
-                    defs.push(
-                        new ProviderLocation(meta.source, this.findWord(word, fs.get(meta.source).getText(), position))
-                    );
-                    break;
-                }
+                case 'class':
                 case 'var': {
                     defs.push(
                         new ProviderLocation(meta.source, this.findWord(word, fs.get(meta.source).getText(), position))
@@ -186,9 +182,9 @@ export default class Provider {
         } else if (values(meta.mappedSymbols).some(k => {
                 if (k._kind === 'class' && keys(k[valueMapping.states]).some(key => key === word)) {
                     temp = k;
-                    return true
+                    return true;
                 } else {
-                    return false
+                    return false;
                 }
             })) {
             defs.push(

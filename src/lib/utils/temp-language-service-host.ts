@@ -63,7 +63,6 @@ export function createBaseHost(syncFs: FileSystemReadSync, systemPath: typeof pa
         return {files, directories};
     }
 
-
     function fileExists(fullPath: string) {
         try {
             syncFs.loadTextFileSync(fullPath);

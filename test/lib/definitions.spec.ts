@@ -71,6 +71,24 @@ describe("Definitions", function () {
                     expect(def.range).to.eql(createRange(4, 1, 4, 5))
                 });
             });
+
+            // it.only("should return definition of class imported through node modules", function () {
+            //     return asserters.getDefinition('definitions/package-import-inner-part.st.css').then((defs) => {
+            //         expect(defs.length).to.equal(1);
+            //         let def = defs[0];
+            //         expect(def.uri).to.equal(path.join(CASES_PATH, '../../node_modules/fake-stylable-package/stylesheet.st.css'));
+            //         expect(def.range).to.eql(createRange(9, 0, 11, 1))
+            //     });
+            // });
+
+            // it.only("should return definition of var imported through node modules", function () {
+            //     return asserters.getDefinition('definitions/package-import-inner-part.st.css').then((defs) => {
+            //         expect(defs.length).to.equal(1);
+            //         let def = defs[0];
+            //         expect(def.uri).to.equal(path.join(CASES_PATH, '../../node_modules/fake-stylable-package/stylesheet.st.css'));
+            //         expect(def.range).to.eql(createRange(1, 4, 1, 21))
+            //     });
+            // });
         });
 
         describe("Vars", function () {

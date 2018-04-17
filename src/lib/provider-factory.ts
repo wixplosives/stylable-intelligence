@@ -23,11 +23,12 @@ export function createFs(fileSystem: ExtendedFSReadSync, withFilePrefix: boolean
             return fileSystem.loadTextFileSync(path).toString();
         },
         statSync(path: string) {
-            let isDir = checkExistsSync('dir', fileSystem, path);
-            let isFile = checkExistsSync('file', fileSystem, path);
+            const stats = fileSystem.statSync(path);
+            // let isDir = checkExistsSync('dir', fileSystem, path);
+            // let isFile = checkExistsSync('file', fileSystem, path);
             return {
-                isDirectory(){return isDir},
-                isFile(){return isFile},
+                isDirectory(){return stats.type === 'dir'},
+                isFile(){return stats.type === 'file'},
                 mtime: new Date(Date.now())
             }
         }

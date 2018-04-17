@@ -57,7 +57,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
         provider = createProvider(services.styl, services.tsLanguageService);
         processor = services.styl.fileProcessor;
 
-        return initializeResult
+        return initializeResult;
     });
 
     connection.onCompletion((params: CompletionParams): CompletionItem[] => {

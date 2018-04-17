@@ -52,6 +52,10 @@ describe('Variables', function () {
     })
 
     describe('Inside value()', function () {
+
+        // beforeEach(() => {
+        //     asserters.            cacheFs
+        // });
         const str1 = 'color1';
         const str2 = 'color2';
 

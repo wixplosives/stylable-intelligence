@@ -1,0 +1,8 @@
+:import {
+    -st-from: "fake-stylable-package/stylesheet.st.css";
+    -st-named: color1;
+}
+
+.part1 {
+    color: value(col|or1);
+}
