@@ -1,5 +1,11 @@
 # Change log
 
+## v0.2.6
+
+### Diagnostics
+
+* Turned off diagnostics messages for server language traces
+
 ## v0.2.5
 
 ### Bug fix
