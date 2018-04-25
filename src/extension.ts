@@ -36,7 +36,8 @@ namespace OpenDocNotification {
  */
 export async function activate(context: ExtensionContext) {
     let serverModule = require.resolve('./lib/server.js'); //context.asAbsolutePath(path.join('dist', 'src', 'server', 'server.js'));
-    let debugOptions = {execArgv: ['--inspect']};
+    let debugOptions = {execArgv: ['']};
+    // let debugOptions = {execArgv: ['--inspect']}; // Turn on debugging messages in output
 
     let serverOptions: ServerOptions = {
         run: {module: serverModule, transport: TransportKind.ipc},
@@ -49,7 +50,7 @@ export async function activate(context: ExtensionContext) {
     };
 
     const client = new LanguageClient('stylable', serverOptions, clientOptions);
-    client.trace = Trace.Verbose;
+    // client.trace = Trace.Verbose; // Elevate debugging message info in output
 
     context.subscriptions.push(client.start());
     await client.onReady();
