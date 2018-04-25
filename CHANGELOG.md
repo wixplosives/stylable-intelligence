@@ -1,10 +1,16 @@
 # Change log
 
+## v0.2.7
+
+### Diagnostics
+
+* Add safety check for document color requests to prevent errors
+
 ## v0.2.6
 
 ### Diagnostics
 
-* Turned off diagnostics messages for server language traces
+* Turn off diagnostics messages for server language traces
 
 ## v0.2.5
 
