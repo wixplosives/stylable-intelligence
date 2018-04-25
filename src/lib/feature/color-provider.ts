@@ -34,8 +34,11 @@ export function resolveDocumentColors(
                     color = cssService.findColor(doc);
                 } else if (sym && sym._kind === 'import' && sym.type === 'named') {
                     const impMeta = processor.process(sym.import.from);
-                    const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(stylable.resolver, 'value(' + sym.name + ')', impMeta, impMeta.vars.find(v => v.name === sym.name)!.node) + '}');
-                    color = cssService.findColor(doc);
+                    const relevantVar = impMeta.vars.find(v => v.name === sym.name);
+                    if (relevantVar) {
+                        const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(stylable.resolver, 'value(' + sym.name + ')', impMeta, relevantVar.node) + '}');
+                        color = cssService.findColor(doc);
+                    }
                 }
                 if (color) {
                     const range = new ProviderRange(
@@ -104,7 +107,8 @@ export function getColorPresentation(
     const wordStart = new ProviderPosition(params.range.start.line + 1, params.range.start.character + 1);
     let noPicker = false;
     meta.rawAst.walkDecls(valueMapping.named, (node) => {
-        if (
+        if ( node &&
+        // if (
             ((wordStart.line === node.source.start!.line && wordStart.character >= node.source.start!.column) || wordStart.line > node.source.start!.line)
             &&
             ((wordStart.line === node.source.end!.line && wordStart.character <= node.source.end!.column) || wordStart.line < node.source.end!.line)
