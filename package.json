@@ -71,7 +71,7 @@
     "publisher": "wix",
     "repository": {
         "type": "git",
-        "url": "git@github.com:wix/stylable-intelligence.git"
+        "url": "https://github.com/wix/stylable-intelligence.git"
     },
     "bugs": {
         "url": "https://github.com/wix/stylable-intelligence/issues"
