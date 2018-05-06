@@ -5,6 +5,7 @@ import {
     ReferenceParams,
     SignatureHelp,
     TextDocument,
+    TextDocumentChangeEvent,
     TextDocumentPositionParams,
     WorkspaceEdit,
     DocumentColorParams,
@@ -80,21 +81,20 @@ export function initStylableLanguageService(connection: IConnection, services: {
         }).concat(newCssService.getCompletions(document, position));
     });
 
-    function diagnose(document: TextDocument) {
-        let diagnostics = createDiagnosis(document, fs, processor, services.requireModule).map(diag => {
-            diag.source = 'stylable';
-            return diag;
-        }).concat(newCssService.getDiagnostics(document));
-        connection.sendDiagnostics({uri: document.uri, diagnostics: diagnostics});
+    function diagnose(params: TextDocumentChangeEvent) {
+        const { document } = params;
+
+        if (document.languageId === 'stylable') {
+            let diagnostics = createDiagnosis(document, fs, processor, services.requireModule).map(diag => {
+                diag.source = 'stylable';
+                return diag;
+            }).concat(newCssService.getDiagnostics(document));
+            connection.sendDiagnostics({uri: document.uri, diagnostics: diagnostics});
+        }
     }
 
-    // docsDispatcher.onDidOpen(function (params) {
-    //     diagnose(params.document);
-    // });
-
-    docsDispatcher.onDidChangeContent(function (params) {
-        diagnose(params.document);
-    });
+    // docsDispatcher.onDidOpen(diagnose);
+    docsDispatcher.onDidChangeContent(diagnose);
 
     connection.onDefinition((params): Thenable<Definition> => {
         const doc = fs.loadTextFileSync(params.textDocument.uri);

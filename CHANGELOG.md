@@ -1,5 +1,33 @@
 # Change log
 
+## v0.2.7
+
+### Diagnostics
+
+* Add safety check for document color requests to prevent errors
+
+## v0.2.6
+
+### Diagnostics
+
+* Turn off diagnostics messages for server language traces
+
+## v0.2.5
+
+### Bug fix
+
+* Fix bug causing Stylable diagnosis to run on other file types
+
+## v0.2.4
+
+### Bug fix
+
+* Color providers (color picker icons) no longer appear twice
+
+### Infrastructure
+
+* Further restructuring of the project for better maintainability
+
 ## v0.2.3
 
 ### Documentation
