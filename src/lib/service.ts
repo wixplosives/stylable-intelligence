@@ -26,7 +26,7 @@ import {IConnection} from "vscode-languageserver";
 import {initializeResult} from "../view";
 import {CompletionParams} from 'vscode-languageclient/lib/main';
 import {CssService} from "../model/css-service";
-import { resolveDocumentColors, getColorPresentation } from './feature/color-provider';
+import {resolveDocumentColors, getColorPresentation} from './feature/color-provider';
 
 export {MinimalDocs} from './provider-factory';
 
@@ -57,7 +57,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
 
         const document = fs.get(documentUri);
 
-        const res = provider.provideCompletionItemsFromSrc( document.getText(), {
+        const res = provider.provideCompletionItemsFromSrc(document.getText(), {
             line: position.line,
             character: position.character
         }, documentUri, fs);
@@ -81,9 +81,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
         }).concat(newCssService.getCompletions(document, position));
     });
 
-    function diagnose(params: TextDocumentChangeEvent) {
-        const { document } = params;
-
+    function diagnose({document}: TextDocumentChangeEvent) {
         if (document.languageId === 'stylable') {
             let diagnostics = createDiagnosis(document, fs, processor, services.requireModule).map(diag => {
                 diag.source = 'stylable';

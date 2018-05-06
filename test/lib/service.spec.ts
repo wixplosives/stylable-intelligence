@@ -31,7 +31,7 @@ describe("Service component test", function () {
         });
 
         init(fileSystem, testCon.server);
-        const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), '', 0, fileSystem.loadTextFileSync(fileName));
+        const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
         testCon.client.didOpenTextDocument({textDocument});
     }));
 });
