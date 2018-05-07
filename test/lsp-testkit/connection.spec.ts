@@ -60,7 +60,7 @@ import {
     SignatureHelp,
     SignatureHelpRequest,
     TelemetryEventNotification,
-    TextDocumentPositionParams, WorkspaceEdit, RenameRequest, RenameParams
+    TextDocumentPositionParams, WorkspaceEdit, RenameRequest, RenameParams, ColorInformation, ColorPresentation, DocumentColorRequest, ColorPresentationRequest, ColorPresentationParams, DocumentColorParams
 } from 'vscode-languageserver-protocol';
 
 class TestDuplex extends Duplex {
@@ -183,12 +183,12 @@ export class StreamConnectionClient {
         return await this.connection.sendRequest(RenameRequest.type, params);
     }
 
-    // async documentColor(params: TextDocumentPositionParams): Promise< ColorInformation[]> {
-    //     return await this.connection.sendRequest(DocumentColorRequest.type, params);
-    // }
-    // async colorPresentation(params: TextDocumentPositionParams): Promise<ColorPresentation[]> {
-    //     return await this.connection.sendRequest(ColorPresentationRequest.type, params);
-    // }
+    async documentColor(params: DocumentColorParams): Promise< ColorInformation[]> {
+        return await this.connection.sendRequest(DocumentColorRequest.type, params);
+    }
+    async colorPresentation(params: ColorPresentationParams): Promise<ColorPresentation[]> {
+        return await this.connection.sendRequest(ColorPresentationRequest.type, params);
+    }
 }
 
 export class TestConnection {
@@ -310,6 +310,8 @@ describe("LSP connection test driver", function () {
             testRequestFromClient('references', 'onReferences');
             testRequestFromClient('rename', 'onRenameRequest');
             testRequestFromClient('signatureHelp', 'onSignatureHelp');
+            testRequestFromClient('documentColor', 'onDocumentColor');
+            testRequestFromClient('colorPresentation', 'onColorPresentation');
             testNotificationToClient('onDiagnostics', 'sendDiagnostics');
         });
     });
