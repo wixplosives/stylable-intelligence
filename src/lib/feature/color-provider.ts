@@ -108,7 +108,6 @@ export function getColorPresentation(
     let noPicker = false;
     meta.rawAst.walkDecls(valueMapping.named, (node) => {
         if ( node &&
-        // if (
             ((wordStart.line === node.source.start!.line && wordStart.character >= node.source.start!.column) || wordStart.line > node.source.start!.line)
             &&
             ((wordStart.line === node.source.end!.line && wordStart.character <= node.source.end!.column) || wordStart.line < node.source.end!.line)

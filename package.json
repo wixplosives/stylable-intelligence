@@ -12,7 +12,7 @@
         "prepublish": "node ./node_modules/vscode/bin/install",
         "test": "yarn test:server && yarn build && yarn test:e2e && yarn test:browser-compatible",
         "test:e2e": "node ./run-test",
-        "test:server": "mocha --require ts-node/register test/lib/**/*.spec.ts",
+        "test:server": "mocha --require ts-node/register test/lib/**/*.spec.ts test/lib/*.spec.ts",
         "test:browser-compatible": "mocha --require ts-node/register test/browser-compatible.spec.ts"
     },
     "dependencies": {

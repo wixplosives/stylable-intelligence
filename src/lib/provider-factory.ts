@@ -1,5 +1,5 @@
 'use strict';
-import {TextDocument, TextDocumentChangeEvent, TextDocuments, Event} from 'vscode-languageserver';
+import {Event, TextDocument, TextDocumentChangeEvent, TextDocuments} from 'vscode-languageserver';
 import {
     cachedProcessFile,
     FileProcessor,
@@ -9,11 +9,10 @@ import {
     StylableMeta
 } from 'stylable';
 import Provider from './provider';
-import {FileSystemReadSync} from 'kissfs';
+import {checkExistsSync, FileSystemReadSync} from 'kissfs';
 import {ExtendedTsLanguageService} from './types';
 
 export function createProvider(stylable: Stylable, tsLangService: ExtendedTsLanguageService, withFilePrefix: boolean = true): Provider {
-    // const styl = new Stylable('/', createFs(docs, fileSystem, withFilePrefix), () => ({ default: {} }))
     return new Provider(stylable, tsLangService)
 }
 
@@ -23,9 +22,19 @@ export function createFs(fileSystem: FileSystemReadSync, withFilePrefix: boolean
             return fileSystem.loadTextFileSync(path).toString();
         },
         statSync(path: string) {
+            let isFile = checkExistsSync('file', fileSystem, path);
             return {
+                isDirectory() {
+                    return !isFile
+                },
+                isFile() {
+                    return isFile
+                },
                 mtime: new Date(Date.now())
             }
+        },
+        readlinkSync(_path: string) {
+            return null;
         }
     }
 }

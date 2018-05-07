@@ -11,17 +11,16 @@ export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileP
     if (!doc.uri.endsWith('.st.css')) {
         return []
     }
-    ;
     const file = fromVscodePath(doc.uri);
 
     const transformer = new StylableTransformer({
         diagnostics: new Diagnostics(),
         fileProcessor: fileProcessor,
         requireModule
-    })
+    });
 
-    let docPostCSSRoot = safeParse(doc.getText(), {from: path.resolve(file)})
-    let meta = stylableProcess(docPostCSSRoot)
+    let docPostCSSRoot = safeParse(doc.getText(), {from: path.resolve(file)});
+    let meta = stylableProcess(docPostCSSRoot);
 
     fileProcessor.add(file, meta);
 
