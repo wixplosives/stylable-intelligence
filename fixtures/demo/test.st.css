@@ -1,19 +1,7 @@
-:import {
-    -st-from: "./import.st.css";
-    -st-named: shlomo, momo, color1;
-    -st-default: Comp;
-}
-
 .gaga {
-    -st-extends: Comp;
-    -st-states: blah(enum(blah, bleh, blih));
-    /* color: rgb(var(b)); */
+    -st-states: mystate;
 }
 
-:vars {
-    color2: rgb(0, 255, 136);
-}
-
-.gaga:blah(blah) {
-    color: value(color1);
+.gaga:not(:mystate) {
+    color: red;
 }

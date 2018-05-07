@@ -5,7 +5,7 @@ import { MemoryFileSystem } from "kissfs";
 import { toVscodePath } from "../../src/lib/utils/uri-utils";
 import { TextDocumentItem } from "vscode-languageserver-protocol"
 import { getRangeAndText } from "../testkit/text.spec";
-import { Diagnostic, Range } from 'vscode-languageserver-types';
+import { Diagnostic, Range, Position, Location } from 'vscode-languageserver-types';
 import { createRange } from '../../src/lib/completion-providers';
 import { createColor } from './colors.spec';
 
@@ -24,7 +24,7 @@ describe("Service component test", function () {
         testCon.listen();
     });
 
-    it("should support single file error", plan(1, () => {
+    it("Diagnostics - single file error", plan(1, () => {
         const rangeAndText = getRangeAndText('|.gaga .root{}|');
         const fileName = 'single-file-diag.st.css';
         const fileSystem = new MemoryFileSystem('', { content: { [fileName]: rangeAndText.text } });
@@ -38,7 +38,7 @@ describe("Service component test", function () {
         testCon.client.didOpenTextDocument({ textDocument });
     }));
 
-    it.only("should support document colors", plan(2, async () => {
+    it("Document Colors - local, vars, imported", plan(2, async () => {
         const baseFilecContent = `
         :vars {
             myColor: rgba(0, 255, 0, 0.8);
@@ -58,8 +58,8 @@ describe("Service component test", function () {
         const baseFileName = 'single-file-color.st.css';
         const importFileName = 'import-color.st.css';
         const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent, [importFileName]: importFileContent } });
-        const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, fileSystem.loadTextFileSync(baseFileName));
-        const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, fileSystem.loadTextFileSync(importFileName));
+        const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
+        const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileContent);
 
         const range1 = createRange(6, 19, 6, 32);
         const range2 = createRange(2, 21, 2, 41);
@@ -85,4 +85,41 @@ describe("Service component test", function () {
             color: color
         }]);
     }));
+
+    it.only("References - local file", plan(2, async () => {
+        const fileText = `  .gaga {
+-st-states: active;
+    color: red;
+}
+
+.gaga:active .gaga {
+    background-color: fuchsia;
+}
+
+.lokal {
+    -st-extends:      gaga;
+}
+
+.mixed {
+    -st-mixin: lokal,
+    gaga, lokal,
+    gaga;
+}`
+        const fileName = 'references.st.css';
+        const fileSystem = new MemoryFileSystem('', { content: { [fileName]: fileText } });
+
+        init(fileSystem, testCon.server);
+        const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
+        const refs = await testCon.client.references({ context: { includeDeclaration: true }, textDocument, position: { line: 5, character: 16 } })
+        expect(refs!.length).to.equal(6);
+        expect(refs).to.eql([
+            Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
+            Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
+            Location.create(textDocument.uri, createRange(5, 14, 5, 18)),
+            Location.create(textDocument.uri, createRange(10, 22, 10, 26)),
+            Location.create(textDocument.uri, createRange(15, 4, 15, 8)),
+            Location.create(textDocument.uri, createRange(16, 4, 16, 8))
+        ]);
+    }));
+
 });
