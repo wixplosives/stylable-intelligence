@@ -137,7 +137,7 @@ describe("Service component test", function () {
         expect(refsInExtends).to.eql(expectedRefs);
     }));
 
-    it("Definitions - element", plan(4, async () => {
+    it("Definitions - element", plan(5, async () => {
         const topFileText = trimLiteral`
         |:import {
         |    -st-from: "./import.st.css";
@@ -172,12 +172,12 @@ describe("Service component test", function () {
         const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileText);
         const topFilelocations = [
             { line: 2, character: 17 },
-            new ProviderPosition(6, 18),
-            new ProviderPosition(9, 7),
+            { line: 6, character: 18 },
+            { line: 9, character: 7 },
         ]
         const importFilelocations = [
-            // new ProviderPosition(4,3),
-            new ProviderPosition(8, 10),
+            { line: 4, character: 3 },
+            { line: 8, character: 10 },
         ]
 
         init(fileSystem, testCon.server);

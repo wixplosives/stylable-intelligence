@@ -200,7 +200,7 @@ export default class Provider {
             );
         }
 
-        return Promise.resolve(defs.filter(def => !this.inDef(position, def)));
+        return Promise.resolve(defs)
     }
 
     public getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
@@ -279,7 +279,7 @@ export default class Provider {
         if (lineIndex === -1 || lineIndex === position.line) {
             lineIndex = split.findIndex(l => l.trim().indexOf(word) !== -1)
         }
-        if (lineIndex === -1 || lineIndex === position.line) {
+        if (lineIndex === -1) {
             return createRange(0, 0, 0, 0)
         }
         ;
