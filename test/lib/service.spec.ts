@@ -6,8 +6,9 @@ import { toVscodePath } from "../../src/lib/utils/uri-utils";
 import { TextDocumentItem } from "vscode-languageserver-protocol"
 import { getRangeAndText } from "../testkit/text.spec";
 import { Diagnostic, Range, Position, Location } from 'vscode-languageserver-types';
-import { createRange } from '../../src/lib/completion-providers';
+import { createRange, ProviderPosition } from '../../src/lib/completion-providers';
 import { createColor } from './colors.spec';
+import { timingFunctions } from 'polished';
 
 
 function createDiagnosisNotification(range: Range, message: string, fileName: string) {
@@ -18,8 +19,8 @@ function createDiagnosisNotification(range: Range, message: string, fileName: st
 }
 
 function trimLiteral(content: TemplateStringsArray, ...keys: string[]) {
-    if (keys.length) {throw new Error('No support for expressions in pipe-delimited test files yet')}
-    return content.join('\n').replace(/^\s*\|/gm, '')
+    if (keys.length) { throw new Error('No support for expressions in pipe-delimited test files yet') };
+    return content.join('\n').replace(/^\s*\|/gm, '').replace(/^\n/, '');
 }
 
 
@@ -92,9 +93,10 @@ describe("Service component test", function () {
         }]);
     }));
 
-    it.only("References - local file", plan(3, async () => {
-        const fileText = trimLiteral`  .gaga {
-            |-st-states: active;
+    it("References - local file", plan(3, async () => {
+        const fileText = trimLiteral`
+            |  .gaga {
+            |   -st-states: active;
             |    color: red;
             |}
             |
@@ -116,11 +118,12 @@ describe("Service component test", function () {
         const fileSystem = new MemoryFileSystem('', { content: { [fileName]: fileText } });
 
         init(fileSystem, testCon.server);
+        const context = { includeDeclaration: true }
         const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
-        const refsInSelector = await testCon.client.references({ context: { includeDeclaration: true }, textDocument, position: { line: 5, character: 16 } })
-        const refsInMixin = await testCon.client.references({ context: { includeDeclaration: true }, textDocument, position: { line: 10, character: 25 } })
-        const refsInExtends = await testCon.client.references({ context: { includeDeclaration: true }, textDocument, position: { line: 15, character: 6 } })
-        const expectedRefs = [
+        const refsInSelector = await testCon.client.references({ context, textDocument, position: { line: 5, character: 16 } })
+        const refsInMixin = await testCon.client.references({ context, textDocument, position: { line: 10, character: 25 } })
+        const refsInExtends = await testCon.client.references({ context, textDocument, position: { line: 15, character: 6 } })
+        const expectedRefs = [ //Refs should be listed in the order they appear in the file
             Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
             Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
             Location.create(textDocument.uri, createRange(5, 14, 5, 18)),
@@ -134,5 +137,64 @@ describe("Service component test", function () {
         expect(refsInExtends).to.eql(expectedRefs);
     }));
 
+    it("Definitions - element", plan(4, async () => {
+        const topFileText = trimLiteral`
+        |:import {
+        |    -st-from: "./import.st.css";
+        |    -st-named: momo;
+        |}
+        |
+        |.local {
+        |    -st-extends: momo;
+        |}
+        |
+        |.local:momo {
+        |    color: blue;
+        |}`
 
+        const importFileText = trimLiteral`
+        |.shlomo {
+        |    color: black;
+        |}
+        |
+        |.momo {
+        |    -st-states: anotherState,oneMoreState;
+        |}
+        |
+        |.root .momo {
+        |    color: goldenrod;
+        |}
+        `
+        const topFileName = 'top.st.css';
+        const importFileName = 'import.st.css';
+        const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [importFileName]: importFileText } });
+        const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
+        const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileText);
+        const topFilelocations = [
+            { line: 2, character: 17 },
+            new ProviderPosition(6, 18),
+            new ProviderPosition(9, 7),
+        ]
+        const importFilelocations = [
+            // new ProviderPosition(4,3),
+            new ProviderPosition(8, 10),
+        ]
+
+        init(fileSystem, testCon.server);
+        topFilelocations.forEach(async loc => {
+            const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
+            expect(def).to.eql([{
+                uri: importTextDocument.uri,
+                range: createRange(4, 1, 4, 5)
+            }]);
+        });
+        importFilelocations.forEach(async loc => {
+            const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
+            expect(def).to.eql([{
+                uri: importTextDocument.uri,
+                range: createRange(4, 1, 4, 5)
+            }]);
+        })
+
+    }));
 });

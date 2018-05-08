@@ -1,7 +1,12 @@
-.gaga {
-    -st-states: mystate;
+:import {
+    -st-from: "./import.st.css";
+    -st-named: momo;
 }
 
-.gaga:not(:mystate) {
-    color: red;
+.local {
+    -st-extends: momo;
+}
+
+.local:anotherState {
+    color: blue;
 }
