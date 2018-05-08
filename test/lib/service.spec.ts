@@ -17,6 +17,12 @@ function createDiagnosisNotification(range: Range, message: string, fileName: st
     };
 }
 
+function trimLiteral(content: TemplateStringsArray, ...keys: string[]) {
+    if (keys.length) {throw new Error('No support for expressions in pipe-delimited test files yet')}
+    return content.join('\n').replace(/^\s*\|/gm, '')
+}
+
+
 describe("Service component test", function () {
     let testCon: TestConnection;
     beforeEach(() => {
@@ -86,40 +92,47 @@ describe("Service component test", function () {
         }]);
     }));
 
-    it.only("References - local file", plan(2, async () => {
-        const fileText = `  .gaga {
--st-states: active;
-    color: red;
-}
+    it.only("References - local file", plan(3, async () => {
+        const fileText = trimLiteral`  .gaga {
+            |-st-states: active;
+            |    color: red;
+            |}
+            |
+            |.gaga:active .gaga {
+            |    background-color: fuchsia;
+            |}
+            |
+            |.lokal {
+            |    -st-extends:      gaga;
+            |}
+            |
+            |.mixed {
+            |    -st-mixin: lokal,
+            |    gaga, lokal,
+            |    gaga;
+            |}`
 
-.gaga:active .gaga {
-    background-color: fuchsia;
-}
-
-.lokal {
-    -st-extends:      gaga;
-}
-
-.mixed {
-    -st-mixin: lokal,
-    gaga, lokal,
-    gaga;
-}`
         const fileName = 'references.st.css';
         const fileSystem = new MemoryFileSystem('', { content: { [fileName]: fileText } });
 
         init(fileSystem, testCon.server);
         const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
-        const refs = await testCon.client.references({ context: { includeDeclaration: true }, textDocument, position: { line: 5, character: 16 } })
-        expect(refs!.length).to.equal(6);
-        expect(refs).to.eql([
+        const refsInSelector = await testCon.client.references({ context: { includeDeclaration: true }, textDocument, position: { line: 5, character: 16 } })
+        const refsInMixin = await testCon.client.references({ context: { includeDeclaration: true }, textDocument, position: { line: 10, character: 25 } })
+        const refsInExtends = await testCon.client.references({ context: { includeDeclaration: true }, textDocument, position: { line: 15, character: 6 } })
+        const expectedRefs = [
             Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
             Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
             Location.create(textDocument.uri, createRange(5, 14, 5, 18)),
             Location.create(textDocument.uri, createRange(10, 22, 10, 26)),
             Location.create(textDocument.uri, createRange(15, 4, 15, 8)),
             Location.create(textDocument.uri, createRange(16, 4, 16, 8))
-        ]);
+        ]
+
+        expect(refsInSelector).to.eql(expectedRefs);
+        expect(refsInMixin).to.eql(expectedRefs);
+        expect(refsInExtends).to.eql(expectedRefs);
     }));
+
 
 });
