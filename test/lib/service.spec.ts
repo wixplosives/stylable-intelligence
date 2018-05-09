@@ -11,11 +11,15 @@ import { createColor } from './colors.spec';
 import { timingFunctions } from 'polished';
 
 
-function createDiagnosisNotification(range: Range, message: string, fileName: string) {
+function createDiagnosisNotification(diagnostics: Diagnostic[], fileName: string) {
     return {
-        diagnostics: [Diagnostic.create(range, message, 2, undefined, 'stylable')],
+        diagnostics,
         uri: toVscodePath('/' + fileName)
     };
+}
+
+function createDiagnosis(range: Range, message: string, source: string = 'stylable', code?: string) : Diagnostic {
+    return Diagnostic.create(range, message, 2, code, source);
 }
 
 function trimLiteral(content: TemplateStringsArray, ...keys: string[]) {
@@ -31,76 +35,85 @@ describe("Service component test", function () {
         testCon.listen();
     });
 
-    it("Diagnostics - single file error", plan(1, () => {
-        const rangeAndText = getRangeAndText('|.gaga .root{}|');
-        const fileName = 'single-file-diag.st.css';
-        const fileSystem = new MemoryFileSystem('', { content: { [fileName]: rangeAndText.text } });
+    describe("Diagnostics", function () {
+        it("Diagnostics - single file error", plan(1, () => {
+            const rangeAndText = getRangeAndText('|.gaga .root{}|');
+            const fileName = 'single-file-diag.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [fileName]: rangeAndText.text } });
 
 
-        init(fileSystem, testCon.server);
-        const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
-        testCon.client.didOpenTextDocument({ textDocument });
+            init(fileSystem, testCon.server);
+            const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
+            testCon.client.didOpenTextDocument({ textDocument });
 
 
-        testCon.client.onDiagnostics(d => {
-            expect(d).to.eql(createDiagnosisNotification(rangeAndText.range, ".root class cannot be used after spacing", fileName));
-        });
-    }));
+            testCon.client.onDiagnostics(d => {
+                expect(d).to.eql(createDiagnosisNotification([createDiagnosis(rangeAndText.range, ".root class cannot be used after spacing")], fileName));
+            });
+        }));
 
-    it("Diagnostics - cross-file errors", plan(1, () => {
-        const baseFilecContent = trimLiteral`
-        |.gaga {
-        |    -st-states: aState
-        |}
-        `
-        const topFileContent = trimLiteral`
-        |:import {
-        |    -st-from: "./base-file.st.css";
-        |    -st-named: gaga;
-        |}
-        |
-        |.gaga:aState:bState {
-        |    color: red;
-        |}
-        `
+        it("Diagnostics - cross-file errors", plan(1, () => {
+            const baseFilecContent = trimLiteral`
+            |.gaga {
+            |    -st-states: aState
+            |}
+            `
+            const topFileContent = trimLiteral`
+            |:import {
+            |    -st-from: "./base-file.st.css";
+            |    -st-named: gaga;
+            |}
+            |
+            |.gaga:aState:bState {
+            |    color: red;
+            |}
+            `
 
-        const baseFileName = 'base-file.st.css';
-        const topFileName = 'top-file.st.css';
-        const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent, [topFileName]: topFileContent } });
-        const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
-        const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileContent);
+            const baseFileName = 'base-file.st.css';
+            const topFileName = 'top-file.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent, [topFileName]: topFileContent } });
+            const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
+            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileContent);
 
-        init(fileSystem, testCon.server);
-        testCon.client.didOpenTextDocument({ textDocument: topTextDocument });
+            init(fileSystem, testCon.server);
+            testCon.client.didOpenTextDocument({ textDocument: topTextDocument });
 
-        testCon.client.onDiagnostics(d => {
-            expect(d).to.eql(createDiagnosisNotification(createRange(5,13,5,19), "unknown pseudo-state \"bState\"", topFileName));
-        });
+            testCon.client.onDiagnostics(d => {
+                expect(d).to.eql(createDiagnosisNotification([createDiagnosis(createRange(5,13,5,19), "unknown pseudo-state \"bState\"")], topFileName));
+            });
 
-    }));
+        }));
 
-    // it("Diagnostics - CSS errors", plan(1, () => {
-    //     const baseFilecContent = trimLiteral`
-    //     .gaga {
-    //         -st-states: aState;
-    //     }
+        it("Diagnostics - CSS errors", plan(1, () => {
+            const baseFilecContent = trimLiteral`
+            |.root {}
+            |
+            |:vars {
+            |  varvar: binks;
+            |}
+            |
+            |.gaga:aState {
+            |  color: red;
+            |  colorr: reddish;
+            |}
+            `
 
-    //     .gaga:aState {
-    //         color: noSuchColor;
-    //     }
-    //     `
+            const baseFileName = 'base-file.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent } });
+            const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
+            const diags = [
+                 createDiagnosis(createRange(6,6,6,12), "unknown pseudo-state \"aState\""),
+                 createDiagnosis(createRange(8,2,8,8), "Unknown property: 'colorr'", "css", "unknownProperties"),
+            ]
 
-    //     const baseFileName = 'base-file.st.css';
-    //     const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent } });
-    //     const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
+            init(fileSystem, testCon.server);
+            testCon.client.didOpenTextDocument({ textDocument: baseTextDocument });
 
-    //     init(fileSystem, testCon.server);
-    //     testCon.client.didOpenTextDocument({ textDocument: topTextDocument });
-
-    //     testCon.client.onDiagnostics(d => {
-    //         expect(d).to.eql(createDiagnosisNotification(createRange(5,13,5,19), "unknown pseudo-state \"bState\"", topFileName));
-    //     });
-    // }));
+            testCon.client.onDiagnostics(d => {
+                expect(d).to.eql(createDiagnosisNotification(diags, baseFileName));
+            });
+        }));
+    })
 
     it("Document Colors - local, vars, imported", plan(2, async () => {
         const baseFilecContent = `

@@ -1,9 +1,11 @@
-.gaga {
-  -st-states: aState;
+.root {}
+
+:vars {
+  varvar: binks;
 }
 
 .gaga:aState {
-  colorr: crimson;
+  color: red;
+  colorr: reddish;
 }
-
 
