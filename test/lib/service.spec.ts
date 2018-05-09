@@ -36,14 +36,71 @@ describe("Service component test", function () {
         const fileName = 'single-file-diag.st.css';
         const fileSystem = new MemoryFileSystem('', { content: { [fileName]: rangeAndText.text } });
 
-        testCon.client.onDiagnostics(d => {
-            expect(d).to.eql(createDiagnosisNotification(rangeAndText.range, ".root class cannot be used after spacing", fileName));
-        });
 
         init(fileSystem, testCon.server);
         const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
         testCon.client.didOpenTextDocument({ textDocument });
+
+
+        testCon.client.onDiagnostics(d => {
+            expect(d).to.eql(createDiagnosisNotification(rangeAndText.range, ".root class cannot be used after spacing", fileName));
+        });
     }));
+
+    it("Diagnostics - cross-file errors", plan(1, () => {
+        const baseFilecContent = trimLiteral`
+        |.gaga {
+        |    -st-states: aState
+        |}
+        `
+        const topFileContent = trimLiteral`
+        |:import {
+        |    -st-from: "./base-file.st.css";
+        |    -st-named: gaga;
+        |}
+        |
+        |.gaga:aState:bState {
+        |    color: red;
+        |}
+        `
+
+        const baseFileName = 'base-file.st.css';
+        const topFileName = 'top-file.st.css';
+        const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent, [topFileName]: topFileContent } });
+        const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
+        const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileContent);
+
+        init(fileSystem, testCon.server);
+        testCon.client.didOpenTextDocument({ textDocument: topTextDocument });
+
+        testCon.client.onDiagnostics(d => {
+            expect(d).to.eql(createDiagnosisNotification(createRange(5,13,5,19), "unknown pseudo-state \"bState\"", topFileName));
+        });
+
+    }));
+
+    // it("Diagnostics - CSS errors", plan(1, () => {
+    //     const baseFilecContent = trimLiteral`
+    //     .gaga {
+    //         -st-states: aState;
+    //     }
+
+    //     .gaga:aState {
+    //         color: noSuchColor;
+    //     }
+    //     `
+
+    //     const baseFileName = 'base-file.st.css';
+    //     const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent } });
+    //     const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
+
+    //     init(fileSystem, testCon.server);
+    //     testCon.client.didOpenTextDocument({ textDocument: topTextDocument });
+
+    //     testCon.client.onDiagnostics(d => {
+    //         expect(d).to.eql(createDiagnosisNotification(createRange(5,13,5,19), "unknown pseudo-state \"bState\"", topFileName));
+    //     });
+    // }));
 
     it("Document Colors - local, vars, imported", plan(2, async () => {
         const baseFilecContent = `
@@ -97,6 +154,50 @@ describe("Service component test", function () {
         const fileText = trimLiteral`
             |  .gaga {
             |   -st-states: active;
+            |    color: red;
+            |}
+            |
+            |.gaga:active .gaga {
+            |    background-color: fuchsia;
+            |}
+            |
+            |.lokal {
+            |    -st-extends:      gaga;
+            |}
+            |
+            |.mixed {
+            |    -st-mixin: lokal,
+            |    gaga, lokal,
+            |    gaga;
+            |}`
+
+        const fileName = 'references.st.css';
+        const fileSystem = new MemoryFileSystem('', { content: { [fileName]: fileText } });
+
+        init(fileSystem, testCon.server);
+        const context = { includeDeclaration: true }
+        const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
+        const refsInSelector = await testCon.client.references({ context, textDocument, position: { line: 5, character: 16 } })
+        const refsInMixin = await testCon.client.references({ context, textDocument, position: { line: 10, character: 25 } })
+        const refsInExtends = await testCon.client.references({ context, textDocument, position: { line: 15, character: 6 } })
+        const expectedRefs = [ //Refs should be listed in the order they appear in the file
+            Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
+            Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
+            Location.create(textDocument.uri, createRange(5, 14, 5, 18)),
+            Location.create(textDocument.uri, createRange(10, 22, 10, 26)),
+            Location.create(textDocument.uri, createRange(15, 4, 15, 8)),
+            Location.create(textDocument.uri, createRange(16, 4, 16, 8))
+        ]
+
+        expect(refsInSelector).to.eql(expectedRefs);
+        expect(refsInMixin).to.eql(expectedRefs);
+        expect(refsInExtends).to.eql(expectedRefs);
+    }));
+
+    it("Rename Symbol - local file", plan(3, async () => {
+        const fileText = trimLiteral`
+            |  .gaga {
+            |    -st-states: active;
             |    color: red;
             |}
             |

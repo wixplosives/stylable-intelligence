@@ -133,7 +133,6 @@ export function initStylableLanguageService(connection: IConnection, services: {
         return getColorPresentation(newCssService, document, params);
     });
 
-
     connection.onRenameRequest((params): WorkspaceEdit => {
         let edit: WorkspaceEdit = {changes: {}};
         getRefs({

@@ -1,12 +1,9 @@
-:import {
-    -st-from: "./import.st.css";
-    -st-named: momo;
+.gaga {
+  -st-states: aState;
 }
 
-.local {
-    -st-extends: momo;
+.gaga:aState {
+  colorr: crimson;
 }
 
-.local:anotherState {
-    color: blue;
-}
+
