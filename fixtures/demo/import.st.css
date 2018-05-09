@@ -1,3 +1,7 @@
 .gaga {
     -st-states: aState
 }
+
+.gaga:aState {
+    color:blue;
+}

@@ -597,7 +597,7 @@ function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Locat
             })
         }
     });
-    meta!.rawAst.walkDecls(valueMapping.extends, (decl) => {
+    meta!.rawAst.walkDecls(/-st-extends|-st-named/, (decl) => {
         if (decl.value === word) {
             refs.push({
                 uri,

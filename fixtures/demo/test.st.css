@@ -1,11 +1,13 @@
-.root {}
-
-:vars {
-  varvar: binks;
+:import {
+  -st-from: "./import.st.css";
+  -st-named: gaga;
 }
 
-.gaga:aState {
-  color: red;
-  colorr: reddish;
+.baga {
+  -st-extends: gaga;
+}
+
+.baga:aState {
+  background-color: antiquewhite;
 }
 

@@ -18,7 +18,7 @@ function createDiagnosisNotification(diagnostics: Diagnostic[], fileName: string
     };
 }
 
-function createDiagnosis(range: Range, message: string, source: string = 'stylable', code?: string) : Diagnostic {
+function createDiagnosis(range: Range, message: string, source: string = 'stylable', code?: string): Diagnostic {
     return Diagnostic.create(range, message, 2, code, source);
 }
 
@@ -79,7 +79,7 @@ describe("Service component test", function () {
             testCon.client.didOpenTextDocument({ textDocument: topTextDocument });
 
             testCon.client.onDiagnostics(d => {
-                expect(d).to.eql(createDiagnosisNotification([createDiagnosis(createRange(5,13,5,19), "unknown pseudo-state \"bState\"")], topFileName));
+                expect(d).to.eql(createDiagnosisNotification([createDiagnosis(createRange(5, 13, 5, 19), "unknown pseudo-state \"bState\"")], topFileName));
             });
 
         }));
@@ -101,9 +101,9 @@ describe("Service component test", function () {
             const baseFileName = 'base-file.st.css';
             const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent } });
             const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
-            const diags = [
-                 createDiagnosis(createRange(6,6,6,12), "unknown pseudo-state \"aState\""),
-                 createDiagnosis(createRange(8,2,8,8), "Unknown property: 'colorr'", "css", "unknownProperties"),
+            const diags = [ //CSS diagnostics that shouldn't appear: empty ruleset, unknown property 'varavar'
+                createDiagnosis(createRange(6, 6, 6, 12), "unknown pseudo-state \"aState\""),
+                createDiagnosis(createRange(8, 2, 8, 8), "Unknown property: 'colorr'", "css", "unknownProperties"),
             ]
 
             init(fileSystem, testCon.server);
@@ -163,49 +163,78 @@ describe("Service component test", function () {
         }]);
     }));
 
-    it("References - local file", plan(3, async () => {
-        const fileText = trimLiteral`
-            |  .gaga {
-            |   -st-states: active;
-            |    color: red;
-            |}
-            |
-            |.gaga:active .gaga {
-            |    background-color: fuchsia;
-            |}
-            |
-            |.lokal {
-            |    -st-extends:      gaga;
-            |}
-            |
-            |.mixed {
-            |    -st-mixin: lokal,
-            |    gaga, lokal,
-            |    gaga;
-            |}`
+    describe("References", function () {
+        it("References - local file", plan(3, async () => {
+            const fileText = trimLiteral`
+                |  .gaga {
+                |   -st-states: active;
+                |    color: red;
+                |}
+                |
+                |.gaga:active .gaga {
+                |    background-color: fuchsia;
+                |}
+                |
+                |.lokal {
+                |    -st-extends:      gaga;
+                |}
+                |
+                |.mixed {
+                |    -st-mixin: lokal,
+                |    gaga, lokal,
+                |    gaga;
+                |}`
 
-        const fileName = 'references.st.css';
-        const fileSystem = new MemoryFileSystem('', { content: { [fileName]: fileText } });
+            const fileName = 'references.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [fileName]: fileText } });
 
-        init(fileSystem, testCon.server);
-        const context = { includeDeclaration: true }
-        const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
-        const refsInSelector = await testCon.client.references({ context, textDocument, position: { line: 5, character: 16 } })
-        const refsInMixin = await testCon.client.references({ context, textDocument, position: { line: 10, character: 25 } })
-        const refsInExtends = await testCon.client.references({ context, textDocument, position: { line: 15, character: 6 } })
-        const expectedRefs = [ //Refs should be listed in the order they appear in the file
-            Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
-            Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
-            Location.create(textDocument.uri, createRange(5, 14, 5, 18)),
-            Location.create(textDocument.uri, createRange(10, 22, 10, 26)),
-            Location.create(textDocument.uri, createRange(15, 4, 15, 8)),
-            Location.create(textDocument.uri, createRange(16, 4, 16, 8))
-        ]
+            init(fileSystem, testCon.server);
+            const context = { includeDeclaration: true }
+            const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
+            const refsInSelector = await testCon.client.references({ context, textDocument, position: { line: 5, character: 16 } })
+            const refsInMixin = await testCon.client.references({ context, textDocument, position: { line: 10, character: 25 } })
+            const refsInExtends = await testCon.client.references({ context, textDocument, position: { line: 15, character: 6 } })
+            const expectedRefs = [ //Refs should be listed in the order they appear in the file
+                Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
+                Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
+                Location.create(textDocument.uri, createRange(5, 14, 5, 18)),
+                Location.create(textDocument.uri, createRange(10, 22, 10, 26)),
+                Location.create(textDocument.uri, createRange(15, 4, 15, 8)),
+                Location.create(textDocument.uri, createRange(16, 4, 16, 8))
+            ]
 
-        expect(refsInSelector).to.eql(expectedRefs);
-        expect(refsInMixin).to.eql(expectedRefs);
-        expect(refsInExtends).to.eql(expectedRefs);
-    }));
+            expect(refsInSelector).to.eql(expectedRefs);
+            expect(refsInMixin).to.eql(expectedRefs);
+            expect(refsInExtends).to.eql(expectedRefs);
+        }));
+
+        // it("References - cross-file", plan(1, async () => {
+        //     const baseFileText = trimLiteral`
+        //     `
+
+        //     const fileName = 'references.st.css';
+        //     const fileSystem = new MemoryFileSystem('', { content: { [fileName]: baseFileText } });
+
+        //     init(fileSystem, testCon.server);
+        //     const context = { includeDeclaration: true }
+        //     const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
+        //     const refsInSelector = await testCon.client.references({ context, textDocument, position: { line: 5, character: 16 } })
+        //     const refsInMixin = await testCon.client.references({ context, textDocument, position: { line: 10, character: 25 } })
+        //     const refsInExtends = await testCon.client.references({ context, textDocument, position: { line: 15, character: 6 } })
+        //     const expectedRefs = [ //Refs should be listed in the order they appear in the file
+        //         Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
+        //         Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
+        //         Location.create(textDocument.uri, createRange(5, 14, 5, 18)),
+        //         Location.create(textDocument.uri, createRange(10, 22, 10, 26)),
+        //         Location.create(textDocument.uri, createRange(15, 4, 15, 8)),
+        //         Location.create(textDocument.uri, createRange(16, 4, 16, 8))
+        //     ]
+
+        //     expect(refsInSelector).to.eql(expectedRefs);
+        //     expect(refsInMixin).to.eql(expectedRefs);
+        //     expect(refsInExtends).to.eql(expectedRefs);
+        // }));
+    })
 
     it("Rename Symbol - local file", plan(3, async () => {
         const fileText = trimLiteral`
