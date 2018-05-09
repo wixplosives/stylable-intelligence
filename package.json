@@ -22,15 +22,15 @@
         "glob": "^7.1.2",
         "htap": "^1.0.3",
         "ipaddr": "^0.0.9",
-        "kissfs": "^0.5.3",
+        "kissfs": "^0.6.3",
         "lodash": "^4.17.5",
         "pkg-dir": "^2.0.0",
         "postcss": "^6.0.19",
-        "postcss-selector-parser": "^3.1.1",
+        "postcss-selector-parser": "^4.0.0",
         "postcss-value-parser": "^3.3.0",
         "stylable": "^5.2.0",
         "tslib": "^1.9.0",
-        "typescript": "~2.7.2",
+        "typescript": "~2.8.3",
         "vscode": "^1.1.13",
         "vscode-css-languageservice": "3.0.8",
         "vscode-languageclient": "^4.0.0",
@@ -43,8 +43,8 @@
         "@types/glob": "^5.0.35",
         "@types/lodash": "^4.14.104",
         "@types/memory-fs": "^0.3.0",
-        "@types/mocha": "^2.2.48",
-        "@types/node": "8",
+        "@types/mocha": "^5.2.0",
+        "@types/node": "10",
         "@types/pkg-dir": "^2.0.0",
         "@types/sinon": "^4.3.0",
         "@types/sinon-chai": "^2.7.29",
@@ -60,10 +60,10 @@
         "ncp": "^2.0.0",
         "polished": "^1.9.2",
         "rimraf": "^2.6.2",
-        "sinon": "^4.4.2",
+        "sinon": "^5.0.7",
         "sinon-chai": "^3.0.0",
         "source-map-support": "^0.5.3",
-        "ts-node": "^5.0.1",
+        "ts-node": "^6.0.3",
         "vsce": "^1.37.5",
         "webpack": "^4.1.1"
     },
@@ -77,7 +77,7 @@
         "url": "https://github.com/wix/stylable-intelligence/issues"
     },
     "engines": {
-        "vscode": "^1.18.0"
+        "vscode": "^1.20.0"
     },
     "categories": [
         "Languages",
