@@ -29,7 +29,7 @@ export function createBaseHost(syncFs: FileSystemReadSync, systemPath: typeof pa
     //TODO: support in kissfs.
     const useCaseSensitiveFileNames = false;
 
-    return {syncFs, useCaseSensitiveFileNames, readDirectory, fileExists, readFile, path: path.posix};
+    return {syncFs, useCaseSensitiveFileNames, readDirectory, fileExists, readFile, path: systemPath};
 
     function readFile(filePath: string): string | undefined {
         try {
