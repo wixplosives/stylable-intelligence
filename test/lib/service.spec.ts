@@ -3,7 +3,7 @@ import { expect, plan } from "../testkit/chai.spec";
 import { init } from "../../src/lib/server-utils";
 import { MemoryFileSystem } from "kissfs";
 import { toVscodePath } from "../../src/lib/utils/uri-utils";
-import { TextDocumentItem } from "vscode-languageserver-protocol"
+import { TextDocumentItem, ReferenceParams } from "vscode-languageserver-protocol"
 import { getRangeAndText } from "../testkit/text.spec";
 import { Diagnostic, Range, Position, Location } from 'vscode-languageserver-types';
 import { createRange, ProviderPosition } from '../../src/lib/completion-providers';
@@ -208,22 +208,56 @@ describe("Service component test", function () {
             expect(refsInExtends).to.eql(expectedRefs);
         }));
 
-        xit("References - cross-file", plan(1, async () => {
+        xit("References - cross-file", plan(4, async () => { //Not implemented yet
+            const topFileText = trimLiteral`
+            |:import {
+            |    -st-from: "./import.st.css";
+            |    -st-named: gaga;
+            |}
+            |
+            |.baga {
+            |    -st-extends: gaga;
+            |    background-color: goldenrod;
+            |}`
+
             const baseFileText = trimLiteral`
+            |.gaga {
+            |    -st-states: aState
+            |}
+            |
+            |.gaga:aState {
+            |    color:blue;
+            |    mask: lala
+            |}
             `
 
-            const fileName = 'references.st.css';
-            const fileSystem = new MemoryFileSystem('', { content: { [fileName]: baseFileText } });
+            const baseFileName = 'import.st.css';
+            const topFileName = 'top.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFileText, [topFileName]: topFileText } });
 
             init(fileSystem, testCon.server);
             const context = { includeDeclaration: true }
-            const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
-            const refsInSelector = await testCon.client.references({ context, textDocument, position: { line: 5, character: 16 } })
-            const refsInMixin = await testCon.client.references({ context, textDocument, position: { line: 10, character: 25 } })
-            const refsInExtends = await testCon.client.references({ context, textDocument, position: { line: 15, character: 6 } })
-            const expectedRefs = [ //Refs should be listed in the order they appear in the file
-                // Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
+            const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, fileSystem.loadTextFileSync(baseFileName));
+            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+
+            const refRequests: ReferenceParams[] = [
+                {context, textDocument: baseTextDocument, position: { line: 0, character: 3 }},
+                {context, textDocument: baseTextDocument, position: { line: 4, character: 2 }},
+                {context, textDocument: topTextDocument, position: { line: 2, character: 18 }},
+                {context, textDocument: topTextDocument, position: { line: 6, character: 20 }},
             ]
+
+            const expectedRefs = [ //Refs should be listed in the order they appear in each file, current file first.
+                Location.create(baseTextDocument.uri, createRange(0, 1, 0, 5)),
+                Location.create(baseTextDocument.uri, createRange(4, 1, 4, 5)),
+                Location.create(topTextDocument.uri, createRange(2, 15, 2, 19)),
+                Location.create(topTextDocument.uri, createRange(6, 17, 6, 21)),
+            ]
+
+            refRequests.forEach(async refReq => {
+                const actualRefs = await testCon.client.references({ context, textDocument: refReq.textDocument, position: refReq.position });
+                expect(actualRefs).to.eql(expectedRefs);
+            })
 
         }));
     })
