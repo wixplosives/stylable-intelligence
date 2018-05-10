@@ -9,7 +9,7 @@ import { Diagnostic, Range, Position, Location } from 'vscode-languageserver-typ
 import { createRange, ProviderPosition } from '../../src/lib/completion-providers';
 import { createColor } from './colors.spec';
 import { timingFunctions } from 'polished';
-import {toggleLegacy} from '../../src/lib/provider-factory'
+import { toggleLegacy } from '../../src/lib/provider-factory'
 
 
 function createDiagnosisNotification(diagnostics: Diagnostic[], fileName: string) {
@@ -122,20 +122,21 @@ describe("Service component test", function () {
     })
 
     it("Document Colors - local, vars, imported", plan(2, async () => {
-        const baseFilecContent = `
-        :vars {
-            myColor: rgba(0, 255, 0, 0.8);
-        }
-
-        .root {
-            color: value(myColor);
-        }
+        const baseFilecContent = trimLiteral`
+        |:vars {
+        |    myColor: rgba(0, 255, 0, 0.8);
+        |}
+        |
+        |.root {
+        |    color: value(myColor);
+        |}
         `
-        const importFileContent = `
-        :import {
-            -st-from: "./single-file-color.st.css";
-            -st-named: myColor;
-        }
+
+        const importFileContent = trimLiteral`
+        |:import {
+        |    -st-from: "./single-file-color.st.css";
+        |    -st-named: myColor;
+        |}
         `
 
         const baseFileName = 'single-file-color.st.css';
@@ -144,9 +145,9 @@ describe("Service component test", function () {
         const baseTextDocument = TextDocumentItem.create('/' + baseFileName, 'stylable', 0, baseFilecContent);
         const importTextDocument = TextDocumentItem.create('/' + importFileName, 'stylable', 0, importFileContent);
 
-        const range1 = createRange(6, 19, 6, 32);
-        const range2 = createRange(2, 21, 2, 41);
-        const range3 = createRange(3, 23, 3, 30);
+        const range1 = createRange(5, 11, 5, 24);
+        const range2 = createRange(1, 13, 1, 33);
+        const range3 = createRange(2, 15, 2, 22);
         const color = createColor(0, 1, 0, 0.8);
 
         init(fileSystem, testCon.server);
@@ -247,10 +248,10 @@ describe("Service component test", function () {
             const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
 
             const refRequests: ReferenceParams[] = [
-                {context, textDocument: baseTextDocument, position: { line: 0, character: 3 }},
-                {context, textDocument: baseTextDocument, position: { line: 4, character: 2 }},
-                {context, textDocument: topTextDocument, position: { line: 2, character: 18 }},
-                {context, textDocument: topTextDocument, position: { line: 6, character: 20 }},
+                { context, textDocument: baseTextDocument, position: { line: 0, character: 3 } },
+                { context, textDocument: baseTextDocument, position: { line: 4, character: 2 } },
+                { context, textDocument: topTextDocument, position: { line: 2, character: 18 } },
+                { context, textDocument: topTextDocument, position: { line: 6, character: 20 } },
             ]
 
             const expectedRefs = [ //Refs should be listed in the order they appear in each file, current file first.
