@@ -135,8 +135,8 @@ describe("Service component test", function () {
         const baseFileName = 'single-file-color.st.css';
         const importFileName = 'import-color.st.css';
         const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent, [importFileName]: importFileContent } });
-        const baseTextDocument = TextDocumentItem.create(('/' + baseFileName), 'stylable', 0, baseFilecContent);
-        const importTextDocument = TextDocumentItem.create(('/' + importFileName), 'stylable', 0, importFileContent);
+        const baseTextDocument = TextDocumentItem.create('/' + baseFileName, 'stylable', 0, baseFilecContent);
+        const importTextDocument = TextDocumentItem.create('/' + importFileName, 'stylable', 0, importFileContent);
 
         const range1 = createRange(6, 19, 6, 32);
         const range2 = createRange(2, 21, 2, 41);
