@@ -35,7 +35,7 @@ describe('diagnostics', function () {
             [filePath]:'.gaga .root{}'
         }, filePath)
 
-        return expect(diagnostics).to.deep.include({
+        expect(diagnostics).to.deep.include({
             "range":{
                 "start":{"line":0, "character":0},
                 "end": {"line":0, "character":13}
@@ -61,7 +61,7 @@ describe('diagnostics', function () {
                         `
 
         }, filePathB)
-        return expect(diagnostics).to.deep.include({
+        expect(diagnostics).to.deep.include({
             "range":{
                 "start":{"line":3, "character":39},
                 "end": {"line":3, "character":44}
