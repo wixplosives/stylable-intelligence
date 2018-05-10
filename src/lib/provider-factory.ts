@@ -11,15 +11,15 @@ export function createProvider(stylable: Stylable, tsLangService: ExtendedTsLang
 
 
 const isWindows = process.platform === 'win32';
-export function createFs(fileSystem: FileSystemReadSync, withFilePrefix: boolean = true): any {
+export function createFs(fileSystem: FileSystemReadSync, windowsPaths: boolean = true): any {
     return {
         readFileSync(path: string) {
-            // path = isWindows ? `/${path.slice(path.lastIndexOf(':'+1)).replace(/\\/g, '/')}` : path;
+            path = (!windowsPaths && isWindows) ? `/${path.slice(path.lastIndexOf(':'+1)).replace(/\\/g, '/')}` : path;
 
             return fileSystem.loadTextFileSync(path).toString();
         },
         statSync(path: string) {
-            // path = isWindows ? `/${path.slice(path.lastIndexOf(':'+1)).replace(/\\/g, '/')}` : path;
+            path = (!windowsPaths && isWindows) ? `/${path.slice(path.lastIndexOf(':'+1)).replace(/\\/g, '/')}` : path;
 
             let isFile = checkExistsSync('file', fileSystem, path);
             return {
