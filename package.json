@@ -32,7 +32,7 @@
         "tslib": "^1.9.0",
         "typescript": "~2.8.3",
         "vscode": "^1.1.13",
-        "vscode-css-languageservice": "3.0.8",
+        "vscode-css-languageservice": "3.0.9-next.14",
         "vscode-languageclient": "^4.0.0",
         "vscode-languageserver": "^4.0.0"
     },

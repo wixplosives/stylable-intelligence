@@ -1,13 +1,9 @@
-:import {
-  -st-from: "./import.st.css";
-  -st-named: gaga;
-}
+.gaga {
+    -st-states: aState;
+  }
 
-.baga {
-  -st-extends: gaga;
-}
+  .gaga:aState {
+    mask: lala;
 
-.baga:aState {
-  background-color: antiquewhite;
-}
-
+  }
+  

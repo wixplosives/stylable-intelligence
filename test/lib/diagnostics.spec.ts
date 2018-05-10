@@ -44,7 +44,7 @@ describe('diagnostics', function () {
             "severity":2
         })
     })
-    //
+
     it('should create cross file errors', function() {
         let filePathA = 'style.css'
         let filePathB = 'import-style.st.css'

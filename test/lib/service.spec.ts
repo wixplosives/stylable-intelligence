@@ -208,32 +208,32 @@ describe("Service component test", function () {
             expect(refsInExtends).to.eql(expectedRefs);
         }));
 
-        // it("References - cross-file", plan(1, async () => {
-        //     const baseFileText = trimLiteral`
-        //     `
+        xit("References - cross-file", plan(1, async () => {
+            const baseFileText = trimLiteral`
+            `
 
-        //     const fileName = 'references.st.css';
-        //     const fileSystem = new MemoryFileSystem('', { content: { [fileName]: baseFileText } });
+            const fileName = 'references.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [fileName]: baseFileText } });
 
-        //     init(fileSystem, testCon.server);
-        //     const context = { includeDeclaration: true }
-        //     const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
-        //     const refsInSelector = await testCon.client.references({ context, textDocument, position: { line: 5, character: 16 } })
-        //     const refsInMixin = await testCon.client.references({ context, textDocument, position: { line: 10, character: 25 } })
-        //     const refsInExtends = await testCon.client.references({ context, textDocument, position: { line: 15, character: 6 } })
-        //     const expectedRefs = [ //Refs should be listed in the order they appear in the file
-        //         Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
-        //         Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
-        //         Location.create(textDocument.uri, createRange(5, 14, 5, 18)),
-        //         Location.create(textDocument.uri, createRange(10, 22, 10, 26)),
-        //         Location.create(textDocument.uri, createRange(15, 4, 15, 8)),
-        //         Location.create(textDocument.uri, createRange(16, 4, 16, 8))
-        //     ]
+            init(fileSystem, testCon.server);
+            const context = { includeDeclaration: true }
+            const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
+            const refsInSelector = await testCon.client.references({ context, textDocument, position: { line: 5, character: 16 } })
+            const refsInMixin = await testCon.client.references({ context, textDocument, position: { line: 10, character: 25 } })
+            const refsInExtends = await testCon.client.references({ context, textDocument, position: { line: 15, character: 6 } })
+            const expectedRefs = [ //Refs should be listed in the order they appear in the file
+                Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
+                Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
+                Location.create(textDocument.uri, createRange(5, 14, 5, 18)),
+                Location.create(textDocument.uri, createRange(10, 22, 10, 26)),
+                Location.create(textDocument.uri, createRange(15, 4, 15, 8)),
+                Location.create(textDocument.uri, createRange(16, 4, 16, 8))
+            ]
 
-        //     expect(refsInSelector).to.eql(expectedRefs);
-        //     expect(refsInMixin).to.eql(expectedRefs);
-        //     expect(refsInExtends).to.eql(expectedRefs);
-        // }));
+            expect(refsInSelector).to.eql(expectedRefs);
+            expect(refsInMixin).to.eql(expectedRefs);
+            expect(refsInExtends).to.eql(expectedRefs);
+        }));
     })
 
     it("Rename Symbol - local file", plan(3, async () => {
