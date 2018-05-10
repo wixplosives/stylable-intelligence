@@ -21,11 +21,13 @@ const isWindows = process.platform === 'win32';
 export function createFs(fileSystem: FileSystemReadSync, withFilePrefix: boolean = true): any {
     return {
         readFileSync(path: string) {
-            path = isWindows ? `/${path.replace(/\\/g, '/').replace(':', '%3A')}` : path;
+            // path = isWindows ? `/${path.replace(/\\/g, '/').replace(':', '%3A')}` : path;
+            path = '/single-file-color.st.css'
             return fileSystem.loadTextFileSync(path).toString();
         },
         statSync(path: string) {
-            path = isWindows ? `/${path.replace(/\\/g, '/').replace(':', '%3A')}` : path;
+            path = '/single-file-color.st.css'
+            // path = isWindows ? `/${path.replace(/\\/g, '/').replace(':', '%3A')}` : path;
             let isFile = checkExistsSync('file', fileSystem, path);
             return {
                 isDirectory() {
