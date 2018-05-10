@@ -1,16 +1,9 @@
 'use strict';
-import {Event, TextDocument, TextDocumentChangeEvent, TextDocuments} from 'vscode-languageserver';
-import {
-    cachedProcessFile,
-    FileProcessor,
-    process as stylableProcess,
-    safeParse,
-    Stylable,
-    StylableMeta
-} from 'stylable';
+import { FileSystemReadSync, checkExistsSync } from 'kissfs';
+import { FileProcessor, Stylable, StylableMeta, cachedProcessFile, process as stylableProcess, safeParse } from 'stylable';
+import { Event, TextDocument, TextDocumentChangeEvent, TextDocuments } from 'vscode-languageserver';
 import Provider from './provider';
-import {checkExistsSync, FileSystemReadSync} from 'kissfs';
-import {ExtendedTsLanguageService} from './types';
+import { ExtendedTsLanguageService } from './types';
 
 export function createProvider(stylable: Stylable, tsLangService: ExtendedTsLanguageService, withFilePrefix: boolean = true): Provider {
     return new Provider(stylable, tsLangService)

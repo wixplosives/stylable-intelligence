@@ -115,7 +115,7 @@ describe("Service component test", function () {
         }));
     })
 
-    it.only("Document Colors - local, vars, imported", plan(2, async () => {
+    it("Document Colors - local, vars, imported", plan(2, async () => {
         const baseFilecContent = `
         :vars {
             myColor: rgba(0, 255, 0, 0.8);
