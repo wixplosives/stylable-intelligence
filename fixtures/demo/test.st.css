@@ -1,9 +1,9 @@
-.gaga {
-    -st-states: aState;
-  }
+:import {
+  -st-from: "./import.st.css";
+  -st-named: gaga;
+}
 
-  .gaga:aState {
-    mask: lala;
-
-  }
-  
+.baa {
+  -st-extends: gaga;
+  background-color: goldenrod;
+}
