@@ -9,6 +9,7 @@ import { Diagnostic, Range, Position, Location } from 'vscode-languageserver-typ
 import { createRange, ProviderPosition } from '../../src/lib/completion-providers';
 import { createColor } from './colors.spec';
 import { timingFunctions } from 'polished';
+import {toggleLegacy} from '../../src/lib/provider-factory'
 
 
 function createDiagnosisNotification(diagnostics: Diagnostic[], fileName: string) {
@@ -31,9 +32,14 @@ function trimLiteral(content: TemplateStringsArray, ...keys: string[]) {
 describe("Service component test", function () {
     let testCon: TestConnection;
     beforeEach(() => {
+        toggleLegacy(false);
         testCon = new TestConnection();
         testCon.listen();
     });
+
+    afterEach(() => {
+        toggleLegacy(true);
+    })
 
     describe("Diagnostics", function () {
         it("Diagnostics - single file error", plan(1, () => {

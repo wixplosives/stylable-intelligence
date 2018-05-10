@@ -10,16 +10,22 @@ export function createProvider(stylable: Stylable, tsLangService: ExtendedTsLang
 }
 
 
+let legacyBehvior = true;
+
+export function toggleLegacy(value: boolean) {
+    legacyBehvior = value;
+}
+
 const isWindows = process.platform === 'win32';
-export function createFs(fileSystem: FileSystemReadSync, windowsPaths: boolean = true): any {
+export function createFs(fileSystem: FileSystemReadSync): any {
     return {
         readFileSync(path: string) {
-            path = (!windowsPaths && isWindows) ? `/${path.slice(path.lastIndexOf(':'+1)).replace(/\\/g, '/')}` : path;
+            path = (!legacyBehvior && isWindows) ? `/${path.slice(path.lastIndexOf(':'+1)).replace(/\\/g, '/')}` : path;
 
             return fileSystem.loadTextFileSync(path).toString();
         },
         statSync(path: string) {
-            path = (!windowsPaths && isWindows) ? `/${path.slice(path.lastIndexOf(':'+1)).replace(/\\/g, '/')}` : path;
+            path = (!legacyBehvior && isWindows) ? `/${path.slice(path.lastIndexOf(':'+1)).replace(/\\/g, '/')}` : path;
 
             let isFile = checkExistsSync('file', fileSystem, path);
             return {
@@ -38,10 +44,10 @@ export function createFs(fileSystem: FileSystemReadSync, windowsPaths: boolean =
     }
 }
 
-export function createProcessor(fileSystem: FileSystemReadSync, withFilePrefix: boolean = true): FileProcessor<StylableMeta> {
+export function createProcessor(fileSystem: FileSystemReadSync): FileProcessor<StylableMeta> {
     let proccesor = cachedProcessFile<StylableMeta>((fullpath, content) => {
         return stylableProcess(safeParse(content, {from: fullpath}))
-    }, createFs(fileSystem, withFilePrefix))
+    }, createFs(fileSystem))
     return proccesor;
 }
 

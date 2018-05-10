@@ -108,7 +108,7 @@ const wrappedTs: ExtendedTsLanguageService = {
 };
 
 
-const provider = createProvider(new Stylable('/', createFs(docsFs, true), () => ({default: {}})), wrappedTs);
+const provider = createProvider(new Stylable('/', createFs(docsFs), () => ({default: {}})), wrappedTs);
 
 
 //syntactic
