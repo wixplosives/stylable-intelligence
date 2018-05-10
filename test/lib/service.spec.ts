@@ -312,7 +312,7 @@ describe("Service component test", function () {
         expect(refsInExtends).to.eql(expectedRefs);
     }));
 
-    it("Definitions - element", plan(5, async () => {
+    xit("Definitions - element", plan(5, async () => {
         const topFileText = trimLiteral`
         |:import {
         |    -st-from: "./import.st.css";
@@ -345,31 +345,30 @@ describe("Service component test", function () {
         const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [importFileName]: importFileText } });
         const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
         const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileText);
-        const topFilelocations = [
+        const topFileLocations = [
             { line: 2, character: 17 },
             { line: 6, character: 18 },
             { line: 9, character: 7 },
         ]
-        const importFilelocations = [
+        const importFileLocations = [
             { line: 4, character: 3 },
             { line: 8, character: 10 },
         ]
 
         init(fileSystem, testCon.server);
-        topFilelocations.forEach(async loc => {
+        topFileLocations.forEach(async loc => {
             const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
             expect(def).to.eql([{
                 uri: importTextDocument.uri,
                 range: createRange(4, 1, 4, 5)
             }]);
         });
-        importFilelocations.forEach(async loc => {
+        importFileLocations.forEach(async loc => {
             const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
             expect(def).to.eql([{
                 uri: importTextDocument.uri,
                 range: createRange(4, 1, 4, 5)
             }]);
         })
-
     }));
 });
