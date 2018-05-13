@@ -1,5 +1,4 @@
 import { expect } from 'chai'
-import { createProcessor } from '../../src/lib/provider-factory'
 import { getSignatureHelp } from '../../test-kit/asserters'
 import { SignatureHelp, SignatureInformation, ParameterInformation } from 'vscode-languageserver';
 
