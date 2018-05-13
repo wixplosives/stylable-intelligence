@@ -1,7 +1,7 @@
 import { TestConnection } from "../lsp-testkit/connection.spec";
 import { expect, plan } from "../testkit/chai.spec";
 import { init } from "../../src/lib/server-utils";
-import { MemoryFileSystem } from "kissfs";
+import { MemoryFileSystem, pathSeparator} from "kissfs";
 import { toVscodePath } from "../../src/lib/utils/uri-utils";
 import { TextDocumentItem, ReferenceParams } from "vscode-languageserver-protocol"
 import { getRangeAndText } from "../testkit/text.spec";
@@ -45,16 +45,17 @@ describe("Service component test", function () {
         it("Diagnostics - single file error", plan(1, () => {
             const rangeAndText = getRangeAndText('|.gaga .root{}|');
             const fileName = 'single-file-diag.st.css';
-            const fileSystem = new MemoryFileSystem('', { content: { [fileName]: rangeAndText.text } });
+            const fileSystem = new MemoryFileSystem('', { content: {'C:' : {'foo': {
+                    [fileName]: rangeAndText.text
+                }}} });
 
-
+            const filePath = ['C:', 'foo' , fileName].join(pathSeparator);
             init(fileSystem, testCon.server);
-            const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
+            const textDocument = TextDocumentItem.create(toVscodePath('/'+filePath), 'stylable', 0, fileSystem.loadTextFileSync(filePath));
             testCon.client.didOpenTextDocument({ textDocument });
 
-
             testCon.client.onDiagnostics(d => {
-                expect(d).to.eql(createDiagnosisNotification([createDiagnosis(rangeAndText.range, ".root class cannot be used after spacing")], fileName));
+                expect(d).to.eql(createDiagnosisNotification([createDiagnosis(rangeAndText.range, ".root class cannot be used after spacing")], filePath));
             });
         }));
 
