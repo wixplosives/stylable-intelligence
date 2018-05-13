@@ -23,7 +23,7 @@ function createDiagnostics(files:{[filePath:string]:string}, path:string) {
     } as TextDocuments
     const fs =  new LocalSyncFs('');
     const docsFs = createDocFs(fs,documents);
-    return createDiagnosis(documents.get(path),  docsFs, createProcessor(docsFs, false), require)
+    return createDiagnosis(documents.get(path),  docsFs, createProcessor(docsFs), require)
 }
 
 
@@ -44,7 +44,7 @@ describe('diagnostics', function () {
             "severity":2
         })
     })
-    //
+
     it('should create cross file errors', function() {
         let filePathA = 'style.css'
         let filePathB = 'import-style.st.css'

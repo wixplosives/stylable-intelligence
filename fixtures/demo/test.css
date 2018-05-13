@@ -1,12 +1,9 @@
-
->53
-
-ones [11100000000]
-tens [11111000000]
-
-tens.startsWith(111111) or !(!tens.startsWith(11111) or !ones.startsWith(1111))
-
-[index^="3111111"], :not([index$="0000004"] , [index$="00000003"])
-
-
-index [2111000000003111110000004]
+.gaga {
+    -st-states: aState;
+  }
+  
+  .gaga:aState {
+    mask: lala; 
+    
+  }
+  

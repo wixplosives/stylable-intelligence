@@ -11,7 +11,7 @@ describe("Definitions", function () {
                 expect(defs.length).to.equal(1);
                 let def = defs[0];
                 expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/local-class.st.css'));
-                expect(def.range).to.eql(createRange(0, 0, 0, 6))
+                expect(def.range).to.eql(createRange(0, 1, 0, 6))
             });
         });
 
@@ -38,7 +38,7 @@ describe("Definitions", function () {
                 expect(defs.length).to.equal(1);
                 let def = defs[0];
                 expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/local-class-complex.st.css'));
-                expect(def.range).to.eql(createRange(0, 0, 0, 6))
+                expect(def.range).to.eql(createRange(0, 1, 0, 6))
             });
         });
     });

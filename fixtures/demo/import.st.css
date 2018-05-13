@@ -1,15 +1,8 @@
-.shlomo {
-    color: black;
+.gaga {
+    -st-states: aState
 }
 
-:vars {
-    color1: grey;
-}
-
-.momo{
-    -st-states: anotherState,oneMoreState;
-}
-
-.root {
-    -st-states : state,otherState;
+.gaga:aState {
+    color:blue;
+    mask: lala
 }

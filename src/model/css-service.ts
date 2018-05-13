@@ -29,7 +29,7 @@ export class CssService {
     }
 
     getDiagnostics(document: TextDocument): Diagnostic[] {
-        if (document.uri.endsWith('.css')) {
+        if (!document.uri.endsWith('.css')) {
             return [];
         }
         const stylesheet = this.inner.parseStylesheet(document);

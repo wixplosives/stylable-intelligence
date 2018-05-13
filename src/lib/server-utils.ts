@@ -35,7 +35,7 @@ export function init(fileSystem: FileSystemReadSync, connection: IConnection) {
     const docs = new TextDocuments();
     docs.listen(connection);
     const docFs: ExtendedFSReadSync = createDocFs(fileSystem, docs);
-    const styl = new Stylable('/', createFs(docFs, true), require);
+    const styl = new Stylable('/', createFs(docFs), require);
     const OpenDocNotificationType = new NotificationType<string, void>('stylable/openDocumentNotification');
     let openedFiles: string[] = [];
     const tsLanguageServiceHost = createLanguageServiceHost({
