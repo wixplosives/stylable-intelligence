@@ -1,15 +1,15 @@
-import { TestConnection } from "../lsp-testkit/connection.spec";
-import { expect, plan } from "../testkit/chai.spec";
-import { init } from "../../src/lib/server-utils";
-import { MemoryFileSystem, pathSeparator} from "kissfs";
-import { toVscodePath } from "../../src/lib/utils/uri-utils";
-import { TextDocumentItem, ReferenceParams } from "vscode-languageserver-protocol"
-import { getRangeAndText } from "../testkit/text.spec";
-import { Diagnostic, Range, Position, Location } from 'vscode-languageserver-types';
-import { createRange, ProviderPosition } from '../../src/lib/completion-providers';
-import { createColor } from './colors.spec';
-import { timingFunctions } from 'polished';
-import { toggleLegacy } from '../../src/lib/provider-factory'
+import {TestConnection} from "../lsp-testkit/connection.spec";
+import {expect, plan} from "../testkit/chai.spec";
+import {init} from "../../src/lib/server-utils";
+import {MemoryFileSystem, pathSeparator} from "kissfs";
+import {toVscodePath} from "../../src/lib/utils/uri-utils";
+import {ReferenceParams, TextDocumentItem} from "vscode-languageserver-protocol"
+import {getRangeAndText} from "../testkit/text.spec";
+import {Diagnostic, Location, Range} from 'vscode-languageserver-types';
+import {createRange} from '../../src/lib/completion-providers';
+import {createColor} from './colors.spec';
+import {toggleLegacy} from '../../src/lib/provider-factory'
+import {DirectoryContent} from "kissfs/src/model";
 
 
 function createDiagnosisNotification(diagnostics: Diagnostic[], fileName: string) {
@@ -24,7 +24,9 @@ function createDiagnosis(range: Range, message: string, source: string = 'stylab
 }
 
 function trimLiteral(content: TemplateStringsArray, ...keys: string[]) {
-    if (keys.length) { throw new Error('No support for expressions in pipe-delimited test files yet') };
+    if (keys.length) {
+        throw new Error('No support for expressions in pipe-delimited test files yet')
+    }
     return content.join('\n').replace(/^\s*\|/gm, '').replace(/^\n/, '');
 }
 
@@ -41,21 +43,24 @@ describe("Service component test", function () {
         toggleLegacy(true);
     })
 
-    describe("Diagnostics", function () {
+    const projPrefix = 'C:' + pathSeparator  + 'foo' + pathSeparator;
+
+    function proj(content: DirectoryContent) {
+        return {'C:': {'foo': content}};
+    }
+
+    describe.only("Diagnostics", function () {
         it("Diagnostics - single file error", plan(1, () => {
             const rangeAndText = getRangeAndText('|.gaga .root{}|');
             const fileName = 'single-file-diag.st.css';
-            const fileSystem = new MemoryFileSystem('', { content: {'C:' : {'foo': {
-                    [fileName]: rangeAndText.text
-                }}} });
+            const fileSystem = new MemoryFileSystem('', {content: proj({[fileName]: rangeAndText.text})});
 
-            const filePath = ['C:', 'foo' , fileName].join(pathSeparator);
             init(fileSystem, testCon.server);
-            const textDocument = TextDocumentItem.create(toVscodePath('/'+filePath), 'stylable', 0, fileSystem.loadTextFileSync(filePath));
-            testCon.client.didOpenTextDocument({ textDocument });
+            const textDocument = TextDocumentItem.create(toVscodePath(pathSeparator + projPrefix + fileName), 'stylable', 0, fileSystem.loadTextFileSync(projPrefix + fileName));
+            testCon.client.didOpenTextDocument({textDocument});
 
             testCon.client.onDiagnostics(d => {
-                expect(d).to.eql(createDiagnosisNotification([createDiagnosis(rangeAndText.range, ".root class cannot be used after spacing")], filePath));
+                expect(d).to.eql(createDiagnosisNotification([createDiagnosis(rangeAndText.range, ".root class cannot be used after spacing")], projPrefix + fileName));
             });
         }));
 
@@ -64,7 +69,7 @@ describe("Service component test", function () {
             |.gaga {
             |    -st-states: aState
             |}
-            `
+            `;
             const topFileContent = trimLiteral`
             |:import {
             |    -st-from: "./base-file.st.css";
@@ -74,19 +79,23 @@ describe("Service component test", function () {
             |.gaga:aState:bState {
             |    color: red;
             |}
-            `
+            `;
 
             const baseFileName = 'base-file.st.css';
             const topFileName = 'top-file.st.css';
-            const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent, [topFileName]: topFileContent } });
-            const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
-            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileContent);
+            const fileSystem = new MemoryFileSystem('', {
+                content: proj({
+                    [baseFileName]: baseFilecContent,
+                    [topFileName]: topFileContent
+                })
+            });
+            const topTextDocument = TextDocumentItem.create(toVscodePath(pathSeparator + projPrefix + topFileName), 'stylable', 0, topFileContent);
 
             init(fileSystem, testCon.server);
-            testCon.client.didOpenTextDocument({ textDocument: topTextDocument });
+            testCon.client.didOpenTextDocument({textDocument: topTextDocument});
 
             testCon.client.onDiagnostics(d => {
-                expect(d).to.eql(createDiagnosisNotification([createDiagnosis(createRange(5, 13, 5, 19), "unknown pseudo-state \"bState\"")], topFileName));
+                expect(d).to.eql(createDiagnosisNotification([createDiagnosis(createRange(5, 13, 5, 19), "unknown pseudo-state \"bState\"")], projPrefix + topFileName));
             });
 
         }));
@@ -106,7 +115,7 @@ describe("Service component test", function () {
             `
 
             const baseFileName = 'base-file.st.css';
-            const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent } });
+            const fileSystem = new MemoryFileSystem('', {content: {[baseFileName]: baseFilecContent}});
             const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
             const diags = [ //CSS diagnostics that shouldn't appear: empty ruleset, unknown property 'varavar'
                 createDiagnosis(createRange(6, 6, 6, 12), "unknown pseudo-state \"aState\""),
@@ -114,7 +123,7 @@ describe("Service component test", function () {
             ]
 
             init(fileSystem, testCon.server);
-            testCon.client.didOpenTextDocument({ textDocument: baseTextDocument });
+            testCon.client.didOpenTextDocument({textDocument: baseTextDocument});
 
             testCon.client.onDiagnostics(d => {
                 expect(d).to.eql(createDiagnosisNotification(diags, baseFileName));
@@ -142,7 +151,12 @@ describe("Service component test", function () {
 
         const baseFileName = 'single-file-color.st.css';
         const importFileName = 'import-color.st.css';
-        const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent, [importFileName]: importFileContent } });
+        const fileSystem = new MemoryFileSystem('', {
+            content: {
+                [baseFileName]: baseFilecContent,
+                [importFileName]: importFileContent
+            }
+        });
         const baseTextDocument = TextDocumentItem.create('/' + baseFileName, 'stylable', 0, baseFilecContent);
         const importTextDocument = TextDocumentItem.create('/' + importFileName, 'stylable', 0, importFileContent);
 
@@ -153,17 +167,17 @@ describe("Service component test", function () {
 
         init(fileSystem, testCon.server);
 
-        const docColors = await testCon.client.documentColor({ textDocument: baseTextDocument });
-        const importDocColors = await testCon.client.documentColor({ textDocument: importTextDocument });
+        const docColors = await testCon.client.documentColor({textDocument: baseTextDocument});
+        const importDocColors = await testCon.client.documentColor({textDocument: importTextDocument});
 
         expect(docColors).to.eql([{
             range: range1,
             color: color
         },
-        {
-            range: range2,
-            color: color
-        }]);
+            {
+                range: range2,
+                color: color
+            }]);
 
         expect(importDocColors).to.eql([{
             range: range3,
@@ -194,14 +208,26 @@ describe("Service component test", function () {
                 |}`
 
             const fileName = 'references.st.css';
-            const fileSystem = new MemoryFileSystem('', { content: { [fileName]: fileText } });
+            const fileSystem = new MemoryFileSystem('', {content: {[fileName]: fileText}});
 
             init(fileSystem, testCon.server);
-            const context = { includeDeclaration: true }
+            const context = {includeDeclaration: true}
             const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
-            const refsInSelector = await testCon.client.references({ context, textDocument, position: { line: 5, character: 16 } })
-            const refsInMixin = await testCon.client.references({ context, textDocument, position: { line: 10, character: 25 } })
-            const refsInExtends = await testCon.client.references({ context, textDocument, position: { line: 15, character: 6 } })
+            const refsInSelector = await testCon.client.references({
+                context,
+                textDocument,
+                position: {line: 5, character: 16}
+            })
+            const refsInMixin = await testCon.client.references({
+                context,
+                textDocument,
+                position: {line: 10, character: 25}
+            })
+            const refsInExtends = await testCon.client.references({
+                context,
+                textDocument,
+                position: {line: 15, character: 6}
+            })
             const expectedRefs = [ //Refs should be listed in the order they appear in the file
                 Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
                 Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
@@ -241,18 +267,23 @@ describe("Service component test", function () {
 
             const baseFileName = 'import.st.css';
             const topFileName = 'top.st.css';
-            const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFileText, [topFileName]: topFileText } });
+            const fileSystem = new MemoryFileSystem('', {
+                content: {
+                    [baseFileName]: baseFileText,
+                    [topFileName]: topFileText
+                }
+            });
 
             init(fileSystem, testCon.server);
-            const context = { includeDeclaration: true }
+            const context = {includeDeclaration: true}
             const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, fileSystem.loadTextFileSync(baseFileName));
             const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
 
             const refRequests: ReferenceParams[] = [
-                { context, textDocument: baseTextDocument, position: { line: 0, character: 3 } },
-                { context, textDocument: baseTextDocument, position: { line: 4, character: 2 } },
-                { context, textDocument: topTextDocument, position: { line: 2, character: 18 } },
-                { context, textDocument: topTextDocument, position: { line: 6, character: 20 } },
+                {context, textDocument: baseTextDocument, position: {line: 0, character: 3}},
+                {context, textDocument: baseTextDocument, position: {line: 4, character: 2}},
+                {context, textDocument: topTextDocument, position: {line: 2, character: 18}},
+                {context, textDocument: topTextDocument, position: {line: 6, character: 20}},
             ]
 
             const expectedRefs = [ //Refs should be listed in the order they appear in each file, current file first.
@@ -263,7 +294,11 @@ describe("Service component test", function () {
             ]
 
             refRequests.forEach(async refReq => {
-                const actualRefs = await testCon.client.references({ context, textDocument: refReq.textDocument, position: refReq.position });
+                const actualRefs = await testCon.client.references({
+                    context,
+                    textDocument: refReq.textDocument,
+                    position: refReq.position
+                });
                 expect(actualRefs).to.eql(expectedRefs);
             })
 
@@ -292,14 +327,26 @@ describe("Service component test", function () {
             |}`
 
         const fileName = 'references.st.css';
-        const fileSystem = new MemoryFileSystem('', { content: { [fileName]: fileText } });
+        const fileSystem = new MemoryFileSystem('', {content: {[fileName]: fileText}});
 
         init(fileSystem, testCon.server);
-        const context = { includeDeclaration: true }
+        const context = {includeDeclaration: true}
         const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
-        const refsInSelector = await testCon.client.references({ context, textDocument, position: { line: 5, character: 16 } })
-        const refsInMixin = await testCon.client.references({ context, textDocument, position: { line: 10, character: 25 } })
-        const refsInExtends = await testCon.client.references({ context, textDocument, position: { line: 15, character: 6 } })
+        const refsInSelector = await testCon.client.references({
+            context,
+            textDocument,
+            position: {line: 5, character: 16}
+        })
+        const refsInMixin = await testCon.client.references({
+            context,
+            textDocument,
+            position: {line: 10, character: 25}
+        })
+        const refsInExtends = await testCon.client.references({
+            context,
+            textDocument,
+            position: {line: 15, character: 6}
+        })
         const expectedRefs = [ //Refs should be listed in the order they appear in the file
             Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
             Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
@@ -344,29 +391,34 @@ describe("Service component test", function () {
         `
         const topFileName = 'top.st.css';
         const importFileName = 'import.st.css';
-        const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [importFileName]: importFileText } });
+        const fileSystem = new MemoryFileSystem('', {
+            content: {
+                [topFileName]: topFileText,
+                [importFileName]: importFileText
+            }
+        });
         const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
         const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileText);
         const topFileLocations = [
-            { line: 2, character: 17 },
-            { line: 6, character: 18 },
-            { line: 9, character: 7 },
+            {line: 2, character: 17},
+            {line: 6, character: 18},
+            {line: 9, character: 7},
         ]
         const importFileLocations = [
-            { line: 4, character: 3 },
-            { line: 8, character: 10 },
+            {line: 4, character: 3},
+            {line: 8, character: 10},
         ]
 
         init(fileSystem, testCon.server);
         topFileLocations.forEach(async loc => {
-            const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
+            const def = await testCon.client.definition({position: loc, textDocument: topTextDocument});
             expect(def).to.eql([{
                 uri: importTextDocument.uri,
                 range: createRange(4, 1, 4, 5)
             }]);
         });
         importFileLocations.forEach(async loc => {
-            const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
+            const def = await testCon.client.definition({position: loc, textDocument: importTextDocument});
             expect(def).to.eql([{
                 uri: importTextDocument.uri,
                 range: createRange(4, 1, 4, 5)
