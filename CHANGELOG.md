@@ -1,4 +1,20 @@
-# Change log
+# Changelog
+
+## v0.2.8
+
+### Bug fix
+
+* Fixed a regression bug concerning native CSS diagnostics
+* Minor fixes concerning references and definitions
+
+### Tests
+
+* Implement missing integration tests for several features
+
+### Misc
+
+* Fix broken repository URL in package.json
+* Updated all production and development dependencies
 
 ## v0.2.7
 
