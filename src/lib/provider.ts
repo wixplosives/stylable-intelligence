@@ -168,7 +168,8 @@ export default class Provider {
                     break;
                 }
                 case 'import': {
-                    const filePath: string = path.join(path.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
+                    const filePath: string = path.posix.join(path.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
+                    
                     const doc = fs.get(filePath);
 
                     if (doc.getText() !== '') {
@@ -707,11 +708,11 @@ export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
     return refs;
 }
 
-export function createMeta(src: string, path: string) {
+export function createMeta(src: string, srcPath: string) {
     let meta: StylableMeta;
     let fakes: PostCss.Rule[] = [];
     try {
-        let ast: PostCss.Root = safeParse(src, { from: fromVscodePath(path) })
+        let ast: PostCss.Root = safeParse(src, { from: fromVscodePath(srcPath) })
         ast.nodes && ast.nodes.forEach((node) => {
             if (node.type === 'decl') {
                 let r = PostCss.rule({ selector: node.prop + ':' + node.value });
@@ -727,6 +728,11 @@ export function createMeta(src: string, path: string) {
         }
 
         meta = stylableProcess(ast);
+        const rootPath = path.resolve('/');
+        meta.source = meta.source.replace(rootPath, '/').replace(/\\/g, '/')
+        meta.imports.forEach((_import)=>{
+            _import.from = _import.from.replace(rootPath, '/').replace(/\\/g, '/')
+        })
     } catch (error) {
         return { meta: null, fakes: fakes };
     }

@@ -313,7 +313,7 @@ describe("Service component test", function () {
         expect(refsInExtends).to.eql(expectedRefs);
     }));
 
-    xit("Definitions - element", plan(5, async () => { //File system issue
+    it("Definitions - element", plan(5, async () => { //File system issue
         const topFileText = trimLiteral`
         |:import {
         |    -st-from: "./import.st.css";
@@ -357,19 +357,22 @@ describe("Service component test", function () {
         ]
 
         init(fileSystem, testCon.server);
-        topFileLocations.forEach(async loc => {
+        for(const loc of topFileLocations){
             const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
             expect(def).to.eql([{
                 uri: importTextDocument.uri,
                 range: createRange(4, 1, 4, 5)
             }]);
-        });
-        importFileLocations.forEach(async loc => {
+        
+        }
+        for(const loc of importFileLocations){
+
             const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
             expect(def).to.eql([{
                 uri: importTextDocument.uri,
                 range: createRange(4, 1, 4, 5)
             }]);
-        })
+        }
+
     }));
 });

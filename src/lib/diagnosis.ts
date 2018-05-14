@@ -21,6 +21,12 @@ export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileP
 
     let docPostCSSRoot = safeParse(doc.getText(), {from: path.resolve(file)});
     let meta = stylableProcess(docPostCSSRoot);
+    
+    const rootPath = path.resolve('/');
+    meta.source = meta.source.replace(rootPath, '/').replace(/\\/g, '/')
+    meta.imports.forEach((_import)=>{
+        _import.from = _import.from.replace(rootPath, '/').replace(/\\/g, '/')
+    })
 
     fileProcessor.add(file, meta);
 

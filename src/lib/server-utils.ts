@@ -35,7 +35,14 @@ export function init(fileSystem: FileSystemReadSync, connection: IConnection) {
     const docs = new TextDocuments();
     docs.listen(connection);
     const docFs: ExtendedFSReadSync = createDocFs(fileSystem, docs);
-    const styl = new Stylable('/', createFs(docFs), require);
+    const styl = new Stylable('/', createFs(docFs), require, undefined, (meta) => {
+        const rootPath = path.resolve('/');
+        meta.source = meta.source.replace(rootPath, '/').replace(/\\/g, '/')
+        meta.imports.forEach((_import)=>{
+            _import.from = _import.from.replace(rootPath, '/').replace(/\\/g, '/')
+        })
+        return meta;
+    });
     const OpenDocNotificationType = new NotificationType<string, void>('stylable/openDocumentNotification');
     let openedFiles: string[] = [];
     const tsLanguageServiceHost = createLanguageServiceHost({

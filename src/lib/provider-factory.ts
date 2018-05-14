@@ -20,12 +20,14 @@ const isWindows = process.platform === 'win32';
 export function createFs(fileSystem: FileSystemReadSync): any {
     return {
         readFileSync(path: string) {
-            path = (!legacyBehvior && isWindows) ? `/${path.slice(path.lastIndexOf(':')+1).replace(/\\/g, '/')}` : path;
-
+            // path = path.replace(rootPath, '/').replace(/\\/g, '/')
+            // path = (!legacyBehvior && isWindows) ? `/${path.slice(path.lastIndexOf(':')+1).replace(/\\/g, '/')}` : path;
+            
             return fileSystem.loadTextFileSync(path).toString();
         },
         statSync(path: string) {
-            path = (!legacyBehvior && isWindows) ? `/${path.slice(path.lastIndexOf(':')+1).replace(/\\/g, '/')}` : path;
+            // path = path.replace(rootPath, '/').replace(/\\/g, '/')
+            // path = (!legacyBehvior && isWindows) ? `/${path.slice(path.lastIndexOf(':')+1).replace(/\\/g, '/')}` : path;
 
             let isFile = checkExistsSync('file', fileSystem, path);
             return {
