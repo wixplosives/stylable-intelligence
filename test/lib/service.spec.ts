@@ -42,7 +42,7 @@ describe("Service component test", function () {
     })
 
     describe("Diagnostics", function () {
-        it("Diagnostics - single file error", plan(1, () => {
+        it("Diagnostics - single file error", plan(2, () => {
             const rangeAndText = getRangeAndText('|.gaga .root{}|');
             const fileName = 'single-file-diag.st.css';
             const fileSystem = new MemoryFileSystem('', { content: { [fileName]: rangeAndText.text } });
@@ -58,7 +58,7 @@ describe("Service component test", function () {
             });
         }));
 
-        it("Diagnostics - cross-file errors", plan(1, () => {
+        it("Diagnostics - cross-file errors", plan(2, () => {
             const baseFilecContent = trimLiteral`
             |.gaga {
             |    -st-states: aState
@@ -90,7 +90,7 @@ describe("Service component test", function () {
 
         }));
 
-        it("Diagnostics - CSS errors", plan(1, () => {
+        it("Diagnostics - CSS errors", plan(2, () => {
             const baseFilecContent = trimLiteral`
             |.root {}
             |
