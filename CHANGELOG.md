@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.9
+
+### Bug fix
+* Restored Stylable language service export for non-vscode consumers
+
 ## v0.2.8
 
 ### Bug fix
