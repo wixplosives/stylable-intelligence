@@ -1,14 +1,11 @@
+.b {
+    -st-states: state;
+}
 
-
-.a {
+.b:s* {
     color:red;
 }
 
 :vars {
    x: y;
-}
-
-:import {
-   -st-from: './import.st.css';
-   -st-default: Comp;
-}
+}`

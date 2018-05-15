@@ -73,6 +73,38 @@ xdescribe('astSymbolFromLocation', () => {
         expect(astNode.selector).to.eql('.b');
         expect(astNode.nodes).to.have.length(1);
         expect(astNode.nodes[0]).to.be.instanceof(StylableDeclaration);
+        expect(astNode.selector.position).to.eql(2);
+    });
+
+    it('Should return selector AST in simple class selector with states', () => {
+        const { fs, meta, line, column } = processSourceAndLocation({
+            files: {
+                '/style.st.css': {
+                    content: trimLiteral`
+                    |.b {
+                    |    -st-states: one,two;
+                    |}
+                    |
+                    |.b:on*e:t {
+                    |    color:red;
+                    |}
+                    |
+                    |:vars {
+                    |   x: y;
+                    |}`
+                }
+            }
+        });
+
+        const astNode = astSymbolFromLocation('/style.st.css', line, column);
+
+        expect(astNode).to.be.instanceOf(StylableClassSelector);
+        expect(astNode.parent).to.equal(meta.rawAst);
+        expect(astNode.selector).to.eql('.b');
+        expect(astNode.selector.states).to.have.length(2);
+        expect(astNode.selector.states[0]).to.eql('.one'); //valid state
+        expect(astNode.selector.states[1]).to.eql('.t'); //invalid state
+        expect(astNode.selector.position).to.eql(5);
     });
 
     it('should return selector class AST', () => {
