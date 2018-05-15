@@ -7,6 +7,7 @@ let astSymbolFromLocation: any;
 let StylableClassSelector: any;
 let StylableDeclarationProp: any;
 let StylableRoot: any;
+let StylableDeclaration: any;
 
 xdescribe('astSymbolFromLocation', () => {
 
@@ -39,10 +40,39 @@ xdescribe('astSymbolFromLocation', () => {
             }
         });
 
-        const astSymbol = astSymbolFromLocation('/style.st.css', line, column);
+        const astNode = astSymbolFromLocation('/style.st.css', line, column);
 
-        expect(astSymbol);
-        expect(astSymbol).to.equal(meta.rawAst);
+        expect(astNode).to.be.instanceOf(StylableRoot);
+        expect(astNode).to.equal(meta.rawAst);
+    });
+
+    it('Should return selector AST in simple class selector', () => {
+        const { fs, meta, line, column } = processSourceAndLocation({
+            files: {
+                '/style.st.css': {
+                    content: trimLiteral`
+                    |.a {
+                    |    color:red;
+                    |}
+                    |
+                    |.b* {
+                    |    color:red;
+                    |}
+                    |
+                    |:vars {
+                    |   x: y;
+                    |}`
+                }
+            }
+        });
+
+        const astNode = astSymbolFromLocation('/style.st.css', line, column);
+
+        expect(astNode).to.be.instanceOf(StylableClassSelector);
+        expect(astNode.parent).to.equal(meta.rawAst);
+        expect(astNode.selector).to.eql('.b');
+        expect(astNode.nodes).to.have.length(1);
+        expect(astNode.nodes[0]).to.be.instanceof(StylableDeclaration);
     });
 
     it('should return selector class AST', () => {
