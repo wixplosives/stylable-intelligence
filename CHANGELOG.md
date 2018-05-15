@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.2.10
+* restore onDidOpen document event - run diagnosis when opening any `.st.css` files
+
 ## v0.2.9
 
 ### Bug fix
