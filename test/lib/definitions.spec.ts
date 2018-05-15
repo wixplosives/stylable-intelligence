@@ -3,8 +3,9 @@ import * as asserters from '../../test-kit/asserters';
 import {CASES_PATH as LOCAL_CASES_PATH} from '../../test-kit/asserters';
 import {expect} from 'chai';
 import {posix as path} from 'path';
+import {fromStylablePath} from "../../src/lib/utils/stylable";
 
-const CASES_PATH = path.resolve(LOCAL_CASES_PATH);
+const CASES_PATH = fromStylablePath(LOCAL_CASES_PATH);
 
 describe("Definitions", function () {
     describe("Local elements", function () {

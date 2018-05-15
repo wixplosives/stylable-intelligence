@@ -3,7 +3,7 @@ import {StylableMeta} from "stylable";
 
 const rootPath = path.resolve('/');
 
-function fromStylablePath(stlPath: string) {
+export function fromStylablePath(stlPath: string) {
     return stlPath.replace(rootPath, '/').replace(/\\/g, '/');
 }
 
