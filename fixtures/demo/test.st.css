@@ -1,9 +1,14 @@
-:import {
-  -st-from: "./import.st.css";
-  -st-named: gaga;
+
+
+.a {
+    color:red;
 }
 
-.baa {
-  -st-extends: gaga;
-  background-color: goldenrod;
+:vars {
+   x: y;
+}
+
+:import {
+   -st-from: './import.st.css';
+   -st-default: Comp;
 }
