@@ -91,7 +91,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
         }
     }
 
-    // docsDispatcher.onDidOpen(diagnose);
+    docsDispatcher.onDidOpen(diagnose);
     docsDispatcher.onDidChangeContent(diagnose);
 
     connection.onDefinition((params): Thenable<Definition> => {
