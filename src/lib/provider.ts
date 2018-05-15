@@ -63,7 +63,7 @@ import {
     resolveStateParams,
     resolveStateTypeOrValidator
 } from './feature/pseudo-class';
-import {normalizeMeta} from "./utils/stylable";
+import {fromStylablePath, normalizeMeta} from "./utils/stylable";
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
 const cst = require('css-selector-tokenizer');
@@ -168,7 +168,7 @@ export default class Provider {
                     break;
                 }
                 case 'import': {
-                    const filePath: string = path.posix.join(path.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
+                    const filePath: string = path.posix.join(fromStylablePath(path.dirname(meta.source)), (symb as ImportSymbol).import.fromRelative);
 
                     const doc = fs.get(filePath);
 
