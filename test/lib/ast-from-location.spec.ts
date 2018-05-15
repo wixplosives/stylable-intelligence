@@ -41,7 +41,7 @@ xdescribe('astSymbolFromLocation', () => {
 
         const astSymbol = astSymbolFromLocation('/style.st.css', line, column);
 
-        expect(astSymbol;
+        expect(astSymbol);
         expect(astSymbol).to.equal(meta.rawAst);
     });
 
