@@ -1,8 +1,10 @@
-import { createRange } from '../../src/lib/completion-providers';
+import {createRange} from '../../src/lib/completion-providers';
 import * as asserters from '../../test-kit/asserters';
-import { expect } from 'chai';
-import * as path from 'path';
-import {CASES_PATH} from "../../test-kit/asserters";
+import {CASES_PATH as LOCAL_CASES_PATH} from '../../test-kit/asserters';
+import {expect} from 'chai';
+import {posix as path} from 'path';
+
+const CASES_PATH = path.resolve(LOCAL_CASES_PATH);
 
 describe("Definitions", function () {
     describe("Local elements", function () {
@@ -10,7 +12,7 @@ describe("Definitions", function () {
             return asserters.getDefinition('definitions/local-class.st.css').then((defs) => {
                 expect(defs.length).to.equal(1);
                 let def = defs[0];
-                expect(path.resolve(def.uri)).to.equal(path.join(CASES_PATH, 'definitions/local-class.st.css'));
+                expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/local-class.st.css'));
                 expect(def.range).to.eql(createRange(0, 1, 0, 6))
             });
         });
@@ -19,7 +21,7 @@ describe("Definitions", function () {
             return asserters.getDefinition('definitions/local-var.st.css').then((defs) => {
                 expect(defs.length).to.equal(1);
                 let def = defs[0];
-                expect(path.resolve(def.uri)).to.equal(path.join(CASES_PATH, 'definitions/local-var.st.css'));
+                expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/local-var.st.css'));
                 expect(def.range).to.eql(createRange(5, 4, 5, 7))
             });
         });
@@ -28,7 +30,7 @@ describe("Definitions", function () {
             return asserters.getDefinition('definitions/local-custom-selector.st.css').then((defs) => {
                 expect(defs.length).to.equal(1);
                 let def = defs[0];
-                expect(path.resolve(def.uri)).to.equal(path.join(CASES_PATH, 'definitions/local-custom-selector.st.css'));
+                expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/local-custom-selector.st.css'));
                 expect(def.range).to.eql(createRange(4, 17, 4, 24))
             });
         });
@@ -37,7 +39,7 @@ describe("Definitions", function () {
             return asserters.getDefinition('definitions/local-class-complex.st.css').then((defs) => {
                 expect(defs.length).to.equal(1);
                 let def = defs[0];
-                expect(path.resolve(def.uri)).to.equal(path.join(CASES_PATH, 'definitions/local-class-complex.st.css'));
+                expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/local-class-complex.st.css'));
                 expect(def.range).to.eql(createRange(0, 1, 0, 6))
             });
         });
@@ -49,7 +51,7 @@ describe("Definitions", function () {
                 return asserters.getDefinition('definitions/imported-class-named.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
-                    expect(path.resolve(def.uri)).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
+                    expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
                     expect(def.range).to.eql(createRange(4, 1, 4, 5))
                 });
             });
@@ -58,7 +60,7 @@ describe("Definitions", function () {
                 return asserters.getDefinition('definitions/imported-class-extend.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
-                    expect(path.resolve(def.uri)).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
+                    expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
                     expect(def.range).to.eql(createRange(4, 1, 4, 5))
                 });
             });
@@ -67,7 +69,7 @@ describe("Definitions", function () {
                 return asserters.getDefinition('definitions/imported-class-pseudo-element.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
-                    expect(path.resolve(def.uri)).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
+                    expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
                     expect(def.range).to.eql(createRange(4, 1, 4, 5))
                 });
             });
@@ -78,7 +80,7 @@ describe("Definitions", function () {
                 return asserters.getDefinition('definitions/imported-var-named.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
-                    expect(path.resolve(def.uri)).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
+                    expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
                     expect(def.range).to.eql(createRange(14, 4, 14, 8))
                 });
             });
@@ -87,7 +89,7 @@ describe("Definitions", function () {
                 return asserters.getDefinition('definitions/imported-var-value.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
-                    expect(path.resolve(def.uri)).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
+                    expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
                     expect(def.range).to.eql(createRange(14, 4, 14, 8))
                 });
             });
@@ -98,7 +100,7 @@ describe("Definitions", function () {
                 return asserters.getDefinition('definitions/imported-mixins-named-js.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
-                    expect(path.resolve(def.uri)).to.equal(path.join(CASES_PATH, 'mixins/js-mixins.js'));
+                    expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/js-mixins.js'));
                     expect(def.range).to.eql(createRange(8, 8, 8, 14))
                 });
             });
@@ -107,7 +109,7 @@ describe("Definitions", function () {
                 return asserters.getDefinition('definitions/imported-mixins-named-ts.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
-                    expect(path.resolve(def.uri)).to.equal(path.join(CASES_PATH, 'mixins/my-mixins.ts'));
+                    expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/my-mixins.ts'));
                     expect(def.range).to.eql(createRange(3, 16, 3, 29))
                 });
             });
@@ -116,7 +118,7 @@ describe("Definitions", function () {
                 return asserters.getDefinition('definitions/imported-mixins-value-js.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
-                    expect(path.resolve(def.uri)).to.equal(path.join(CASES_PATH, 'mixins/js-mixins.js'));
+                    expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/js-mixins.js'));
                     expect(def.range).to.eql(createRange(33, 8, 33, 18))
                 });
             });
@@ -125,7 +127,7 @@ describe("Definitions", function () {
                 return asserters.getDefinition('definitions/imported-mixins-value-ts.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
-                    expect(path.resolve(def.uri)).to.equal(path.join(CASES_PATH, 'mixins/my-mixins.ts'));
+                    expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/my-mixins.ts'));
                     expect(def.range).to.eql(createRange(20, 16, 20, 34))
                 });
             });

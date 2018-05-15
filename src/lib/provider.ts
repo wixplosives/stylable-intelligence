@@ -63,7 +63,7 @@ import {
     resolveStateParams,
     resolveStateTypeOrValidator
 } from './feature/pseudo-class';
-
+import {normalizeMeta} from "./utils/stylable";
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
 const cst = require('css-selector-tokenizer');
@@ -169,7 +169,7 @@ export default class Provider {
                 }
                 case 'import': {
                     const filePath: string = path.posix.join(path.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
-                    
+
                     const doc = fs.get(filePath);
 
                     if (doc.getText() !== '') {
@@ -727,12 +727,7 @@ export function createMeta(src: string, srcPath: string) {
             fakes.push(r);
         }
 
-        meta = stylableProcess(ast);
-        const rootPath = path.resolve('/');
-        meta.source = meta.source.replace(rootPath, '/').replace(/\\/g, '/')
-        meta.imports.forEach((_import)=>{
-            _import.from = _import.from.replace(rootPath, '/').replace(/\\/g, '/')
-        })
+        meta = normalizeMeta(stylableProcess(ast));
     } catch (error) {
         return { meta: null, fakes: fakes };
     }
