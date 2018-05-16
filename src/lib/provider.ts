@@ -131,13 +131,11 @@ export default class Provider {
         let word = val.value;
 
         const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
-        const transformer = new StylableTransformer({
-            diagnostics: new Diagnostics(),
-            fileProcessor: this.styl.fileProcessor,
+        const transformer = this.styl.createTransformer({
             requireModule: () => {
                 throw new Error('Not implemented, why are we here')
             }
-        })
+        });
         const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: lineChunkAtCursor }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
         const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
 
