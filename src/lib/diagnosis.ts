@@ -5,6 +5,7 @@ import {Diagnostics, FileProcessor, process as stylableProcess, safeParse, Styla
 import {Diagnostic as Report} from 'stylable/src/diagnostics'
 import {FileSystemReadSync} from 'kissfs';
 import {fromVscodePath} from './utils/uri-utils';
+import {normalizeMeta} from "./utils/stylable";
 
 export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileProcessor: FileProcessor<StylableMeta>, requireModule:typeof require): Diagnostic[] {
 
@@ -20,7 +21,7 @@ export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileP
     });
 
     let docPostCSSRoot = safeParse(doc.getText(), {from: path.resolve(file)});
-    let meta = stylableProcess(docPostCSSRoot);
+    let meta = normalizeMeta(stylableProcess(docPostCSSRoot));
 
     fileProcessor.add(file, meta);
 
