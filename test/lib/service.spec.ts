@@ -313,66 +313,177 @@ describe("Service component test", function () {
         expect(refsInExtends).to.eql(expectedRefs);
     }));
 
-    it("Definitions - element", plan(5, async () => { //File system issue
-        const topFileText = trimLiteral`
-        |:import {
-        |    -st-from: "./import.st.css";
-        |    -st-named: momo;
-        |}
-        |
-        |.local {
-        |    -st-extends: momo;
-        |}
-        |
-        |.local:momo {
-        |    color: blue;
-        |}`
+    describe("Definitions", function () {
+        it("Definitions - element", plan(5, async () => {
+            const topFileText = trimLiteral`
+            |:import {
+            |    -st-from: "./import.st.css";
+            |    -st-named: momo;
+            |}
+            |
+            |.local {
+            |    -st-extends: momo;
+            |}
+            |
+            |.local:momo {
+            |    color: blue;
+            |}`
 
-        const importFileText = trimLiteral`
-        |.shlomo {
-        |    color: black;
-        |}
-        |
-        |.momo {
-        |    -st-states: anotherState,oneMoreState;
-        |}
-        |
-        |.root .momo {
-        |    color: goldenrod;
-        |}
-        `
-        const topFileName = 'top.st.css';
-        const importFileName = 'import.st.css';
-        const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [importFileName]: importFileText } });
-        const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
-        const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileText);
-        const topFileLocations = [
-            { line: 2, character: 17 },
-            { line: 6, character: 18 },
-            { line: 9, character: 7 },
-        ]
-        const importFileLocations = [
-            { line: 4, character: 3 },
-            { line: 8, character: 10 },
-        ]
+            const importFileText = trimLiteral`
+            |.shlomo {
+            |    color: black;
+            |}
+            |
+            |.momo {
+            |    -st-states: anotherState,oneMoreState;
+            |}
+            |
+            |.root .momo {
+            |    color: goldenrod;
+            |}
+            `
+            const topFileName = 'top.st.css';
+            const importFileName = 'import.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [importFileName]: importFileText } });
+            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
+            const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileText);
+            const topFileLocations = [
+                { line: 2, character: 17 },
+                { line: 6, character: 18 },
+                { line: 9, character: 7 },
+            ]
+            const importFileLocations = [
+                { line: 4, character: 3 },
+                { line: 8, character: 10 },
+            ]
 
-        init(fileSystem, testCon.server);
-        for(const loc of topFileLocations){
-            const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
-            expect(def).to.eql([{
-                uri: importTextDocument.uri,
-                range: createRange(4, 1, 4, 5)
-            }]);
-        
-        }
-        for(const loc of importFileLocations){
+            init(fileSystem, testCon.server);
+            for (const loc of topFileLocations) {
+                const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
+                expect(def).to.eql([{
+                    uri: importTextDocument.uri,
+                    range: createRange(4, 1, 4, 5)
+                }]);
 
-            const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
-            expect(def).to.eql([{
-                uri: importTextDocument.uri,
-                range: createRange(4, 1, 4, 5)
-            }]);
-        }
+            }
+            for (const loc of importFileLocations) {
 
-    }));
+                const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
+                expect(def).to.eql([{
+                    uri: importTextDocument.uri,
+                    range: createRange(4, 1, 4, 5)
+                }]);
+            }
+        }));
+
+        it("Definitions - variable", plan(4, async () => {
+            const topFileText = trimLiteral`
+            |:import {
+            |    -st-from: "./import.st.css";
+            |    -st-named: varvar;
+            |}
+            |
+            |.maga {
+            |    background-color: value(varvar)
+            |}`
+
+            const importFileText = trimLiteral`
+            |:vars {
+            |    varvar: pink;
+            |}
+            |
+            |.lala {
+            |    color: value(varvar);
+            |}`
+            const topFileName = 'top.st.css';
+            const importFileName = 'import.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [importFileName]: importFileText } });
+            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
+            const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileText);
+            const topFileLocations = [
+                { line: 2, character: 17 },
+                { line: 6, character: 34 },
+            ]
+            const importFileLocations = [
+                { line: 1, character: 5 },
+                { line: 5, character: 22 },
+            ]
+
+            init(fileSystem, testCon.server);
+            for (const loc of topFileLocations) {
+                const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
+                expect(def).to.eql([{
+                    uri: importTextDocument.uri,
+                    range: createRange(1, 4, 1, 10)
+                }]);
+
+            }
+            for (const loc of importFileLocations) {
+
+                const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
+                expect(def).to.eql([{
+                    uri: importTextDocument.uri,
+                    range: createRange(1, 4, 1, 10)
+                }]);
+            }
+
+        }));
+
+        it("Definitions - state", plan(3, async () => {
+            const topFileText = trimLiteral`
+            |:import {
+            |  -st-from: "./import.st.css";
+            |  -st-default: Comp;
+            |}
+            |
+            |.maga {
+            |  -st-extends: Comp;
+            |}
+            |
+            |.maga:somestate {
+            |
+            |}`
+
+            const importFileText = trimLiteral`
+            |.root {
+            |    -st-states: somestate;
+            |}
+            |
+            |.root:somestate {
+            |
+            |}`
+            const topFileName = 'top.st.css';
+            const importFileName = 'import.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [importFileName]: importFileText } });
+            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
+            const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileText);
+            const topFileLocations = [
+                { line: 9, character: 6 },
+            ]
+            const importFileLocations = [
+                { line: 1, character: 16 },
+                { line: 4, character: 13 },
+            ]
+
+            init(fileSystem, testCon.server);
+            for (const loc of topFileLocations) {
+                const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
+                expect(def).to.eql([{
+                    uri: importTextDocument.uri,
+                    range: createRange(0, 1, 0, 5)
+                }]);
+
+            }
+            for (const loc of importFileLocations) {
+
+                const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
+                expect(def).to.eql([{
+                    uri: importTextDocument.uri,
+                    range: createRange(0, 1, 0, 5)
+                }]);
+            }
+
+        }));
+
+    });
 });
