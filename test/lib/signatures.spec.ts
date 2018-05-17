@@ -199,6 +199,14 @@ describe('Signature Help', function () {
 
             expect(sig).to.be.null;
         })
+
+        it('for native CSS functions', function () {
+            let filePath = 'general/css-native-function.st.css'
+
+            let sig = getSignatureHelp(filePath, '')
+
+            expect(sig).to.be.null;
+        })
     });
 
     describe('State with parameters', () => {

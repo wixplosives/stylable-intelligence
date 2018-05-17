@@ -13,8 +13,9 @@ import {
     Stylable,
     StylableMeta,
     StylableTransformer,
-    valueMapping
+    valueMapping,
 } from 'stylable';
+import { nativeFunctionsDic } from 'stylable/dist/src/native-reserved-lists'
 import { isContainer, isDeclaration, isRoot, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
 import {
     CodeMixinCompletionProvider,
@@ -63,7 +64,7 @@ import {
     resolveStateParams,
     resolveStateTypeOrValidator
 } from './feature/pseudo-class';
-import {fromStylablePath, normalizeMeta} from "./utils/stylable";
+import { fromStylablePath, normalizeMeta } from "./utils/stylable";
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
 const cst = require('css-selector-tokenizer');
@@ -238,13 +239,13 @@ export default class Provider {
         } else {
             return null
         }
-        ;
+        if (mixin === 'value' || Object.keys(nativeFunctionsDic).indexOf(mixin) !== -1) {
+            return null
+        };
+
         let activeParam = parsed.nodes.reverse()[0].nodes.reduce((acc: number, cur: any) => {
             return (cur.type === 'div' ? acc + 1 : acc)
         }, 0);
-        if (mixin === 'value') {
-            return null
-        }
 
         if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
             return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
