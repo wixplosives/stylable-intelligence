@@ -215,7 +215,7 @@ describe("Service component test", function () {
             expect(refsInExtends).to.eql(expectedRefs);
         }));
 
-        xit("References - cross-file", plan(4, async () => { //Not implemented yet
+        xit("References - cross-file", plan(4, async () => { //Feature not implemented yet
             const topFileText = trimLiteral`
             |:import {
             |    -st-from: "./import.st.css";
@@ -482,6 +482,69 @@ describe("Service component test", function () {
                     range: createRange(0, 1, 0, 5)
                 }]);
             }
+
+        }));
+
+        it("Definitions - custom selector", function () {
+            //todo
+        });
+
+        it("Definitions - formatters", plan(2, async () => {
+            const topFileText = trimLiteral`
+            |:import {
+            |  -st-from: "./my-js-mixins.js";
+            |  -st-named: aFormatter;
+            |}
+            |
+            |.local {
+            |  color: aFormatter(red);
+            |}`
+
+            const importFileText = trimLiteral`
+
+            |/**
+            | * @description A mixin with no params
+            | * @summary noParamMixin
+            | * baga bgaa
+            | * @returns {stCssFrag} lalala
+            | * lalala lalala
+            | * {@link OOF}
+            | */
+            |
+            |exports.aBareMixin = function () {
+            |
+            |}
+            |
+            |/**
+            | * @description A formatter with no params
+            | * @summary bareFormatter
+            | * baga bgaa
+            | * @returns {stColor} lalala
+            | */
+            |
+            |exports.aFormatter = function () {
+            |
+            |}`
+            const topFileName = 'top.st.css';
+            const importFileName = 'my-js-mixins.js';
+            const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [importFileName]: importFileText } });
+            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
+            const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileText);
+            const topFileLocations = [
+                { line: 2, character: 13 },
+                { line: 6, character: 10 },
+            ]
+
+            init(fileSystem, testCon.server);
+            for (const loc of topFileLocations) {
+                const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
+                expect(def).to.eql([{
+                    uri: importTextDocument.uri,
+                    range: createRange(20, 8, 20, 18)
+                }]);
+
+            }
+
 
         }));
 

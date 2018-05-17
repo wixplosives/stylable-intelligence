@@ -1,3 +1,4 @@
-.mga {
-  color: rgba()
+:import {
+  -st-from: "./import.st.css";
+  -st-named: ;
 }

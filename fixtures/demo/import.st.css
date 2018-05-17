@@ -1,8 +1,5 @@
-.gaga {
-    -st-states: aState
-}
+@custom-selector :--banana div > div;
 
-.gaga:aState {
-    color:blue;
-    mask: lala
+:--banana {
+  background-color: blanchedalmond;
 }
