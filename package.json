@@ -2,9 +2,14 @@
     "name": "stylable-intelligence",
     "main": "./dist/src/index.js",
     "types": "./dist/src/index.d.ts",
-    "license": "MIT",
+    "license": "BSD-3-Clause",
     "version": "0.2.10",
-    "description": "Stylable Language Services",
+    "description": "Stylable Language Services - syntax highlighting, completions, hinting and for the Stylable CSS preprocessor.",
+    "icon": "images/icon.png",
+    "galleryBanner": {
+        "color": "#ffffff",
+        "theme": "light"
+    },
     "scripts": {
         "reset": "yarn clear && rimraf node_modules .vscode-test && yarn install && yarn test",
         "clear": "rimraf dist",
