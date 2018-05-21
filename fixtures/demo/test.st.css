@@ -1,4 +1,11 @@
-:import {
-  -st-from: "./import.st.css";
-  -st-named: ;
+.gaga {
+   color: red;
+}
+
+:vars {
+  varvar: goldenrod;
+}
+
+.baba {
+  color: value(varvar)
 }

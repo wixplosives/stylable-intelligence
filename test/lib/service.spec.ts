@@ -29,7 +29,6 @@ function trimLiteral(content: TemplateStringsArray, ...keys: string[]) {
     return content.join('\n').replace(/^\s*\|/gm, '').replace(/^\n/, '');
 }
 
-
 describe("Service component test", function () {
     let testCon: TestConnection;
     beforeEach(() => {
@@ -122,54 +121,86 @@ describe("Service component test", function () {
         }));
     })
 
-    it("Document Colors - local, vars, imported", plan(2, async () => {
-        const baseFilecContent = trimLiteral`
-        |:vars {
-        |    myColor: rgba(0, 255, 0, 0.8);
-        |}
-        |
-        |.root {
-        |    color: value(myColor);
-        |}
-        `
+    describe("Document Colors", function () {
+        it("Document Colors - local, vars, imported", plan(2, async () => {
+            const baseFilecContent = trimLiteral`
+            |:vars {
+            |    myColor: rgba(0, 255, 0, 0.8);
+            |}
+            |
+            |.root {
+            |    color: value(myColor);
+            |}`
 
-        const importFileContent = trimLiteral`
-        |:import {
-        |    -st-from: "./single-file-color.st.css";
-        |    -st-named: myColor;
-        |}
-        `
+            const importFileContent = trimLiteral`
+            |:import {
+            |    -st-from: "./single-file-color.st.css";
+            |    -st-named: myColor;
+            |}`
 
-        const baseFileName = 'single-file-color.st.css';
-        const importFileName = 'import-color.st.css';
-        const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent, [importFileName]: importFileContent } });
-        const baseTextDocument = TextDocumentItem.create('/' + baseFileName, 'stylable', 0, baseFilecContent);
-        const importTextDocument = TextDocumentItem.create('/' + importFileName, 'stylable', 0, importFileContent);
+            const baseFileName = 'single-file-color.st.css';
+            const importFileName = 'import-color.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent, [importFileName]: importFileContent } });
+            const baseTextDocument = TextDocumentItem.create('/' + baseFileName, 'stylable', 0, baseFilecContent);
+            const importTextDocument = TextDocumentItem.create('/' + importFileName, 'stylable', 0, importFileContent);
 
-        const range1 = createRange(5, 11, 5, 24);
-        const range2 = createRange(1, 13, 1, 33);
-        const range3 = createRange(2, 15, 2, 22);
-        const color = createColor(0, 1, 0, 0.8);
+            const range1 = createRange(5, 11, 5, 24);
+            const range2 = createRange(1, 13, 1, 33);
+            const range3 = createRange(2, 15, 2, 22);
+            const color = createColor(0, 1, 0, 0.8);
 
-        init(fileSystem, testCon.server);
+            init(fileSystem, testCon.server);
 
-        const docColors = await testCon.client.documentColor({ textDocument: baseTextDocument });
-        const importDocColors = await testCon.client.documentColor({ textDocument: importTextDocument });
+            const docColors = await testCon.client.documentColor({ textDocument: baseTextDocument });
+            const importDocColors = await testCon.client.documentColor({ textDocument: importTextDocument });
 
-        expect(docColors).to.eql([{
-            range: range1,
-            color: color
-        },
-        {
-            range: range2,
-            color: color
-        }]);
+            expect(docColors).to.eql([{
+                range: range1,
+                color: color
+            },
+            {
+                range: range2,
+                color: color
+            }]);
 
-        expect(importDocColors).to.eql([{
-            range: range3,
-            color: color
-        }]);
-    }));
+            expect(importDocColors).to.eql([{
+                range: range3,
+                color: color
+            }]);
+        }));
+
+        it.only("Color Presentation", plan(1, async () => {
+            const filecContent = trimLiteral`
+            |.gaga {
+            |    color: red;
+            |}
+            |
+            |:vars {
+            |    varvar: goldenrod;
+            |}
+            |
+            |.baba {
+            |    color: value(varvar)
+            |}`
+
+            const fileName = 'color-presentation.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [fileName]: filecContent } });
+            const textDocument = TextDocumentItem.create('/' + fileName, 'stylable', 0, filecContent);
+
+            const range1 = createRange(5, 11, 5, 24);
+            const range2 = createRange(1, 13, 1, 33);
+            const range3 = createRange(2, 15, 2, 22);
+            const color = createColor(0, 1, 0, 1);
+
+            init(fileSystem, testCon.server);
+
+            const preso = await testCon.client.colorPresentation({ textDocument, range: range1, color })
+
+            const label = 'rgb(0, 255, 0)';
+            expect(preso).to.deep.include({ label, textEdit: { newText: label, range: range1 } })
+
+        }));
+    })
 
     describe("References", function () {
         it("References - local file", plan(3, async () => {
@@ -271,7 +302,7 @@ describe("Service component test", function () {
     })
 
     describe("Rename Symbol", function () {
-        it.only("Rename Symbol - local file", plan(3, async () => {
+        it("Rename Symbol - local file", plan(3, async () => {
             const fileText = trimLiteral`
                 |  .gaga {
                 |    -st-states: active;
@@ -316,60 +347,59 @@ describe("Service component test", function () {
             expect(res!.changes![toVscodePath('/' + fileName)]).to.eql(expectedEdits);
         }));
 
-        // it("Rename Symbol - cross file", plan(1, async () => { //Feature not implemented yett (uses References mechanism)
-        //     const topFileText = trimLiteral`
-        //     |:import {
-        //     |    -st-from: "./import.st.css";
-        //     |    -st-named: gaga;
-        //     |}
-        //     |
-        //     |.baga {
-        //     |    -st-extends: gaga;
-        //     |    background-color: goldenrod;
-        //     |}`
+        xit("Rename Symbol - cross file", plan(1, async () => { //Feature not implemented yet (uses References mechanism)
+            const topFileText = trimLiteral`
+            |:import {
+            |    -st-from: "./import.st.css";
+            |    -st-named: gaga;
+            |}
+            |
+            |.baga {
+            |    -st-extends: gaga;
+            |    background-color: goldenrod;
+            |}`
 
-        //     const baseFileText = trimLiteral`
-        //     |.gaga {
-        //     |    -st-states: aState
-        //     |}
-        //     |
-        //     |.gaga:aState {
-        //     |    color:blue;
-        //     |    mask: lala
-        //     |}
-        //     `
+            const baseFileText = trimLiteral`
+            |.gaga {
+            |    -st-states: aState
+            |}
+            |
+            |.gaga:aState {
+            |    color:blue;
+            |    mask: lala
+            |}
+            `
 
-        //     const baseFileName = 'import.st.css';
-        //     const topFileName = 'top.st.css';
-        //     const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFileText, [topFileName]: topFileText } });
+            const baseFileName = 'import.st.css';
+            const topFileName = 'top.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFileText, [topFileName]: topFileText } });
 
-        //     init(fileSystem, testCon.server);
-        //     const context = { includeDeclaration: true }
-        //     const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, fileSystem.loadTextFileSync(baseFileName));
-        //     const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+            init(fileSystem, testCon.server);
+            const context = { includeDeclaration: true }
+            const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, fileSystem.loadTextFileSync(baseFileName));
+            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
 
-        //     const refRequests: ReferenceParams[] = [
-        //         { context, textDocument: baseTextDocument, position: { line: 0, character: 3 } },
-        //         { context, textDocument: baseTextDocument, position: { line: 4, character: 2 } },
-        //         { context, textDocument: topTextDocument, position: { line: 2, character: 18 } },
-        //         { context, textDocument: topTextDocument, position: { line: 6, character: 20 } },
-        //     ]
+            const editRequests: ReferenceParams[] = [
+                { context, textDocument: baseTextDocument, position: { line: 0, character: 3 } },
+                { context, textDocument: baseTextDocument, position: { line: 4, character: 2 } },
+                { context, textDocument: topTextDocument, position: { line: 2, character: 18 } },
+                { context, textDocument: topTextDocument, position: { line: 6, character: 20 } },
+            ]
 
-        //     const expectedRefs = [ //Refs should be listed in the order they appear in each file, current file first.
-        //         Location.create(baseTextDocument.uri, createRange(0, 1, 0, 5)),
-        //         Location.create(baseTextDocument.uri, createRange(4, 1, 4, 5)),
-        //         Location.create(topTextDocument.uri, createRange(2, 15, 2, 19)),
-        //         Location.create(topTextDocument.uri, createRange(6, 17, 6, 21)),
-        //     ]
+            const expectedEdits = [ //Edits order inside a file has no meaning. Order is replicated from getRefs functionality.
+                TextEdit.replace(createRange(0, 1, 0, 5), 'abc'),
+                TextEdit.replace(createRange(4, 1, 4, 5), 'abc'),
+                TextEdit.replace(createRange(2, 15, 2, 19), 'abc'),
+                TextEdit.replace(createRange(6, 17, 6, 21), 'abc'),
+            ]
 
-        //     refRequests.forEach(async refReq => {
-        //         const actualRefs = await testCon.client.references({ context, textDocument: refReq.textDocument, position: refReq.position });
-        //         expect(actualRefs).to.eql(expectedRefs);
-        //     })
+            editRequests.forEach(async editReq => {
+                const actualRefs = await testCon.client.references({ context, textDocument: editReq.textDocument, position: editReq.position });
+                expect(actualRefs).to.eql(expectedEdits);
+            })
 
-        // }))
+        }))
     });
-
 
     describe("Definitions", function () {
         it("Definitions - element", plan(5, async () => {
@@ -543,8 +573,7 @@ describe("Service component test", function () {
 
         }));
 
-        it("Definitions - custom selector", function () {
-            //todo
+        it("Definitions - custom selector", function () { //TODO
         });
 
         it("Definitions - formatters", plan(2, async () => {
@@ -559,7 +588,6 @@ describe("Service component test", function () {
             |}`
 
             const importFileText = trimLiteral`
-
             |/**
             | * @description A mixin with no params
             | * @summary noParamMixin
@@ -602,9 +630,6 @@ describe("Service component test", function () {
                 }]);
 
             }
-
-
         }));
-
     });
 });
