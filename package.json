@@ -1,128 +1,150 @@
 {
-    "name": "stylable-intelligence",
-    "main": "./dist/src/index.js",
-    "types": "./dist/src/index.d.ts",
-    "license": "BSD-3-Clause",
-    "version": "0.2.10",
-    "description": "Stylable Language Services - syntax highlighting, completions, hinting and for the Stylable CSS preprocessor.",
-    "icon": "images/icon.png",
-    "galleryBanner": {
-        "color": "#ffffff",
-        "theme": "light"
-    },
-    "scripts": {
-        "reset": "yarn clear && rimraf node_modules .vscode-test && yarn install && yarn test",
-        "clear": "rimraf dist",
-        "build": "tsc",
-        "prepublish": "node ./node_modules/vscode/bin/install",
-        "test": "yarn test:server && yarn build && yarn test:e2e && yarn test:browser-compatible",
-        "test:e2e": "node ./run-test",
-        "test:server": "mocha --require ts-node/register test/lib/**/*.spec.ts test/lib/*.spec.ts",
-        "test:browser-compatible": "mocha --require ts-node/register test/browser-compatible.spec.ts"
-    },
-    "dependencies": {
-        "bignumber": "^1.1.0",
-        "css-selector-tokenizer": "^0.7.0",
-        "doctrine": "^2.1.0",
-        "glob": "^7.1.2",
-        "htap": "^1.0.3",
-        "ipaddr": "^0.0.9",
-        "kissfs": "^0.6.3",
-        "lodash": "^4.17.5",
-        "pkg-dir": "^2.0.0",
-        "postcss": "^6.0.19",
-        "postcss-selector-parser": "^4.0.0",
-        "postcss-value-parser": "^3.3.0",
-        "stylable": "^5.2.0",
-        "tslib": "^1.9.0",
-        "typescript": "~2.8.3",
-        "vscode": "^1.1.13",
-        "vscode-css-languageservice": "3.0.9-next.14",
-        "vscode-languageclient": "^4.0.0",
-        "vscode-languageserver": "^4.0.0"
-    },
-    "devDependencies": {
-        "@types/autobahn": "^0.9.38",
-        "@types/chai": "^4.1.2",
-        "@types/chai-subset": "^1.3.1",
-        "@types/glob": "^5.0.35",
-        "@types/lodash": "^4.14.104",
-        "@types/memory-fs": "^0.3.0",
-        "@types/mocha": "^5.2.0",
-        "@types/node": "10",
-        "@types/pkg-dir": "^2.0.0",
-        "@types/sinon": "^4.3.0",
-        "@types/sinon-chai": "^2.7.29",
-        "@types/webpack": "^4.1.0",
-        "chai": "^4.1.2",
-        "chai-subset": "^1.6.0",
-        "concurrently": "^3.5.1",
-        "glob": "^7.1.2",
-        "memory-fs": "^0.4.1",
-        "mocha": "^5.0.4",
-        "mocha-env-reporter": "^3.0.0",
-        "mocha-loader": "^1.1.3",
-        "ncp": "^2.0.0",
-        "polished": "^1.9.2",
-        "rimraf": "^2.6.2",
-        "sinon": "^5.0.7",
-        "sinon-chai": "^3.0.0",
-        "source-map-support": "^0.5.3",
-        "ts-node": "^6.0.3",
-        "vsce": "^1.37.5",
-        "webpack": "^4.1.1"
-    },
-    "author": "Nadav Abraami (nadav@wix.com)",
-    "publisher": "wix",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/wix/stylable-intelligence.git"
-    },
-    "bugs": {
-        "url": "https://github.com/wix/stylable-intelligence/issues"
-    },
-    "engines": {
-        "vscode": "^1.20.0"
-    },
-    "categories": [
-        "Programming Languages",
-        "Snippets",
-        "Other"
-    ],
-    "contributes": {
-        "languages": [
-            {
-                "id": "stylable",
-                "aliases": [
-                    "Stylable"
-                ],
-                "extensions": [
-                    ".st.css"
-                ],
-                "configuration": "./language-configuration.json"
-            }
+  "name": "stylable-intelligence",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "license": "BSD-3-Clause",
+  "version": "0.2.10",
+  "description": "Stylable Language Services - syntax highlighting, completions, hinting and for the Stylable CSS preprocessor.",
+  "icon": "images/icon.png",
+  "galleryBanner": {
+    "color": "#ffffff",
+    "theme": "light"
+  },
+  "scripts": {
+    "reset": "yarn clear && rimraf node_modules .vscode-test && yarn install && yarn test",
+    "clear": "rimraf dist",
+    "build": "tsc",
+    "prepublish": "node ./node_modules/vscode/bin/install",
+    "test": "yarn test:server && yarn build && yarn test:e2e && yarn test:browser-compatible",
+    "test:e2e": "node ./run-test",
+    "test:server": "mocha --require ts-node/register test/lib/**/*.spec.ts test/lib/*.spec.ts",
+    "test:browser-compatible": "mocha --require ts-node/register test/browser-compatible.spec.ts"
+  },
+  "dependencies": {
+    "bignumber": "^1.1.0",
+    "css-selector-tokenizer": "^0.7.0",
+    "doctrine": "^2.1.0",
+    "glob": "^7.1.2",
+    "htap": "^1.0.3",
+    "ipaddr": "^0.0.9",
+    "kissfs": "^0.6.3",
+    "lodash": "^4.17.5",
+    "pkg-dir": "^2.0.0",
+    "postcss": "^6.0.19",
+    "postcss-selector-parser": "^4.0.0",
+    "postcss-value-parser": "^3.3.0",
+    "stylable": "^5.2.0",
+    "tslib": "^1.9.0",
+    "typescript": "~2.8.3",
+    "vscode": "^1.1.13",
+    "vscode-css-languageservice": "3.0.9-next.14",
+    "vscode-languageclient": "^4.0.0",
+    "vscode-languageserver": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/autobahn": "^0.9.38",
+    "@types/chai": "^4.1.2",
+    "@types/chai-subset": "^1.3.1",
+    "@types/glob": "^5.0.35",
+    "@types/lodash": "^4.14.104",
+    "@types/memory-fs": "^0.3.0",
+    "@types/mocha": "^5.2.0",
+    "@types/node": "10",
+    "@types/pkg-dir": "^2.0.0",
+    "@types/sinon": "^4.3.0",
+    "@types/sinon-chai": "^2.7.29",
+    "@types/webpack": "^4.1.0",
+    "chai": "^4.1.2",
+    "chai-subset": "^1.6.0",
+    "concurrently": "^3.5.1",
+    "glob": "^7.1.2",
+    "memory-fs": "^0.4.1",
+    "mocha": "^5.0.4",
+    "mocha-env-reporter": "^3.0.0",
+    "mocha-loader": "^1.1.3",
+    "ncp": "^2.0.0",
+    "polished": "^1.9.2",
+    "rimraf": "^2.6.2",
+    "sinon": "^5.0.7",
+    "sinon-chai": "^3.0.0",
+    "source-map-support": "^0.5.3",
+    "ts-node": "^6.0.3",
+    "vsce": "^1.37.5",
+    "webpack": "^4.1.1"
+  },
+  "author": "Nadav Abraami (nadav@wix.com)",
+  "publisher": "wix",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wix/stylable-intelligence.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wix/stylable-intelligence/issues"
+  },
+  "engines": {
+    "vscode": "^1.20.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Other"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "stylable",
+        "aliases": [
+          "Stylable"
         ],
-        "grammars": [
-            {
-                "language": "stylable",
-                "scopeName": "source.stylable",
-                "path": "./syntaxes/stylable.tmLanguage.json"
-            }
-        ]
-    },
-    "activationEvents": [
-        "onLanguage:stylable"
+        "extensions": [
+          ".st.css"
+        ],
+        "configuration": "./language-configuration.json"
+      }
     ],
-    "files": [
-        "dist/src",
-        "service.js",
-        "service.d.ts"
-    ],
-    "testGlob": "./dist/test/**/*.test.js?(x)",
-    "homepage": "https://github.com/wix/stylable-intelligence#readme",
-    "keywords": [
-        "typescript",
-        "stylable",
-        "css"
+    "grammars": [
+      {
+        "language": "stylable",
+        "scopeName": "source.stylable",
+        "path": "./syntaxes/stylable.tmLanguage.json"
+      }
     ]
+  },
+  "activationEvents": [
+    "onLanguage:stylable"
+  ],
+  "files": [
+    "dist/src",
+    "service.js",
+    "service.d.ts"
+  ],
+  "badges": [
+    {
+      "url": "https://img.shields.io/vscode-marketplace/v/wix.stylable-intelligence.svg",
+      "href": "https://marketplace.visualstudio.com/items?itemName=wix.stylable-intelligence",
+      "description": "Stylable Intelligence on the VSCode marketplace"
+    },
+    {
+      "url": "https://travis-ci.org/wix/stylable-intelligence.svg?branch=master",
+      "href": "https://travis-ci.org/wix/stylable-intelligence",
+      "description": "Stylable Intelligence build on Travis CI"
+    },
+    {
+      "url": "https://ci.appveyor.com/api/projects/status/github/wix/stylable-intelligence?branch=master&svg=true",
+      "href": "https://ci.appveyor.com/project/qballer/stylable-intelligence",
+      "description": "Stylable Intelligence build on AppVoyer"
+    },
+    {
+      "url": "https://badge.fury.io/js/stylable-intelligence.svg",
+      "href": "https://badge.fury.io/js/stylable-intelligence",
+      "description": "Stylable Intelligence package on NPM"
+    }
+  ],
+  "testGlob": "./dist/test/**/*.test.js?(x)",
+  "homepage": "https://github.com/wix/stylable-intelligence#readme",
+  "keywords": [
+    "typescript",
+    "stylable",
+    "css"
+  ]
 }
