@@ -3,13 +3,14 @@ import { expect, plan } from "../testkit/chai.spec";
 import { init } from "../../src/lib/server-utils";
 import { MemoryFileSystem } from "kissfs";
 import { toVscodePath } from "../../src/lib/utils/uri-utils";
-import { TextDocumentItem, ReferenceParams } from "vscode-languageserver-protocol"
+import { TextDocumentItem, ReferenceParams, TextEdit } from "vscode-languageserver-protocol"
 import { getRangeAndText } from "../testkit/text.spec";
 import { Diagnostic, Range, Position, Location } from 'vscode-languageserver-types';
 import { createRange, ProviderPosition } from '../../src/lib/completion-providers';
 import { createColor } from './colors.spec';
 import { timingFunctions } from 'polished';
 import { toggleLegacy } from '../../src/lib/provider-factory'
+
 
 
 function createDiagnosisNotification(diagnostics: Diagnostic[], fileName: string) {
@@ -269,49 +270,106 @@ describe("Service component test", function () {
         }));
     })
 
-    it("Rename Symbol - local file", plan(3, async () => {
-        const fileText = trimLiteral`
-            |  .gaga {
-            |    -st-states: active;
-            |    color: red;
-            |}
-            |
-            |.gaga:active .gaga {
-            |    background-color: fuchsia;
-            |}
-            |
-            |.lokal {
-            |    -st-extends:      gaga;
-            |}
-            |
-            |.mixed {
-            |    -st-mixin: lokal,
-            |    gaga, lokal,
-            |    gaga;
-            |}`
+    describe("Rename Symbol", function () {
+        it.only("Rename Symbol - local file", plan(3, async () => {
+            const fileText = trimLiteral`
+                |  .gaga {
+                |    -st-states: active;
+                |    color: red;
+                |}
+                |
+                |.gaga:active .gaga {
+                |    background-color: fuchsia;
+                |}
+                |
+                |.lokal {
+                |    -st-extends:      gaga;
+                |}
+                |
+                |.mixed {
+                |    -st-mixin: lokal,
+                |    gaga, lokal,
+                |    gaga;
+                |}`
 
-        const fileName = 'references.st.css';
-        const fileSystem = new MemoryFileSystem('', { content: { [fileName]: fileText } });
+            const fileName = 'references.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [fileName]: fileText } });
 
-        init(fileSystem, testCon.server);
-        const context = { includeDeclaration: true }
-        const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
-        const refsInSelector = await testCon.client.references({ context, textDocument, position: { line: 5, character: 16 } })
-        const refsInMixin = await testCon.client.references({ context, textDocument, position: { line: 10, character: 25 } })
-        const refsInExtends = await testCon.client.references({ context, textDocument, position: { line: 15, character: 6 } })
-        const expectedRefs = [ //Refs should be listed in the order they appear in the file
-            Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
-            Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
-            Location.create(textDocument.uri, createRange(5, 14, 5, 18)),
-            Location.create(textDocument.uri, createRange(10, 22, 10, 26)),
-            Location.create(textDocument.uri, createRange(15, 4, 15, 8)),
-            Location.create(textDocument.uri, createRange(16, 4, 16, 8))
-        ]
+            init(fileSystem, testCon.server);
+            const context = { includeDeclaration: true }
+            const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
 
-        expect(refsInSelector).to.eql(expectedRefs);
-        expect(refsInMixin).to.eql(expectedRefs);
-        expect(refsInExtends).to.eql(expectedRefs);
-    }));
+            const res = await testCon.client.rename({ textDocument, position: { line: 10, character: 24 }, newName: 'abc' })
+
+            expect(res!.changes).to.exist;
+            expect(res!.changes![toVscodePath('/' + fileName)]).to.exist;
+
+            const expectedEdits = [ //Edits order inside a file has no meaning. Order is replicated from getRefs functionality.
+                TextEdit.replace(createRange(0, 3, 0, 7), 'abc'),
+                TextEdit.replace(createRange(5, 1, 5, 5), 'abc'),
+                TextEdit.replace(createRange(5, 14, 5, 18), 'abc'),
+                TextEdit.replace(createRange(10, 22, 10, 26), 'abc'),
+                TextEdit.replace(createRange(15, 4, 15, 8), 'abc'),
+                TextEdit.replace(createRange(16, 4, 16, 8), 'abc')
+            ]
+
+            expect(res!.changes![toVscodePath('/' + fileName)]).to.eql(expectedEdits);
+        }));
+
+        // it("Rename Symbol - cross file", plan(1, async () => { //Feature not implemented yett (uses References mechanism)
+        //     const topFileText = trimLiteral`
+        //     |:import {
+        //     |    -st-from: "./import.st.css";
+        //     |    -st-named: gaga;
+        //     |}
+        //     |
+        //     |.baga {
+        //     |    -st-extends: gaga;
+        //     |    background-color: goldenrod;
+        //     |}`
+
+        //     const baseFileText = trimLiteral`
+        //     |.gaga {
+        //     |    -st-states: aState
+        //     |}
+        //     |
+        //     |.gaga:aState {
+        //     |    color:blue;
+        //     |    mask: lala
+        //     |}
+        //     `
+
+        //     const baseFileName = 'import.st.css';
+        //     const topFileName = 'top.st.css';
+        //     const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFileText, [topFileName]: topFileText } });
+
+        //     init(fileSystem, testCon.server);
+        //     const context = { includeDeclaration: true }
+        //     const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, fileSystem.loadTextFileSync(baseFileName));
+        //     const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+
+        //     const refRequests: ReferenceParams[] = [
+        //         { context, textDocument: baseTextDocument, position: { line: 0, character: 3 } },
+        //         { context, textDocument: baseTextDocument, position: { line: 4, character: 2 } },
+        //         { context, textDocument: topTextDocument, position: { line: 2, character: 18 } },
+        //         { context, textDocument: topTextDocument, position: { line: 6, character: 20 } },
+        //     ]
+
+        //     const expectedRefs = [ //Refs should be listed in the order they appear in each file, current file first.
+        //         Location.create(baseTextDocument.uri, createRange(0, 1, 0, 5)),
+        //         Location.create(baseTextDocument.uri, createRange(4, 1, 4, 5)),
+        //         Location.create(topTextDocument.uri, createRange(2, 15, 2, 19)),
+        //         Location.create(topTextDocument.uri, createRange(6, 17, 6, 21)),
+        //     ]
+
+        //     refRequests.forEach(async refReq => {
+        //         const actualRefs = await testCon.client.references({ context, textDocument: refReq.textDocument, position: refReq.position });
+        //         expect(actualRefs).to.eql(expectedRefs);
+        //     })
+
+        // }))
+    });
+
 
     describe("Definitions", function () {
         it("Definitions - element", plan(5, async () => {
