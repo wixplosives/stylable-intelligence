@@ -130,6 +130,7 @@ export default class Provider {
         }
 
         let word = val.value;
+        if (word.startsWith('--')) {word = word.slice(2)};
 
         const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
         const transformer = this.styl.createTransformer({
@@ -196,7 +197,7 @@ export default class Provider {
             )
         } else if (keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
             defs.push(
-                new ProviderLocation(meta.source, this.findWord(':--' + word, src, position))
+                new ProviderLocation(meta.source, this.findWord(word, src, position))
             );
         }
 

@@ -1,3 +1,6 @@
-.gaga {
-    color: rgb()
+@custom-selector :--gaga div > div;
+
+:--gaga {
+    color: red;
 }
+

@@ -213,7 +213,7 @@ describe("Service component test", function () {
 
         }));
 
-        it.only("Definitions - custom selector", plan(2, async () => { //TODO
+        it("Definitions - custom selector", plan(4, async () => { //TODO
             const topFileText = trimLiteral`
             |:import {
             |  -st-from: "./import.st.css";
@@ -240,10 +240,10 @@ describe("Service component test", function () {
                 { line: 2, character: 15 },
                 { line: 6, character: 19 },
             ]
-            // const importFileLocations = [
-            //     { line: 0, character: 20 },
-            //     { line: 2, character: 6 },
-            // ]
+            const importFileLocations = [
+                { line: 0, character: 20 },
+                { line: 2, character: 6 },
+            ]
             init(fileSystem, testCon.server);
 
             for (const loc of topFileLocations) {
@@ -254,13 +254,13 @@ describe("Service component test", function () {
                 }]);
             };
 
-            // for (const loc of importFileLocations) {
-            //     const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
-            //     expect(def).to.eql([{
-            //         uri: importTextDocument.uri,
-            //         range: createRange(0, 20, 0, 24)
-            //     }]);
-            // };
+            for (const loc of importFileLocations) {
+                const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
+                expect(def).to.eql([{
+                    uri: importTextDocument.uri,
+                    range: createRange(0, 20, 0, 24)
+                }]);
+            };
         }));
 
         it("Definitions - formatters", plan(2, async () => {
