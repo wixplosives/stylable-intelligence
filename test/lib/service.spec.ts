@@ -772,6 +772,94 @@ describe("Service component test", function () {
             expect(formatterRes).to.eql(formatterSig);
 
         }));
+
+        it('Signatures - State with params definition (types)', plan(1, async () => {
+            const topFileText = trimLiteral`
+            |.root{
+            |    -st-states: myState();
+            |}`;
+            const topFileName = 'state.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText } });
+
+            init(fileSystem, testCon.server);
+
+            const context = { includeDeclaration: true }
+            const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+
+            const position = { line: 1, character: 24 };
+            const stateParamTypesSigRes = await testCon.client.signatureHelp({ textDocument, position });
+
+            const stateParamTypesSig: SignatureHelp = {
+                activeSignature: 0,
+                activeParameter: 0,
+                signatures: [SignatureInformation.create(
+                    'Supported state types:\n- "string | number | enum | tag"',
+                    undefined,
+                    ParameterInformation.create("string | number | enum | tag")
+                )]
+            }
+            expect(stateParamTypesSigRes).to.eql(stateParamTypesSig);
+        }));
+
+        it('Signatures - State with params definition (validator)', plan(1, async () => {
+            const topFileText = trimLiteral`
+            |.root{
+            |    -st-states: myState( string() );
+            |}`;
+            const topFileName = 'state.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText } });
+
+            init(fileSystem, testCon.server);
+
+            const context = { includeDeclaration: true }
+            const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+
+            const position = { line: 1, character: 32 };
+            const stateParamValidatorsSigRes = await testCon.client.signatureHelp({ textDocument, position });
+
+            const stateParamValidatorsSig: SignatureHelp = {
+                activeSignature: 0,
+                activeParameter: 0,
+                signatures: [SignatureInformation.create(
+                    'Supported "string" validator types:\n- "regex, contains, minLength, maxLength"',
+                    undefined,
+                    ParameterInformation.create("regex, contains, minLength, maxLength")
+                )]
+            }
+            expect(stateParamValidatorsSigRes).to.eql(stateParamValidatorsSig);
+        }));
+
+        it('Signatures - State with params usage (in a selector)', plan(1, async () => {
+            const topFileText = trimLiteral`
+            |.root{
+            |    -st-states: myState( string( contains(user) ) );
+            |}
+            |
+            |.root:myState() {
+            |
+            |}`
+            const topFileName = 'state.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText } });
+
+            init(fileSystem, testCon.server);
+
+            const context = { includeDeclaration: true }
+            const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+
+            const position = { line: 4, character: 14 };
+            const stateParamSigRes = await testCon.client.signatureHelp({ textDocument, position });
+
+            const stateParamSig: SignatureHelp = {
+                activeSignature: 0,
+                activeParameter: 0,
+                signatures: [SignatureInformation.create(
+                    "myState(string(contains(user)))",
+                    undefined,
+                    ParameterInformation.create("string(contains(user))")
+                )]
+            }
+            expect(stateParamSigRes).to.eql(stateParamSig);
+        }));
     });
 
 });
