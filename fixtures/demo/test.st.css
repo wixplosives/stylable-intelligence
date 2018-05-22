@@ -1,11 +1,3 @@
 .gaga {
-   color: red;
-}
-
-:vars {
-  varvar: goldenrod;
-}
-
-.baba {
-  color: value(varvar)
+    color: rgb()
 }

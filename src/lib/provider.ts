@@ -206,7 +206,7 @@ export default class Provider {
     public getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
 
         if (!filePath.endsWith('.st.css')) {
-            return null
+            return null;
         }
         const { processed: { meta } } = fixAndProcess(src, pos, filePath);
         if (!meta) return null;
@@ -215,10 +215,9 @@ export default class Provider {
         const line = split[pos.line];
         let value: string = '';
 
-
         const path = pathFromPosition(meta.rawAst, { line: pos.line + 1, character: pos.character + 1 });
 
-        if (isRoot(last(path)!)) { // TODO: check your actually on a selector
+        if (isRoot(last(path)!)) { // TODO: check you're actually on a selector
             return this.getSignatureForStateWithParamSelector(meta, pos, line)
         } else if (line.slice(0, pos.character).trim().startsWith(valueMapping.states)) {
             return this.getSignatureForStateWithParamDefinition(meta, pos, line);
@@ -264,8 +263,6 @@ export default class Provider {
             return null;
         }
     }
-
-
 
     private inDef(position: ProviderPosition, def: ProviderLocation): boolean {
         return (position.line > def.range.start.line || (position.line === def.range.start.line && position.character >= def.range.start.character))
