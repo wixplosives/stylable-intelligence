@@ -577,7 +577,7 @@ describe("Service component test", function () {
     })
 
     describe("Rename Symbol", function () {
-        it("Rename Symbol - local file", plan(3, async () => {
+        it("Rename Symbol - local file", plan(2, async () => {
             const fileText = trimLiteral`
                 |  .gaga {
                 |    -st-states: active;
