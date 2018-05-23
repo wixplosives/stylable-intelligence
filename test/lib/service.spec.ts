@@ -12,7 +12,6 @@ import { timingFunctions } from 'polished';
 import { toggleLegacy } from '../../src/lib/provider-factory'
 
 
-
 function createDiagnosisNotification(diagnostics: Diagnostic[], fileName: string) {
     return {
         diagnostics,
@@ -305,12 +304,12 @@ describe("Service component test", function () {
         }));
 
         //TODO
-        xit("Definitions - TS formatters", plan (1, async () => {
+        xit("Definitions - TS formatters", plan(1, async () => {
         }))
     });
 
     describe("Diagnostics", function () {
-        it("Diagnostics - single file error", plan(2, () => {
+        it("Diagnostics - single file error", plan(1, () => {
             const rangeAndText = getRangeAndText('|.gaga .root{}|');
             const fileName = 'single-file-diag.st.css';
             const fileSystem = new MemoryFileSystem('', { content: { [fileName]: rangeAndText.text } });
@@ -326,7 +325,7 @@ describe("Service component test", function () {
             });
         }));
 
-        it("Diagnostics - cross-file errors", plan(2, () => {
+        it("Diagnostics - cross-file errors", plan(1, () => {
             const baseFilecContent = trimLiteral`
             |.gaga {
             |    -st-states: aState
@@ -358,7 +357,7 @@ describe("Service component test", function () {
 
         }));
 
-        it("Diagnostics - CSS errors", plan(2, () => {
+        it("Diagnostics - CSS errors", plan(1, () => {
             const baseFilecContent = trimLiteral`
             |.root {}
             |
@@ -522,7 +521,8 @@ describe("Service component test", function () {
             expect(refsInExtends).to.eql(expectedRefs);
         }));
 
-        xit("References - cross-file", plan(4, async () => { //Feature not implemented yet
+        // TODO: Feature not implemented yet
+        xit("References - cross-file", plan(4, async () => {
             const topFileText = trimLiteral`
             |:import {
             |    -st-from: "./import.st.css";
@@ -602,7 +602,6 @@ describe("Service component test", function () {
             const fileSystem = new MemoryFileSystem('', { content: { [fileName]: fileText } });
 
             init(fileSystem, testCon.server);
-            const context = { includeDeclaration: true };
             const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
 
             const res = await testCon.client.rename({ textDocument, position: { line: 10, character: 24 }, newName: 'abc' })
@@ -622,7 +621,7 @@ describe("Service component test", function () {
             expect(res!.changes![toVscodePath('/' + fileName)]).to.have.deep.members(expectedEdits);
         }));
 
-        //Feature not implemented yet (uses References mechanism)
+        // TODO: Feature not implemented yet (uses References mechanism)
         xit("Rename Symbol - cross file", plan(1, async () => {
             const topFileText = trimLiteral`
             |:import {
@@ -678,7 +677,7 @@ describe("Service component test", function () {
     });
 
     describe("Signatures", function () {
-        it("Signatures - mixins and formatters", plan(2, async () => {
+        it("Signatures - JS mixins and formatters", plan(1, async () => {
             const jsFileText = trimLiteral`
             |/**
             | * A formatter with several params
@@ -691,6 +690,44 @@ describe("Service component test", function () {
             |exports.aFormatterWithParams = function (strParam, numParam, enumParam) {
             |
             |}`
+
+            const topFileText = trimLiteral`
+            |:import {
+            |    -st-from: "./my-mixins.js";
+            |    -st-named: aFormatterWithParams;
+            |}
+            |
+            |.myClass {
+            |    color: aFormatterWithParams(param,)
+            |}`
+
+
+            const topFileName = 'signatures.st.css';
+            const jsFileName = 'my-mixins.js';
+            const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [jsFileName]: jsFileText } });
+
+            init(fileSystem, testCon.server);
+            const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
+
+            const position = { line: 6, character: 38 };
+            const res = await testCon.client.signatureHelp({ textDocument, position });
+
+            const expectedSig: SignatureHelp = {
+                activeSignature: 0,
+                activeParameter: 1,
+                signatures: [SignatureInformation.create(
+                    "aFormatterWithParams(strParam: stString, numParam: stNumber<0,200>, enumParam: 'a'|'b'): stString",
+                    "A formatter with several params",
+                    ParameterInformation.create("strParam: stString", "A string param"),
+                    ParameterInformation.create("numParam: stNumber<0,200>", "A num param"),
+                    ParameterInformation.create("enumParam: 'a'|'b'", "An enum param"),
+                )]
+            }
+
+            expect(res).to.eql(expectedSig);
+        }));
+
+        it("Signatures - TS mixins and formatters", plan(1, async () => {
 
             const tsFileText = trimLiteral`
             |import { stNumber, stString as lalaString, stPercent } from 'stylable';
@@ -711,30 +748,22 @@ describe("Service component test", function () {
             |    -st-named: paramfulMixin;
             |}
             |
-            |:import {
-            |    -st-from: "./my-mixins.js";
-            |    -st-named: aFormatterWithParams;
-            |}
-            |
             |.myClass {
             |    -st-mixin: paramfulMixin();
-            |    color: aFormatterWithParams(param,)
             |}`
 
 
             const topFileName = 'signatures.st.css';
-            const jsFileName = 'my-mixins.js';
             const tsFileName = 'my-mixins.ts';
-            const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [jsFileName]: jsFileText, [tsFileName]: tsFileText } });
+            const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [tsFileName]: tsFileText } });
 
             init(fileSystem, testCon.server);
-            const context = { includeDeclaration: true }
             const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
 
-            const mixinPos = { line: 11, character: 29 };
-            const mixinRes = await testCon.client.signatureHelp({ textDocument, position: mixinPos });
+            const position = { line: 6, character: 29 };
+            const res = await testCon.client.signatureHelp({ textDocument, position });
 
-            const mixinSig: SignatureHelp = {
+            const expectedSig: SignatureHelp = {
                 activeSignature: 0,
                 activeParameter: 0,
                 signatures: [SignatureInformation.create(
@@ -746,25 +775,89 @@ describe("Service component test", function () {
                     ParameterInformation.create("enumParam: 'a' | 'b'"),
                 )]
             }
-            expect(mixinRes).to.eql(mixinSig);
+            expect(res).to.eql(expectedSig);
+        }));
 
-            const formatterPos = { line: 12, character: 38 };
-            const formatterRes = await testCon.client.signatureHelp({ textDocument, position: formatterPos });
+        it('Signatures - State with params definition (types)', plan(1, async () => {
+            const topFileText = trimLiteral`
+            |.root{
+            |    -st-states: myState();
+            |}`;
+            const topFileName = 'state.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText } });
 
-            const formatterSig: SignatureHelp = {
+            init(fileSystem, testCon.server);
+
+            const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+            const position = { line: 1, character: 24 };
+            const stateParamTypesSigRes = await testCon.client.signatureHelp({ textDocument, position });
+
+            const stateParamTypesSig: SignatureHelp = {
                 activeSignature: 0,
-                activeParameter: 1,
+                activeParameter: 0,
                 signatures: [SignatureInformation.create(
-                    "aFormatterWithParams(strParam: stString, numParam: stNumber<0,200>, enumParam: 'a'|'b'): stString",
-                    "A formatter with several params",
-                    ParameterInformation.create("strParam: stString", "A string param"),
-                    ParameterInformation.create("numParam: stNumber<0,200>", "A num param"),
-                    ParameterInformation.create("enumParam: 'a'|'b'", "An enum param"),
+                    'Supported state types:\n- "string | number | enum | tag"',
+                    undefined,
+                    ParameterInformation.create("string | number | enum | tag")
                 )]
             }
-            expect(formatterRes).to.eql(formatterSig);
+            expect(stateParamTypesSigRes).to.eql(stateParamTypesSig);
+        }));
 
+        it('Signatures - State with params definition (validator)', plan(1, async () => {
+            const topFileText = trimLiteral`
+            |.root{
+            |    -st-states: myState( string() );
+            |}`;
+            const topFileName = 'state.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText } });
+
+            init(fileSystem, testCon.server);
+
+            const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+            const position = { line: 1, character: 32 };
+            const stateParamValidatorsSigRes = await testCon.client.signatureHelp({ textDocument, position });
+
+            const stateParamValidatorsSig: SignatureHelp = {
+                activeSignature: 0,
+                activeParameter: 0,
+                signatures: [SignatureInformation.create(
+                    'Supported "string" validator types:\n- "regex, contains, minLength, maxLength"',
+                    undefined,
+                    ParameterInformation.create("regex, contains, minLength, maxLength")
+                )]
+            }
+            expect(stateParamValidatorsSigRes).to.eql(stateParamValidatorsSig);
+        }));
+
+        it('Signatures - State with params usage (in a selector)', plan(1, async () => {
+            const topFileText = trimLiteral`
+            |.root{
+            |    -st-states: myState( string( contains(user) ) );
+            |}
+            |
+            |.root:myState() {
+            |
+            |}`
+            const topFileName = 'state.st.css';
+            const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText } });
+
+            init(fileSystem, testCon.server);
+
+            const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+            const position = { line: 4, character: 14 };
+            const stateParamSigRes = await testCon.client.signatureHelp({ textDocument, position });
+
+            const stateParamSig: SignatureHelp = {
+                activeSignature: 0,
+                activeParameter: 0,
+                signatures: [SignatureInformation.create(
+                    "myState(string(contains(user)))",
+                    undefined,
+                    ParameterInformation.create("string(contains(user))")
+                )]
+            }
+            expect(stateParamSigRes).to.eql(stateParamSig);
         }));
     });
-
 });
