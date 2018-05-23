@@ -1,6 +1,6 @@
 @custom-selector :--gaga div > div;
 
 :--gaga {
-    color: red;
+    color: rgb(43, 255, 0);
 }
 

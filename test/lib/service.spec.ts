@@ -606,8 +606,10 @@ describe("Service component test", function () {
 
             const res = await testCon.client.rename({ textDocument, position: { line: 10, character: 24 }, newName: 'abc' })
 
-            expect(res!.changes).to.exist;
-            expect(res!.changes![toVscodePath('/' + fileName)]).to.exist;
+            if (!res || !res.changes) {
+                throw new Error('No change list returned');
+            }
+            expect(res.changes[toVscodePath('/' + fileName)]).to.exist;
 
             const expectedEdits = [ //Edits order inside a file has no meaning. Order is replicated from getRefs functionality.
                 TextEdit.replace(createRange(0, 3, 0, 7), 'abc'),
@@ -618,7 +620,7 @@ describe("Service component test", function () {
                 TextEdit.replace(createRange(16, 4, 16, 8), 'abc')
             ];
 
-            expect(res!.changes![toVscodePath('/' + fileName)]).to.have.deep.members(expectedEdits);
+            expect(res.changes[toVscodePath('/' + fileName)]).to.have.deep.members(expectedEdits);
         }));
 
         // TODO: Feature not implemented yet (uses References mechanism)
