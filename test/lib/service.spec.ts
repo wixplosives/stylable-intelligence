@@ -86,22 +86,18 @@ describe("Service component test", function () {
             ]
 
             init(fileSystem, testCon.server);
+            const expectedDef = {
+                uri: importTextDocument.uri,
+                range: createRange(4, 1, 4, 5)
+            };
             for (const loc of topFileLocations) {
                 const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
-                expect(def).to.eql([{
-                    uri: importTextDocument.uri,
-                    range: createRange(4, 1, 4, 5)
-                }]);
-
-            }
+                expect(def).to.eql([expectedDef]);
+            };
             for (const loc of importFileLocations) {
-
                 const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
-                expect(def).to.eql([{
-                    uri: importTextDocument.uri,
-                    range: createRange(4, 1, 4, 5)
-                }]);
-            }
+                expect(def).to.eql([expectedDef]);
+            };
         }));
 
         it("Definitions - variable", plan(4, async () => {
@@ -138,23 +134,19 @@ describe("Service component test", function () {
             ]
 
             init(fileSystem, testCon.server);
+            const expectedDef = {
+                uri: importTextDocument.uri,
+                range: createRange(1, 4, 1, 10)
+            };
             for (const loc of topFileLocations) {
                 const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
-                expect(def).to.eql([{
-                    uri: importTextDocument.uri,
-                    range: createRange(1, 4, 1, 10)
-                }]);
+                expect(def).to.eql([expectedDef]);
 
             }
             for (const loc of importFileLocations) {
-
                 const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
-                expect(def).to.eql([{
-                    uri: importTextDocument.uri,
-                    range: createRange(1, 4, 1, 10)
-                }]);
+                expect(def).to.eql([expectedDef]);
             }
-
         }));
 
         it("Definitions - state", plan(3, async () => {
@@ -194,26 +186,21 @@ describe("Service component test", function () {
             ]
 
             init(fileSystem, testCon.server);
+            const expectedDef = {
+                uri: importTextDocument.uri,
+                range: createRange(0, 1, 0, 5)
+            };
             for (const loc of topFileLocations) {
                 const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
-                expect(def).to.eql([{
-                    uri: importTextDocument.uri,
-                    range: createRange(0, 1, 0, 5)
-                }]);
-
+                expect(def).to.eql([expectedDef]);
             }
             for (const loc of importFileLocations) {
-
                 const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
-                expect(def).to.eql([{
-                    uri: importTextDocument.uri,
-                    range: createRange(0, 1, 0, 5)
-                }]);
+                expect(def).to.eql([expectedDef]);
             }
-
         }));
 
-        it("Definitions - custom selector", plan(4, async () => { //TODO
+        it("Definitions - custom selector", plan(4, async () => {
             const topFileText = trimLiteral`
             |:import {
             |  -st-from: "./import.st.css";
@@ -245,25 +232,23 @@ describe("Service component test", function () {
                 { line: 2, character: 6 },
             ]
             init(fileSystem, testCon.server);
+            const expectedDef = {
+                uri: importTextDocument.uri,
+                range: createRange(0, 20, 0, 24)
+            };
 
             for (const loc of topFileLocations) {
                 const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
-                expect(def).to.eql([{
-                    uri: importTextDocument.uri,
-                    range: createRange(0, 20, 0, 24)
-                }]);
+                expect(def).to.eql([expectedDef]);
             };
 
             for (const loc of importFileLocations) {
                 const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
-                expect(def).to.eql([{
-                    uri: importTextDocument.uri,
-                    range: createRange(0, 20, 0, 24)
-                }]);
+                expect(def).to.eql([expectedDef]);
             };
         }));
 
-        it("Definitions - formatters", plan(2, async () => {
+        it("Definitions - JS formatters", plan(2, async () => {
             const topFileText = trimLiteral`
             |:import {
             |  -st-from: "./my-js-mixins.js";
@@ -318,6 +303,10 @@ describe("Service component test", function () {
 
             }
         }));
+
+        //TODO
+        xit("Definitions - TS formatters", plan (1, async () => {
+        }))
     });
 
     describe("Diagnostics", function () {
@@ -476,11 +465,12 @@ describe("Service component test", function () {
             init(fileSystem, testCon.server);
 
             const preso1 = await testCon.client.colorPresentation({ textDocument, range: range1, color: color1 })
-            const preso2 = await testCon.client.colorPresentation({ textDocument, range: range2, color: color2 })
-            const preso3 = await testCon.client.colorPresentation({ textDocument, range: range3, color: color2 })
-
             expect(preso1).to.deep.include({ label: 'rgb(255, 0, 0)', textEdit: { newText: 'rgb(255, 0, 0)', range: range1 } })
+
+            const preso2 = await testCon.client.colorPresentation({ textDocument, range: range2, color: color2 })
             expect(preso2).to.deep.include({ label: 'rgb(0, 255, 0)', textEdit: { newText: 'rgb(0, 255, 0)', range: range2 } })
+
+            const preso3 = await testCon.client.colorPresentation({ textDocument, range: range3, color: color2 })
             expect(preso3).to.be.null;
         }));
     })
@@ -513,9 +503,6 @@ describe("Service component test", function () {
             init(fileSystem, testCon.server);
             const context = { includeDeclaration: true }
             const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
-            const refsInSelector = await testCon.client.references({ context, textDocument, position: { line: 5, character: 16 } })
-            const refsInMixin = await testCon.client.references({ context, textDocument, position: { line: 10, character: 25 } })
-            const refsInExtends = await testCon.client.references({ context, textDocument, position: { line: 15, character: 6 } })
             const expectedRefs = [ //Refs should be listed in the order they appear in the file
                 Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
                 Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
@@ -525,8 +512,13 @@ describe("Service component test", function () {
                 Location.create(textDocument.uri, createRange(16, 4, 16, 8))
             ]
 
+            const refsInSelector = await testCon.client.references({ context, textDocument, position: { line: 5, character: 16 } })
             expect(refsInSelector).to.eql(expectedRefs);
+
+            const refsInMixin = await testCon.client.references({ context, textDocument, position: { line: 10, character: 25 } })
             expect(refsInMixin).to.eql(expectedRefs);
+
+            const refsInExtends = await testCon.client.references({ context, textDocument, position: { line: 15, character: 6 } })
             expect(refsInExtends).to.eql(expectedRefs);
         }));
 
@@ -627,10 +619,11 @@ describe("Service component test", function () {
                 TextEdit.replace(createRange(16, 4, 16, 8), 'abc')
             ];
 
-            expect(res!.changes![toVscodePath('/' + fileName)]).to.eql(expectedEdits);
+            expect(res!.changes![toVscodePath('/' + fileName)]).to.have.deep.members(expectedEdits);
         }));
 
-        xit("Rename Symbol - cross file", plan(1, async () => { //Feature not implemented yet (uses References mechanism)
+        //Feature not implemented yet (uses References mechanism)
+        xit("Rename Symbol - cross file", plan(1, async () => {
             const topFileText = trimLiteral`
             |:import {
             |    -st-from: "./import.st.css";
@@ -678,7 +671,7 @@ describe("Service component test", function () {
 
             editRequests.forEach(async editReq => {
                 const actualRefs = await testCon.client.references({ context, textDocument: editReq.textDocument, position: editReq.position });
-                expect(actualRefs).to.eql(expectedEdits);
+                expect(actualRefs).to.have.deep.members(expectedEdits);
             })
 
         }));
@@ -736,7 +729,7 @@ describe("Service component test", function () {
 
             init(fileSystem, testCon.server);
             const context = { includeDeclaration: true }
-            const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+            const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
 
             const mixinPos = { line: 11, character: 29 };
             const mixinRes = await testCon.client.signatureHelp({ textDocument, position: mixinPos });

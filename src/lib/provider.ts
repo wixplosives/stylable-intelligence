@@ -130,7 +130,7 @@ export default class Provider {
         }
 
         let word = val.value;
-        if (word.startsWith('--')) {word = word.slice(2)};
+        if (word.startsWith('--')) {word = word.slice('--'.length)};
 
         const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
         const transformer = this.styl.createTransformer({
