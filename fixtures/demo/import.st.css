@@ -1,5 +1,9 @@
-@custom-selector :--banana div > div;
+:vars {
+  a: red;
+  aa: green;
+}
 
-:--banana {
-  background-color: blanchedalmond;
+.root {
+  color: value(aa);
+  background-color: value(a);
 }

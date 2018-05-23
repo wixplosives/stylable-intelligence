@@ -1,6 +1,14 @@
-@custom-selector :--gaga div > div;
+:import {
+    -st-from: "./import.st.css";
+    -st-named: aa;
+}
 
-:--gaga {
-    color: rgb(43, 255, 0);
+:import {
+    -st-from: "./import.st.css";
+    -st-named: a;
+}
+
+.local {
+    color: value(aa)
 }
 
