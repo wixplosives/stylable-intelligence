@@ -1,9 +1,6 @@
 :import {
-  -st-from: "./import.st.css";
-  -st-named: gaga;
+  -st-from: "fake-stylable-package/stylesheet.st.css";
+  -st-named: 
 }
 
-.baa {
-  -st-extends: gaga;
-  background-color: goldenrod;
-}
+

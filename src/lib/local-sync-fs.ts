@@ -3,12 +3,7 @@ import * as fs from 'fs';
 
 export class LocalSyncFs extends LocalFileSystem implements FileSystemReadSync {
     loadTextFileSync(fullPath: string): string {
-        try {
-            return fs.readFileSync(fullPath).toString();
-        } catch (e) {
-            return '';
-        }
-
+        return fs.readFileSync(fullPath).toString();
     }
 
     loadDirectoryTreeSync(fullPath?: string): Directory {

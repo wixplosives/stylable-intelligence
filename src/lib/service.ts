@@ -45,8 +45,6 @@ export function initStylableLanguageService(connection: IConnection, services: {
     const processor = services.styl.fileProcessor;
     const newCssService = new CssService(fs);
 
-    connection.onInitialize(() => initializeResult);
-
     connection.onCompletion((params: CompletionParams): CompletionItem[] => {
         const documentUri = params.textDocument.uri;
         const position = params.position;
