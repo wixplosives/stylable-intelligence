@@ -59,7 +59,7 @@ export function createProcessor(fileSystem: FileSystemReadSync): FileProcessor<S
 }
 
 export interface MinimalDocs extends Partial<FileSystemReadSync> {
-    get: (uri: string) => TextDocument;
+    get: (uri: string) => TextDocument | undefined;
     keys: () => string[];
 }
 

@@ -1,6 +1,20 @@
 :import {
   -st-from: "fake-stylable-package/stylesheet.st.css";
-  -st-named: 
+  -st-named: color1, part1;
+  -st-default: Comp;
 }
 
+:import {
+  -st-from: "./import.st.css";
+  -st-named: gaga;
+  -st-default: Comp2;
+}
+
+.root {
+  -st-extends: Comp;
+}
+
+.root::part1 {
+  color: value(color1);
+}
 

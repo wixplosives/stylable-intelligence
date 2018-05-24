@@ -363,7 +363,7 @@ describe("Service component test", function () {
                 uri: importTextDocument.uri,
                 range: createRange(4, 1, 4, 5)
             }]);
-        
+
         }
         for(const loc of importFileLocations){
 

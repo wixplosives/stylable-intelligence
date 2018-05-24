@@ -1,4 +1,2 @@
-import { stNumber, stString as lalaString } from 'stylable';
-import * as styl from 'stylable';
-export declare function paramfulMixin(numParam: stNumber<0, 200>, strParam: styl.stString, aliasedParam: lalaString, enumParam: 'a' | 'b'): styl.stCssFrag;
-export declare function paramlessMixin(): styl.stCssFrag;
+export declare function paramfulMixin(numParam: string, strParam: string, aliasedParam: string, enumParam: 'a' | 'b'): object;
+export declare function paramlessMixin(): object;

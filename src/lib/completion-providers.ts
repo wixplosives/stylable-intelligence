@@ -925,12 +925,12 @@ function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLan
             return false;
         }
         let rtype = sig.declaration.type
-            ? ((sig.declaration.type as TypeReferenceNode).typeName as Identifier).getText()
+            ? (sig.declaration.type as TypeReferenceNode).getText()
             : "";
-        return (/(\w+.)?stCssFrag/.test(rtype.trim()));
+        return (/(\w+.)?object/.test(rtype.trim()));
     }
     if (importSymbol.import.fromRelative.endsWith('.js')) {
-        return (extractJsModifierReturnType(name, 0, fs.get(toVscodePath(importSymbol.import.from)).getText()) === 'stCssFrag')
+        return (extractJsModifierReturnType(name, 0, fs.get(toVscodePath(importSymbol.import.from)).getText()) === 'object')
     }
     return false;
 }

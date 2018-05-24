@@ -305,7 +305,7 @@ export default class Provider {
         });
 
         let rtype = sig!.declaration.type
-            ? ((sig!.declaration.type as TypeReferenceNode).typeName as Identifier).getFullText()
+            ? (sig!.declaration.type as TypeReferenceNode).getText()
             : "";
 
         let parameters: ParameterInformation[] = sig!.parameters.map(pt => {

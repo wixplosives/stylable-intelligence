@@ -111,7 +111,7 @@ describe("Definitions", function () {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
                     expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/my-mixins.ts'));
-                    expect(def.range).to.eql(createRange(3, 16, 3, 29))
+                    expect(def.range).to.eql(createRange(2, 16, 2, 29))
                 });
             });
 
@@ -129,10 +129,9 @@ describe("Definitions", function () {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
                     expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/my-mixins.ts'));
-                    expect(def.range).to.eql(createRange(20, 16, 20, 34))
+                    expect(def.range).to.eql(createRange(19, 16, 19, 34))
                 });
             });
         });
-
     });
 });

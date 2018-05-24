@@ -1,8 +1,12 @@
-.gaga {
-    -st-states: aState
+.root {
+    -st-states: blah( enum(a, b, c) );
 }
 
-.gaga:aState {
+.gaga {
+    -st-states: aState( enum(a, b, c) );
+}
+
+/* .gaga:aState(c) {
     color:blue;
     mask: lala
-}
+} */

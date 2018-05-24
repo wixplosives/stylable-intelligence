@@ -22,8 +22,12 @@ function createDiagnostics(files:{[filePath:string]:string}, path:string) {
         }
     } as TextDocuments
     const fs =  new LocalSyncFs('');
-    const docsFs = createDocFs(fs,documents);
-    return createDiagnosis(documents.get(path),  docsFs, createProcessor(docsFs), require)
+    const docsFs = createDocFs(fs, documents);
+
+    const doc = documents.get(path);
+    return doc ?
+        createDiagnosis(doc,  docsFs, createProcessor(docsFs), require) :
+        null;
 }
 
 

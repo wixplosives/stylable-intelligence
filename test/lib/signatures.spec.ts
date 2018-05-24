@@ -17,11 +17,11 @@ describe('Signature Help', function () {
                     activeSignature: 0,
                     activeParameter: prefix.match(/,/g) ? prefix.match(/,/g)!.length : 0,
                     signatures: [SignatureInformation.create(
-                        "paramfulMixin(numParam: stNumber<0, 200>, strParam: styl.stString, aliasedParam: lalaString, enumParam: 'a' | 'b'):  styl.stCssFrag",
+                        "paramfulMixin(numParam: string, strParam: string, aliasedParam: string, enumParam: 'a' | 'b'): object",
                         undefined,
-                        ParameterInformation.create("numParam: stNumber<0, 200>"),
-                        ParameterInformation.create("strParam: styl.stString"),
-                        ParameterInformation.create("aliasedParam: lalaString"),
+                        ParameterInformation.create("numParam: string"),
+                        ParameterInformation.create("strParam: string"),
+                        ParameterInformation.create("aliasedParam: string"),
                         ParameterInformation.create("enumParam: 'a' | 'b'"),
                     )]
                 }
@@ -42,7 +42,7 @@ describe('Signature Help', function () {
                 activeSignature: 0,
                 activeParameter: 0,
                 signatures: [SignatureInformation.create(
-                    "paramlessMixin():  styl.stCssFrag",
+                    "paramlessMixin(): object",
                     undefined,
                 )]
             }
@@ -66,9 +66,9 @@ describe('Signature Help', function () {
                     activeSignature: 0,
                     activeParameter: prefix.match(/,/g) ? prefix.match(/,/g)!.length : 0,
                     signatures: [SignatureInformation.create(
-                        "mixin(pct: stPercent):  styl.stCssFrag",
+                        "mixin(pct: string): object",
                         undefined,
-                        ParameterInformation.create("pct: stPercent"),
+                        ParameterInformation.create("pct: string"),
                     )]
                 }
 
@@ -92,10 +92,10 @@ describe('Signature Help', function () {
                     activeSignature: 0,
                     activeParameter: prefix.match(/,/g) ? prefix.match(/,/g)!.length : 0,
                     signatures: [SignatureInformation.create(
-                        "aMixin(strParam: stString, numParam: stNumber<0,200>, enumParam: 'a'|'b'): stCssFrag",
+                        "aMixin(strParam: string, numParam: string, enumParam: 'a'|'b'): object",
                         "A mixin with some params",
-                        ParameterInformation.create("strParam: stString", "A string param"),
-                        ParameterInformation.create("numParam: stNumber<0,200>", "A num param"),
+                        ParameterInformation.create("strParam: string", "A string param"),
+                        ParameterInformation.create("numParam: string", "A num param"),
                         ParameterInformation.create("enumParam: 'a'|'b'", "An enum param"),
                     )]
                 }
@@ -116,7 +116,7 @@ describe('Signature Help', function () {
                 activeSignature: 0,
                 activeParameter: 0,
                 signatures: [SignatureInformation.create(
-                    "aBareMixin(): stCssFrag",
+                    "aBareMixin(): object",
                     "A mixin with no params",
                 )]
             }
@@ -140,7 +140,7 @@ describe('Signature Help', function () {
                     activeSignature: 0,
                     activeParameter: prefix.match(/,/g) ? prefix.match(/,/g)!.length : 0,
                     signatures: [SignatureInformation.create(
-                        "paramfulMixin(numParam: stNumber<0,200>, strParam: styl.stString, aliasedParam: lalaString, enumParam: 'a'|'b'):  styl.stCssFrag",
+                        "paramfulMixin(numParam: string, strParam: string, aliasedParam: string, enumParam: 'a'|'b'): object",
                         undefined,
                         ParameterInformation.create("numParam: stNumber<0,200>"),
                         ParameterInformation.create("strParam: styl.stString"),
@@ -165,7 +165,7 @@ describe('Signature Help', function () {
                 activeSignature: 0,
                 activeParameter: 0,
                 signatures: [SignatureInformation.create(
-                    "paramlessMixin():  styl.stCssFrag",
+                    "paramlessMixin(): object",
                     undefined,
                 )]
             }
