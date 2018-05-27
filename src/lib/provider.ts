@@ -1,70 +1,20 @@
 //must remain independent from vscode
+import { keys, last, values } from 'lodash';
+import * as path from 'path';
 import * as PostCss from 'postcss';
 import { ContainerBase, Declaration, NodeBase } from 'postcss';
-import {
-    CSSResolve,
-    Diagnostics,
-    expandCustomSelectors,
-    ImportSymbol,
-    process as stylableProcess,
-    safeParse,
-    SRule,
-    StateParsedValue,
-    Stylable,
-    StylableMeta,
-    StylableTransformer,
-    valueMapping,
-} from 'stylable';
-import { nativeFunctionsDic } from 'stylable/dist/src/native-reserved-lists'
-import { isContainer, isDeclaration, isRoot, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
-import {
-    CodeMixinCompletionProvider,
-    CompletionProvider,
-    createRange,
-    CssMixinCompletionProvider,
-    ExtendCompletionProvider,
-    FormatterCompletionProvider,
-    GlobalCompletionProvider,
-    ImportInternalDirectivesProvider,
-    NamedCompletionProvider,
-    ProviderOptions,
-    ProviderPosition,
-    ProviderRange,
-    PseudoElementCompletionProvider,
-    RulesetInternalDirectivesProvider,
-    SelectorCompletionProvider,
-    StateEnumCompletionProvider,
-    StateSelectorCompletionProvider,
-    StateTypeCompletionProvider,
-    TopLevelDirectiveProvider,
-    ValueCompletionProvider,
-    ValueDirectiveProvider
-} from './completion-providers';
-import { Completion, } from './completion-types';
-import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
-import * as path from 'path';
-import {
-    Location,
-    ParameterInformation,
-    Position,
-    ReferenceParams,
-    SignatureHelp,
-    SignatureInformation,
-    DocumentColorParams
-} from 'vscode-languageserver';
+import { CSSResolve, ClassSymbol, Diagnostics, ImportSymbol, SRule, StateParsedValue, Stylable, StylableMeta, StylableTransformer, expandCustomSelectors, nativeFunctionsDic, process as stylableProcess, safeParse, valueMapping } from 'stylable';
 import * as ts from 'typescript';
 import { Identifier, ParameterDeclaration, SignatureDeclaration, TypeReferenceNode } from 'typescript';
-import { fromVscodePath, toVscodePath } from './utils/uri-utils';
-import { keys, last, values } from 'lodash';
+import { Location, ParameterInformation, Position, ReferenceParams, SignatureHelp, SignatureInformation } from 'vscode-languageserver';
+import { CodeMixinCompletionProvider, CompletionProvider, CssMixinCompletionProvider, ExtendCompletionProvider, FormatterCompletionProvider, GlobalCompletionProvider, ImportInternalDirectivesProvider, NamedCompletionProvider, ProviderOptions, ProviderPosition, ProviderRange, PseudoElementCompletionProvider, RulesetInternalDirectivesProvider, SelectorCompletionProvider, StateEnumCompletionProvider, StateSelectorCompletionProvider, StateTypeCompletionProvider, TopLevelDirectiveProvider, ValueCompletionProvider, ValueDirectiveProvider, createRange } from './completion-providers';
+import { Completion } from './completion-types';
+import { createStateTypeSignature, createStateValidatorSignature, resolveStateParams, resolveStateTypeOrValidator } from './feature/pseudo-class';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
-import { ClassSymbol } from 'stylable/dist/src/stylable-processor';
-import {
-    createStateTypeSignature,
-    createStateValidatorSignature,
-    resolveStateParams,
-    resolveStateTypeOrValidator
-} from './feature/pseudo-class';
-import { fromStylablePath, normalizeMeta } from "./utils/stylable";
+import { isContainer, isDeclaration, isRoot, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
+import { SelectorChunk, parseSelector } from './utils/selector-analyzer';
+import { normalizeMeta } from "./utils/stylable";
+import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
 const cst = require('css-selector-tokenizer');

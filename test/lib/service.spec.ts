@@ -502,7 +502,7 @@ describe("Service component test", function () {
             init(fileSystem, testCon.server);
             const context = { includeDeclaration: true }
             const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
-            const expectedRefs = [ //Refs should be listed in the order they appear in the file
+            const expectedRefs = [
                 Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
                 Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
                 Location.create(textDocument.uri, createRange(5, 14, 5, 18)),
@@ -511,6 +511,7 @@ describe("Service component test", function () {
                 Location.create(textDocument.uri, createRange(16, 4, 16, 8))
             ]
 
+            //Asserting order - Refs should be listed in the order they appear in the file
             const refsInSelector = await testCon.client.references({ context, textDocument, position: { line: 5, character: 16 } })
             expect(refsInSelector).to.eql(expectedRefs);
 
@@ -611,7 +612,7 @@ describe("Service component test", function () {
             }
             expect(res.changes[toVscodePath('/' + fileName)]).to.exist;
 
-            const expectedEdits = [ //Edits order inside a file has no meaning. Order is replicated from getRefs functionality.
+            const expectedEdits = [
                 TextEdit.replace(createRange(0, 3, 0, 7), 'abc'),
                 TextEdit.replace(createRange(5, 1, 5, 5), 'abc'),
                 TextEdit.replace(createRange(5, 14, 5, 18), 'abc'),
@@ -620,6 +621,7 @@ describe("Service component test", function () {
                 TextEdit.replace(createRange(16, 4, 16, 8), 'abc')
             ];
 
+            //Not asserting order - Edits order inside a file has no meaning, as they are applied simultaneously by IDE
             expect(res.changes[toVscodePath('/' + fileName)]).to.have.deep.members(expectedEdits);
         }));
 
@@ -679,7 +681,7 @@ describe("Service component test", function () {
     });
 
     describe("Signatures", function () {
-        it("Signatures - JS mixins and formatters", plan(1, async () => {
+        it("Signatures - JS mixins and formatters", plan(2, async () => {
             const jsFileText = trimLiteral`
             |/**
             | * A formatter with several params
@@ -714,22 +716,14 @@ describe("Service component test", function () {
             const position = { line: 6, character: 38 };
             const res = await testCon.client.signatureHelp({ textDocument, position });
 
-            const expectedSig: SignatureHelp = {
-                activeSignature: 0,
-                activeParameter: 1,
-                signatures: [SignatureInformation.create(
-                    "aFormatterWithParams(strParam: stString, numParam: stNumber<0,200>, enumParam: 'a'|'b'): stString",
-                    "A formatter with several params",
-                    ParameterInformation.create("strParam: stString", "A string param"),
-                    ParameterInformation.create("numParam: stNumber<0,200>", "A num param"),
-                    ParameterInformation.create("enumParam: 'a'|'b'", "An enum param"),
-                )]
+            if (!res) {
+                throw new Error('No signature returned');
             }
-
-            expect(res).to.eql(expectedSig);
+            expect(res.signatures[0].label).to.eql("aFormatterWithParams(strParam: stString, numParam: stNumber<0,200>, enumParam: 'a'|'b'): stString");
+            expect(res.signatures[0].parameters).to.have.length(3)
         }));
 
-        it("Signatures - TS mixins and formatters", plan(1, async () => {
+        it("Signatures - TS mixins and formatters", plan(2, async () => {
 
             const tsFileText = trimLiteral`
             |import { stNumber, stString as lalaString, stPercent } from 'stylable';
@@ -765,22 +759,14 @@ describe("Service component test", function () {
             const position = { line: 6, character: 29 };
             const res = await testCon.client.signatureHelp({ textDocument, position });
 
-            const expectedSig: SignatureHelp = {
-                activeSignature: 0,
-                activeParameter: 0,
-                signatures: [SignatureInformation.create(
-                    "paramfulMixin(numParam: stNumber<0, 200>, strParam: styl.stString, aliasedParam: lalaString, enumParam: 'a' | 'b'):  styl.stCssFrag",
-                    undefined,
-                    ParameterInformation.create("numParam: stNumber<0, 200>"),
-                    ParameterInformation.create("strParam: styl.stString"),
-                    ParameterInformation.create("aliasedParam: lalaString"),
-                    ParameterInformation.create("enumParam: 'a' | 'b'"),
-                )]
+            if (!res) {
+                throw new Error('No signature returned');
             }
-            expect(res).to.eql(expectedSig);
+            expect(res.signatures[0].label).to.eql("paramfulMixin(numParam: stNumber<0, 200>, strParam: styl.stString, aliasedParam: lalaString, enumParam: 'a' | 'b'):  styl.stCssFrag");
+            expect(res.signatures[0].parameters).to.have.length(4)
         }));
 
-        it('Signatures - State with params definition (types)', plan(1, async () => {
+        it('Signatures - State with params definition (types)', plan(2, async () => {
             const topFileText = trimLiteral`
             |.root{
             |    -st-states: myState();
@@ -792,7 +778,7 @@ describe("Service component test", function () {
 
             const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
             const position = { line: 1, character: 24 };
-            const stateParamTypesSigRes = await testCon.client.signatureHelp({ textDocument, position });
+            const res = await testCon.client.signatureHelp({ textDocument, position });
 
             const stateParamTypesSig: SignatureHelp = {
                 activeSignature: 0,
@@ -803,10 +789,15 @@ describe("Service component test", function () {
                     ParameterInformation.create("string | number | enum | tag")
                 )]
             }
-            expect(stateParamTypesSigRes).to.eql(stateParamTypesSig);
+
+            if (!res) {
+                throw new Error('No signature returned');
+            }
+            expect(res.signatures[0].label).to.eql('Supported state types:\n- "string | number | enum | tag"');
+            expect(res.signatures[0].parameters).to.have.length(1)
         }));
 
-        it('Signatures - State with params definition (validator)', plan(1, async () => {
+        it('Signatures - State with params definition (validator)', plan(2, async () => {
             const topFileText = trimLiteral`
             |.root{
             |    -st-states: myState( string() );
@@ -818,21 +809,16 @@ describe("Service component test", function () {
 
             const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
             const position = { line: 1, character: 32 };
-            const stateParamValidatorsSigRes = await testCon.client.signatureHelp({ textDocument, position });
+            const res = await testCon.client.signatureHelp({ textDocument, position });
 
-            const stateParamValidatorsSig: SignatureHelp = {
-                activeSignature: 0,
-                activeParameter: 0,
-                signatures: [SignatureInformation.create(
-                    'Supported "string" validator types:\n- "regex, contains, minLength, maxLength"',
-                    undefined,
-                    ParameterInformation.create("regex, contains, minLength, maxLength")
-                )]
+            if (!res) {
+                throw new Error('No signature returned');
             }
-            expect(stateParamValidatorsSigRes).to.eql(stateParamValidatorsSig);
+            expect(res.signatures[0].label).to.eql('Supported "string" validator types:\n- "regex, contains, minLength, maxLength"');
+            expect(res.signatures[0].parameters).to.have.length(1)
         }));
 
-        it('Signatures - State with params usage (in a selector)', plan(1, async () => {
+        it('Signatures - State with params usage (in a selector)', plan(2, async () => {
             const topFileText = trimLiteral`
             |.root{
             |    -st-states: myState( string( contains(user) ) );
@@ -848,18 +834,13 @@ describe("Service component test", function () {
 
             const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
             const position = { line: 4, character: 14 };
-            const stateParamSigRes = await testCon.client.signatureHelp({ textDocument, position });
+            const res = await testCon.client.signatureHelp({ textDocument, position });
 
-            const stateParamSig: SignatureHelp = {
-                activeSignature: 0,
-                activeParameter: 0,
-                signatures: [SignatureInformation.create(
-                    "myState(string(contains(user)))",
-                    undefined,
-                    ParameterInformation.create("string(contains(user))")
-                )]
+            if (!res) {
+                throw new Error('No signature returned');
             }
-            expect(stateParamSigRes).to.eql(stateParamSig);
+            expect(res.signatures[0].label).to.eql("myState(string(contains(user)))");
+            expect(res.signatures[0].parameters).to.have.length(1)
         }));
     });
 });
