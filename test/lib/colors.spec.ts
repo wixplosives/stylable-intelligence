@@ -34,6 +34,21 @@ describe('Colors', function () {
             ]);
         });
 
+        it('should resolve location correctly for a variable whose name is a substring of the string value(', function () {
+            const res = getDocumentColors('colors/single-letter-var-color.st.css');
+
+            expect(res).to.eql([
+                {
+                    range: createRange(5, 11, 5, 18),
+                    color: createColor(0, 1, 0, 0.8)
+                },
+                {
+                    range: createRange(1, 7, 1, 26),
+                    color: createColor(0, 1, 0, 0.8)
+                }
+            ]);
+        })
+
         it('should resolve information for a single imported color', function () {
             const res = getDocumentColors('colors/imported-color.st.css');
 
