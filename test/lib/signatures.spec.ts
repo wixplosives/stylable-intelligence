@@ -3,7 +3,8 @@ import { getSignatureHelp } from '../../test-kit/asserters'
 import { SignatureHelp, SignatureInformation, ParameterInformation } from 'vscode-languageserver';
 
 describe('Signature Help', function () {
-    describe('TS Paramful Mixin', function () {
+    //Feature undergoing redesign
+    xdescribe('TS Paramful Mixin', function () {
         let str = "'25','lala','b'";
 
         str.split('').forEach((c, i) => {
@@ -32,7 +33,8 @@ describe('Signature Help', function () {
         });
     });
 
-    describe('TS Paramless Mixin', function () {
+    //Feature undergoing redesign
+    xdescribe('TS Paramless Mixin', function () {
         it('Provides signature help with no parameters', function () {
             let filePath = 'mixins/imported-mixins-paramless-signature.st.css'
 
@@ -52,7 +54,8 @@ describe('Signature Help', function () {
         }).timeout(5000);
     });
 
-    describe('TS Paramful Mixin - Default Import', function () {
+    //Feature undergoing redesign
+    xdescribe('TS Paramful Mixin - Default Import', function () {
         let str = "'25','lala','b'";
 
         str.split('').forEach((c, i) => {
@@ -194,6 +197,14 @@ describe('Signature Help', function () {
 
         it('in value()', function () {
             let filePath = 'variables/inside-value-local-vars.st.css'
+
+            let sig = getSignatureHelp(filePath, '')
+
+            expect(sig).to.be.null;
+        })
+
+        it('for native CSS functions', function () {
+            let filePath = 'general/css-native-function.st.css'
 
             let sig = getSignatureHelp(filePath, '')
 

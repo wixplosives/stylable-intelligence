@@ -32,7 +32,7 @@ describe("Definitions", function () {
                 expect(defs.length).to.equal(1);
                 let def = defs[0];
                 expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/local-custom-selector.st.css'));
-                expect(def.range).to.eql(createRange(4, 17, 4, 24))
+                expect(def.range).to.eql(createRange(4, 20, 4, 24))
             });
         });
 
@@ -106,7 +106,8 @@ describe("Definitions", function () {
                 });
             });
 
-            it("should return definition of TS mixin in -st-named", function () {
+            //Feature undergoing redesign
+            xit("should return definition of TS mixin in -st-named", function () {
                 return asserters.getDefinition('definitions/imported-mixins-named-ts.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
@@ -124,7 +125,8 @@ describe("Definitions", function () {
                 });
             });
 
-            it("should return definition of TS mixin in use", function () {
+            //Feature undergoing redesign
+            xit("should return definition of TS mixin in use", function () {
                 return asserters.getDefinition('definitions/imported-mixins-value-ts.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];

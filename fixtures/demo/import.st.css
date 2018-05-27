@@ -1,8 +1,9 @@
-.gaga {
-    -st-states: aState
+:vars {
+  a: red;
+  aa: green;
 }
 
-.gaga:aState {
-    color:blue;
-    mask: lala
+.root {
+  color: value(aa);
+  background-color: value(a);
 }

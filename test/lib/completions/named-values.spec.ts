@@ -7,9 +7,10 @@ describe('Named Values', function () {
     const str2 = 'momo';
     const str3 = 'poopy';
     const str4 = 'shmoopy';
+    const str5 = 'banana';
     const path = "./import.st.css";
 
-    [str1, str2, str3, str4].forEach((str, j, a) => {
+    [str1, str2, str3, str4, str5].forEach((str, j, a) => {
         str.split('').forEach((c, i) => {
 
             const createComp = (str: string, rng: ProviderRange) => asserters.namedCompletion(
@@ -20,11 +21,13 @@ describe('Named Values', function () {
                     ? 'pink'
                     : str === str3
                         ? 'brown'
-                        : 'Stylable class'
+                        : str === str5
+                            ? 'div > div'
+                            : 'Stylable class'
             );
             let prefix = str.slice(0, i);
 
-            it('completes classes and vars from imported file after -st-named, with prefix ' + prefix + ' ', function () {
+            it('completes classes, vars and custom selectors from imported file after -st-named, with prefix ' + prefix + ' ', function () {
                 let rng = createRange(2, 15, 2, 15 + i);
                 return asserters.getCompletions('named/st-named.st.css', prefix).then((asserter) => {
                     let exp: Partial<Completion>[] = [];
