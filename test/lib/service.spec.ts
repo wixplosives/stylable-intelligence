@@ -720,7 +720,7 @@ describe("Service component test", function () {
                 throw new Error('No signature returned');
             }
             expect(res.signatures[0].label).to.eql("aFormatterWithParams(strParam: stString, numParam: stNumber<0,200>, enumParam: 'a'|'b'): stString");
-            expect(res.signatures[0].parameters).to.have.length(3)
+            expect(res.signatures[0].parameters).to.have.length(3);
         }));
 
         it("Signatures - TS mixins and formatters", plan(2, async () => {
@@ -763,7 +763,7 @@ describe("Service component test", function () {
                 throw new Error('No signature returned');
             }
             expect(res.signatures[0].label).to.eql("paramfulMixin(numParam: stNumber<0, 200>, strParam: styl.stString, aliasedParam: lalaString, enumParam: 'a' | 'b'):  styl.stCssFrag");
-            expect(res.signatures[0].parameters).to.have.length(4)
+            expect(res.signatures[0].parameters).to.have.length(4);
         }));
 
         it('Signatures - State with params definition (types)', plan(2, async () => {
@@ -780,21 +780,11 @@ describe("Service component test", function () {
             const position = { line: 1, character: 24 };
             const res = await testCon.client.signatureHelp({ textDocument, position });
 
-            const stateParamTypesSig: SignatureHelp = {
-                activeSignature: 0,
-                activeParameter: 0,
-                signatures: [SignatureInformation.create(
-                    'Supported state types:\n- "string | number | enum | tag"',
-                    undefined,
-                    ParameterInformation.create("string | number | enum | tag")
-                )]
-            }
-
             if (!res) {
                 throw new Error('No signature returned');
             }
             expect(res.signatures[0].label).to.eql('Supported state types:\n- "string | number | enum | tag"');
-            expect(res.signatures[0].parameters).to.have.length(1)
+            expect(res.signatures[0].parameters).to.have.length(1);
         }));
 
         it('Signatures - State with params definition (validator)', plan(2, async () => {
@@ -815,7 +805,7 @@ describe("Service component test", function () {
                 throw new Error('No signature returned');
             }
             expect(res.signatures[0].label).to.eql('Supported "string" validator types:\n- "regex, contains, minLength, maxLength"');
-            expect(res.signatures[0].parameters).to.have.length(1)
+            expect(res.signatures[0].parameters).to.have.length(1);
         }));
 
         it('Signatures - State with params usage (in a selector)', plan(2, async () => {
@@ -840,7 +830,7 @@ describe("Service component test", function () {
                 throw new Error('No signature returned');
             }
             expect(res.signatures[0].label).to.eql("myState(string(contains(user)))");
-            expect(res.signatures[0].parameters).to.have.length(1)
+            expect(res.signatures[0].parameters).to.have.length(1);
         }));
     });
 });
