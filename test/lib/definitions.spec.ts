@@ -74,6 +74,15 @@ describe("Definitions", function () {
                     expect(def.range).to.eql(createRange(4, 1, 4, 5))
                 });
             });
+
+            it("should return definition of imported class from 3rd party module", function () {
+                return asserters.getDefinition('definitions/imported-class-3rd-party.st.css').then((defs) => {
+                    expect(defs.length).to.equal(1);
+                    let def = defs[0];
+                    expect(def.uri).to.equal(path.join(CASES_PATH, '../node_modules/fake-stylable-package/stylesheet.st.css'));
+                    expect(def.range).to.eql(createRange(9, 1, 9, 6))
+                });
+            });
         });
 
         describe("Vars", function () {
