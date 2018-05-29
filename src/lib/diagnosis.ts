@@ -13,7 +13,7 @@ export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileP
         return [];
     }
 
-    if (doc.getText().includes('/* stylable-ignore-diagnostics */')) {
+    if (doc.getText().includes('/* st-ignore-diagnostics */')) {
         return [];
     }
 

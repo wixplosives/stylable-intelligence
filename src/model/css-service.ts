@@ -32,6 +32,10 @@ export class CssService {
         if (!document.uri.endsWith('.css')) {
             return [];
         }
+        if (document.getText().includes('/* st-ignore-diagnostics */')) {
+            return [];
+        }
+
         const stylesheet = this.inner.parseStylesheet(document);
 
         return this.inner.doValidation(document, stylesheet)

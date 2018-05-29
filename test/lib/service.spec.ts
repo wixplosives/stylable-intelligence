@@ -386,7 +386,23 @@ describe("Service component test", function () {
                 expect(d).to.eql(createDiagnosisNotification(diags, baseFileName));
             });
         }));
-    })
+
+        it('Diagnostics - disable by flag', plan(1, ()=>{
+            const baseFilecContent = trimLiteral`
+            |/* st-ignore-diagnostics */
+            |.gaga .root{`
+
+            const baseFileName = 'stylesheet.st.css'
+            const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent } });
+            const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
+            init(fileSystem, testCon.server);
+            testCon.client.didOpenTextDocument({ textDocument: baseTextDocument });
+
+            testCon.client.onDiagnostics(d => {
+                expect(d).to.deep.equal(createDiagnosisNotification([], baseFileName));
+            });
+        }));
+    });
 
     describe("Document Colors", function () {
         it("Document Colors - local, vars, imported", plan(2, async () => {

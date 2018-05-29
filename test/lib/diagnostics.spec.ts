@@ -72,16 +72,5 @@ describe('diagnostics', function () {
         })
     })
 
-    it('Should not emit diagnostics for a file with diagnostics disabled', function() {
-        let filePath = 'stylesheet.st.css'
-
-        let diagnostics = createDiagnostics({
-            [filePath]:trimLiteral`
-            |/* stylable-ignore-diagnostics */
-            |.gaga .root{}`
-        }, filePath)
-
-        expect(diagnostics).to.eql([]);
-    })
 })
 
