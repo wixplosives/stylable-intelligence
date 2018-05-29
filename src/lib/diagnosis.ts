@@ -10,8 +10,13 @@ import {normalizeMeta} from "./utils/stylable";
 export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileProcessor: FileProcessor<StylableMeta>, requireModule:typeof require): Diagnostic[] {
 
     if (!doc.uri.endsWith('.st.css')) {
-        return []
+        return [];
     }
+
+    if (doc.getText().includes('/* stylable-ignore-diagnostics */')) {
+        return [];
+    }
+
     const file = fromVscodePath(doc.uri);
 
     const transformer = new StylableTransformer({

@@ -23,7 +23,7 @@ function createDiagnosis(range: Range, message: string, source: string = 'stylab
     return Diagnostic.create(range, message, 2, code, source);
 }
 
-function trimLiteral(content: TemplateStringsArray, ...keys: string[]) {
+export function trimLiteral(content: TemplateStringsArray, ...keys: string[]) {
     if (keys.length) { throw new Error('No support for expressions in pipe-delimited test files yet') };
     return content.join('\n').replace(/^\s*\|/gm, '').replace(/^\n/, '');
 }

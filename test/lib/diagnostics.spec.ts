@@ -5,6 +5,7 @@ import {createDiagnosis} from '../../src/lib/diagnosis'
 import {createProcessor} from '../../src/lib/provider-factory'
 import { LocalSyncFs } from '../../src/lib/local-sync-fs';
 import { createDocFs } from '../../src/lib/server-utils';
+import { trimLiteral } from './service.spec';
 
 function createDiagnostics(files:{[filePath:string]:string}, path:string) {
     const docs:{[path:string]:TextDocument} = {}
@@ -69,6 +70,18 @@ describe('diagnostics', function () {
             "message":"Trying to import unknown alias",
             "severity":1
         })
+    })
+
+    it.only('Should not emit diagnostics for a file with diagnostics disabled', function() {
+        let filePath = 'stylesheet.st.css'
+
+        let diagnostics = createDiagnostics({
+            [filePath]:trimLiteral`
+            |/* stylable-ignore-diagnostics */
+            |.gaga .root{}`
+        }, filePath)
+
+        expect(diagnostics).to.eql([]);
     })
 })
 
