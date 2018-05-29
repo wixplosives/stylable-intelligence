@@ -70,5 +70,6 @@ describe('diagnostics', function () {
             "severity":1
         })
     })
+
 })
 
