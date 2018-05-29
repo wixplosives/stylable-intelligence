@@ -72,7 +72,7 @@ describe('diagnostics', function () {
         })
     })
 
-    it.only('Should not emit diagnostics for a file with diagnostics disabled', function() {
+    it('Should not emit diagnostics for a file with diagnostics disabled', function() {
         let filePath = 'stylesheet.st.css'
 
         let diagnostics = createDiagnostics({
