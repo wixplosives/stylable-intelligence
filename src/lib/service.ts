@@ -83,10 +83,8 @@ export function initStylableLanguageService(connection: IConnection, services: {
 
     function diagnose({ document }: TextDocumentChangeEvent) {
         if (document.languageId === 'stylable') {
-            let diagnostics: Diagnostic[];
-            if (document.getText().includes('st-ignore-diagnostics')) {
-                diagnostics = [];
-            } else {
+            let diagnostics: Diagnostic[] = [];
+            if (!document.getText().includes('st-ignore-diagnostics')) {
                 diagnostics = createDiagnosis(document, fs, processor, services.requireModule).map(diag => {
                     diag.source = 'stylable';
                     return diag;
