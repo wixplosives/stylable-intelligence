@@ -52,10 +52,10 @@ describe("Service component test", function () {
             const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
             testCon.client.didOpenTextDocument({ textDocument });
 
-
             testCon.client.onDiagnostics(d => {
                 expect(d).to.eql(createDiagnosisNotification([createDiagnosis(rangeAndText.range, ".root class cannot be used after spacing")], fileName));
             });
+
         }));
 
         it("Diagnostics - cross-file errors", plan(2, () => {

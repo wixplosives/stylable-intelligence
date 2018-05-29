@@ -107,6 +107,6 @@ const wrappedTs: ExtendedTsLanguageService = {
     setOpenedFiles: (files: string[]) => openedFiles = files
 };
 
-const stylable = new Stylable('/', createFs(docsFs), () => ({default: {}}), undefined, normalizeMeta);
+const stylable = new Stylable(CASES_PATH, createFs(docsFs), require, undefined, normalizeMeta);
 const provider = createProvider(stylable, wrappedTs);
 const newCssService = new CssService(docsFs);

@@ -63,7 +63,7 @@ import {
     resolveStateParams,
     resolveStateTypeOrValidator
 } from './feature/pseudo-class';
-import {fromStylablePath, normalizeMeta} from "./utils/stylable";
+import { fromStylablePath, normalizeMeta } from "./utils/stylable";
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
 const cst = require('css-selector-tokenizer');
@@ -166,7 +166,24 @@ export default class Provider {
                     break;
                 }
                 case 'import': {
-                    const filePath: string = path.posix.join(path.posix.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
+
+                    // this.styl.resolvePath(this.styl.projectRoot,'fake-stylable-package')
+
+                    let rslvd = null;
+                     try {
+                        rslvd = this.styl.resolver.resolve(symb);
+                    } catch(e) {}
+
+                    let filePath: string;
+
+                    if (rslvd && rslvd._kind !== 'js') {
+                        filePath = (rslvd as CSSResolve).meta.source;
+                    } else {
+                        filePath = this.styl.resolvePath(undefined,symb.import.from)
+                    }
+                    // (rslvd && rslvd._kind === 'js')
+                    //     ? filePath = this.styl.resolvePath(undefined,symb.import.from)
+                    //     : filePath = (rslvd as CSSResolve).meta.source;
 
                     const doc = fs.get(filePath);
 

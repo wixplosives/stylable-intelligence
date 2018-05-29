@@ -86,6 +86,15 @@ describe("Definitions", function () {
                 });
             });
 
+            it("should return definition of 3rd party var in -st-named", function () {
+                return asserters.getDefinition('definitions/3rd-party-var-named.st.css').then((defs) => {
+                    expect(defs.length).to.equal(1);
+                    let def = defs[0];
+                    expect(def.uri).to.equal(path.join(CASES_PATH, '../node_modules/fake-stylable-package/stylesheet.st.css'));
+                    expect(def.range).to.eql(createRange(1, 4, 1, 10))
+                });
+            });
+
             it("should return definition of imported var in RHS of rule", function () {
                 return asserters.getDefinition('definitions/imported-var-value.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
@@ -106,7 +115,17 @@ describe("Definitions", function () {
                 });
             });
 
-            it("should return definition of TS mixin in -st-named", function () {
+            it("should return definition of 3rd party JS mixin in -st-named", function () {
+                return asserters.getDefinition('definitions/3rd-party-mixins-named-js.st.css').then((defs) => {
+                    expect(defs.length).to.equal(1);
+                    let def = defs[0];
+                    expect(def.uri).to.equal(path.join(CASES_PATH, '../node_modules/fake-stylable-package/js-mixins.js'));
+                    expect(def.range).to.eql(createRange(8, 8, 8, 14))
+                });
+            });
+
+            //Feature undergoing redesign
+            xit("should return definition of TS mixin in -st-named", function () {
                 return asserters.getDefinition('definitions/imported-mixins-named-ts.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
@@ -124,7 +143,8 @@ describe("Definitions", function () {
                 });
             });
 
-            it("should return definition of TS mixin in use", function () {
+            //Feature undergoing redesign
+            xit("should return definition of TS mixin in use", function () {
                 return asserters.getDefinition('definitions/imported-mixins-value-ts.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
