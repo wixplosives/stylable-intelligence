@@ -3455,7 +3455,7 @@ postcss@^5.0.10, postcss@^5.0.11, postcss@^5.0.12, postcss@^5.0.13, postcss@^5.0
     source-map "^0.5.6"
     supports-color "^3.2.3"
 
-postcss@^6.0.1, postcss@^6.0.11, postcss@^6.0.14, postcss@^6.0.17, postcss@^6.0.19, postcss@^6.0.6:
+postcss@^6.0.1, postcss@^6.0.11, postcss@^6.0.14, postcss@^6.0.19, postcss@^6.0.22, postcss@^6.0.6:
   version "6.0.22"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-6.0.22.tgz#e23b78314905c3b90cbd61702121e7a78848f2a3"
   dependencies:
@@ -4123,9 +4123,9 @@ strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
-stylable@^5.3.8:
-  version "5.3.8"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.3.8.tgz#18e66753fb4262fb480779d0125bcc4ce310f9bc"
+stylable@^5.3.0:
+  version "5.3.9"
+  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.3.9.tgz#1f4371c8b83bb919c56b505a67eb504d1f4a8542"
   dependencies:
     css-selector-tokenizer "^0.7.0"
     deindent "^0.1.0"
@@ -4133,7 +4133,7 @@ stylable@^5.3.8:
     is-vendor-prefixed "^1.0.0"
     lodash.clonedeep "^4.5.0"
     murmurhash "^0.0.2"
-    postcss "^6.0.17"
+    postcss "^6.0.22"
     postcss-js "^1.0.1"
     postcss-nested "^3.0.0"
     postcss-safe-parser "^3.0.1"

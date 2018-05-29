@@ -41,9 +41,10 @@ export function resolveDocumentColors(
                     }
                 }
                 if (color) {
+                    const prefixLength = 'value('.length;
                     const range = new ProviderRange(
-                        new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1]) - 'value('.length),
-                        new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1]) + result.length)
+                        new ProviderPosition(ind, regexResult.index),
+                        new ProviderPosition(ind, regexResult.index + regexResult[0].slice(prefixLength).indexOf(regexResult[1]) + prefixLength + regexResult[1].length)
                     );
                     colorComps.push({color, range} as ColorInformation)
                 }
@@ -93,7 +94,7 @@ export function resolveDocumentColors(
 export function getColorPresentation(
     cssService: CssService,
     document: TextDocument,
-    params: ColorPresentationParams): ColorPresentation[] {
+    params: ColorPresentationParams): ColorPresentation[] | null {
 
     const src = document.getText();
     const res = fixAndProcess(src, new ProviderPosition(0, 0), params.textDocument.uri);
@@ -101,7 +102,7 @@ export function getColorPresentation(
 
     const word = src.split('\n')[params.range.start.line].slice(params.range.start.character, params.range.end.character);
     if (word.startsWith('value(')) {
-        return []
+        return null;
     }
 
     const wordStart = new ProviderPosition(params.range.start.line + 1, params.range.start.character + 1);
@@ -116,7 +117,7 @@ export function getColorPresentation(
         }
     });
     if (noPicker) {
-        return []
+        return null;
     }
     return cssService.getColorPresentations(document, params.color, params.range);
 }

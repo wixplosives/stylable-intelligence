@@ -1,8 +1,14 @@
 :import {
-    -st-from: "fake-stylable-package/js-mixins.js";
-    -st-named: aMixin;
+    -st-from: "./import.st.css";
+    -st-named: aa;
+}
+
+:import {
+    -st-from: "./import.st.css";
+    -st-named: a;
 }
 
 .local {
-    -st-mixin: aMixin;
+    color: value(aa)
 }
+

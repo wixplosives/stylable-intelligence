@@ -1,12 +1,9 @@
+:vars {
+  a: red;
+  aa: green;
+}
+
 .root {
-    -st-states: blah( enum(a, b, c) );
+  color: value(aa);
+  background-color: value(a);
 }
-
-.gaga {
-    -st-states: aState( enum(a, b, c) );
-}
-
-/* .gaga:aState(c) {
-    color:blue;
-    mask: lala
-} */

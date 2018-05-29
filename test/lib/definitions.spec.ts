@@ -32,7 +32,7 @@ describe("Definitions", function () {
                 expect(defs.length).to.equal(1);
                 let def = defs[0];
                 expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/local-custom-selector.st.css'));
-                expect(def.range).to.eql(createRange(4, 17, 4, 24))
+                expect(def.range).to.eql(createRange(4, 20, 4, 24))
             });
         });
 
