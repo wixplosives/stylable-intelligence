@@ -723,7 +723,8 @@ describe("Service component test", function () {
             expect(res.signatures[0].parameters).to.have.length(3);
         }));
 
-        it("Signatures - TS mixins and formatters", plan(2, async () => {
+        //Feature undergoing redesign
+        xit("Signatures - TS mixins and formatters", plan(2, async () => {
 
             const tsFileText = trimLiteral`
             |import { stNumber, stString as lalaString, stPercent } from 'stylable';
