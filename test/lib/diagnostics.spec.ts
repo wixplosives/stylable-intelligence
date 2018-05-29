@@ -5,7 +5,6 @@ import {createDiagnosis} from '../../src/lib/diagnosis'
 import {createProcessor} from '../../src/lib/provider-factory'
 import { LocalSyncFs } from '../../src/lib/local-sync-fs';
 import { createDocFs } from '../../src/lib/server-utils';
-import { trimLiteral } from './service.spec';
 
 function createDiagnostics(files:{[filePath:string]:string}, path:string) {
     const docs:{[path:string]:TextDocument} = {}

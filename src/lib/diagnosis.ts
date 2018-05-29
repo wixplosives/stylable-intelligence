@@ -13,10 +13,7 @@ export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileP
         return [];
     }
 
-    if (doc.getText().includes('/* st-ignore-diagnostics */')) {
-        return [];
-    }
-
+   
     const file = fromVscodePath(doc.uri);
 
     const transformer = new StylableTransformer({
