@@ -674,7 +674,7 @@ export function createMeta(src: string, srcPath: string) {
             fakes.push(r);
         }
 
-        meta = normalizeMeta(stylableProcess(ast));
+        meta = stylableProcess(ast);
     } catch (error) {
         return { meta: null, fakes: fakes };
     }
