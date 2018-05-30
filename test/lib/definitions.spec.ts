@@ -1,11 +1,11 @@
 import {createRange} from '../../src/lib/completion-providers';
 import * as asserters from '../../test-kit/asserters';
-import {CASES_PATH as LOCAL_CASES_PATH} from '../../test-kit/asserters';
+import {CASES_PATH} from '../../test-kit/asserters';
 import {expect} from 'chai';
 import * as path from 'path';
 import {fromStylablePath} from "../../src/lib/utils/stylable";
 
-const CASES_PATH = fromStylablePath(LOCAL_CASES_PATH);
+// const CASES_PATH = fromStylablePath(LOCAL_CASES_PATH);
 
 describe("Definitions", function () {
     describe("Local elements", function () {
@@ -13,7 +13,7 @@ describe("Definitions", function () {
             return asserters.getDefinition('definitions/local-class.st.css').then((defs) => {
                 expect(defs.length).to.equal(1);
                 let def = defs[0];
-                expect(def.uri).to.equal(path.join(LOCAL_CASES_PATH, 'definitions/local-class.st.css'));
+                expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/local-class.st.css'));
                 expect(def.range).to.eql(createRange(0, 1, 0, 6))
             });
         });
