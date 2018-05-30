@@ -118,7 +118,7 @@ export default class Provider {
                     break;
                 }
                 case 'import': {
-                    const filePath: string = path.posix.join(path.posix.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
+                    const filePath: string = path.join(path.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
 
                     const doc = fs.get(filePath);
 
