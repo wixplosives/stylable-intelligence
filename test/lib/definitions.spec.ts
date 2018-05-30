@@ -9,7 +9,7 @@ const CASES_PATH = fromStylablePath(LOCAL_CASES_PATH);
 
 describe("Definitions", function () {
     describe("Local elements", function () {
-        it.only("should return first definition of class in same file", function () {
+        it("should return first definition of class in same file", function () {
             return asserters.getDefinition('definitions/local-class.st.css').then((defs) => {
                 expect(defs.length).to.equal(1);
                 let def = defs[0];
