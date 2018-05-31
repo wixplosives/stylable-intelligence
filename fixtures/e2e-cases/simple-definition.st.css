@@ -1,0 +1,7 @@
+:vars {
+    varvar: binks;
+}
+
+.local {
+    color: value(varvar);
+}
