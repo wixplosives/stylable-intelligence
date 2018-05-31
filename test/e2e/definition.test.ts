@@ -47,6 +47,7 @@ suite.only("Extension Tests", () => {
         // const testCases: [vscode.Position, string[]][] = [
         //     [new vscode.Position(5, 20), ]
         // ];
+        this.timeout(30000)
         return testDefinition('simple-definition.st.css', new vscode.Position(5, 20));
     });
 
