@@ -24,7 +24,7 @@ assertNoError.forget = function forget(){
     assert.resetHistory();
 };
 
-export function plan(count: number, testCase: () => void | Promise<any>, timeout = DEFAULT_TIMEOUT) {
+export function plan(count: number, testCase: (this: ITestCallbackContext) => void | Promise<any>, timeout = DEFAULT_TIMEOUT) {
     return async function (this: ITestCallbackContext) {
         _expect.resetHistory();
         if (this) {

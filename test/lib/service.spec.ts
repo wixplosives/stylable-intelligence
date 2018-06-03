@@ -2,15 +2,16 @@ import { TestConnection } from "../lsp-testkit/connection.spec";
 import { expect, plan } from "../testkit/chai.spec";
 import { init } from "../../src/lib/server-utils";
 import { MemoryFileSystem } from "kissfs";
-import { toVscodePath } from "../../src/lib/utils/uri-utils";
+import {toUrl, toVscodePath} from "../../src/lib/utils/uri-utils";
 import { TextDocumentItem, ReferenceParams, TextEdit } from "vscode-languageserver-protocol"
 import { getRangeAndText } from "../testkit/text.spec";
-import { Diagnostic, Range, Position, Location, SignatureHelp, SignatureInformation, ParameterInformation } from 'vscode-languageserver-types';
-import { createRange, ProviderPosition } from '../../src/lib/completion-providers';
+import { Diagnostic, Range, Location } from 'vscode-languageserver-types';
+import { createRange } from '../../src/lib/completion-providers';
 import { createColor } from './colors.spec';
-import { timingFunctions } from 'polished';
 import { toggleLegacy } from '../../src/lib/provider-factory'
-
+import {LocalFileSystemCrudOnly} from "kissfs/dist/src/local-fs-crud-only";
+import * as path from "path";
+const pkgDir = require('pkg-dir');
 
 function createDiagnosisNotification(diagnostics: Diagnostic[], fileName: string) {
     return {
@@ -41,6 +42,42 @@ describe("Service component test", function () {
     })
 
     describe("Definitions", function () {
+        // TODO: THIS IS TOO KINKY
+        it.only("Definitions - windows path", plan(4, async function() {
+            this.timeout(5000);
+            const oldPlatform = process.platform;
+
+            try {
+                Object.defineProperty(process, 'platform', {
+                    value: 'win32',
+                    writable: true,
+                    configurable: true
+                });
+                expect(process.platform).to.eql('win32');
+
+                let rootDir = await pkgDir(__dirname);
+                const casesPath = path.win32.join(rootDir, 'fixtures', 'e2e-cases', 'simple-definition.st.css');
+                const localEnvPath = casesPath.split(path.win32.sep).join(path.sep);
+                const fileSystem = new LocalFileSystemCrudOnly('');
+                const textDocument = TextDocumentItem.create(toVscodePath(casesPath), 'stylable', 0, fileSystem.loadTextFileSync(localEnvPath));
+            //    expect(textDocument.uri).to.eql('file:///Users/amira/IdeaProjects/stylable-intelligence/fixtures/e2e-cases/simple-definition.st.css');
+                expect(textDocument.uri).to.eql(toUrl(casesPath));
+
+                init(fileSystem as any, testCon.server);
+
+                const definitions = await testCon.client.definition({ position: { line: 5, character: 20 }, textDocument });
+                if (Array.isArray(definitions)){
+                    expect(definitions.length).to.eql(1);
+                    console.log(textDocument.uri);
+                    expect(definitions[0].uri).to.eql(textDocument.uri);
+                } else {
+                    throw new Error("Where are my definitions? " + JSON.stringify(definitions))
+                }
+            } finally {
+                process.platform = oldPlatform;
+            }
+        }));
+
         it("Definitions - element", plan(5, async () => {
             const topFileText = trimLiteral`
             |:import {
@@ -78,11 +115,11 @@ describe("Service component test", function () {
                 { line: 2, character: 17 },
                 { line: 6, character: 18 },
                 { line: 9, character: 7 },
-            ]
+            ];
             const importFileLocations = [
                 { line: 4, character: 3 },
                 { line: 8, character: 10 },
-            ]
+            ];
 
             init(fileSystem, testCon.server);
             const expectedDef = {
@@ -92,11 +129,11 @@ describe("Service component test", function () {
             for (const loc of topFileLocations) {
                 const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
                 expect(def).to.eql([expectedDef]);
-            };
+            }
             for (const loc of importFileLocations) {
                 const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
                 expect(def).to.eql([expectedDef]);
-            };
+            }
         }));
 
         it("Definitions - variable", plan(4, async () => {
