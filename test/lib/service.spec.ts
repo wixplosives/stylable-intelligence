@@ -43,7 +43,7 @@ describe("Service component test", function () {
 
     describe("Definitions", function () {
         // TODO: THIS IS TOO KINKY
-        it.only("Definitions - windows path", plan(4, async function() {
+        it("Definitions - windows path", plan(4, async function() {
             this.timeout(5000);
             const oldPlatform = process.platform;
 
@@ -59,8 +59,7 @@ describe("Service component test", function () {
                 const casesPath = path.win32.join(rootDir, 'fixtures', 'e2e-cases', 'simple-definition.st.css');
                 const localEnvPath = casesPath.split(path.win32.sep).join(path.sep);
                 const fileSystem = new LocalFileSystemCrudOnly('');
-                const textDocument = TextDocumentItem.create(toVscodePath(casesPath), 'stylable', 0, fileSystem.loadTextFileSync(localEnvPath));
-            //    expect(textDocument.uri).to.eql('file:///Users/amira/IdeaProjects/stylable-intelligence/fixtures/e2e-cases/simple-definition.st.css');
+                const textDocument = TextDocumentItem.create(toUrl(casesPath), 'stylable', 0, fileSystem.loadTextFileSync(localEnvPath));
                 expect(textDocument.uri).to.eql(toUrl(casesPath));
 
                 init(fileSystem as any, testCon.server);

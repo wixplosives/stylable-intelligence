@@ -1,18 +1,21 @@
+
+const UriPrefix = 'file://';
+
+// TODO: convert implementation to `localPathToPosix(fromUrl(uri))` and fix all failing tests
 export const fromVscodePath = (uri: string) => {
     if (uri.startsWith('file://')) {
-        return process.platform === 'win32' ? uri.slice(8).replace('%3A', ':') : uri.slice(7)
+        return localPathToPosix(fromUrl(uri));
     }
     return uri;
 };
-export const toVscodePath = (path: string): string => {
+
+// TODO: convert implementation to `toUrl(posixToLocalPath(path))` and fix all failing tests
+export const toVscodePath  = (path: string) => {
     if (path.startsWith('file://')) {
         return path;
     }
-    return 'file://' + (process.platform === 'win32' ? `/${path.replace(/\\/g, '/').replace(':', '%3A')}` : path)
+    return toUrl(posixToLocalPath(path));
 };
-
-
-const UriPrefix = 'file://';
 
 export const fromUrl = (uri: string) => {
     return uri.slice(UriPrefix.length).replace('%3A', ':');
@@ -21,9 +24,9 @@ export const toUrl = (path: string): string => {
     return UriPrefix + path.replace(':', '%3A');
 };
 
-export const posixToLocalPath = (path: string) => {
+export const localPathToPosix  = (path: string) => {
     return process.platform === 'win32' ? '/' + path.replace(/\\/g, '/') : path;
 };
-export const localPathToPosix = (path: string): string => {
+export const posixToLocalPath = (path: string): string => {
     return process.platform === 'win32' ?  path.slice(1).replace(/\//g, '\\') : path;
 };
