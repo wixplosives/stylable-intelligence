@@ -19,7 +19,15 @@ function normalizeImported(_import: Imported): Imported {
 }
 
 function normalizeAst(ast: postcss.Root): postcss.Root {
+    if(ast.source.input.file === ast.source.input.from){
+        Object.defineProperty(ast.source.input, 'from' ,{
+            value : fromStylablePath(ast.source.input.from)
+        });
+    }
     ast.source.input.file = fromStylablePath(ast.source.input.file);
+    if (ast.source.input.map) {
+        ast.source.input.map.file = fromStylablePath(ast.source.input.map.file);
+    }
     return ast;
 }
 
