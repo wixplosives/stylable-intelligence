@@ -3,7 +3,7 @@ import * as path from 'path';
 import {IConnection, NotificationType, TextDocument, TextDocuments} from 'vscode-languageserver';
 import {createFs, MinimalDocs,} from './provider-factory';
 import {ColorPresentationRequest, DocumentColorRequest} from 'vscode-languageserver-protocol';
-import {fromVscodePath, toVscodePath} from './utils/uri-utils';
+import { fromVscodePath, toVscodePath} from './utils/uri-utils';
 import {initStylableLanguageService} from './service'
 import {Stylable} from 'stylable';
 import *  as ts from 'typescript';

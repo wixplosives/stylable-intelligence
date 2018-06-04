@@ -659,7 +659,8 @@ export function createMeta(src: string, srcPath: string) {
     let meta: StylableMeta;
     let fakes: PostCss.Rule[] = [];
     try {
-        let ast: PostCss.Root = safeParse(src, { from: fromVscodePath(srcPath) })
+        const from = fromVscodePath(srcPath);
+        let ast: PostCss.Root = safeParse(src, { from });
         ast.nodes && ast.nodes.forEach((node) => {
             if (node.type === 'decl') {
                 let r = PostCss.rule({ selector: node.prop + ':' + node.value });

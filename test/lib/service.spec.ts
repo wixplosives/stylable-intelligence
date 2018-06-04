@@ -2,20 +2,21 @@ import { TestConnection } from "../lsp-testkit/connection.spec";
 import { expect, plan } from "../testkit/chai.spec";
 import { init } from "../../src/lib/server-utils";
 import { MemoryFileSystem } from "kissfs";
-import { toVscodePath } from "../../src/lib/utils/uri-utils";
+import { toUrl } from "../../src/lib/utils/uri-utils";
 import { TextDocumentItem, ReferenceParams, TextEdit } from "vscode-languageserver-protocol"
 import { getRangeAndText } from "../testkit/text.spec";
-import { Diagnostic, Range, Position, Location, SignatureHelp, SignatureInformation, ParameterInformation } from 'vscode-languageserver-types';
-import { createRange, ProviderPosition } from '../../src/lib/completion-providers';
+import { Diagnostic, Range, Location } from 'vscode-languageserver-types';
+import { createRange } from '../../src/lib/completion-providers';
 import { createColor } from './colors.spec';
-import { timingFunctions } from 'polished';
 import { toggleLegacy } from '../../src/lib/provider-factory'
-
+import {LocalFileSystemCrudOnly} from "kissfs/dist/src/local-fs-crud-only";
+import * as path from "path";
+const pkgDir = require('pkg-dir');
 
 function createDiagnosisNotification(diagnostics: Diagnostic[], fileName: string) {
     return {
         diagnostics,
-        uri: toVscodePath('/' + fileName)
+        uri: toUrl('/' + fileName)
     };
 }
 
@@ -41,6 +42,41 @@ describe("Service component test", function () {
     })
 
     describe("Definitions", function () {
+        // TODO: THIS IS TOO KINKY
+        it.skip("Definitions - windows path", plan(4, async function() {
+            this.timeout(5000);
+            const oldPlatform = process.platform;
+
+            try {
+                Object.defineProperty(process, 'platform', {
+                    value: 'win32',
+                    writable: true,
+                    configurable: true
+                });
+                expect(process.platform).to.eql('win32');
+
+                let rootDir = await pkgDir(__dirname);
+                const casesPath = path.win32.join(rootDir, 'fixtures', 'e2e-cases', 'simple-definition.st.css');
+                const localEnvPath = casesPath.split(path.win32.sep).join(path.sep);
+                const fileSystem = new LocalFileSystemCrudOnly('');
+                const textDocument = TextDocumentItem.create(toUrl(casesPath), 'stylable', 0, fileSystem.loadTextFileSync(localEnvPath));
+                expect(textDocument.uri).to.eql(toUrl(casesPath));
+
+                init(fileSystem as any, testCon.server);
+
+                const definitions = await testCon.client.definition({ position: { line: 5, character: 20 }, textDocument });
+                if (Array.isArray(definitions)){
+                    expect(definitions.length).to.eql(1);
+                    console.log(textDocument.uri);
+                    expect(definitions[0].uri).to.eql(textDocument.uri);
+                } else {
+                    throw new Error("Where are my definitions? " + JSON.stringify(definitions))
+                }
+            } finally {
+                process.platform = oldPlatform;
+            }
+        }));
+
         it("Definitions - element", plan(5, async () => {
             const topFileText = trimLiteral`
             |:import {
@@ -72,17 +108,17 @@ describe("Service component test", function () {
             const topFileName = 'top.st.css';
             const importFileName = 'import.st.css';
             const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [importFileName]: importFileText } });
-            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
-            const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileText);
+            const topTextDocument = TextDocumentItem.create(toUrl('/' + topFileName), 'stylable', 0, topFileText);
+            const importTextDocument = TextDocumentItem.create(toUrl('/' + importFileName), 'stylable', 0, importFileText);
             const topFileLocations = [
                 { line: 2, character: 17 },
                 { line: 6, character: 18 },
                 { line: 9, character: 7 },
-            ]
+            ];
             const importFileLocations = [
                 { line: 4, character: 3 },
                 { line: 8, character: 10 },
-            ]
+            ];
 
             init(fileSystem, testCon.server);
             const expectedDef = {
@@ -92,11 +128,11 @@ describe("Service component test", function () {
             for (const loc of topFileLocations) {
                 const def = await testCon.client.definition({ position: loc, textDocument: topTextDocument });
                 expect(def).to.eql([expectedDef]);
-            };
+            }
             for (const loc of importFileLocations) {
                 const def = await testCon.client.definition({ position: loc, textDocument: importTextDocument });
                 expect(def).to.eql([expectedDef]);
-            };
+            }
         }));
 
         it("Definitions - variable", plan(4, async () => {
@@ -121,8 +157,8 @@ describe("Service component test", function () {
             const topFileName = 'top.st.css';
             const importFileName = 'import.st.css';
             const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [importFileName]: importFileText } });
-            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
-            const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileText);
+            const topTextDocument = TextDocumentItem.create(toUrl('/' + topFileName), 'stylable', 0, topFileText);
+            const importTextDocument = TextDocumentItem.create(toUrl('/' + importFileName), 'stylable', 0, importFileText);
             const topFileLocations = [
                 { line: 2, character: 17 },
                 { line: 6, character: 34 },
@@ -174,8 +210,8 @@ describe("Service component test", function () {
             const topFileName = 'top.st.css';
             const importFileName = 'import.st.css';
             const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [importFileName]: importFileText } });
-            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
-            const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileText);
+            const topTextDocument = TextDocumentItem.create(toUrl('/' + topFileName), 'stylable', 0, topFileText);
+            const importTextDocument = TextDocumentItem.create(toUrl('/' + importFileName), 'stylable', 0, importFileText);
             const topFileLocations = [
                 { line: 9, character: 6 },
             ]
@@ -220,8 +256,8 @@ describe("Service component test", function () {
             const topFileName = 'top.st.css';
             const importFileName = 'import.st.css';
             const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [importFileName]: importFileText } });
-            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
-            const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileText);
+            const topTextDocument = TextDocumentItem.create(toUrl('/' + topFileName), 'stylable', 0, topFileText);
+            const importTextDocument = TextDocumentItem.create(toUrl('/' + importFileName), 'stylable', 0, importFileText);
             const topFileLocations = [
                 { line: 2, character: 15 },
                 { line: 6, character: 19 },
@@ -285,8 +321,8 @@ describe("Service component test", function () {
             const topFileName = 'top.st.css';
             const importFileName = 'my-js-mixins.js';
             const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [importFileName]: importFileText } });
-            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
-            const importTextDocument = TextDocumentItem.create(toVscodePath('/' + importFileName), 'stylable', 0, importFileText);
+            const topTextDocument = TextDocumentItem.create(toUrl('/' + topFileName), 'stylable', 0, topFileText);
+            const importTextDocument = TextDocumentItem.create(toUrl('/' + importFileName), 'stylable', 0, importFileText);
             const topFileLocations = [
                 { line: 2, character: 13 },
                 { line: 6, character: 10 },
@@ -316,7 +352,7 @@ describe("Service component test", function () {
 
 
             init(fileSystem, testCon.server);
-            const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
+            const textDocument = TextDocumentItem.create(toUrl('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
             testCon.client.didOpenTextDocument({ textDocument });
 
 
@@ -345,8 +381,8 @@ describe("Service component test", function () {
             const baseFileName = 'base-file.st.css';
             const topFileName = 'top-file.st.css';
             const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent, [topFileName]: topFileContent } });
-            const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
-            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileContent);
+            const baseTextDocument = TextDocumentItem.create(toUrl('/' + baseFileName), 'stylable', 0, baseFilecContent);
+            const topTextDocument = TextDocumentItem.create(toUrl('/' + topFileName), 'stylable', 0, topFileContent);
 
             init(fileSystem, testCon.server);
             testCon.client.didOpenTextDocument({ textDocument: topTextDocument });
@@ -373,7 +409,7 @@ describe("Service component test", function () {
 
             const baseFileName = 'base-file.st.css';
             const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent } });
-            const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
+            const baseTextDocument = TextDocumentItem.create(toUrl('/' + baseFileName), 'stylable', 0, baseFilecContent);
             const diags = [ //CSS diagnostics that shouldn't appear: empty ruleset, unknown property 'varavar'
                 createDiagnosis(createRange(6, 6, 6, 12), "unknown pseudo-state \"aState\""),
                 createDiagnosis(createRange(8, 2, 8, 8), "Unknown property: 'colorr'", "css", "unknownProperties"),
@@ -394,7 +430,7 @@ describe("Service component test", function () {
 
             const baseFileName = 'stylesheet.st.css'
             const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent } });
-            const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
+            const baseTextDocument = TextDocumentItem.create(toUrl('/' + baseFileName), 'stylable', 0, baseFilecContent);
             init(fileSystem, testCon.server);
             testCon.client.didOpenTextDocument({ textDocument: baseTextDocument });
 
@@ -517,7 +553,7 @@ describe("Service component test", function () {
 
             init(fileSystem, testCon.server);
             const context = { includeDeclaration: true }
-            const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
+            const textDocument = TextDocumentItem.create(toUrl('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
             const expectedRefs = [
                 Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
                 Location.create(textDocument.uri, createRange(5, 1, 5, 5)),
@@ -568,8 +604,8 @@ describe("Service component test", function () {
 
             init(fileSystem, testCon.server);
             const context = { includeDeclaration: true }
-            const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, fileSystem.loadTextFileSync(baseFileName));
-            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+            const baseTextDocument = TextDocumentItem.create(toUrl('/' + baseFileName), 'stylable', 0, fileSystem.loadTextFileSync(baseFileName));
+            const topTextDocument = TextDocumentItem.create(toUrl('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
 
             const refRequests: ReferenceParams[] = [
                 { context, textDocument: baseTextDocument, position: { line: 0, character: 3 } },
@@ -619,14 +655,14 @@ describe("Service component test", function () {
             const fileSystem = new MemoryFileSystem('', { content: { [fileName]: fileText } });
 
             init(fileSystem, testCon.server);
-            const textDocument = TextDocumentItem.create(toVscodePath('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
+            const textDocument = TextDocumentItem.create(toUrl('/' + fileName), 'stylable', 0, fileSystem.loadTextFileSync(fileName));
 
             const res = await testCon.client.rename({ textDocument, position: { line: 10, character: 24 }, newName: 'abc' })
 
             if (!res || !res.changes) {
                 throw new Error('No change list returned');
             }
-            expect(res.changes[toVscodePath('/' + fileName)]).to.exist;
+            expect(res.changes[toUrl('/' + fileName)]).to.exist;
 
             const expectedEdits = [
                 TextEdit.replace(createRange(0, 3, 0, 7), 'abc'),
@@ -638,7 +674,7 @@ describe("Service component test", function () {
             ];
 
             //Not asserting order - Edits order inside a file has no meaning, as they are applied simultaneously by IDE
-            expect(res.changes[toVscodePath('/' + fileName)]).to.have.deep.members(expectedEdits);
+            expect(res.changes[toUrl('/' + fileName)]).to.have.deep.members(expectedEdits);
         }));
 
         // TODO: Feature not implemented yet (uses References mechanism)
@@ -671,8 +707,8 @@ describe("Service component test", function () {
 
             init(fileSystem, testCon.server);
             const context = { includeDeclaration: true }
-            const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, fileSystem.loadTextFileSync(baseFileName));
-            const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+            const baseTextDocument = TextDocumentItem.create(toUrl('/' + baseFileName), 'stylable', 0, fileSystem.loadTextFileSync(baseFileName));
+            const topTextDocument = TextDocumentItem.create(toUrl('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
 
             const editRequests: ReferenceParams[] = [
                 { context, textDocument: baseTextDocument, position: { line: 0, character: 3 } },
@@ -727,7 +763,7 @@ describe("Service component test", function () {
             const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [jsFileName]: jsFileText } });
 
             init(fileSystem, testCon.server);
-            const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
+            const textDocument = TextDocumentItem.create(toUrl('/' + topFileName), 'stylable', 0, topFileText);
 
             const position = { line: 6, character: 38 };
             const res = await testCon.client.signatureHelp({ textDocument, position });
@@ -770,7 +806,7 @@ describe("Service component test", function () {
             const fileSystem = new MemoryFileSystem('', { content: { [topFileName]: topFileText, [tsFileName]: tsFileText } });
 
             init(fileSystem, testCon.server);
-            const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileText);
+            const textDocument = TextDocumentItem.create(toUrl('/' + topFileName), 'stylable', 0, topFileText);
 
             const position = { line: 6, character: 29 };
             const res = await testCon.client.signatureHelp({ textDocument, position });
@@ -792,7 +828,7 @@ describe("Service component test", function () {
 
             init(fileSystem, testCon.server);
 
-            const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+            const textDocument = TextDocumentItem.create(toUrl('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
             const position = { line: 1, character: 24 };
             const res = await testCon.client.signatureHelp({ textDocument, position });
 
@@ -813,7 +849,7 @@ describe("Service component test", function () {
 
             init(fileSystem, testCon.server);
 
-            const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+            const textDocument = TextDocumentItem.create(toUrl('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
             const position = { line: 1, character: 32 };
             const res = await testCon.client.signatureHelp({ textDocument, position });
 
@@ -838,7 +874,7 @@ describe("Service component test", function () {
 
             init(fileSystem, testCon.server);
 
-            const textDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
+            const textDocument = TextDocumentItem.create(toUrl('/' + topFileName), 'stylable', 0, fileSystem.loadTextFileSync(topFileName));
             const position = { line: 4, character: 14 };
             const res = await testCon.client.signatureHelp({ textDocument, position });
 

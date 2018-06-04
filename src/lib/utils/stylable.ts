@@ -1,10 +1,13 @@
 import * as path from "path";
 import {ImportSymbol, StylableMeta, Imported, StylableSymbol} from "stylable";
-
-const rootPath = path.resolve('/');
+import * as postcss from 'postcss';
 
 export function fromStylablePath(stlPath: string) {
-    return stlPath.replace(rootPath, '/').replace(/\\/g, '/');
+    stlPath = stlPath.replace(/\\/g, '/');
+    if (!stlPath.startsWith('/') && !stlPath.startsWith('.')){
+        stlPath = '/' + stlPath;
+    }
+    return stlPath;
 }
 
 function isImportSymbol(s: StylableSymbol): s is ImportSymbol {
@@ -17,8 +20,22 @@ function normalizeImported(_import: Imported): Imported {
     return _import;
 }
 
+function normalizeAst(ast: postcss.Root): postcss.Root {
+    if(ast.source.input.file === ast.source.input.from){
+        Object.defineProperty(ast.source.input, 'from' ,{
+            value : fromStylablePath(ast.source.input.from)
+        });
+    }
+    ast.source.input.file = fromStylablePath(ast.source.input.file);
+    if (ast.source.input.map) {
+        ast.source.input.map.file = fromStylablePath(ast.source.input.map.file);
+    }
+    return ast;
+}
+
 export function normalizeMeta(meta: StylableMeta): StylableMeta {
     meta.source = fromStylablePath(meta.source);
+    meta.ast = normalizeAst(meta.ast);
     meta.imports.forEach(normalizeImported);
 
     for (let name of Object.keys(meta.mappedSymbols)) {
