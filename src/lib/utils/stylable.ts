@@ -1,5 +1,6 @@
 import * as path from "path";
 import {ImportSymbol, StylableMeta, Imported, StylableSymbol} from "stylable";
+import * as postcss from 'postcss';
 
 const rootPath = path.resolve('/');
 
@@ -17,8 +18,14 @@ function normalizeImported(_import: Imported): Imported {
     return _import;
 }
 
+function normalizeAst(ast: postcss.Root): postcss.Root {
+    ast.source.input.file = fromStylablePath(ast.source.input.file);
+    return ast;
+}
+
 export function normalizeMeta(meta: StylableMeta): StylableMeta {
     meta.source = fromStylablePath(meta.source);
+    meta.ast = normalizeAst(meta.ast);
     meta.imports.forEach(normalizeImported);
 
     for (let name of Object.keys(meta.mappedSymbols)) {
