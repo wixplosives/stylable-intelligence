@@ -2,10 +2,12 @@ import * as path from "path";
 import {ImportSymbol, StylableMeta, Imported, StylableSymbol} from "stylable";
 import * as postcss from 'postcss';
 
-const rootPath = path.resolve('/');
-
 export function fromStylablePath(stlPath: string) {
-    return stlPath.replace(rootPath, '/').replace(/\\/g, '/');
+    stlPath = stlPath.replace(/\\/g, '/');
+    if (!stlPath.startsWith('/') && !stlPath.startsWith('.')){
+        stlPath = '/' + stlPath;
+    }
+    return stlPath;
 }
 
 function isImportSymbol(s: StylableSymbol): s is ImportSymbol {
