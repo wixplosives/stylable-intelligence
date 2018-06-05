@@ -41,10 +41,9 @@ export function resolveDocumentColors(
                     }
                 }
                 if (color) {
-                    const prefixLength = 'value('.length;
                     const range = new ProviderRange(
-                        new ProviderPosition(ind, regexResult.index),
-                        new ProviderPosition(ind, regexResult.index + regexResult[0].slice(prefixLength).indexOf(regexResult[1]) + prefixLength + regexResult[1].length)
+                        new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1]) - 'value('.length),
+                        new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1]) + result.length)
                     );
                     colorComps.push({color, range} as ColorInformation)
                 }
