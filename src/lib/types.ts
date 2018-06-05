@@ -35,12 +35,6 @@ export interface LSPTypeHelpers {
     Diagnostic: typeof Diagnostic
 }
 
-export type ExtendedFSReadSync = {
-    get(path: string): TextDocument;
-    getOpenedFiles(): string[]
-} & FileSystemReadSync;
-
-
 export type ExtendedTsLanguageService = {
     setOpenedFiles: (files: string[]) => void;
     ts: ts.LanguageService

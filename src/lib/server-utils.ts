@@ -3,40 +3,42 @@ import * as path from 'path';
 import {IConnection, NotificationType, TextDocument, TextDocuments} from 'vscode-languageserver';
 import {createFs, MinimalDocs,} from './provider-factory';
 import {ColorPresentationRequest, DocumentColorRequest} from 'vscode-languageserver-protocol';
-import { fromVscodePath, toVscodePath} from './utils/uri-utils';
+import {fromVscodePath, toVscodePath} from './utils/uri-utils';
 import {initStylableLanguageService} from './service'
 import {Stylable} from 'stylable';
 import *  as ts from 'typescript';
 import {FileSystemReadSync} from 'kissfs';
-import {ExtendedFSReadSync, ExtendedTsLanguageService} from './types';
+import {ExtendedTsLanguageService} from './types';
 import {createBaseHost, createLanguageServiceHost} from './utils/temp-language-service-host';
 import {normalizeMeta} from "./utils/stylable";
 
-export function createDocFs(fileSystem: FileSystemReadSync, docs: MinimalDocs): ExtendedFSReadSync {
-    return {
-        __proto__: fileSystem,
-        async loadTextFile(path: string) {
-            return this.loadTextFileSync(path);
+export function createDocFs<T extends FileSystemReadSync>(fileSystem: T, docs: MinimalDocs): T {
+    return Object.create(fileSystem, {
+        loadTextFile: {
+            value: function loadTextFile(path: string) {
+                return Promise.resolve(this.loadTextFileSync(path));
+            }
         },
-        loadTextFileSync(path: string) {
-            const vscodePath: string = toVscodePath(path);
-            const fromDocs = docs.get(vscodePath);
-            return fromDocs ? fromDocs.getText() : fileSystem.loadTextFileSync(fromVscodePath(path))
-        },
-        get(path: string) {
-            return docs.get(path) || TextDocument.create(path, 'stylable', 0, this.loadTextFileSync(fromVscodePath(path)));
-        },
-        getOpenedFiles() {
-            return docs.keys();
+        loadTextFileSync: {
+            value: function loadTextFileSync(path: string) {
+                const vscodePath: string = toVscodePath(path);
+                const fromDocs = docs.get(vscodePath);
+                if (fromDocs){
+                    console.log('fs loadTextFile[sync]?() fetching from docs');
+                    return fromDocs.getText();
+                } else {
+                    return fileSystem.loadTextFileSync(fromVscodePath(path))
+                }
+            }
         }
-    } as any;
+    });
 }
 
 export function init(fileSystem: FileSystemReadSync, connection: IConnection) {
     const docs = new TextDocuments();
     docs.listen(connection);
-    const docFs: ExtendedFSReadSync = createDocFs(fileSystem, docs);
-    const styl = new Stylable('/', createFs(docFs), require, undefined, normalizeMeta);
+    const combinedFs: FileSystemReadSync = createDocFs(fileSystem, docs);
+    const styl = new Stylable('/', createFs(combinedFs), require, undefined, normalizeMeta);
     const OpenDocNotificationType = new NotificationType<string, void>('stylable/openDocumentNotification');
     let openedFiles: string[] = [];
     const tsLanguageServiceHost = createLanguageServiceHost({
@@ -49,7 +51,7 @@ export function init(fileSystem: FileSystemReadSync, connection: IConnection) {
             typeRoots: ["./node_modules/@types"]
         },
         defaultLibDirectory: '',
-        baseHost: createBaseHost(docFs, path)
+        baseHost: createBaseHost(combinedFs, path)
     });
     const tsLanguageService = ts.createLanguageService(tsLanguageServiceHost);
     const wrappedTs: ExtendedTsLanguageService = {
@@ -57,7 +59,7 @@ export function init(fileSystem: FileSystemReadSync, connection: IConnection) {
         ts: tsLanguageService
     };
 
-    initStylableLanguageService(connection, {styl, tsLanguageService: wrappedTs, requireModule: require}, docFs, docs, {
+    initStylableLanguageService(connection, {styl, tsLanguageService: wrappedTs, requireModule: require}, combinedFs, docs, {
         openDoc: OpenDocNotificationType,
         colorPresentationRequest: ColorPresentationRequest,
         colorRequest: DocumentColorRequest

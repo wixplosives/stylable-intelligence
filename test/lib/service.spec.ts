@@ -470,6 +470,9 @@ describe("Service component test", function () {
 
             init(fileSystem, testCon.server);
 
+            testCon.client.didOpenTextDocument({ textDocument: baseTextDocument });
+            testCon.client.didOpenTextDocument({ textDocument: importTextDocument });
+
             const docColors = await testCon.client.documentColor({ textDocument: baseTextDocument });
             const importDocColors = await testCon.client.documentColor({ textDocument: importTextDocument });
 
@@ -514,6 +517,7 @@ describe("Service component test", function () {
             const color2 = createColor(0, 1, 0, 1);
 
             init(fileSystem, testCon.server);
+            testCon.client.didOpenTextDocument({ textDocument: textDocument });
 
             const preso1 = await testCon.client.colorPresentation({ textDocument, range: range1, color: color1 })
             expect(preso1).to.deep.include({ label: 'rgb(255, 0, 0)', textEdit: { newText: 'rgb(255, 0, 0)', range: range1 } })

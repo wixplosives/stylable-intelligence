@@ -4,7 +4,6 @@ import { Color, ColorPresentation, ColorInformation } from 'vscode-css-languages
 import { evalDeclarationValue, valueMapping, Stylable, StylableMeta, FileProcessor } from 'stylable';
 import { CssService } from '../../model/css-service';
 import { fixAndProcess } from '../provider';
-import { ExtendedFSReadSync } from '../..';
 import { last } from 'lodash';
 
 export function resolveDocumentColors(

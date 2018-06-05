@@ -1,20 +1,71 @@
 //must remain independent from vscode
-import { keys, last, values } from 'lodash';
+import {keys, last, values} from 'lodash';
 import * as path from 'path';
 import * as PostCss from 'postcss';
-import { ContainerBase, Declaration, NodeBase } from 'postcss';
-import { CSSResolve, ClassSymbol, Diagnostics, ImportSymbol, SRule, StateParsedValue, Stylable, StylableMeta, StylableTransformer, expandCustomSelectors, nativeFunctionsDic, process as stylableProcess, safeParse, valueMapping } from 'stylable';
+import {ContainerBase, Declaration, NodeBase} from 'postcss';
+import {
+    ClassSymbol,
+    CSSResolve,
+    Diagnostics,
+    expandCustomSelectors,
+    ImportSymbol,
+    nativeFunctionsDic,
+    process as stylableProcess,
+    safeParse,
+    SRule,
+    StateParsedValue,
+    Stylable,
+    StylableMeta,
+    StylableTransformer,
+    valueMapping
+} from 'stylable';
 import * as ts from 'typescript';
-import { Identifier, ParameterDeclaration, SignatureDeclaration, TypeReferenceNode } from 'typescript';
-import { Location, ParameterInformation, Position, ReferenceParams, SignatureHelp, SignatureInformation } from 'vscode-languageserver';
-import { CodeMixinCompletionProvider, CompletionProvider, CssMixinCompletionProvider, ExtendCompletionProvider, FormatterCompletionProvider, GlobalCompletionProvider, ImportInternalDirectivesProvider, NamedCompletionProvider, ProviderOptions, ProviderPosition, ProviderRange, PseudoElementCompletionProvider, RulesetInternalDirectivesProvider, SelectorCompletionProvider, StateEnumCompletionProvider, StateSelectorCompletionProvider, StateTypeCompletionProvider, TopLevelDirectiveProvider, ValueCompletionProvider, ValueDirectiveProvider, createRange } from './completion-providers';
-import { Completion } from './completion-types';
-import { createStateTypeSignature, createStateValidatorSignature, resolveStateParams, resolveStateTypeOrValidator } from './feature/pseudo-class';
-import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
-import { isContainer, isDeclaration, isRoot, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
-import { SelectorChunk, parseSelector } from './utils/selector-analyzer';
-import { normalizeMeta } from "./utils/stylable";
-import { fromVscodePath, toVscodePath } from './utils/uri-utils';
+import {Identifier, ParameterDeclaration, SignatureDeclaration, TypeReferenceNode} from 'typescript';
+import {
+    Location,
+    ParameterInformation,
+    Position,
+    ReferenceParams,
+    SignatureHelp,
+    SignatureInformation
+} from 'vscode-languageserver';
+import {
+    CodeMixinCompletionProvider,
+    CompletionProvider,
+    createRange,
+    CssMixinCompletionProvider,
+    ExtendCompletionProvider,
+    FormatterCompletionProvider,
+    GlobalCompletionProvider,
+    ImportInternalDirectivesProvider,
+    NamedCompletionProvider,
+    ProviderOptions,
+    ProviderPosition,
+    ProviderRange,
+    PseudoElementCompletionProvider,
+    RulesetInternalDirectivesProvider,
+    SelectorCompletionProvider,
+    StateEnumCompletionProvider,
+    StateSelectorCompletionProvider,
+    StateTypeCompletionProvider,
+    TopLevelDirectiveProvider,
+    ValueCompletionProvider,
+    ValueDirectiveProvider
+} from './completion-providers';
+import {Completion} from './completion-types';
+import {
+    createStateTypeSignature,
+    createStateValidatorSignature,
+    resolveStateParams,
+    resolveStateTypeOrValidator
+} from './feature/pseudo-class';
+import {ExtendedTsLanguageService} from './types';
+import {isContainer, isDeclaration, isRoot, isSelector, pathFromPosition} from './utils/postcss-ast-utils';
+import {parseSelector, SelectorChunk} from './utils/selector-analyzer';
+import {normalizeMeta} from "./utils/stylable";
+import {fromVscodePath} from './utils/uri-utils';
+import {FileSystemReadSync} from "kissfs";
+
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
 const cst = require('css-selector-tokenizer');
@@ -42,7 +93,7 @@ export default class Provider {
         ValueCompletionProvider,
     ];
 
-    public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, fs: ExtendedFSReadSync): Completion[] {
+    public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, fs: FileSystemReadSync): Completion[] {
         let res = fixAndProcess(src, pos, fileName);
         const completions: Completion[] = [];
         try {
@@ -55,7 +106,7 @@ export default class Provider {
         return this.dedupeComps(completions);
     }
 
-    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string, fs: ExtendedFSReadSync): Thenable<ProviderLocation[]> {
+    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string, fs: FileSystemReadSync): Thenable<ProviderLocation[]> {
 
         if (!filePath.endsWith('.st.css')) {
             return Promise.resolve([])
@@ -80,15 +131,17 @@ export default class Provider {
         }
 
         let word = val.value;
-        if (word.startsWith('--')) {word = word.slice('--'.length)};
+        if (word.startsWith('--')) {
+            word = word.slice('--'.length);
+        }
 
-        const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
+        const {lineChunkAtCursor, fixedCharIndex} = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
         const transformer = this.styl.createTransformer({
             requireModule: () => {
                 throw new Error('Not implemented, why are we here')
             }
         });
-        const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: lineChunkAtCursor }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
+        const expandedLine: string = expandCustomSelectors(PostCss.rule({selector: lineChunkAtCursor}), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
         const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
 
         let defs: ProviderLocation[] = [];
@@ -107,30 +160,24 @@ export default class Provider {
             switch (symb._kind) {
                 case 'class': {
                     defs.push(
-                        new ProviderLocation(meta.source, this.findWord(word.replace('.', ''), fs.get(meta.source).getText(), position))
+                        new ProviderLocation(meta.source, this.findWord(word.replace('.', ''), fs.loadTextFileSync(meta.source), position))
                     );
                     break;
                 }
                 case 'var': {
                     defs.push(
-                        new ProviderLocation(meta.source, this.findWord(word, fs.get(meta.source).getText(), position))
+                        new ProviderLocation(meta.source, this.findWord(word, fs.loadTextFileSync(meta.source), position))
                     );
                     break;
                 }
                 case 'import': {
                     const filePath: string = path.posix.join(path.posix.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
-
-                    const doc = fs.get(filePath);
-
-                    if (doc.getText() !== '') {
-                        defs.push(
-                            new ProviderLocation(
-                                filePath,
-                                this.findWord(word, doc.getText(), position)
-                            )
+                    defs.push(
+                        new ProviderLocation(
+                            filePath,
+                            this.findWord(word, fs.loadTextFileSync(filePath), position)
                         )
-                    }
-                    ;
+                    );
                     break;
                 }
             }
@@ -143,7 +190,7 @@ export default class Provider {
             }
         })) {
             defs.push(
-                new ProviderLocation(meta.source, this.findWord(temp!.name, fs.get(meta.source).getText(), position))
+                new ProviderLocation(meta.source, this.findWord(temp!.name, fs.loadTextFileSync(meta.source), position))
             )
         } else if (keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
             defs.push(
@@ -154,19 +201,19 @@ export default class Provider {
         return Promise.resolve(defs)
     }
 
-    public getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
+    public getSignatureHelp(src: string, pos: Position, filePath: string, fs: FileSystemReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
 
         if (!filePath.endsWith('.st.css')) {
             return null;
         }
-        const { processed: { meta } } = fixAndProcess(src, pos, filePath);
+        const {processed: {meta}} = fixAndProcess(src, pos, filePath);
         if (!meta) return null;
 
         const split = src.split('\n');
         const line = split[pos.line];
         let value: string = '';
 
-        const path = pathFromPosition(meta.rawAst, { line: pos.line + 1, character: pos.character + 1 });
+        const path = pathFromPosition(meta.rawAst, {line: pos.line + 1, character: pos.character + 1});
 
         if (isRoot(last(path)!)) { // TODO: check you're actually on a selector
             return this.getSignatureForStateWithParamSelector(meta, pos, line)
@@ -191,25 +238,22 @@ export default class Provider {
         }
         if (mixin === 'value' || Object.keys(nativeFunctionsDic).indexOf(mixin) !== -1) {
             return null
-        };
+        }
 
         let activeParam = parsed.nodes.reverse()[0].nodes.reduce((acc: number, cur: any) => {
             return (cur.type === 'div' ? acc + 1 : acc)
         }, 0);
 
-        if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
-            return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
-        } else if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.js')) {
-            if (fs.getOpenedFiles().indexOf(toVscodePath((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts')) !== -1) {
-                return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts', (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
-            } else {
-                return this.getSignatureForJsModifier(
-                    mixin,
-                    activeParam,
-                    fs.get((meta.mappedSymbols[mixin]! as ImportSymbol).import.from).getText(),
-                    paramInfo
-                )
-            }
+        const importSymbol = meta.mappedSymbols[mixin]! as ImportSymbol;
+        if (importSymbol.import.from.endsWith('.ts')) {
+            return this.getSignatureForTypescriptModifier(mixin, activeParam, importSymbol.import.from, importSymbol.type === 'default', paramInfo);
+        } else if (importSymbol.import.from.endsWith('.js')) {
+            return this.getSignatureForJavascriptModifier(
+                mixin,
+                activeParam,
+                fs.loadTextFileSync((importSymbol).import.from),
+                paramInfo
+            )
         } else {
             return null;
         }
@@ -246,7 +290,7 @@ export default class Provider {
         return re.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
     }
 
-    private getSignatureForTsModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean, paramInfo: typeof ParameterInformation): SignatureHelp | null {
+    private getSignatureForTypescriptModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean, paramInfo: typeof ParameterInformation): SignatureHelp | null {
         let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault, this.tsLangService)
 
         let ptypes = sig!.parameters.map(p => {
@@ -274,7 +318,7 @@ export default class Provider {
         } as SignatureHelp
     }
 
-    private getSignatureForJsModifier(mixin: string, activeParam: number, fileSrc: string, paramInfo: typeof ParameterInformation): SignatureHelp | null {
+    private getSignatureForJavascriptModifier(mixin: string, activeParam: number, fileSrc: string, paramInfo: typeof ParameterInformation): SignatureHelp | null {
 
         let lines = fileSrc.split('\n');
         let mixinLine: number = lines.findIndex(l => l.trim().startsWith('exports.' + mixin));
@@ -407,7 +451,7 @@ export default class Provider {
 
                 const sigInfo: SignatureInformation = {
                     label: `${word}(${parameters})`,
-                    parameters: [{ label: parameters }] as ParameterInformation[]
+                    parameters: [{label: parameters}] as ParameterInformation[]
                 }
 
                 return {
@@ -434,12 +478,12 @@ export default class Provider {
 
 
     private createProviderOptions(src: string,
-        position: ProviderPosition,
-        meta: StylableMeta,
-        fakeRules: PostCss.Rule[],
-        fullLineText: string,
-        cursorPosInLine: number,
-        fs: ExtendedFSReadSync): ProviderOptions {
+                                  position: ProviderPosition,
+                                  meta: StylableMeta,
+                                  fakeRules: PostCss.Rule[],
+                                  fullLineText: string,
+                                  cursorPosInLine: number,
+                                  fs: FileSystemReadSync): ProviderOptions {
 
         const transformer = new StylableTransformer({
             diagnostics: new Diagnostics(),
@@ -449,7 +493,7 @@ export default class Provider {
             }
         });
 
-        const path = pathFromPosition(meta.rawAst, { line: position.line + 1, character: position.character });
+        const path = pathFromPosition(meta.rawAst, {line: position.line + 1, character: position.character});
         const astAtCursor: PostCss.NodeBase = path[path.length - 1];
         const parentAst: PostCss.NodeBase | undefined = (astAtCursor as PostCss.Declaration).parent ? (astAtCursor as PostCss.Declaration).parent : undefined;
         const parentSelector: SRule | null = parentAst && isSelector(parentAst) && fakeRules.findIndex((f) => {
@@ -462,13 +506,13 @@ export default class Provider {
                 ? <SRule>astAtCursor
                 : null;
 
-        const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(fullLineText, cursorPosInLine);
+        const {lineChunkAtCursor, fixedCharIndex} = getChunkAtCursor(fullLineText, cursorPosInLine);
         const ps = parseSelector(lineChunkAtCursor, fixedCharIndex);
         const chunkStrings: string[] = ps.selector.reduce((acc, s) => {
             return acc.concat(s.text)
         }, ([] as string[]));
         const currentSelector = (ps.selector[0] as SelectorChunk).classes[0] || (ps.selector[0] as SelectorChunk).customSelectors[0] || chunkStrings[0];
-        const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: lineChunkAtCursor }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
+        const expandedLine: string = expandCustomSelectors(PostCss.rule({selector: lineChunkAtCursor}), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
         const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
 
         let resolved: CSSResolve[] = [];
@@ -518,13 +562,13 @@ function isIllegalLine(line: string): boolean {
 
 const lineEndsRegexp = /({|}|;)/;
 
-function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[] {
+function findClassRefs(word: string, uri: string, fs: FileSystemReadSync): Location[] {
     if (!word) {
         return []
     }
     const refs: Location[] = [];
-    const src = fs.get(uri).getText();
-    const { processed: { meta } } = fixAndProcess(src, new ProviderPosition(0, 0), fromVscodePath(uri));
+    const src = fs.loadTextFileSync(uri);
+    const {processed: {meta}} = fixAndProcess(src, new ProviderPosition(0, 0), fromVscodePath(uri));
     const filterRegex = RegExp('(\\.?' + word + ')(\\s|$|\\:)', 'g');
     const valueRegex = RegExp('(\\.?' + word + ')(\\s|$|\\:|,)', 'g');
     meta!.rawAst.walkRules(filterRegex, (rule) => {
@@ -593,11 +637,11 @@ function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Locat
 }
 
 // TODO: extract to own file
-export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
+export function getRefs(params: ReferenceParams, fs: FileSystemReadSync) {
 
-    const doc = fs.get(params.textDocument.uri).getText();
-    const pos = { line: params.position.line + 1, character: params.position.character + 1 };
-    const { meta } = createMeta(doc, params.textDocument.uri);
+    const doc = fs.loadTextFileSync(params.textDocument.uri);
+    const pos = {line: params.position.line + 1, character: params.position.character + 1};
+    const {meta} = createMeta(doc, params.textDocument.uri);
     const node = last(pathFromPosition(meta!.rawAst, pos))!;
     let inner: NodeBase | undefined;
     let word: string = '';
@@ -637,9 +681,9 @@ export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
             const relPos = inner.source.start!.line === pos.line
                 ? pos.character - (inner.source.start!.column + (inner as Declaration).prop.length + (inner.raws.between ? inner.raws.between.length : 0))
                 : pos.character - 1 + (inner as Declaration).value.split('\n').slice(0, pos.line - inner.source.start!.line).reduce((acc, cur) => {
-                    acc += (cur.length + 1);
-                    return acc;
-                }, 0)
+                acc += (cur.length + 1);
+                return acc;
+            }, 0)
             let val = findNode(parsed.nodes, relPos);
             if (val.type !== 'word') {
                 val = findNode(parsed.nodes, relPos - 1);
@@ -660,24 +704,24 @@ export function createMeta(src: string, srcPath: string) {
     let fakes: PostCss.Rule[] = [];
     try {
         const from = fromVscodePath(srcPath);
-        let ast: PostCss.Root = safeParse(src, { from });
+        let ast: PostCss.Root = safeParse(src, {from});
         ast.nodes && ast.nodes.forEach((node) => {
             if (node.type === 'decl') {
-                let r = PostCss.rule({ selector: node.prop + ':' + node.value });
+                let r = PostCss.rule({selector: node.prop + ':' + node.value});
                 r.source = node.source;
                 node.replaceWith(r);
                 fakes.push(r)
             }
         })
         if (ast.raws.after && ast.raws.after.trim()) {
-            let r = PostCss.rule({ selector: ast.raws.after.trim() })
+            let r = PostCss.rule({selector: ast.raws.after.trim()})
             ast.append(r);
             fakes.push(r);
         }
 
         meta = normalizeMeta(stylableProcess(ast));
     } catch (error) {
-        return { meta: null, fakes: fakes };
+        return {meta: null, fakes: fakes};
     }
     return {
         meta: meta,
@@ -685,7 +729,7 @@ export function createMeta(src: string, srcPath: string) {
     }
 }
 
-export function fixAndProcess(src: string, position: ProviderPosition, filePath: string, ) {
+export function fixAndProcess(src: string, position: ProviderPosition, filePath: string,) {
     let cursorLineIndex: number = position.character;
     let lines = src.replace(/\r\n/g, '\n').split('\n');
     let currentLine = lines[position.line];
@@ -823,7 +867,7 @@ function getChunkAtCursor(fullLineText: string, cursorPosInLine: number): { line
         fixedCharIndex -= (lineChunkAtCursor.lastIndexOf(' ') + 1);
         lineChunkAtCursor = lineChunkAtCursor.slice(lineChunkAtCursor.lastIndexOf(' '));
     }
-    return { lineChunkAtCursor: lineChunkAtCursor.trim(), fixedCharIndex };
+    return {lineChunkAtCursor: lineChunkAtCursor.trim(), fixedCharIndex};
 }
 
 export function getNamedValues(src: string, lineIndex: number): { isNamedValueLine: boolean, namedValues: string[] } {
@@ -847,7 +891,7 @@ export function getNamedValues(src: string, lineIndex: number): { isNamedValueLi
         }
     }
 
-    return { isNamedValueLine, namedValues }
+    return {isNamedValueLine, namedValues}
 }
 
 export function getExistingNames(lineText: string, position: ProviderPosition) {
@@ -857,7 +901,7 @@ export function getExistingNames(lineText: string, position: ProviderPosition) {
     const names: string[] = parsed.nodes.filter((n: any) => n.type === 'function' || n.type === 'word').map((n: any) => n.value);
     const rev = parsed.nodes.reverse();
     const lastName: string = (parsed.nodes.length && rev[0].type === 'word') ? rev[0].value : '';
-    return { names, lastName };
+    return {names, lastName};
 }
 
 
@@ -866,7 +910,7 @@ function findNode(nodes: any[], index: number): any {
         .filter(n => n.sourceIndex <= index)
         .reduce((m, n) => {
             return (m.sourceIndex > n.sourceIndex) ? m : n
-        }, { sourceIndex: -1 })
+        }, {sourceIndex: -1})
 }
 
 
