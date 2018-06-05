@@ -3,7 +3,7 @@ import * as VCL from 'vscode-css-languageservice';
 import {Color, ColorPresentation} from 'vscode-css-languageservice';
 import {CompletionItem, Diagnostic, Hover, Location, Position, Range} from 'vscode-languageserver-types';
 import {createMeta} from '../lib/provider';
-import {ExtendedFSReadSync} from '../lib/types'
+import {FileSystemReadSync} from "kissfs";
 
 function readDocRange(doc: TextDocument, rng: Range): string {
     let lines = doc.getText().split('\n');
@@ -16,7 +16,7 @@ function readDocRange(doc: TextDocument, rng: Range): string {
 export class CssService {
     private inner = VCL.getCSSLanguageService();
 
-    constructor(private fs: ExtendedFSReadSync) {
+    constructor(private fs: FileSystemReadSync) {
     }
 
     getCompletions(document: TextDocument, position: Position): CompletionItem[] {

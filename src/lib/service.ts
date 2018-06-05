@@ -20,27 +20,28 @@ import { Command, CompletionItem, Location, ParameterInformation, TextEdit, Diag
 import { evalDeclarationValue, Stylable, valueMapping } from 'stylable';
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 import { fixAndProcess, getRefs } from './provider';
-import { ExtendedFSReadSync, ExtendedTsLanguageService, NotificationTypes } from './types'
+import { ExtendedTsLanguageService, NotificationTypes } from './types'
 import { last } from 'lodash';
 import { IConnection } from "vscode-languageserver";
 import { initializeResult } from "../view";
 import { CompletionParams } from 'vscode-languageclient/lib/main';
 import { CssService } from "../model/css-service";
 import { resolveDocumentColors, getColorPresentation } from './feature/color-provider';
+import {FileSystemReadSync} from "kissfs";
 
 export { MinimalDocs } from './provider-factory';
 
 //exporting types for use in playground
-export { ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes } from './types'
+export { ExtendedTsLanguageService, NotificationTypes } from './types'
 
 export class StylableLanguageService {
-    constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
+    constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: FileSystemReadSync, docs: MinimalDocsDispatcher & MinimalDocs, notifications: NotificationTypes) {
         console.warn('StylableLanguageService class is deprecated and will be deleted soon. use initStylableLanguageService function instead');
-        initStylableLanguageService(connection, services, fs, docsDispatcher, notifications);
+        initStylableLanguageService(connection, services, fs, docs, notifications);
     }
 }
 
-export function initStylableLanguageService(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
+export function initStylableLanguageService(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: FileSystemReadSync, docs: MinimalDocsDispatcher & MinimalDocs, notifications: NotificationTypes) {
     const provider = createProvider(services.styl, services.tsLanguageService);
     const processor = services.styl.fileProcessor;
     const newCssService = new CssService(fs);
@@ -55,7 +56,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
             return [];
         }
 
-        const document = fs.get(documentUri);
+        const document = docs.get(documentUri);
 
         const res = provider.provideCompletionItemsFromSrc(document.getText(), {
             line: position.line,
@@ -96,7 +97,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
 
     // turned off due to onDidChangeContent being fired on file open as well
     // docsDispatcher.onDidOpen(diagnose);
-    docsDispatcher.onDidChangeContent(diagnose);
+    docs.onDidChangeContent(diagnose);
 
     connection.onDefinition((params): Thenable<Definition> => {
         const doc = fs.loadTextFileSync(params.textDocument.uri);
@@ -112,7 +113,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
     });
 
     connection.onHover((params: TextDocumentPositionParams): Hover | null => {
-        return newCssService.doHover(fs.get(params.textDocument.uri), params.position);
+        return newCssService.doHover(docs.get(params.textDocument.uri), params.position);
     });
 
     connection.onReferences((params: ReferenceParams): Location[] => {
@@ -120,19 +121,19 @@ export function initStylableLanguageService(connection: IConnection, services: {
         if (refs.length) {
             return dedupeRefs(refs);
         } else {
-            return dedupeRefs(newCssService.findReferences(fs.get(params.textDocument.uri), params.position));
+            return dedupeRefs(newCssService.findReferences(docs.get(params.textDocument.uri), params.position));
         }
     });
 
     connection.onDocumentColor((params: DocumentColorParams) => {
-        const document = fs.get(params.textDocument.uri);
+        const document = docs.get(params.textDocument.uri);
 
         return resolveDocumentColors(services.styl, newCssService, document);
 
     });
 
     connection.onColorPresentation((params: ColorPresentationParams) => {
-        const document = fs.get(params.textDocument.uri);
+        const document = docs.get(params.textDocument.uri);
 
         return getColorPresentation(newCssService, document, params);
     });

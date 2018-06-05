@@ -49,14 +49,15 @@ import { Identifier, TypeReferenceNode } from 'typescript';
 import { toVscodePath } from './utils/uri-utils';
 import { ResolvedElement } from 'stylable/dist/src/stylable-transformer';
 import { find, keys, last } from 'lodash';
-import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
+import { ExtendedTsLanguageService } from './types';
 import { resolveStateTypeOrValidator } from './feature/pseudo-class';
+import {FileSystemReadSync} from "kissfs";
 
 const pvp = require('postcss-value-parser');
 
 export interface ProviderOptions {
     meta: StylableMeta,
-    fs: ExtendedFSReadSync,  // candidate for removal
+    fs: FileSystemReadSync,  // candidate for removal
     styl: Stylable, // candidate for removal
     src: string, // candidate for removal : meta.source
     tsLangService: ExtendedTsLanguageService, // candidate for removal
@@ -939,7 +940,7 @@ function createCodeMixinCompletion(name: string, lastName: string, position: Pro
     )
 }
 
-function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLangService: ExtendedTsLanguageService) {
+function isMixin(name: string, meta: StylableMeta, fs: FileSystemReadSync, tsLangService: ExtendedTsLanguageService) {
     const importSymbol = (meta.mappedSymbols[name] as ImportSymbol);
     if (importSymbol.import.fromRelative.endsWith('.ts')) {
         const sig = extractTsSignature(importSymbol.import.from, name, importSymbol.type === 'default', tsLangService)
@@ -952,7 +953,7 @@ function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLan
         return (/(\w+.)?stCssFrag/.test(rtype.trim()));
     }
     if (importSymbol.import.fromRelative.endsWith('.js')) {
-        return (extractJsModifierReturnType(name, 0, fs.get(toVscodePath(importSymbol.import.from)).getText()) === 'stCssFrag')
+        return (extractJsModifierReturnType(name, 0, fs.loadTextFileSync(importSymbol.import.from)) === 'stCssFrag')
     }
     return false;
 }
