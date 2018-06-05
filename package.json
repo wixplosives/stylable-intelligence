@@ -3,7 +3,7 @@
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "license": "BSD-3-Clause",
-  "version": "0.2.11",
+  "version": "0.2.10",
   "description": "Stylable Language Services - syntax highlighting, completions, hinting and for the Stylable CSS preprocessor.",
   "icon": "images/icon.png",
   "galleryBanner": {
