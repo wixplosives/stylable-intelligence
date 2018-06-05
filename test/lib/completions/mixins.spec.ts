@@ -121,7 +121,7 @@ describe('Mixins', function () {
         const jsFrom = './js-mixins.js';
         const createComp = (str: string, rng: ProviderRange, path: string) => asserters.codeMixinCompletion(str, rng, path);
 
-        xdescribe('TS mixins', function () {
+        describe('TS mixins', function () {
 
             [str0, str1, str2].forEach((str, j, a) => {
                 str.split('').forEach((c, i) => {
