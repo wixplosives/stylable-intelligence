@@ -11,27 +11,27 @@ import {
     DocumentColorParams,
     ColorPresentationParams
 } from 'vscode-languageserver-protocol';
-import { createProvider, MinimalDocs, MinimalDocsDispatcher, } from './provider-factory';
-import { ProviderPosition, ProviderRange } from './completion-providers';
-import { Completion } from './completion-types';
-import { createDiagnosis } from './diagnosis';
-import { Color } from 'vscode-css-languageservice';
-import { Command, CompletionItem, Location, ParameterInformation, TextEdit, Diagnostic } from 'vscode-languageserver-types';
-import { evalDeclarationValue, Stylable, valueMapping } from 'stylable';
-import { fromVscodePath, toVscodePath } from './utils/uri-utils';
-import { fixAndProcess, getRefs } from './provider';
-import { ExtendedFSReadSync, ExtendedTsLanguageService, NotificationTypes } from './types'
-import { last } from 'lodash';
-import { IConnection } from "vscode-languageserver";
-import { initializeResult } from "../view";
-import { CompletionParams } from 'vscode-languageclient/lib/main';
-import { CssService } from "../model/css-service";
-import { resolveDocumentColors, getColorPresentation } from './feature/color-provider';
+import {createProvider, MinimalDocs, MinimalDocsDispatcher,} from './provider-factory';
+import {ProviderPosition, ProviderRange} from './completion-providers';
+import {Completion} from './completion-types';
+import {createDiagnosis} from './diagnosis';
+import {Color} from 'vscode-css-languageservice';
+import {Command, CompletionItem, Location, ParameterInformation, TextEdit} from 'vscode-languageserver-types';
+import {evalDeclarationValue, Stylable, valueMapping} from 'stylable';
+import {fromVscodePath, toVscodePath} from './utils/uri-utils';
+import {fixAndProcess, getRefs} from './provider';
+import {ExtendedFSReadSync, ExtendedTsLanguageService, NotificationTypes} from './types'
+import {last} from 'lodash';
+import {IConnection} from "vscode-languageserver";
+import {initializeResult} from "../view";
+import {CompletionParams} from 'vscode-languageclient/lib/main';
+import {CssService} from "../model/css-service";
+import {resolveDocumentColors, getColorPresentation} from './feature/color-provider';
 
-export { MinimalDocs } from './provider-factory';
+export {MinimalDocs} from './provider-factory';
 
 //exporting types for use in playground
-export { ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes } from './types'
+export {ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes} from './types'
 
 export class StylableLanguageService {
     constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
@@ -81,21 +81,18 @@ export function initStylableLanguageService(connection: IConnection, services: {
         }).concat(newCssService.getCompletions(document, position));
     });
 
-    function diagnose({ document }: TextDocumentChangeEvent) {
+    function diagnose({document}: TextDocumentChangeEvent) {
         if (document.languageId === 'stylable') {
-            let diagnostics: Diagnostic[] = [];
-            if (!document.getText().includes('st-ignore-diagnostics')) {
-                diagnostics = createDiagnosis(document, fs, processor, services.requireModule).map(diag => {
-                    diag.source = 'stylable';
-                    return diag;
-                }).concat(newCssService.getDiagnostics(document));
-            }
-            connection.sendDiagnostics({ uri: document.uri, diagnostics: diagnostics });
+            let diagnostics = createDiagnosis(document, fs, processor, services.requireModule).map(diag => {
+                diag.source = 'stylable';
+                return diag;
+            }).concat(newCssService.getDiagnostics(document));
+            connection.sendDiagnostics({uri: document.uri, diagnostics: diagnostics});
         }
     }
 
     // turned off due to onDidChangeContent being fired on file open as well
-    // docsDispatcher.onDidOpen(diagnose);
+    // docsDispatcher.onDidOpen(diagnose); 
     docsDispatcher.onDidChangeContent(diagnose);
 
     connection.onDefinition((params): Thenable<Definition> => {
@@ -138,17 +135,17 @@ export function initStylableLanguageService(connection: IConnection, services: {
     });
 
     connection.onRenameRequest((params): WorkspaceEdit => {
-        let edit: WorkspaceEdit = { changes: {} };
+        let edit: WorkspaceEdit = {changes: {}};
         getRefs({
-            context: { includeDeclaration: true },
+            context: {includeDeclaration: true},
             position: params.position,
             textDocument: params.textDocument
         }, fs)
             .forEach(ref => {
                 if (edit.changes![ref.uri]) {
-                    edit.changes![ref.uri].push({ range: ref.range, newText: params.newName })
+                    edit.changes![ref.uri].push({range: ref.range, newText: params.newName})
                 } else {
-                    edit.changes![ref.uri] = [{ range: ref.range, newText: params.newName }]
+                    edit.changes![ref.uri] = [{range: ref.range, newText: params.newName}]
                 }
             })
 

@@ -23,7 +23,7 @@ function createDiagnosis(range: Range, message: string, source: string = 'stylab
     return Diagnostic.create(range, message, 2, code, source);
 }
 
-export function trimLiteral(content: TemplateStringsArray, ...keys: string[]) {
+function trimLiteral(content: TemplateStringsArray, ...keys: string[]) {
     if (keys.length) { throw new Error('No support for expressions in pipe-delimited test files yet') };
     return content.join('\n').replace(/^\s*\|/gm, '').replace(/^\n/, '');
 }
@@ -386,23 +386,7 @@ describe("Service component test", function () {
                 expect(d).to.eql(createDiagnosisNotification(diags, baseFileName));
             });
         }));
-
-        it('Diagnostics - disable by flag', plan(1, ()=>{
-            const baseFilecContent = trimLiteral`
-            |/* st-ignore-diagnostics */
-            |.gaga .root{`
-
-            const baseFileName = 'stylesheet.st.css'
-            const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent } });
-            const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
-            init(fileSystem, testCon.server);
-            testCon.client.didOpenTextDocument({ textDocument: baseTextDocument });
-
-            testCon.client.onDiagnostics(d => {
-                expect(d).to.deep.equal(createDiagnosisNotification([], baseFileName));
-            });
-        }));
-    });
+    })
 
     describe("Document Colors", function () {
         it("Document Colors - local, vars, imported", plan(2, async () => {
