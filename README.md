@@ -9,7 +9,7 @@
 
 Stylable Intelligence is an extension implementing the Language Server Protocol that provides IDE support for [Stylable](https://www.stylable.io/).
 
-Stylable Intelligence is currently only supported in VSCode (version 1.20.0 and later). Support for JetBrains IDEs (WebStorm, IntelliJ) is planned.
+Stylable Intelligence is currently only supported in VSCode (version 1.18.0 and later). Support for JetBrains IDEs (WebStorm, IntelliJ) is planned.
 
 Currently supported: Code Completions, Diagnostics, Go to Definition, Syntax Highlighting
 

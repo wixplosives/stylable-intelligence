@@ -32,7 +32,6 @@ export class CssService {
         if (!document.uri.endsWith('.css')) {
             return [];
         }
-
         const stylesheet = this.inner.parseStylesheet(document);
 
         return this.inner.doValidation(document, stylesheet)

@@ -1,3 +1,9 @@
-.mga {
-  color: rgbaf()
-}
+.gaga {
+    -st-states: aState;
+  }
+  
+  .gaga:aState {
+    mask: lala; 
+    
+  }
+  

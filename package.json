@@ -28,7 +28,7 @@
         "postcss": "^6.0.19",
         "postcss-selector-parser": "^4.0.0",
         "postcss-value-parser": "^3.3.0",
-        "stylable": "^5.3.0",
+        "stylable": "^5.2.0",
         "tslib": "^1.9.0",
         "typescript": "~2.8.3",
         "vscode": "^1.1.13",
@@ -102,44 +102,22 @@
                 "language": "stylable",
                 "scopeName": "source.stylable",
                 "path": "./syntaxes/stylable.tmLanguage.json"
-        }
-      ]
+            }
+        ]
     },
-  "activationEvents": [
-    "onLanguage:stylable"
-  ],
-  "files": [
-    "dist/src",
-    "service.js",
-    "service.d.ts"
-  ],
-  "badges": [
-    {
-      "url": "https://img.shields.io/vscode-marketplace/v/wix.stylable-intelligence.svg",
-      "href": "https://marketplace.visualstudio.com/items?itemName=wix.stylable-intelligence",
-      "description": "Stylable Intelligence on the VSCode marketplace"
-    },
-    {
-      "url": "https://travis-ci.org/wix/stylable-intelligence.svg?branch=master",
-      "href": "https://travis-ci.org/wix/stylable-intelligence",
-      "description": "Stylable Intelligence build on Travis CI"
-    },
-    {
-      "url": "https://ci.appveyor.com/api/projects/status/github/wix/stylable-intelligence?branch=master&svg=true",
-      "href": "https://ci.appveyor.com/project/qballer/stylable-intelligence",
-      "description": "Stylable Intelligence build on AppVoyer"
-    },
-    {
-      "url": "https://badge.fury.io/js/stylable-intelligence.svg",
-      "href": "https://badge.fury.io/js/stylable-intelligence",
-      "description": "Stylable Intelligence package on NPM"
-    }
-  ],
-  "testGlob": "./dist/test/**/*.test.js?(x)",
-  "homepage": "https://github.com/wix/stylable-intelligence#readme",
-  "keywords": [
-    "typescript",
-    "stylable",
-    "css"
-  ]
+    "activationEvents": [
+        "onLanguage:stylable"
+    ],
+    "files": [
+        "dist/src",
+        "service.js",
+        "service.d.ts"
+    ],
+    "testGlob": "./dist/test/**/*.test.js?(x)",
+    "homepage": "https://github.com/wix/stylable-intelligence#readme",
+    "keywords": [
+        "typescript",
+        "stylable",
+        "css"
+    ]
 }
