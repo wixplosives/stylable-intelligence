@@ -63,7 +63,7 @@ import {
     resolveStateParams,
     resolveStateTypeOrValidator
 } from './feature/pseudo-class';
-import {fromStylablePath, normalizeMeta} from "./utils/stylable";
+
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
 const cst = require('css-selector-tokenizer');
@@ -131,11 +131,13 @@ export default class Provider {
         let word = val.value;
 
         const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
-        const transformer = this.styl.createTransformer({
+        const transformer = new StylableTransformer({
+            diagnostics: new Diagnostics(),
+            fileProcessor: this.styl.fileProcessor,
             requireModule: () => {
                 throw new Error('Not implemented, why are we here')
             }
-        });
+        })
         const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: lineChunkAtCursor }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
         const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
 
@@ -166,8 +168,7 @@ export default class Provider {
                     break;
                 }
                 case 'import': {
-                    const filePath: string = path.posix.join(path.posix.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
-
+                    const filePath: string = path.join(path.dirname(meta.source), (symb as ImportSymbol).import.fromRelative);
                     const doc = fs.get(filePath);
 
                     if (doc.getText() !== '') {
@@ -706,11 +707,11 @@ export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
     return refs;
 }
 
-export function createMeta(src: string, srcPath: string) {
+export function createMeta(src: string, path: string) {
     let meta: StylableMeta;
     let fakes: PostCss.Rule[] = [];
     try {
-        let ast: PostCss.Root = safeParse(src, { from: fromVscodePath(srcPath) })
+        let ast: PostCss.Root = safeParse(src, { from: fromVscodePath(path) })
         ast.nodes && ast.nodes.forEach((node) => {
             if (node.type === 'decl') {
                 let r = PostCss.rule({ selector: node.prop + ':' + node.value });
@@ -725,7 +726,7 @@ export function createMeta(src: string, srcPath: string) {
             fakes.push(r);
         }
 
-        meta = normalizeMeta(stylableProcess(ast));
+        meta = stylableProcess(ast);
     } catch (error) {
         return { meta: null, fakes: fakes };
     }
