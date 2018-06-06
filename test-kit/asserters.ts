@@ -17,7 +17,6 @@ import {createBaseHost, createLanguageServiceHost} from '../src/lib/utils/temp-l
 import {ExtendedTsLanguageService} from '../src/lib/types';
 import {CssService} from '../src/model/css-service';
 import {resolveDocumentColors} from '../src/lib/feature/color-provider';
-import { normalizeMeta } from '../src/lib/utils/stylable';
 
 const pkgDir = require('pkg-dir');
 
@@ -107,6 +106,6 @@ const wrappedTs: ExtendedTsLanguageService = {
     setOpenedFiles: (files: string[]) => openedFiles = files
 };
 
-const stylable = new Stylable(CASES_PATH, createFs(docsFs), require, undefined, normalizeMeta);
+const stylable = new Stylable('/', createFs(docsFs), () => ({default: {}}));
 const provider = createProvider(stylable, wrappedTs);
 const newCssService = new CssService(docsFs);

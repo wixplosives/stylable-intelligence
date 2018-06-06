@@ -89,8 +89,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
         }
     }
 
-    // turned off due to onDidChangeContent being fired on file open as well
-    // docsDispatcher.onDidOpen(diagnose); 
+    docsDispatcher.onDidOpen(diagnose);
     docsDispatcher.onDidChangeContent(diagnose);
 
     connection.onDefinition((params): Thenable<Definition> => {

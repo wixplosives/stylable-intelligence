@@ -1,20 +1,69 @@
 //must remain independent from vscode
-import { keys, last, values } from 'lodash';
-import * as path from 'path';
 import * as PostCss from 'postcss';
 import { ContainerBase, Declaration, NodeBase } from 'postcss';
-import { CSSResolve, ClassSymbol, Diagnostics, ImportSymbol, SRule, StateParsedValue, Stylable, StylableMeta, StylableTransformer, expandCustomSelectors, nativeFunctionsDic, process as stylableProcess, safeParse, valueMapping } from 'stylable';
+import {
+    CSSResolve,
+    Diagnostics,
+    expandCustomSelectors,
+    ImportSymbol,
+    process as stylableProcess,
+    safeParse,
+    SRule,
+    StateParsedValue,
+    Stylable,
+    StylableMeta,
+    StylableTransformer,
+    valueMapping
+} from 'stylable';
+import { isContainer, isDeclaration, isRoot, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
+import {
+    CodeMixinCompletionProvider,
+    CompletionProvider,
+    createRange,
+    CssMixinCompletionProvider,
+    ExtendCompletionProvider,
+    FormatterCompletionProvider,
+    GlobalCompletionProvider,
+    ImportInternalDirectivesProvider,
+    NamedCompletionProvider,
+    ProviderOptions,
+    ProviderPosition,
+    ProviderRange,
+    PseudoElementCompletionProvider,
+    RulesetInternalDirectivesProvider,
+    SelectorCompletionProvider,
+    StateEnumCompletionProvider,
+    StateSelectorCompletionProvider,
+    StateTypeCompletionProvider,
+    TopLevelDirectiveProvider,
+    ValueCompletionProvider,
+    ValueDirectiveProvider
+} from './completion-providers';
+import { Completion, } from './completion-types';
+import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
+import * as path from 'path';
+import {
+    Location,
+    ParameterInformation,
+    Position,
+    ReferenceParams,
+    SignatureHelp,
+    SignatureInformation,
+    DocumentColorParams
+} from 'vscode-languageserver';
 import * as ts from 'typescript';
 import { Identifier, ParameterDeclaration, SignatureDeclaration, TypeReferenceNode } from 'typescript';
-import { Location, ParameterInformation, Position, ReferenceParams, SignatureHelp, SignatureInformation } from 'vscode-languageserver';
-import { CodeMixinCompletionProvider, CompletionProvider, CssMixinCompletionProvider, ExtendCompletionProvider, FormatterCompletionProvider, GlobalCompletionProvider, ImportInternalDirectivesProvider, NamedCompletionProvider, ProviderOptions, ProviderPosition, ProviderRange, PseudoElementCompletionProvider, RulesetInternalDirectivesProvider, SelectorCompletionProvider, StateEnumCompletionProvider, StateSelectorCompletionProvider, StateTypeCompletionProvider, TopLevelDirectiveProvider, ValueCompletionProvider, ValueDirectiveProvider, createRange } from './completion-providers';
-import { Completion } from './completion-types';
-import { createStateTypeSignature, createStateValidatorSignature, resolveStateParams, resolveStateTypeOrValidator } from './feature/pseudo-class';
-import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
-import { isContainer, isDeclaration, isRoot, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
-import { SelectorChunk, parseSelector } from './utils/selector-analyzer';
-import { normalizeMeta } from "./utils/stylable";
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
+import { keys, last, values } from 'lodash';
+import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
+import { ClassSymbol } from 'stylable/dist/src/stylable-processor';
+import {
+    createStateTypeSignature,
+    createStateValidatorSignature,
+    resolveStateParams,
+    resolveStateTypeOrValidator
+} from './feature/pseudo-class';
+
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
 const cst = require('css-selector-tokenizer');
@@ -80,14 +129,15 @@ export default class Provider {
         }
 
         let word = val.value;
-        if (word.startsWith('--')) {word = word.slice('--'.length)};
 
         const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
-        const transformer = this.styl.createTransformer({
+        const transformer = new StylableTransformer({
+            diagnostics: new Diagnostics(),
+            fileProcessor: this.styl.fileProcessor,
             requireModule: () => {
                 throw new Error('Not implemented, why are we here')
             }
-        });
+        })
         const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: lineChunkAtCursor }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
         const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
 
@@ -164,7 +214,7 @@ export default class Provider {
             )
         } else if (keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
             defs.push(
-                new ProviderLocation(meta.source, this.findWord(word, src, position))
+                new ProviderLocation(meta.source, this.findWord(':--' + word, src, position))
             );
         }
 
@@ -174,7 +224,7 @@ export default class Provider {
     public getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
 
         if (!filePath.endsWith('.st.css')) {
-            return null;
+            return null
         }
         const { processed: { meta } } = fixAndProcess(src, pos, filePath);
         if (!meta) return null;
@@ -183,9 +233,10 @@ export default class Provider {
         const line = split[pos.line];
         let value: string = '';
 
+
         const path = pathFromPosition(meta.rawAst, { line: pos.line + 1, character: pos.character + 1 });
 
-        if (isRoot(last(path)!)) { // TODO: check you're actually on a selector
+        if (isRoot(last(path)!)) { // TODO: check your actually on a selector
             return this.getSignatureForStateWithParamSelector(meta, pos, line)
         } else if (line.slice(0, pos.character).trim().startsWith(valueMapping.states)) {
             return this.getSignatureForStateWithParamDefinition(meta, pos, line);
@@ -206,13 +257,13 @@ export default class Provider {
         } else {
             return null
         }
-        if (mixin === 'value' || Object.keys(nativeFunctionsDic).indexOf(mixin) !== -1) {
-            return null
-        };
-
+        ;
         let activeParam = parsed.nodes.reverse()[0].nodes.reduce((acc: number, cur: any) => {
             return (cur.type === 'div' ? acc + 1 : acc)
         }, 0);
+        if (mixin === 'value') {
+            return null
+        }
 
         if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
             return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
@@ -231,6 +282,8 @@ export default class Provider {
             return null;
         }
     }
+
+
 
     private inDef(position: ProviderPosition, def: ProviderLocation): boolean {
         return (position.line > def.range.start.line || (position.line === def.range.start.line && position.character >= def.range.start.character))
@@ -672,11 +725,11 @@ export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
     return refs;
 }
 
-export function createMeta(src: string, srcPath: string) {
+export function createMeta(src: string, path: string) {
     let meta: StylableMeta;
     let fakes: PostCss.Rule[] = [];
     try {
-        let ast: PostCss.Root = safeParse(src, { from: fromVscodePath(srcPath) })
+        let ast: PostCss.Root = safeParse(src, { from: fromVscodePath(path) })
         ast.nodes && ast.nodes.forEach((node) => {
             if (node.type === 'decl') {
                 let r = PostCss.rule({ selector: node.prop + ':' + node.value });
@@ -691,7 +744,7 @@ export function createMeta(src: string, srcPath: string) {
             fakes.push(r);
         }
 
-        meta = normalizeMeta(stylableProcess(ast));
+        meta = stylableProcess(ast);
     } catch (error) {
         return { meta: null, fakes: fakes };
     }

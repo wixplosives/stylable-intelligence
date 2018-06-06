@@ -3,7 +3,7 @@
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "license": "BSD-3-Clause",
-  "version": "0.2.12",
+  "version": "0.2.10",
   "description": "Stylable Language Services - syntax highlighting, completions, hinting and more for the Stylable CSS preprocessor.",
   "icon": "images/icon.png",
   "galleryBanner": {
@@ -33,7 +33,7 @@
     "postcss": "^6.0.19",
     "postcss-selector-parser": "^4.0.0",
     "postcss-value-parser": "^3.3.0",
-    "stylable": "^5.3.8",
+    "stylable": "^5.2.0",
     "tslib": "^1.9.0",
     "typescript": "~2.8.3",
     "vscode": "^1.1.13",
@@ -90,20 +90,25 @@
     "Other"
   ],
   "contributes": {
-    "languages": [{
-      "id": "stylable",
-      "aliases": [
-        "Stylable"
-      ],
-      "extensions": [
-        ".st.css"
-      ],
-      "grammars": [{
+    "languages": [
+      {
+        "id": "stylable",
+        "aliases": [
+          "Stylable"
+        ],
+        "extensions": [
+          ".st.css"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
         "language": "stylable",
         "scopeName": "source.stylable",
         "path": "./syntaxes/stylable.tmLanguage.json"
-      }]
-    }]
+      }
+    ]
   },
   "activationEvents": [
     "onLanguage:stylable"
@@ -113,7 +118,8 @@
     "service.js",
     "service.d.ts"
   ],
-  "badges": [{
+  "badges": [
+    {
       "url": "https://img.shields.io/vscode-marketplace/v/wix.stylable-intelligence.svg",
       "href": "https://marketplace.visualstudio.com/items?itemName=wix.stylable-intelligence",
       "description": "Stylable Intelligence on the VSCode marketplace"

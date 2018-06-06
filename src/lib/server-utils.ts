@@ -10,7 +10,6 @@ import *  as ts from 'typescript';
 import {FileSystemReadSync} from 'kissfs';
 import {ExtendedFSReadSync, ExtendedTsLanguageService} from './types';
 import {createBaseHost, createLanguageServiceHost} from './utils/temp-language-service-host';
-import {normalizeMeta} from "./utils/stylable";
 
 export function createDocFs(fileSystem: FileSystemReadSync, docs: MinimalDocs): ExtendedFSReadSync {
     return {
@@ -36,7 +35,7 @@ export function init(fileSystem: FileSystemReadSync, connection: IConnection, ba
     const docs = new TextDocuments();
     docs.listen(connection);
     const docFs: ExtendedFSReadSync = createDocFs(fileSystem, docs);
-    const styl = new Stylable(basePath, createFs(docFs), require, undefined, normalizeMeta);
+    const styl = new Stylable('/', createFs(docFs), require);
     const OpenDocNotificationType = new NotificationType<string, void>('stylable/openDocumentNotification');
     let openedFiles: string[] = [];
     const tsLanguageServiceHost = createLanguageServiceHost({

@@ -1,10 +1,7 @@
 # Changelog
 
-## v0.2.11
-* Update package.json manifest to include additional fields for the VSCode marketplace (icon, badges, etc).
-
 ## v0.2.10
-* Restore onDidOpen document event - run diagnosis when opening any `.st.css` files
+* restore onDidOpen document event - run diagnosis when opening any `.st.css` files
 
 ## v0.2.9
 

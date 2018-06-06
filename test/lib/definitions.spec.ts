@@ -1,11 +1,8 @@
-import {createRange} from '../../src/lib/completion-providers';
+import { createRange } from '../../src/lib/completion-providers';
 import * as asserters from '../../test-kit/asserters';
-import {CASES_PATH as LOCAL_CASES_PATH} from '../../test-kit/asserters';
-import {expect} from 'chai';
-import {posix as path} from 'path';
-import {fromStylablePath} from "../../src/lib/utils/stylable";
-
-const CASES_PATH = fromStylablePath(LOCAL_CASES_PATH);
+import { expect } from 'chai';
+import * as path from 'path';
+import {CASES_PATH} from "../../test-kit/asserters";
 
 describe("Definitions", function () {
     describe("Local elements", function () {
@@ -32,7 +29,7 @@ describe("Definitions", function () {
                 expect(defs.length).to.equal(1);
                 let def = defs[0];
                 expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/local-custom-selector.st.css'));
-                expect(def.range).to.eql(createRange(4, 20, 4, 24))
+                expect(def.range).to.eql(createRange(4, 17, 4, 24))
             });
         });
 
@@ -152,8 +149,7 @@ describe("Definitions", function () {
                 });
             });
 
-            //Feature undergoing redesign
-            xit("should return definition of TS mixin in use", function () {
+            it("should return definition of TS mixin in use", function () {
                 return asserters.getDefinition('definitions/imported-mixins-value-ts.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
