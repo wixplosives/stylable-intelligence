@@ -4123,9 +4123,9 @@ strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
-stylable@^5.3.0:
-  version "5.3.9"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.3.9.tgz#1f4371c8b83bb919c56b505a67eb504d1f4a8542"
+stylable@^5.3.8:
+  version "5.3.10"
+  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.3.10.tgz#474eb2bc9ec4516e12bc19fd68e3d6c7cf2591f0"
   dependencies:
     css-selector-tokenizer "^0.7.0"
     deindent "^0.1.0"
