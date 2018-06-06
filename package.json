@@ -3,12 +3,12 @@
     "main": "./dist/src/index.js",
     "types": "./dist/src/index.d.ts",
     "license": "BSD-3-Clause",
-    "version": "0.2.10",
+    "version": "0.2.12",
     "description": "Stylable Language Services - syntax highlighting, completions, hinting and more for the Stylable CSS preprocessor.",
     "icon": "images/icon.png",
     "galleryBanner": {
-      "color": "#ffffff",
-      "theme": "light"
+        "color": "#ffffff",
+        "theme": "light"
     },
     "scripts": {
         "reset": "yarn clear && rimraf node_modules .vscode-test && yarn install && yarn test",
@@ -119,26 +119,26 @@
         "service.d.ts"
     ],
     "badges": [
-      {
-        "url": "https://img.shields.io/vscode-marketplace/v/wix.stylable-intelligence.svg",
-        "href": "https://marketplace.visualstudio.com/items?itemName=wix.stylable-intelligence",
-        "description": "Stylable Intelligence on the VSCode marketplace"
-      },
-      {
-        "url": "https://travis-ci.org/wix/stylable-intelligence.svg?branch=master",
-        "href": "https://travis-ci.org/wix/stylable-intelligence",
-        "description": "Stylable Intelligence build on Travis CI"
-      },
-      {
-        "url": "https://ci.appveyor.com/api/projects/status/github/wix/stylable-intelligence?branch=master&svg=true",
-        "href": "https://ci.appveyor.com/project/qballer/stylable-intelligence",
-        "description": "Stylable Intelligence build on AppVoyer"
-      },
-      {
-        "url": "https://badge.fury.io/js/stylable-intelligence.svg",
-        "href": "https://badge.fury.io/js/stylable-intelligence",
-        "description": "Stylable Intelligence package on NPM"
-      }
+        {
+            "url": "https://img.shields.io/vscode-marketplace/v/wix.stylable-intelligence.svg",
+            "href": "https://marketplace.visualstudio.com/items?itemName=wix.stylable-intelligence",
+            "description": "Stylable Intelligence on the VSCode marketplace"
+        },
+        {
+            "url": "https://travis-ci.org/wix/stylable-intelligence.svg?branch=master",
+            "href": "https://travis-ci.org/wix/stylable-intelligence",
+            "description": "Stylable Intelligence build on Travis CI"
+        },
+        {
+            "url": "https://ci.appveyor.com/api/projects/status/github/wix/stylable-intelligence?branch=master&svg=true",
+            "href": "https://ci.appveyor.com/project/qballer/stylable-intelligence",
+            "description": "Stylable Intelligence build on AppVoyer"
+        },
+        {
+            "url": "https://badge.fury.io/js/stylable-intelligence.svg",
+            "href": "https://badge.fury.io/js/stylable-intelligence",
+            "description": "Stylable Intelligence package on NPM"
+        }
     ],
     "testGlob": "./dist/test/**/*.test.js?(x)",
     "homepage": "https://github.com/wix/stylable-intelligence#readme",
