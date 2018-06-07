@@ -3,7 +3,7 @@ import { getSignatureHelp } from '../../test-kit/asserters'
 import { SignatureHelp, SignatureInformation, ParameterInformation } from 'vscode-languageserver';
 
 describe('Signature Help', function () {
-    describe('TS Paramful Mixin', function () {
+    xdescribe('TS Paramful Mixin', function () {
         let str = "'25','lala','b'";
 
         str.split('').forEach((c, i) => {
@@ -32,7 +32,7 @@ describe('Signature Help', function () {
         });
     });
 
-    describe('TS Paramless Mixin', function () {
+    xdescribe('TS Paramless Mixin', function () {
         it('Provides signature help with no parameters', function () {
             let filePath = 'mixins/imported-mixins-paramless-signature.st.css'
 
@@ -52,7 +52,7 @@ describe('Signature Help', function () {
         }).timeout(5000);
     });
 
-    describe('TS Paramful Mixin - Default Import', function () {
+    xdescribe('TS Paramful Mixin - Default Import', function () {
         let str = "'25','lala','b'";
 
         str.split('').forEach((c, i) => {

@@ -122,7 +122,7 @@ describe('Imported Values', function () {
         });
     });
 
-    describe('from node_modules package', () => {
+    describe.only('from node_modules package', () => {
         const defaultComp = ' Comp';
         const namedComp = ' part1';
         const realPath = "fake-stylable-package/stylesheet.st.css";

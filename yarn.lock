@@ -3908,9 +3908,9 @@ sinon-chai@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/sinon-chai/-/sinon-chai-3.1.0.tgz#e8c18dd72624eb0aeb95eeee2de809a9859be2cd"
 
-sinon@^5.0.9:
-  version "5.0.10"
-  resolved "https://registry.yarnpkg.com/sinon/-/sinon-5.0.10.tgz#a282b36a7475664c9f98719108e5546907129023"
+sinon@^5.0.7:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/sinon/-/sinon-5.1.0.tgz#65f463422978638fadf750c026719697feb0dca5"
   dependencies:
     "@sinonjs/formatio" "^2.0.0"
     diff "^3.5.0"
@@ -4138,11 +4138,11 @@ stylable@^5.3.8:
   dependencies:
     css-selector-tokenizer "^0.7.0"
     deindent "^0.1.0"
-    enhanced-resolve "^3.4.1"
+    enhanced-resolve "^4.0.0"
     is-vendor-prefixed "^1.0.0"
     lodash.clonedeep "^4.5.0"
     murmurhash "^0.0.2"
-    postcss "^6.0.17"
+    postcss "^6.0.22"
     postcss-js "^1.0.1"
     postcss-nested "^3.0.0"
     postcss-safe-parser "^3.0.1"

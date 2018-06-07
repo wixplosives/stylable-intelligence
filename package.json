@@ -90,20 +90,25 @@
     "Other"
   ],
   "contributes": {
-    "languages": [{
-      "id": "stylable",
-      "aliases": [
-        "Stylable"
-      ],
-      "extensions": [
-        ".st.css"
-      ],
-      "grammars": [{
+    "languages": [
+      {
+        "id": "stylable",
+        "aliases": [
+          "Stylable"
+        ],
+        "extensions": [
+          ".st.css"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
         "language": "stylable",
         "scopeName": "source.stylable",
         "path": "./syntaxes/stylable.tmLanguage.json"
-      }]
-    }]
+      }
+    ]
   },
   "activationEvents": [
     "onLanguage:stylable"
