@@ -149,7 +149,7 @@ describe("Definitions", function () {
                 });
             });
 
-            it("should return definition of TS mixin in use", function () {
+            xit("should return definition of TS mixin in use", function () {
                 return asserters.getDefinition('definitions/imported-mixins-value-ts.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];

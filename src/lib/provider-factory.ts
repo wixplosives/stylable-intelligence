@@ -25,21 +25,26 @@ export function createFs(fileSystem: FileSystemReadSync): any {
             return fileSystem.loadTextFileSync(path).toString();
         },
         statSync(path: string) {
+
             path = (!legacyBehvior && isWindows) ? `/${path.slice(path.lastIndexOf(':')+1).replace(/\\/g, '/')}` : path;
 
-            let isFile = checkExistsSync('file', fileSystem, path);
-            return {
+            const s = fileSystem.statSync(path)
+
+            const stat = {
+                type: s.type,
                 isDirectory() {
-                    return !isFile
+                    return s.type === 'dir'
                 },
                 isFile() {
-                    return isFile
+                    return s.type === 'file'
                 },
                 mtime: new Date(Date.now())
             }
+
+            return stat;
         },
         readlinkSync(_path: string) {
-            return null;
+            return null//require('fs').readlinkSync(_path);
         }
     }
 }
