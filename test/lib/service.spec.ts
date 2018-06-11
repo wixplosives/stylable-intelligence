@@ -92,24 +92,30 @@ describe("Service component test", function () {
 
         it("Diagnostics - CSS errors", plan(2, () => {
             const baseFilecContent = trimLiteral`
-            |.root {}
-            |
             |:vars {
             |  varvar: binks;
             |}
-            |
             |.gaga:aState {
             |  color: red;
             |  colorr: reddish;
+            |}
+            |.root {
+            |  -st-states: someState(string);
+            |}
+            |.root:someState(T1) { /* css-identifierexpected */
+            |
+            |}
+            |.root:someState(T1.1) { /* css-rparentexpected */
+            |
             |}
             `
 
             const baseFileName = 'base-file.st.css';
             const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent } });
             const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
-            const diags = [ //CSS diagnostics that shouldn't appear: empty ruleset, unknown property 'varavar'
-                createDiagnosis(createRange(6, 6, 6, 12), "unknown pseudo-state \"aState\""),
-                createDiagnosis(createRange(8, 2, 8, 8), "Unknown property: 'colorr'", "css", "unknownProperties"),
+            const diags = [ //CSS diagnostics that shouldn't appear: empty ruleset, unknown property 'varavar', css-rparentexpected, css-identifierexpected
+                createDiagnosis(createRange(3, 6, 3, 12), "unknown pseudo-state \"aState\""),
+                createDiagnosis(createRange(5, 2, 5, 8), "Unknown property: 'colorr'", "css", "unknownProperties"),
             ]
 
             init(fileSystem, testCon.server);
