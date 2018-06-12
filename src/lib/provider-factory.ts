@@ -49,13 +49,6 @@ export function createFs(fileSystem: FileSystemReadSync): any {
     }
 }
 
-export function createProcessor(fileSystem: FileSystemReadSync): FileProcessor<StylableMeta> {
-    let proccesor = cachedProcessFile<StylableMeta>((fullpath, content) => {
-        return stylableProcess(safeParse(content, {from: fullpath}))
-    }, createFs(fileSystem))
-    return proccesor;
-}
-
 export interface MinimalDocs extends Partial<FileSystemReadSync> {
     get: (uri: string) => TextDocument | undefined;
     keys: () => string[];

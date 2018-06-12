@@ -1,16 +1,17 @@
 import { expect } from 'chai'
+import { Stylable } from 'stylable';
+import { MemoryFileSystem } from 'kissfs';
 import { TextDocument } from 'vscode-languageserver-types'
 import { TextDocuments, Command, Location, Position, Range, TextEdit, CompletionItem, ParameterInformation, Diagnostic } from "vscode-languageserver";
 import { createDiagnosis } from '../../src/lib/diagnosis'
-import { createProcessor } from '../../src/lib/provider-factory'
+import { createFs } from '../../src/lib/provider-factory'
 import { LocalSyncFs } from '../../src/lib/local-sync-fs';
 import { createDocFs } from '../../src/lib/server-utils';
-import { MemoryFileSystem } from 'kissfs';
 
 function createDiagnostics(files: { [filePath: string]: string }, path: string) {
     const docs: { [path: string]: TextDocument } = {}
     Object.keys(files).reduce((prev, path: string) => {
-        prev[path] = TextDocument.create(path, 'css', 0, files[path])
+        prev[path] = TextDocument.create('/' + path, 'css', 0, files[path])
         return prev
     }, docs)
 
@@ -23,12 +24,19 @@ function createDiagnostics(files: { [filePath: string]: string }, path: string) 
         }
     } as TextDocuments
     // const fs =  new LocalSyncFs('');
-    const fs = new MemoryFileSystem('', { content: files });
+    const fs = new MemoryFileSystem('/', { content: files });
     const docsFs = createDocFs(fs, documents);
 
     const doc = documents.get(path);
     return doc ?
-        createDiagnosis(doc, docsFs, createProcessor(docsFs), require) :
+        createDiagnosis(
+            doc,
+            docsFs,
+            Stylable.create({
+                fileSystem: createFs(docsFs),
+                projectRoot: '/'
+            }).fileProcessor,
+            require) :
         null;
 }
 
@@ -46,7 +54,7 @@ describe('diagnostics', function () {
                 "start": { "line": 0, "character": 0 },
                 "end": { "line": 0, "character": 13 }
             },
-            "message": ".root class cannot be used after spacing",
+            "message": "\".root\" class cannot be used after native elements or selectors external to the stylesheet",
             "severity": 2
         })
     })
