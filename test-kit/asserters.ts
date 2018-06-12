@@ -1,22 +1,22 @@
 import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
-import {NodeBase} from 'postcss';
-import {Stylable} from 'stylable';
-import {TextDocument} from 'vscode-languageserver-types';
-import {Location, ParameterInformation, SignatureHelp} from 'vscode-languageserver';
-import {ColorInformation} from 'vscode-css-languageservice';
-import {createFs, createProvider, MinimalDocs} from '../src/lib/provider-factory'
-import {ProviderPosition} from '../src/lib/completion-providers';
-import {createMeta, getRefs, ProviderLocation} from '../src/lib/provider';
-import {pathFromPosition} from '../src/lib/utils/postcss-ast-utils'
-import {fromVscodePath, toVscodePath} from '../src/lib/utils/uri-utils';
-import {LocalSyncFs} from '../src/lib/local-sync-fs';
-import {createDocFs} from '../src/lib/server-utils';
-import {createBaseHost, createLanguageServiceHost} from '../src/lib/utils/temp-language-service-host';
-import {ExtendedTsLanguageService} from '../src/lib/types';
-import {CssService} from '../src/model/css-service';
-import {resolveDocumentColors, getColorPresentation} from '../src/lib/feature/color-provider';
+import { NodeBase } from 'postcss';
+import { Stylable } from 'stylable';
+import { TextDocument, TextDocumentIdentifier, Range } from 'vscode-languageserver-types';
+import { Location, ParameterInformation, SignatureHelp, ColorPresentation, Color } from 'vscode-languageserver';
+import { ColorInformation } from 'vscode-css-languageservice';
+import { createFs, createProvider, MinimalDocs } from '../src/lib/provider-factory'
+import { ProviderPosition } from '../src/lib/completion-providers';
+import { createMeta, getRefs, ProviderLocation } from '../src/lib/provider';
+import { pathFromPosition } from '../src/lib/utils/postcss-ast-utils'
+import { fromVscodePath, toVscodePath } from '../src/lib/utils/uri-utils';
+import { LocalSyncFs } from '../src/lib/local-sync-fs';
+import { createDocFs } from '../src/lib/server-utils';
+import { createBaseHost, createLanguageServiceHost } from '../src/lib/utils/temp-language-service-host';
+import { ExtendedTsLanguageService } from '../src/lib/types';
+import { CssService } from '../src/model/css-service';
+import { resolveDocumentColors, getColorPresentation } from '../src/lib/feature/color-provider';
 
 const pkgDir = require('pkg-dir');
 
@@ -53,7 +53,7 @@ export function getReferences(fileName: string, pos: ProviderPosition): Location
     const fullPath = path.join(CASES_PATH, fileName);
     let src: string = fs.readFileSync(fullPath).toString();
     let doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src)
-    return getRefs({context: {includeDeclaration: true}, position: pos, textDocument: doc}, docsFs)
+    return getRefs({ context: { includeDeclaration: true }, position: pos, textDocument: doc }, docsFs)
 }
 
 export function getSignatureHelp(fileName: string, prefix: string): SignatureHelp | null {
@@ -77,17 +77,21 @@ export function getDocumentColors(fileName: string): ColorInformation[] {
     );
 }
 
-// export function getDocColorPresentation(fileName: string): ColorInformation[] {
-//     const fullPath = path.join(CASES_PATH, fileName);
-//     let src: string = fs.readFileSync(fullPath).toString();
-//     let doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src)
+export function getDocColorPresentation(fileName: string, color: Color, range: Range ): ColorPresentation[] {
+    const fullPath = path.join(CASES_PATH, fileName);
+    let src: string = fs.readFileSync(fullPath).toString();
+    let doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src)
 
-//     return getColorPresentation(
-//         newCssService,
-//         doc,
-//         params
-//     );
-// }
+    return getColorPresentation(
+        newCssService,
+        doc,
+        {
+            textDocument: TextDocumentIdentifier.create(doc.uri),
+            color,
+            range
+        }
+    );
+}
 
 const minDocs: MinimalDocs = {
     get(uri: string): TextDocument {
@@ -118,6 +122,6 @@ const wrappedTs: ExtendedTsLanguageService = {
     setOpenedFiles: (files: string[]) => openedFiles = files
 };
 
-const stylable = new Stylable(CASES_PATH, createFs(docsFs), () => ({default: {}}));
+const stylable = new Stylable(CASES_PATH, createFs(docsFs), () => ({ default: {} }));
 const provider = createProvider(stylable, wrappedTs);
 const newCssService = new CssService(docsFs);

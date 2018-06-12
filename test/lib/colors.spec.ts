@@ -1,8 +1,7 @@
 import { expect } from 'chai';
-import { getDocumentColors } from '../../test-kit/asserters';
+import { getDocumentColors, getDocColorPresentation } from '../../test-kit/asserters';
 import { Color } from 'vscode-languageserver-protocol';
 import { createRange } from '../../src/lib/completion-providers';
-import { create } from 'stylable';
 
 export function createColor(red: number, green: number, blue: number, alpha: number): Color {
     return { red, green, blue, alpha } as Color
@@ -44,11 +43,36 @@ describe('Colors', function () {
         });
     });
 
-    // describe('ColorPresentation', () => {
-    //     it('should return empty result', function () {
-    //         const res = getDocColorPresentation('colors/color-presentation.st.css');
+    describe('ColorPresentation', () => {
+        it('should return presentation in variable definition', function () {
 
-    //     })
-    // });
+            const range = createRange(1, 12, 1, 31)
+            const color = {
+                red: 0, green: 1, blue: 0, alpha: 0.8
+            }
+            const res = getDocColorPresentation('colors/color-presentation.st.css', color, range);
+            expect(res.length).to.equal(3);
+            expect(res.filter(cp => cp.label === "rgba(0, 255, 0, 0.8)").length).to.equal(1)
+        })
+
+        it('should not return presentation in variable usage', function () {
+            const range = createRange(5, 11, 5, 23)
+            const color = {
+                red: 0, green: 1, blue: 0, alpha: 0.8
+            }
+            const res = getDocColorPresentation('colors/color-presentation.st.css', color, range);
+            expect(res.length).to.equal(0);
+        })
+
+        it('should not return presentation in -st-named', function () {
+            const range = createRange(2, 15, 2, 21)
+            const color = {
+                red: 0, green: 1, blue: 0, alpha: 0.8
+            }
+            const res = getDocColorPresentation('colors/color-presentation-import.st.css', color, range);
+            expect(res.length).to.equal(0);
+        })
+
+    });
 });
 
