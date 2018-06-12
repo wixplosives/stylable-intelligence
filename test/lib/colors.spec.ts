@@ -45,7 +45,10 @@ describe('Colors', function () {
     });
 
     // describe('ColorPresentation', () => {
+    //     it('should return empty result', function () {
+    //         const res = getDocColorPresentation('colors/color-presentation.st.css');
 
+    //     })
     // });
 });
 

@@ -16,7 +16,7 @@ import {createDocFs} from '../src/lib/server-utils';
 import {createBaseHost, createLanguageServiceHost} from '../src/lib/utils/temp-language-service-host';
 import {ExtendedTsLanguageService} from '../src/lib/types';
 import {CssService} from '../src/model/css-service';
-import {resolveDocumentColors} from '../src/lib/feature/color-provider';
+import {resolveDocumentColors, getColorPresentation} from '../src/lib/feature/color-provider';
 
 const pkgDir = require('pkg-dir');
 
@@ -76,6 +76,18 @@ export function getDocumentColors(fileName: string): ColorInformation[] {
         doc
     );
 }
+
+// export function getDocColorPresentation(fileName: string): ColorInformation[] {
+//     const fullPath = path.join(CASES_PATH, fileName);
+//     let src: string = fs.readFileSync(fullPath).toString();
+//     let doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src)
+
+//     return getColorPresentation(
+//         newCssService,
+//         doc,
+//         params
+//     );
+// }
 
 const minDocs: MinimalDocs = {
     get(uri: string): TextDocument {

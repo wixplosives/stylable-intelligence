@@ -1,9 +1,7 @@
-:import{
-    -st-from: 'fake-stylable-package/stylesheet.st.css';
-    -st-default: Comp;
-    -st-named: part1, color1;
+:vars {
+    color1: rgb(0, 255, 0, 0.8);
 }
 
-.gaga{
-    -st-extends: Comp;
+.root {
+    color: value(color1);
 }
