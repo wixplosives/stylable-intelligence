@@ -53,7 +53,7 @@ describe("Service component test", function () {
             testCon.client.didOpenTextDocument({ textDocument });
 
             testCon.client.onDiagnostics(d => {
-                expect(d).to.eql(createDiagnosisNotification([createDiagnosis(rangeAndText.range, ".root class cannot be used after spacing")], fileName));
+                expect(d).to.eql(createDiagnosisNotification([createDiagnosis(rangeAndText.range, "\".root\" class cannot be used after native elements or selectors external to the stylesheet")], fileName));
             });
 
         }));
@@ -70,7 +70,7 @@ describe("Service component test", function () {
             |    -st-named: gaga;
             |}
             |
-            |.gaga:aState:bState {
+            |.root .gaga:aState:bState {
             |    color: red;
             |}
             `
@@ -85,7 +85,7 @@ describe("Service component test", function () {
             testCon.client.didOpenTextDocument({ textDocument: topTextDocument });
 
             testCon.client.onDiagnostics(d => {
-                expect(d).to.eql(createDiagnosisNotification([createDiagnosis(createRange(5, 13, 5, 19), "unknown pseudo-state \"bState\"")], topFileName));
+                expect(d).to.eql(createDiagnosisNotification([createDiagnosis(createRange(5, 19, 5, 25), "unknown pseudo-state \"bState\"")], topFileName));
             });
 
         }));
