@@ -1,7 +1,5 @@
-:vars {
-    color1: rgb(0, 255, 0, 0.8);
+:import {
+    -st-from: "./my-js-mixins.js";
+    -st-named: aFormatter
 }
 
-.root {
-    color: value(color1);
-}
