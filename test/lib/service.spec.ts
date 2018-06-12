@@ -5,10 +5,9 @@ import { MemoryFileSystem } from "kissfs";
 import { toVscodePath } from "../../src/lib/utils/uri-utils";
 import { TextDocumentItem, ReferenceParams } from "vscode-languageserver-protocol"
 import { getRangeAndText } from "../testkit/text.spec";
-import { Diagnostic, Range, Position, Location } from 'vscode-languageserver-types';
-import { createRange, ProviderPosition } from '../../src/lib/completion-providers';
+import { Diagnostic, Range, Location } from 'vscode-languageserver-types';
+import { createRange } from '../../src/lib/completion-providers';
 import { createColor } from './colors.spec';
-import { timingFunctions } from 'polished';
 import { toggleLegacy } from '../../src/lib/provider-factory'
 
 
@@ -78,7 +77,6 @@ describe("Service component test", function () {
             const baseFileName = 'base-file.st.css';
             const topFileName = 'top-file.st.css';
             const fileSystem = new MemoryFileSystem('', { content: { [baseFileName]: baseFilecContent, [topFileName]: topFileContent } });
-            const baseTextDocument = TextDocumentItem.create(toVscodePath('/' + baseFileName), 'stylable', 0, baseFilecContent);
             const topTextDocument = TextDocumentItem.create(toVscodePath('/' + topFileName), 'stylable', 0, topFileContent);
 
             init(fileSystem, testCon.server);

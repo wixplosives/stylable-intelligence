@@ -33,7 +33,7 @@
     "postcss": "^6.0.19",
     "postcss-selector-parser": "^4.0.0",
     "postcss-value-parser": "^3.3.0",
-    "stylable": "next",
+    "stylable": "^5.4.2",
     "tslib": "^1.9.0",
     "typescript": "~2.8.3",
     "vscode": "^1.1.13",

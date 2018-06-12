@@ -3,7 +3,6 @@ import {createConnection, IConnection, IPCMessageReader, IPCMessageWriter} from 
 import {LocalSyncFs} from './local-sync-fs';
 import {init} from "./server-utils";
 import { initializeResult } from '../view';
-import { spy } from 'sinon';
 
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 

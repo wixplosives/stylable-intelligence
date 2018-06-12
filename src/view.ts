@@ -1,15 +1,7 @@
 import {
-    ColorInformation,
-    Definition,
-    Hover,
     InitializeResult,
-    ReferenceParams,
     ServerCapabilities,
     ServerCapabilities as CPServerCapabilities,
-    SignatureHelp,
-    TextDocument,
-    TextDocumentPositionParams,
-    WorkspaceEdit
 } from 'vscode-languageserver-protocol';
 
 export const initializeResult : InitializeResult = {

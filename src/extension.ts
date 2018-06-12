@@ -1,12 +1,7 @@
 'use strict';
 import {Trace} from 'vscode-jsonrpc'
 import {
-    Color,
-    ColorInformation,
-    ColorPresentation,
     ExtensionContext,
-    languages,
-    TextDocument,
     Uri,
     workspace
 } from 'vscode';
@@ -17,12 +12,6 @@ import {
     ServerOptions,
     TransportKind
 } from 'vscode-languageclient';
-import {
-    ColorPresentationParams,
-    ColorPresentationRequest,
-    DocumentColorParams,
-    DocumentColorRequest
-} from 'vscode-languageserver-protocol';
 import path = require('path');
 
 namespace OpenDocNotification {

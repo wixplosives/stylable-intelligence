@@ -44,8 +44,7 @@ import {
     isDirective,
     isInValue
 } from './provider';
-import * as ts from 'typescript';
-import { Identifier, TypeReferenceNode } from 'typescript';
+import { TypeReferenceNode } from 'typescript';
 import { toVscodePath } from './utils/uri-utils';
 import { ResolvedElement } from 'stylable/dist/src/stylable-transformer';
 import { find, keys, last } from 'lodash';
@@ -426,7 +425,7 @@ export const CodeMixinCompletionProvider: CompletionProvider = {
                 return []
             }
 
-            const { names, lastName } = getExistingNames(fullLineText, position)
+            const { lastName } = getExistingNames(fullLineText, position)
             return Object.keys(meta.mappedSymbols)
                 .filter(ms => meta.mappedSymbols[ms]._kind === 'import')
                 .filter(ms => ms.startsWith(lastName))
@@ -452,7 +451,7 @@ export const FormatterCompletionProvider: CompletionProvider = {
             parentSelector && ~fullLineText.indexOf(':') && fullLineText.indexOf(':') < position.character &&
             !lineChunkAtCursor.startsWith(valueMapping.mixin + ':')
         ) {
-            const { names, lastName } = getExistingNames(fullLineText, position)
+            const { lastName } = getExistingNames(fullLineText, position)
             return Object.keys(meta.mappedSymbols)
                 .filter(ms => (meta.mappedSymbols[ms]._kind === 'import'))
                 .filter(ms => ms.startsWith(lastName))
@@ -634,10 +633,6 @@ function isNodeRule(node: any): node is PostCss.Rule {
     return node.type === 'rule';
 }
 
-function isNodeDecl(node: any): node is PostCss.Declaration {
-    return node.type === 'decl';
-}
-
 function isPositionInDecl(position: ProviderPosition, decl: PostCss.Declaration) {
     const srcStart = decl.source && decl.source.start;
     const srcEnd = decl.source && decl.source.end;
@@ -809,7 +804,6 @@ export const StateEnumCompletionProvider: CompletionProvider = {
         if (!lineChunkAtCursor.endsWith('::') && (ast.type === 'root' || ast.type === 'atrule')) {
             if (lastSelectoid.startsWith(':')) {
                 const stateName = lastSelectoid.slice(1);
-                const resolvedClass = resolved[0];
                 const lastNode = resolvedElements[0][resolvedElements[0].length - 1];
                 const resolvedStates: { [key: string]: StateParsedValue } = collectStates(lastNode)
 
