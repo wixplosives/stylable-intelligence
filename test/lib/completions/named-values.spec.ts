@@ -112,8 +112,38 @@ describe('Named Values', function () {
                 });
             });
         });
-
     });
+
+    const str5 = 'aMixin';
+    const str6 = 'aFormatter';
+
+    [str5, str6].forEach((str, j, a) => {
+        str.split('').forEach((c, i) => {
+            let prefix = str.slice(0, i);
+            let rng = createRange(2, 15, 2, 15 + i);
+            const path = "../mixins/js-mixins.js";
+
+            const createComp = (str: string, rng: ProviderRange) => asserters.namedCompletion(str, rng, path, 'Mixin')
+            it.only('Completes names of functions from JS imports, with prefix ' + prefix + ' ', function () {
+                return asserters.getCompletions('named/st-named-mixin.st.css', prefix).then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+                    let notExp: Partial<Completion>[] = [];
+
+                    if (prefix.length <= 1) {
+                        exp.push(createComp(str5, rng))
+                        exp.push(createComp(str6, rng))
+                    } else {
+                        exp.push(createComp(str, rng))
+                        notExp.push(createComp(str===str5 ? str6 : str5, rng))
+                    }
+
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
+                });
+            })
+
+        })
+    })
 });
 
 // Does not complete names that appear in later lines

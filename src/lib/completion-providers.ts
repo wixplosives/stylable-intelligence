@@ -491,7 +491,7 @@ export const NamedCompletionProvider: CompletionProvider & { resolveImport: (imp
 
                 const resolvedImport: StylableMeta | null = this.resolveImport(importName, styl, meta);
                 if (resolvedImport) {
-                    const { names, lastName } = getExistingNames(fullLineText, position)
+                    const { lastName } = getExistingNames(fullLineText, position)
                     comps.push(
                         ...keys(resolvedImport.mappedSymbols)
                             .filter(ms => (resolvedImport.mappedSymbols[ms]._kind === 'class' || resolvedImport.mappedSymbols[ms]._kind === 'var') && ms !== 'root')
@@ -514,8 +514,14 @@ export const NamedCompletionProvider: CompletionProvider & { resolveImport: (imp
                     ));
                 }
             } else if (importName.endsWith('.js')) {
-                const req = require(path.resolve(importName));
-                const { names, lastName } = getExistingNames(fullLineText, position)
+                let req: any;
+                try {
+                    req = require(path.resolve(importName));
+                } catch (e) {
+                    return [];
+                };
+
+                const { lastName } = getExistingNames(fullLineText, position)
                 Object.keys(req).forEach(k => {
                     if (typeof (req[k]) === 'function') {
                         comps.push([k, importName, 'Mixin']);
