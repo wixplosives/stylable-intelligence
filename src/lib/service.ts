@@ -1,29 +1,24 @@
 import {
-    ColorInformation,
     Definition,
     Hover,
     ReferenceParams,
     SignatureHelp,
-    TextDocument,
     TextDocumentChangeEvent,
     TextDocumentPositionParams,
     WorkspaceEdit,
     DocumentColorParams,
     ColorPresentationParams
 } from 'vscode-languageserver-protocol';
-import {createProvider, MinimalDocs, MinimalDocsDispatcher,} from './provider-factory';
+import {createProvider, MinimalDocsDispatcher,} from './provider-factory';
 import {ProviderPosition, ProviderRange} from './completion-providers';
 import {Completion} from './completion-types';
 import {createDiagnosis} from './diagnosis';
-import {Color} from 'vscode-css-languageservice';
 import {Command, CompletionItem, Location, ParameterInformation, TextEdit} from 'vscode-languageserver-types';
-import {evalDeclarationValue, Stylable, valueMapping} from 'stylable';
+import {Stylable} from 'stylable';
 import {fromVscodePath, toVscodePath} from './utils/uri-utils';
-import {fixAndProcess, getRefs} from './provider';
+import {getRefs} from './provider';
 import {ExtendedFSReadSync, ExtendedTsLanguageService, NotificationTypes} from './types'
-import {last} from 'lodash';
 import {IConnection} from "vscode-languageserver";
-import {initializeResult} from "../view";
 import {CompletionParams} from 'vscode-languageclient/lib/main';
 import {CssService} from "../model/css-service";
 import {resolveDocumentColors, getColorPresentation} from './feature/color-provider';
@@ -44,8 +39,6 @@ export function initStylableLanguageService(connection: IConnection, services: {
     const provider = createProvider(services.styl, services.tsLanguageService);
     const processor = services.styl.fileProcessor;
     const newCssService = new CssService(fs);
-
-    connection.onInitialize(() => initializeResult);
 
     connection.onCompletion((params: CompletionParams): CompletionItem[] => {
         const documentUri = params.textDocument.uri;
@@ -91,7 +84,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
         }
     }
 
-    docsDispatcher.onDidOpen(diagnose);
+    // docsDispatcher.onDidOpen(diagnose);
     docsDispatcher.onDidChangeContent(diagnose);
 
     connection.onDefinition((params): Thenable<Definition> => {

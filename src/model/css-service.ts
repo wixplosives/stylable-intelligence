@@ -10,6 +10,30 @@ function readDocRange(doc: TextDocument, rng: Range): string {
     return lines[rng.start.line].slice(rng.start.character, rng.end.character);
 }
 
+function findPseudoStateStart(line: string, lookFrom: number) {
+    let i = lookFrom - 1;
+    let res = -1;
+    let openParens = 0;
+    while (i !== -1) {
+        if (line[i] === ':' && line[i - 1] !== ':') {
+            res = i;
+        }
+        if (line[i] === '(') {
+            openParens++;
+        }
+        if (line[i] === ')') {
+            openParens--;
+        }
+
+        i--;
+    }
+
+    return {
+        index: res,
+        openParens
+    };
+}
+
 /**
  * the API for "normal" css language features fallback
  */
@@ -44,6 +68,17 @@ export class CssService {
                 }
                 if (diag.code === 'css-lcurlyexpected' && readDocRange(document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) {
                     return false;
+                }
+                if (diag.code === 'css-rparentexpected' || diag.code === 'css-identifierexpected') {
+                    const endOfLine = diag.range.end;
+                    endOfLine.character = -1;
+
+                    const line = readDocRange(document, Range.create(Position.create(diag.range.start.line, 0), endOfLine));
+                    const stateStart = findPseudoStateStart(line, diag.range.start.character);
+
+                    if (stateStart.index !== -1 && stateStart.openParens > 0) {
+                        return false;
+                    }
                 }
                 if (diag.code === 'unknownProperties') {
                     let prop = diag.message.match(/'(.*)'/)![1]

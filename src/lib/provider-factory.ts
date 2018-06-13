@@ -1,6 +1,6 @@
 'use strict';
-import { FileSystemReadSync, checkExistsSync } from 'kissfs';
-import { FileProcessor, Stylable, StylableMeta, cachedProcessFile, process as stylableProcess, safeParse } from 'stylable';
+import { FileSystemReadSync } from 'kissfs';
+import { Stylable } from 'stylable';
 import { Event, TextDocument, TextDocumentChangeEvent, TextDocuments } from 'vscode-languageserver';
 import Provider from './provider';
 import { ExtendedTsLanguageService } from './types';
@@ -25,34 +25,32 @@ export function createFs(fileSystem: FileSystemReadSync): any {
             return fileSystem.loadTextFileSync(path).toString();
         },
         statSync(path: string) {
+
             path = (!legacyBehvior && isWindows) ? `/${path.slice(path.lastIndexOf(':')+1).replace(/\\/g, '/')}` : path;
 
-            let isFile = checkExistsSync('file', fileSystem, path);
-            return {
+            const s = fileSystem.statSync(path)
+
+            const stat = {
+                type: s.type,
                 isDirectory() {
-                    return !isFile
+                    return s.type === 'dir'
                 },
                 isFile() {
-                    return isFile
+                    return s.type === 'file'
                 },
                 mtime: new Date(Date.now())
             }
+
+            return stat;
         },
         readlinkSync(_path: string) {
-            return null;
+            return null//require('fs').readlinkSync(_path);
         }
     }
 }
 
-export function createProcessor(fileSystem: FileSystemReadSync): FileProcessor<StylableMeta> {
-    let proccesor = cachedProcessFile<StylableMeta>((fullpath, content) => {
-        return stylableProcess(safeParse(content, {from: fullpath}))
-    }, createFs(fileSystem))
-    return proccesor;
-}
-
 export interface MinimalDocs extends Partial<FileSystemReadSync> {
-    get: (uri: string) => TextDocument;
+    get: (uri: string) => TextDocument | undefined;
     keys: () => string[];
 }
 

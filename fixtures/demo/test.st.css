@@ -1,9 +1,0 @@
-:import {
-  -st-from: "./import.st.css";
-  -st-named: gaga;
-}
-
-.baa {
-  -st-extends: gaga;
-  background-color: goldenrod;
-}

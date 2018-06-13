@@ -71,6 +71,15 @@ describe("Definitions", function () {
                     expect(def.range).to.eql(createRange(4, 1, 4, 5))
                 });
             });
+
+            it("should return definition of imported class from 3rd party module", function () {
+                return asserters.getDefinition('definitions/imported-class-3rd-party.st.css').then((defs) => {
+                    expect(defs.length).to.equal(1);
+                    let def = defs[0];
+                    expect(def.uri).to.equal(path.join(CASES_PATH, '../node_modules/fake-stylable-package/stylesheet.st.css'));
+                    expect(def.range).to.eql(createRange(9, 1, 9, 6))
+                });
+            });
         });
 
         describe("Vars", function () {
@@ -80,6 +89,15 @@ describe("Definitions", function () {
                     let def = defs[0];
                     expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
                     expect(def.range).to.eql(createRange(14, 4, 14, 8))
+                });
+            });
+
+            it("should return definition of 3rd party var in -st-named", function () {
+                return asserters.getDefinition('definitions/3rd-party-var-named.st.css').then((defs) => {
+                    expect(defs.length).to.equal(1);
+                    let def = defs[0];
+                    expect(def.uri).to.equal(path.join(CASES_PATH, '../node_modules/fake-stylable-package/stylesheet.st.css'));
+                    expect(def.range).to.eql(createRange(1, 4, 1, 10))
                 });
             });
 
@@ -103,12 +121,22 @@ describe("Definitions", function () {
                 });
             });
 
-            it("should return definition of TS mixin in -st-named", function () {
+            it("should return definition of 3rd party JS mixin in -st-named", function () {
+                return asserters.getDefinition('definitions/3rd-party-mixins-named-js.st.css').then((defs) => {
+                    expect(defs.length).to.equal(1);
+                    let def = defs[0];
+                    expect(def.uri).to.equal(path.join(CASES_PATH, '../node_modules/fake-stylable-package/js-mixins.js'));
+                    expect(def.range).to.eql(createRange(8, 8, 8, 14))
+                });
+            });
+
+            //Feature undergoing redesign
+            xit("should return definition of TS mixin in -st-named", function () {
                 return asserters.getDefinition('definitions/imported-mixins-named-ts.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
                     expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/my-mixins.ts'));
-                    expect(def.range).to.eql(createRange(3, 16, 3, 29))
+                    expect(def.range).to.eql(createRange(2, 16, 2, 29))
                 });
             });
 
@@ -121,15 +149,14 @@ describe("Definitions", function () {
                 });
             });
 
-            it("should return definition of TS mixin in use", function () {
+            xit("should return definition of TS mixin in use", function () {
                 return asserters.getDefinition('definitions/imported-mixins-value-ts.st.css').then((defs) => {
                     expect(defs.length).to.equal(1);
                     let def = defs[0];
                     expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/my-mixins.ts'));
-                    expect(def.range).to.eql(createRange(20, 16, 20, 34))
+                    expect(def.range).to.eql(createRange(19, 16, 19, 34))
                 });
             });
         });
-
     });
 });

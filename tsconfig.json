@@ -8,6 +8,7 @@
     "strict": true,
     "importHelpers": true,
     "noImplicitReturns": true,
+    // "noUnusedLocals": true,
     "strictNullChecks": true,
     "sourceMap": true,
     "declaration": true,

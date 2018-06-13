@@ -1,7 +1,3 @@
-:import {
-    -st-from: "../mixins/my-mixins.ts";
-    -st-named: paramlessMixin, paramfulMixin, notARealMixin;
-}
 
 :import {
     -st-from: "../mixins/js-mixins.js";

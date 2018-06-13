@@ -3,7 +3,7 @@ import { getSignatureHelp } from '../../test-kit/asserters'
 import { SignatureHelp, SignatureInformation, ParameterInformation } from 'vscode-languageserver';
 
 describe('Signature Help', function () {
-    describe('TS Paramful Mixin', function () {
+    xdescribe('TS Paramful Mixin', function () {
         let str = "'25','lala','b'";
 
         str.split('').forEach((c, i) => {
@@ -17,11 +17,11 @@ describe('Signature Help', function () {
                     activeSignature: 0,
                     activeParameter: prefix.match(/,/g) ? prefix.match(/,/g)!.length : 0,
                     signatures: [SignatureInformation.create(
-                        "paramfulMixin(numParam: stNumber<0, 200>, strParam: styl.stString, aliasedParam: lalaString, enumParam: 'a' | 'b'):  styl.stCssFrag",
+                        "paramfulMixin(numParam: string, strParam: string, aliasedParam: string, enumParam: 'a' | 'b'): object",
                         undefined,
-                        ParameterInformation.create("numParam: stNumber<0, 200>"),
-                        ParameterInformation.create("strParam: styl.stString"),
-                        ParameterInformation.create("aliasedParam: lalaString"),
+                        ParameterInformation.create("numParam: string"),
+                        ParameterInformation.create("strParam: string"),
+                        ParameterInformation.create("aliasedParam: string"),
                         ParameterInformation.create("enumParam: 'a' | 'b'"),
                     )]
                 }
@@ -32,7 +32,7 @@ describe('Signature Help', function () {
         });
     });
 
-    describe('TS Paramless Mixin', function () {
+    xdescribe('TS Paramless Mixin', function () {
         it('Provides signature help with no parameters', function () {
             let filePath = 'mixins/imported-mixins-paramless-signature.st.css'
 
@@ -42,7 +42,7 @@ describe('Signature Help', function () {
                 activeSignature: 0,
                 activeParameter: 0,
                 signatures: [SignatureInformation.create(
-                    "paramlessMixin():  styl.stCssFrag",
+                    "paramlessMixin(): object",
                     undefined,
                 )]
             }
@@ -52,7 +52,7 @@ describe('Signature Help', function () {
         }).timeout(5000);
     });
 
-    describe('TS Paramful Mixin - Default Import', function () {
+    xdescribe('TS Paramful Mixin - Default Import', function () {
         let str = "'25','lala','b'";
 
         str.split('').forEach((c, i) => {
@@ -66,9 +66,9 @@ describe('Signature Help', function () {
                     activeSignature: 0,
                     activeParameter: prefix.match(/,/g) ? prefix.match(/,/g)!.length : 0,
                     signatures: [SignatureInformation.create(
-                        "mixin(pct: stPercent):  styl.stCssFrag",
+                        "mixin(pct: string): object",
                         undefined,
-                        ParameterInformation.create("pct: stPercent"),
+                        ParameterInformation.create("pct: string"),
                     )]
                 }
 
@@ -92,10 +92,10 @@ describe('Signature Help', function () {
                     activeSignature: 0,
                     activeParameter: prefix.match(/,/g) ? prefix.match(/,/g)!.length : 0,
                     signatures: [SignatureInformation.create(
-                        "aMixin(strParam: stString, numParam: stNumber<0,200>, enumParam: 'a'|'b'): stCssFrag",
+                        "aMixin(strParam: string, numParam: string, enumParam: 'a'|'b'): object",
                         "A mixin with some params",
-                        ParameterInformation.create("strParam: stString", "A string param"),
-                        ParameterInformation.create("numParam: stNumber<0,200>", "A num param"),
+                        ParameterInformation.create("strParam: string", "A string param"),
+                        ParameterInformation.create("numParam: string", "A num param"),
                         ParameterInformation.create("enumParam: 'a'|'b'", "An enum param"),
                     )]
                 }
@@ -116,7 +116,7 @@ describe('Signature Help', function () {
                 activeSignature: 0,
                 activeParameter: 0,
                 signatures: [SignatureInformation.create(
-                    "aBareMixin(): stCssFrag",
+                    "aBareMixin(): object",
                     "A mixin with no params",
                 )]
             }
@@ -140,7 +140,7 @@ describe('Signature Help', function () {
                     activeSignature: 0,
                     activeParameter: prefix.match(/,/g) ? prefix.match(/,/g)!.length : 0,
                     signatures: [SignatureInformation.create(
-                        "paramfulMixin(numParam: stNumber<0,200>, strParam: styl.stString, aliasedParam: lalaString, enumParam: 'a'|'b'):  styl.stCssFrag",
+                        "paramfulMixin(numParam: string, strParam: string, aliasedParam: string, enumParam: 'a'|'b'): object",
                         undefined,
                         ParameterInformation.create("numParam: stNumber<0,200>"),
                         ParameterInformation.create("strParam: styl.stString"),
@@ -165,7 +165,7 @@ describe('Signature Help', function () {
                 activeSignature: 0,
                 activeParameter: 0,
                 signatures: [SignatureInformation.create(
-                    "paramlessMixin():  styl.stCssFrag",
+                    "paramlessMixin(): object",
                     undefined,
                 )]
             }
@@ -362,6 +362,34 @@ describe('Signature Help', function () {
                     expect(sig).to.deep.equal(exp);
                 });
             });
+        });
+    });
+
+    describe('JS 3rd Party Mixin', function () {
+        let str = "'25','lala','b'";
+
+        str.split('').forEach((c, i) => {
+            let prefix = str.slice(0, i);
+            it('Provides signature help and identifies active parameter from 3rd party, with prefix ' + prefix, function () {
+                let filePath = 'mixins/imported-mixins-third-party.st.css'
+
+                let sig = getSignatureHelp(filePath, prefix)
+
+                let exp: SignatureHelp = {
+                    activeSignature: 0,
+                    activeParameter: prefix.match(/,/g) ? prefix.match(/,/g)!.length : 0,
+                    signatures: [SignatureInformation.create(
+                        "aMixin(strParam: string, numParam: string, enumParam: 'a'|'b'): object",
+                        "A mixin with some params",
+                        ParameterInformation.create("strParam: string", "A string param"),
+                        ParameterInformation.create("numParam: string", "A num param"),
+                        ParameterInformation.create("enumParam: 'a'|'b'", "An enum param"),
+                    )]
+                }
+
+                expect(sig).to.not.be.null;
+                expect(sig).to.deep.equal(exp)
+            }).timeout(5000);
         });
     });
 });

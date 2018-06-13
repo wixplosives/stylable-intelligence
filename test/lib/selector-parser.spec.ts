@@ -1,4 +1,4 @@
-import { parseSelector, SelectorChunk, SelectorInternalChunk } from '../../src/lib/utils/selector-analyzer';
+import { parseSelector, SelectorInternalChunk } from '../../src/lib/utils/selector-analyzer';
 import { expect } from 'chai';
 
 describe('Selector Parser', function () {
@@ -9,7 +9,7 @@ describe('Selector Parser', function () {
     sel.split(/\.|:+/).forEach((sub, i) => {
         const tested = sel.slice(0, sel.indexOf(sub) + sub.length);
         it('Parses a selector with element and class - selector string:   ' + tested + '  ', function () {
-            const { selector: parsed, target } = parseSelector(tested)
+            const { selector: parsed } = parseSelector(tested)
 
             expect(parsed.length).to.equal(1);
             expect((parsed[0] as SelectorInternalChunk).customSelectors).to.eql([]);
@@ -24,7 +24,7 @@ describe('Selector Parser', function () {
         if (i === 0) { return }
         const tested = sel.slice(0, sel.indexOf(sub) + sub.length);
         it('Parses a selector with two classes - selector string:   ' + tested + '  ', function () {
-            const { selector: parsed, target } = parseSelector(tested)
+            const { selector: parsed } = parseSelector(tested)
 
             expect(parsed.length).to.equal(1);
             expect((parsed[0] as SelectorInternalChunk).customSelectors).to.eql([]);
@@ -39,7 +39,7 @@ describe('Selector Parser', function () {
         if (i === 0) { return };
         const tested = sel.slice(0, sel.indexOf(sub) + sub.length);
         it('Parses a multi-level selector with states - selector string:   ' + tested + '   ', function () {
-            const { selector: parsed, target } = parseSelector(tested)
+            const { selector: parsed } = parseSelector(tested)
 
             expect(parsed.length).to.equal(i <= 2 ? i : i === 3 ? 2 : 3);
             expect((parsed[0] as SelectorInternalChunk).customSelectors).to.eql([]);
@@ -67,7 +67,7 @@ describe('Selector Parser', function () {
         if (i === 0) { return };
         const tested = sel.slice(0, sel.indexOf(sub) + sub.length);
         it('Parses a multi-level selector with custom selector - selector string:   ' + tested + '   ', function () {
-            const { selector: parsed, target } = parseSelector(tested)
+            const { selector: parsed } = parseSelector(tested)
 
             expect(parsed.length).to.equal(i <= 2 ? 1 : i-1);
             expect((parsed[0] as SelectorInternalChunk).customSelectors).to.eql([':--custom']);
@@ -118,12 +118,12 @@ describe('Selector Parser', function () {
         })
 
         it('returns internal location in selector chunk', function () {
-            const { selector, target } = parseSelector('.first::second:someState::third', '.first::second:someState'.length);
+            const { target } = parseSelector('.first::second:someState::third', '.first::second:someState'.length);
             expect(target.internalIndex).to.equal(1);
         })
 
         it('returns internal location in selector chunk II', function () {
-            const { selector, target } = parseSelector('.first::second:someState::third:otherState', '.first::second:someState'.length);
+            const { target } = parseSelector('.first::second:someState::third:otherState', '.first::second:someState'.length);
             expect(target.internalIndex).to.equal(1);
         })
     })
