@@ -516,14 +516,14 @@ export const NamedCompletionProvider: CompletionProvider & { resolveImport: (imp
             } else if (importName.endsWith('.js')) {
                 let req: any;
                 try {
-                    req = require(path.resolve(importName));
+                    req = require(path.join(path.dirname(meta.source), importName));
                 } catch (e) {
                     return [];
                 };
 
                 const { lastName } = getExistingNames(fullLineText, position)
                 Object.keys(req).forEach(k => {
-                    if (typeof (req[k]) === 'function') {
+                    if (typeof (req[k]) === 'function' && k.startsWith(lastName)) {
                         comps.push([k, importName, 'Mixin']);
                     }
                 });

@@ -364,5 +364,33 @@ describe('Signature Help', function () {
             });
         });
     });
+
+    describe('JS 3rd Party Mixin', function () {
+        let str = "'25','lala','b'";
+
+        str.split('').forEach((c, i) => {
+            let prefix = str.slice(0, i);
+            it('Provides signature help and identifies active parameter from 3rd party, with prefix ' + prefix, function () {
+                let filePath = 'mixins/imported-mixins-third-party.st.css'
+
+                let sig = getSignatureHelp(filePath, prefix)
+
+                let exp: SignatureHelp = {
+                    activeSignature: 0,
+                    activeParameter: prefix.match(/,/g) ? prefix.match(/,/g)!.length : 0,
+                    signatures: [SignatureInformation.create(
+                        "aMixin(strParam: string, numParam: string, enumParam: 'a'|'b'): object",
+                        "A mixin with some params",
+                        ParameterInformation.create("strParam: string", "A string param"),
+                        ParameterInformation.create("numParam: string", "A num param"),
+                        ParameterInformation.create("enumParam: 'a'|'b'", "An enum param"),
+                    )]
+                }
+
+                expect(sig).to.not.be.null;
+                expect(sig).to.deep.equal(exp)
+            }).timeout(5000);
+        });
+    });
 });
 

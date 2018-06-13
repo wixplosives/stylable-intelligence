@@ -124,7 +124,7 @@ describe('Named Values', function () {
             const path = "../mixins/js-mixins.js";
 
             const createComp = (str: string, rng: ProviderRange) => asserters.namedCompletion(str, rng, path, 'Mixin')
-            xit('Completes names of functions from JS imports, with prefix ' + prefix + ' ', function () {
+            it('Completes names of functions from JS imports, with prefix ' + prefix + ' ', function () {
                 return asserters.getCompletions('named/st-named-mixin.st.css', prefix).then((asserter) => {
                     let exp: Partial<Completion>[] = [];
                     let notExp: Partial<Completion>[] = [];
