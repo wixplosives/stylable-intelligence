@@ -2,8 +2,7 @@ import * as asserters from './asserters';
 import { createRange, ProviderRange } from '../../../src/lib/completion-providers';
 import { Completion } from '../../../src/lib/completion-types';
 
-
-describe('Mixins', function () {
+describe.only('Mixins', function () {
 
     describe('CSS Class Mixins', function () {
         const createComp = (str: string, rng: ProviderRange, path: string) => asserters.cssMixinCompletion(str, rng, path);
@@ -23,87 +22,99 @@ describe('Mixins', function () {
             str.split('').forEach((c, i) => {
                 let prefix = str.slice(0, i);
 
-                it('should be completed from local and imported classes, with prefix ' + prefix, function () {
+                it('should be completed from local and imported classes, with prefix ' + prefix, async function () {
                     let rng = createRange(15, 15, 15, 15 + i);
-                    return asserters.getCompletions('pseudo-elements/recursive-import-3-mixin.st.css', prefix).then((asserter) => {
-                        let exp: Partial<Completion>[] = [];
-                        let notExp: Partial<Completion>[] = [];
+                    const asserter = await asserters.getCompletions('pseudo-elements/recursive-import-3-mixin.st.css', prefix);
+                    let exp: Partial<Completion>[] = [];
+                    let notExp: Partial<Completion>[] = [];
 
-                        if (i === 0) {
-                            a.forEach((comp, k) => exp.push(createComp(a[k], rng, froms[k])))
-                        } else {
-                            exp.push(createComp(str, rng, froms[j]));
-                            a.forEach((comp, k) => {
-                                if (comp !== str) {
-                                    notExp.push(createComp(a[k], rng, froms[k]))
-                                }
-                            })
-                        }
+                    if (i === 0) {
+                        a.forEach((comp, k) => exp.push(createComp(a[k], rng, froms[k])))
+                    } else {
+                        exp.push(createComp(str, rng, froms[j]));
+                        a.forEach((comp, k) => {
+                            if (comp !== str) {
+                                notExp.push(createComp(a[k], rng, froms[k]))
+                            }
+                        })
+                    }
 
-                        asserter.suggested(exp);
-                        asserter.notSuggested(notExp);
-                    });
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
                 });
 
-                it('should complete local and imported classes after single value, with prefix ' + prefix, function () {
+                it('should complete local and imported classes after single value, with prefix ' + prefix, async function () {
                     let rng = createRange(15, 23, 15, 23 + i);
-                    return asserters.getCompletions('pseudo-elements/recursive-import-3-mixin-single-value.st.css', prefix).then((asserter) => {
-                        let exp: Partial<Completion>[] = [];
-                        let notExp: Partial<Completion>[] = [];
+                    const asserter = await asserters.getCompletions('pseudo-elements/recursive-import-3-mixin-single-value.st.css', prefix);
+                    let exp: Partial<Completion>[] = [];
+                    let notExp: Partial<Completion>[] = [];
 
 
-                        if (i === 0) {
-                            a.forEach((comp, k) => {
-                                if (k !== 1) {
-                                    exp.push(createComp(comp, rng, froms[k]))
-                                } else {
-                                    notExp.push(createComp(comp, rng, froms[k]))
-                                }
-                            })
-                        } else {
-                            a.forEach((comp, k) => {
-                                if (k !== 1 && comp.startsWith(prefix)) {
-                                    exp.push(createComp(comp, rng, froms[k]))
-                                } else {
-                                    notExp.push(createComp(comp, rng, froms[k]))
-                                }
-                            })
-                        }
+                    if (i === 0) {
+                        a.forEach((comp, k) => {
+                            if (k !== 1) {
+                                exp.push(createComp(comp, rng, froms[k]))
+                            } else {
+                                notExp.push(createComp(comp, rng, froms[k]))
+                            }
+                        })
+                    } else {
+                        a.forEach((comp, k) => {
+                            if (k !== 1 && comp.startsWith(prefix)) {
+                                exp.push(createComp(comp, rng, froms[k]))
+                            } else {
+                                notExp.push(createComp(comp, rng, froms[k]))
+                            }
+                        })
+                    }
 
-                        asserter.suggested(exp);
-                        asserter.notSuggested(notExp);
-                    });
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
                 });
 
-                it('should complete local and imported classes after multiple values, with prefix ' + prefix, function () {
+                it('should complete local and imported classes after multiple values, with prefix ' + prefix, async function () {
                     let rng = createRange(15, 28, 15, 28 + i);
-                    return asserters.getCompletions('pseudo-elements/recursive-import-3-mixin-multiple-values.st.css', prefix).then((asserter) => {
-                        let exp: Partial<Completion>[] = [];
-                        let notExp: Partial<Completion>[] = [];
+                    const asserter = await asserters.getCompletions('pseudo-elements/recursive-import-3-mixin-multiple-values.st.css', prefix);
+                    let exp: Partial<Completion>[] = [];
+                    let notExp: Partial<Completion>[] = [];
 
 
-                        if (i === 0) {
-                            a.forEach((comp, k) => {
-                                if (k !== 1 && k !== 2) {
-                                    exp.push(createComp(comp, rng, froms[k]))
-                                } else {
-                                    notExp.push(createComp(comp, rng, froms[k]))
-                                }
-                            })
-                        } else {
-                            a.forEach((comp, k) => {
-                                if (k !== 1 && k !== 2 && comp.startsWith(prefix)) {
-                                    exp.push(createComp(comp, rng, froms[k]))
-                                } else {
-                                    notExp.push(createComp(comp, rng, froms[k]))
-                                }
-                            })
-                        }
+                    if (i === 0) {
+                        a.forEach((comp, k) => {
+                            if (k !== 1 && k !== 2) {
+                                exp.push(createComp(comp, rng, froms[k]))
+                            } else {
+                                notExp.push(createComp(comp, rng, froms[k]))
+                            }
+                        })
+                    } else {
+                        a.forEach((comp, k) => {
+                            if (k !== 1 && k !== 2 && comp.startsWith(prefix)) {
+                                exp.push(createComp(comp, rng, froms[k]))
+                            } else {
+                                notExp.push(createComp(comp, rng, froms[k]))
+                            }
+                        })
+                    }
 
-                        asserter.suggested(exp);
-                        asserter.notSuggested(notExp);
-                    });
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
                 });
+            });
+        });
+
+        const mixin = 'part1';
+        mixin.split('').forEach((c, i) => {
+            let prefix = mixin.slice(0, i);
+            it('should complete css mixin imported from 3rd party', async function () {
+
+                const rng = createRange(6, 14, 6, 14 + i);
+                const exp: Partial<Completion>[] = [];
+
+                const asserter = await asserters.getCompletions('mixins/3rd-party-css-mixin.st.css', prefix)
+                exp.push(createComp('part1', rng, 'fake-stylable-package/stylesheet.st.css'));
+
+                asserter.suggested(exp);
             });
         });
     });
@@ -191,57 +202,55 @@ describe('Mixins', function () {
             [str3, str4].forEach((str, j, a) => {
                 str.split('').forEach((c, i) => {
                     let prefix = str.slice(0, i);
-                    it('should complete imported JS mixins, but not formatters, with prefix ' + prefix, function () {
+                    it('should complete imported JS mixins, but not formatters, with prefix ' + prefix, async function () {
                         let rng = createRange(12, 15, 12, 15 + i);
-                        return asserters.getCompletions('mixins/imported-mixins.st.css', prefix).then((asserter) => {
-                            let exp: Partial<Completion>[] = [];
-                            let notExp: Partial<Completion>[] = [];
+                        const asserter = await asserters.getCompletions('mixins/imported-mixins.st.css', prefix);
+                        let exp: Partial<Completion>[] = [];
+                        let notExp: Partial<Completion>[] = [];
 
-                            if (i <= 1) {
-                                a.forEach((comp, k) => exp.push(createComp(a[k], rng, jsFrom)))
-                            } else {
-                                exp.push(createComp(str, rng, jsFrom));
-                                notExp.push(createComp(a[1 - j], rng, jsFrom))
-                            }
-                            notExp.push(createComp(badJsStr, rng, tsFrom))
+                        if (i <= 1) {
+                            a.forEach((comp, k) => exp.push(createComp(a[k], rng, jsFrom)))
+                        } else {
+                            exp.push(createComp(str, rng, jsFrom));
+                            notExp.push(createComp(a[1 - j], rng, jsFrom))
+                        }
+                        notExp.push(createComp(badJsStr, rng, tsFrom))
 
-                            asserter.suggested(exp);
-                            asserter.notSuggested(notExp);
-                        });
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
                     }).timeout(10000);
 
-                    it('should complete imported JS mixins after value, with prefix ' + prefix, function () {
+                    it('should complete imported JS mixins after value, with prefix ' + prefix, async function () {
                         let rng = createRange(11, 46, 11, 46 + i);
-                        return asserters.getCompletions('mixins/imported-mixins-single-value.st.css', prefix).then((asserter) => {
-                            let exp: Partial<Completion>[] = [];
-                            let notExp: Partial<Completion>[] = [];
+                        const asserter = await asserters.getCompletions('mixins/imported-mixins-single-value.st.css', prefix);
+                        let exp: Partial<Completion>[] = [];
+                        let notExp: Partial<Completion>[] = [];
 
-                            if (i <= 1) {
-                                a.forEach((comp, k) => exp.push(createComp(a[k], rng, jsFrom)))
-                            } else {
-                                exp.push(createComp(str, rng, jsFrom));
-                                notExp.push(createComp(a[1 - j], rng, jsFrom))
-                            }
-                            asserter.suggested(exp);
-                            asserter.notSuggested(notExp);
-                        });
+                        if (i <= 1) {
+                            a.forEach((comp, k) => exp.push(createComp(a[k], rng, jsFrom)))
+                        } else {
+                            exp.push(createComp(str, rng, jsFrom));
+                            notExp.push(createComp(a[1 - j], rng, jsFrom))
+                        }
+
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
                     }).timeout(10000);
 
                 });
             });
 
-            it('should not complete mixins inside a mixin param list', function () {
-                return asserters.getCompletions('mixins/imported-mixins-in-param-list.st.css').then((asserter) => {
-                    let rng = createRange(0, 0, 0, 0);
-                    let notExp: Partial<Completion>[] = [];
+            it('should not complete mixins inside a mixin param list', async function () {
+                const asserter = await asserters.getCompletions('mixins/imported-mixins-in-param-list.st.css');
+                let rng = createRange(0, 0, 0, 0);
+                let notExp: Partial<Completion>[] = [];
 
-                    notExp.push(createComp('paramlessMixin', rng, tsFrom))
-                    notExp.push(createComp('paramfulMixin', rng, tsFrom))
-                    notExp.push(createComp('aMixin', rng, jsFrom))
-                    notExp.push(createComp('aBareMixin', rng, jsFrom))
+                notExp.push(createComp('paramlessMixin', rng, tsFrom))
+                notExp.push(createComp('paramfulMixin', rng, tsFrom))
+                notExp.push(createComp('aMixin', rng, jsFrom))
+                notExp.push(createComp('aBareMixin', rng, jsFrom))
 
-                    asserter.notSuggested(notExp);
-                });
+                asserter.notSuggested(notExp);
             })
         })
 
