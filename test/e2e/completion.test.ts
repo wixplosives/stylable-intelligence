@@ -69,7 +69,6 @@ suite("Extension Tests", () => {
 
     //Fix it so it tests something real (no :import)
     test.skip("No completions on .css files", function () {
-        let starr: string[] = [];
         const testCases: [vscode.Position, string[]][] = [[new vscode.Position(0, 0), []]];
         return testCompletion('simple-completion.css', testCases);
     });

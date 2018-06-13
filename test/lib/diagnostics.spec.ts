@@ -2,10 +2,9 @@ import { expect } from 'chai'
 import { Stylable } from 'stylable';
 import { MemoryFileSystem } from 'kissfs';
 import { TextDocument } from 'vscode-languageserver-types'
-import { TextDocuments, Command, Location, Position, Range, TextEdit, CompletionItem, ParameterInformation, Diagnostic } from "vscode-languageserver";
+import { TextDocuments } from "vscode-languageserver";
 import { createDiagnosis } from '../../src/lib/diagnosis'
 import { createFs } from '../../src/lib/provider-factory'
-import { LocalSyncFs } from '../../src/lib/local-sync-fs';
 import { createDocFs } from '../../src/lib/server-utils';
 
 function createDiagnostics(files: { [filePath: string]: string }, path: string) {

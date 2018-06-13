@@ -1,10 +1,9 @@
-import { DocumentColorParams, ColorPresentationParams, TextDocument } from 'vscode-languageserver-protocol';
+import { ColorPresentationParams, TextDocument } from 'vscode-languageserver-protocol';
 import { ProviderPosition, ProviderRange } from '../completion-providers';
 import { Color, ColorPresentation, ColorInformation } from 'vscode-css-languageservice';
-import { evalDeclarationValue, valueMapping, Stylable, StylableMeta, FileProcessor } from 'stylable';
+import { evalDeclarationValue, valueMapping, Stylable } from 'stylable';
 import { CssService } from '../../model/css-service';
 import { fixAndProcess } from '../provider';
-import { ExtendedFSReadSync } from '../..';
 import { last } from 'lodash';
 
 export function resolveDocumentColors(

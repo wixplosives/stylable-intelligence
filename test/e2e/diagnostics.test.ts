@@ -3,9 +3,7 @@ import * as path from 'path';
 import { expect } from 'chai'
 const pkgDir = require('pkg-dir');
 
-const isWindows = process.platform === 'win32';
 // const fileUriToNativePath = (uri: string) => isWindows ? uri.slice(8).replace('%3A', ':') : uri.slice(7);
-const nativePathToFileUri = (path: string): string => 'file://' + (isWindows ? `/${path.replace(/\\/g, '/').replace(':', '%3A')}` : path)
 
 function getPathToDiagnostics(casePath:string){
     let pathToFile = ''

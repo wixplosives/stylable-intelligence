@@ -1,5 +1,4 @@
 import { createRange } from '../../src/lib/completion-providers';
-import * as asserters from '../../test-kit/asserters';
 import { expect } from 'chai';
 import * as path from 'path';
 import { getReferences, CASES_PATH } from '../../test-kit/asserters';

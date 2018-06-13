@@ -1,6 +1,6 @@
 'use strict';
-import { FileSystemReadSync, checkExistsSync } from 'kissfs';
-import { FileProcessor, Stylable, StylableMeta, cachedProcessFile, process as stylableProcess, safeParse } from 'stylable';
+import { FileSystemReadSync } from 'kissfs';
+import { Stylable } from 'stylable';
 import { Event, TextDocument, TextDocumentChangeEvent, TextDocuments } from 'vscode-languageserver';
 import Provider from './provider';
 import { ExtendedTsLanguageService } from './types';

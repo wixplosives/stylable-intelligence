@@ -4133,9 +4133,9 @@ strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
-stylable@next:
-  version "5.3.12-rc.1"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.3.12-rc.1.tgz#07fa3494eae2abd4aa4f8f9ea94728fc686e0cd8"
+stylable@^5.4.2:
+  version "5.4.2"
+  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.4.2.tgz#d472b7d8312c4cc937347ec039052e2f7e8e778a"
   dependencies:
     clean-css "^4.1.11"
     css-selector-tokenizer "^0.7.0"

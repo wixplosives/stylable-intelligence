@@ -11,11 +11,6 @@ describe('Formatters', function () {
     const js_formatter_2 = 'aFormatterWithParams';
     const ts_mixin_1 = 'paramlessMixin';
     const ts_mixin_2 = 'aBareMixin';
-    const js_mixin_1 = 'aMixin';
-    const js_mixin_2 = 'aBareMixin';
-    const str4 = 'aMixin';
-    const badStr = 'notARealMixin'
-    const badJsStr = 'aFormatter'
     const tsFrom = './my-mixins.ts';
     const jsFrom = './js-mixins.js';
     const createComp = (str: string, rng: ProviderRange, path: string) => asserters.codeMixinCompletion(str, rng, path);

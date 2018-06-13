@@ -1,6 +1,5 @@
 import * as asserters from './asserters';
-import { createRange, ProviderRange } from '../../../src/lib/completion-providers'
-import { Completion } from '../../../src/lib/completion-types';
+import { createRange } from '../../../src/lib/completion-providers'
 
 describe('Variables', function () {
     describe('from path', () => {

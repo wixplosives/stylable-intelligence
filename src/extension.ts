@@ -1,33 +1,15 @@
 'use strict';
 import {Trace} from 'vscode-jsonrpc'
 import {
-    Color,
-    ColorInformation,
-    ColorPresentation,
     ExtensionContext,
-    languages,
-    TextDocument,
-    Uri,
     workspace
 } from 'vscode';
 import {
     LanguageClient,
     LanguageClientOptions,
-    NotificationType,
     ServerOptions,
     TransportKind
 } from 'vscode-languageclient';
-import {
-    ColorPresentationParams,
-    ColorPresentationRequest,
-    DocumentColorParams,
-    DocumentColorRequest
-} from 'vscode-languageserver-protocol';
-import path = require('path');
-
-namespace OpenDocNotification {
-    export const type = new NotificationType<string, void>('stylable/openDocumentNotification');
-}
 
 /**
  * vs-code plugin API implementation
@@ -56,15 +38,6 @@ export async function activate(context: ExtensionContext) {
     await client.onReady();
     const files = await workspace.findFiles('**/*.st.css');
     await Promise.all(files.map((file: any) => workspace.openTextDocument(file.fsPath)));
-    client.onNotification(OpenDocNotification.type, async (uri: string) => {
-        const doc = await workspace.openTextDocument(Uri.parse(uri));
-        if (doc.fileName.endsWith('.js')) {
-            const uris = await workspace.findFiles('**/' + path.basename(doc.fileName).slice(0, -3) + '.d.ts');
-            uris.forEach(u => {
-                workspace.openTextDocument(u);
-            });
-        }
-    });
     return client;
 }
 

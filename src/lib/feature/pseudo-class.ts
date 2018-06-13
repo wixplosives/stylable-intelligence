@@ -1,4 +1,3 @@
-import * as PostCss from 'postcss';
 import { StylableMeta, ParsedValue, systemValidators, StateParsedValue } from 'stylable';
 import { ProviderPosition } from '../completion-providers';
 import {

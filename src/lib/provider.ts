@@ -41,7 +41,6 @@ import {
 } from './completion-providers';
 import { Completion, } from './completion-types';
 import { parseSelector, SelectorChunk, } from './utils/selector-analyzer';
-import * as path from 'path';
 import {
     Location,
     ParameterInformation,
@@ -49,10 +48,9 @@ import {
     ReferenceParams,
     SignatureHelp,
     SignatureInformation,
-    DocumentColorParams
 } from 'vscode-languageserver';
 import * as ts from 'typescript';
-import { Identifier, ParameterDeclaration, SignatureDeclaration, TypeReferenceNode } from 'typescript';
+import { ParameterDeclaration, SignatureDeclaration, TypeReferenceNode } from 'typescript';
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 import { keys, last, values } from 'lodash';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
@@ -130,7 +128,7 @@ export default class Provider {
 
         let word = val.value;
 
-        const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
+        const { lineChunkAtCursor } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
         const transformer = new StylableTransformer({
             diagnostics: new Diagnostics(),
             fileProcessor: this.styl.fileProcessor,
@@ -285,11 +283,6 @@ export default class Provider {
         } else {
             return null;
         }
-    }
-
-    private inDef(position: ProviderPosition, def: ProviderLocation): boolean {
-        return (position.line > def.range.start.line || (position.line === def.range.start.line && position.character >= def.range.start.character))
-            && (position.line < def.range.end.line || (position.line === def.range.end.line && position.character <= def.range.end.character))
     }
 
     private findWord(word: string, src: string, position: Position): ProviderRange {
