@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.3.0
+
+### New feature
+- All features that work across files now also support 3rd party sources (`node_modules`)
+
+## v0.2.12
+
+### Bug fix
+- Reverted changes related to the file system handling that caused the extension to break on windows machines
+
+## v0.2.11
+
+### Misc
+* Update package.json manifest to include additional fields for the VSCode marketplace (icon, badges, etc)
+
+
 ## v0.2.10
 * restore onDidOpen document event - run diagnosis when opening any `.st.css` files
 
