@@ -1,5 +1,12 @@
-:import {
-    -st-from: "../inner/my-js-mixins.js";
-    -st-named:  
+.local {
+    color:red;
+    -st-states: active;
 }
 
+.local:hover span {
+    color:blue
+}
+
+.local:active {
+    color: blue;
+}
