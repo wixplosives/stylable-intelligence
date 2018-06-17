@@ -590,42 +590,46 @@ function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Locat
     const refs: Location[] = [];
     const src = fs.get(uri).getText();
     const { processed: { meta } } = fixAndProcess(src, new ProviderPosition(0, 0), fromVscodePath(uri));
-    const filterRegex = RegExp('(\\.?' + word + ')(\\s|$|\\:)', 'g');
-    const valueRegex = RegExp('(\\.?' + word + ')(\\s|$|\\:|,)', 'g');
-    meta!.rawAst.walkRules(filterRegex, (rule) => {
-        let match;
-        while ((match = valueRegex.exec(rule.selector)) !== null) {
-            refs.push({
-                uri,
-                range: {
-                    start: {
-                        line: rule.source.start!.line - 1,
-                        character: rule.source.start!.column + match.index
-                    },
-                    end: {
-                        line: rule.source.start!.line - 1,
-                        character: rule.source.start!.column + match.index + word.length
+    const valueRegex = new RegExp('(\\.?' + word + ')(\\s|$|\\:|,)', 'g');
+    meta!.rawAst.walkRules((rule) => {
+        const filterRegex = new RegExp('(\\.?' + word + ')(\\s|$|\\:)', 'g');
+        if (filterRegex.test(rule.selector)) {
+            let match;
+            while ((match = valueRegex.exec(rule.selector)) !== null) {
+                refs.push({
+                    uri,
+                    range: {
+                        start: {
+                            line: rule.source.start!.line - 1,
+                            character: rule.source.start!.column + match.index
+                        },
+                        end: {
+                            line: rule.source.start!.line - 1,
+                            character: rule.source.start!.column + match.index + word.length
+                        }
                     }
-                }
-            })
+                })
+            }
         }
     });
-    const directiveRegex = RegExp(valueMapping.extends + '|' + valueMapping.named)
-    meta!.rawAst.walkDecls(directiveRegex, (decl) => {
-        if (decl.value === word) {
-            refs.push({
-                uri,
-                range: {
-                    start: {
-                        line: decl.source.start!.line - 1,
-                        character: decl.source.start!.column + valueMapping.extends.length + (decl.raws.between ? decl.raws.between.length : 0) - 1
-                    },
-                    end: {
-                        line: decl.source.start!.line - 1,
-                        character: decl.source.start!.column + valueMapping.extends.length + (decl.raws.between ? decl.raws.between.length : 0) + word.length - 1
+    meta!.rawAst.walkDecls((decl) => {
+        const directiveRegex = new RegExp(valueMapping.extends + '|' + valueMapping.named)
+        if (directiveRegex.test(decl.prop)) {
+            if (decl.value === word) {
+                refs.push({
+                    uri,
+                    range: {
+                        start: {
+                            line: decl.source.start!.line - 1,
+                            character: decl.source.start!.column + valueMapping.extends.length + (decl.raws.between ? decl.raws.between.length : 0) - 1
+                        },
+                        end: {
+                            line: decl.source.start!.line - 1,
+                            character: decl.source.start!.column + valueMapping.extends.length + (decl.raws.between ? decl.raws.between.length : 0) + word.length - 1
+                        }
                     }
-                }
-            })
+                })
+            }
         }
     });
     meta!.rawAst.walkDecls(valueMapping.mixin, (decl) => {
@@ -654,6 +658,7 @@ function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Locat
         })
     });
     meta!.rawAst.walkDecls(word, (decl) => {
+        //Variable definition
         if (decl.parent.type === 'rule' && decl.parent.selector === ':vars') {
             refs.push({
                 uri,
@@ -670,7 +675,8 @@ function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Locat
             })
         }
     })
-    meta!.rawAst.walkDecls(/./g, (decl) => {
+    meta!.rawAst.walkDecls((decl) => {
+        //Variable usage
         if (decl.value.includes('value(')) {
             refs.push({
                 uri,
@@ -690,7 +696,6 @@ function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Locat
     return refs;
 }
 
-// TODO: extract to own file
 export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
 
     const doc = fs.get(params.textDocument.uri).getText();
@@ -753,15 +758,14 @@ export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
             }
         } else {
             let varNode: NodeBase | undefined = (node.nodes || []).find(n => {
-                return n.parent.type==='rule' && n.parent.selector===':vars'
-                && (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
-                && (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
+                return n.parent.type === 'rule' && n.parent.selector === ':vars'
+                    && (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
+                    && (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
             })
             if (varNode) {
                 word = (varNode as Declaration).prop;
             }
         }
-
     }
 
     refs = findClassRefs(word, params.textDocument.uri, fs);

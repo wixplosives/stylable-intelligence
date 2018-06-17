@@ -1,9 +1,12 @@
-:vars {
-    jarjar: pinks;
-    varvar: binks;
-}
-
 .local {
-    color: value(varvar);
+    color:red;
+    -st-states: active;
 }
 
+.local:hover span {
+    color:blue
+}
+
+.local:active {
+    color: blue;
+}
