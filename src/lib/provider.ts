@@ -677,20 +677,25 @@ function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Locat
     })
     meta!.rawAst.walkDecls((decl) => {
         //Variable usage
+
         if (decl.value.includes('value(')) {
-            refs.push({
-                uri,
-                range: {
-                    start: {
-                        line: decl.source.start!.line - 1,
-                        character: decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) + 'value('.length - 1
-                    },
-                    end: {
-                        line: decl.source.start!.line - 1,
-                        character: decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) + 'value('.length + word.length - 1
+            const usageRegex = new RegExp('value\\(\\s*' + word + '\\s*\\)', 'g');
+            const match = usageRegex.exec(decl.value);
+            if (match) {
+                refs.push({
+                    uri,
+                    range: {
+                        start: {
+                            line: decl.source.start!.line - 1,
+                            character: match.index + decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) + 'value('.length - 1
+                        },
+                        end: {
+                            line: decl.source.start!.line - 1,
+                            character: match.index + decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) + 'value('.length + word.length - 1
+                        }
                     }
-                }
-            })
+                })
+            }
         }
     });
     return refs;

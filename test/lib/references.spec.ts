@@ -51,15 +51,16 @@ describe("References", function () {
             const refs = getReferences('references/local-var-from-def.st.css', { line: 2, character: 7 });
             expect(refs.length).to.equal(2);
             expect(refs[0].range).to.deep.equal(createRange(2, 4, 2, 10));
-            expect(refs[1].range).to.deep.equal(createRange(6, 17, 6, 23));
+            expect(refs[1].range).to.deep.equal(createRange(6, 31, 6, 37));
 
         });
+
         it("Should return all instances of local variable when called from varaiable usage", function () {
-            const refs = getReferences('references/local-var-from-def.st.css', { line: 6, character: 18 });
+            const refs = getReferences('references/local-var-from-def.st.css', { line: 6, character: 33 });
             expect(refs.length).to.equal(2);
             expect(refs[0].range).to.deep.equal(createRange(2, 4, 2, 10));
-            expect(refs[1].range).to.deep.equal(createRange(6, 17, 6, 23));
-
+            expect(refs[1].range).to.deep.equal(createRange(6, 31, 6, 37));
         });
+
     });
 });

@@ -4,6 +4,6 @@
 }
 
 .local {
-    color: value(varvar);
+    color: value(jarjar) value(varvar);
 }
 
