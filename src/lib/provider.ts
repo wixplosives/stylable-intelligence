@@ -653,23 +653,6 @@ function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Locat
             }
         })
     });
-    meta!.rawAst.walkDecls(/./g, (decl) => {
-        if (decl.value.includes('value(')) {
-            refs.push({
-                uri,
-                range: {
-                    start: {
-                        line: decl.source.start!.line - 1,
-                        character: decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) + 'value('.length - 1
-                    },
-                    end: {
-                        line: decl.source.start!.line - 1,
-                        character: decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) + 'value('.length + word.length - 1
-                    }
-                }
-            })
-        }
-    });
     meta!.rawAst.walkDecls(word, (decl) => {
         if (decl.parent.type === 'rule' && decl.parent.selector === ':vars') {
             refs.push({
@@ -687,6 +670,23 @@ function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Locat
             })
         }
     })
+    meta!.rawAst.walkDecls(/./g, (decl) => {
+        if (decl.value.includes('value(')) {
+            refs.push({
+                uri,
+                range: {
+                    start: {
+                        line: decl.source.start!.line - 1,
+                        character: decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) + 'value('.length - 1
+                    },
+                    end: {
+                        line: decl.source.start!.line - 1,
+                        character: decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) + 'value('.length + word.length - 1
+                    }
+                }
+            })
+        }
+    });
     return refs;
 }
 
