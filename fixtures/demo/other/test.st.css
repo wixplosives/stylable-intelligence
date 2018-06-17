@@ -1,5 +1,9 @@
-:import {
-    -st-from: "../inner/my-js-mixins.js";
-    -st-named:  
+:vars {
+    jarjar: pinks;
+    varvar: binks;
+}
+
+.local {
+    color: value(varvar);
 }
 

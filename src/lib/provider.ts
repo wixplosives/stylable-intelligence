@@ -170,16 +170,16 @@ export default class Provider {
                     // this.styl.resolvePath(this.styl.projectRoot,'fake-stylable-package')
 
                     let rslvd = null;
-                     try {
+                    try {
                         rslvd = this.styl.resolver.resolve(symb);
-                    } catch(e) {}
+                    } catch (e) { }
 
                     let filePath: string;
 
                     if (rslvd && rslvd._kind !== 'js') {
                         filePath = (rslvd as CSSResolve).meta.source;
                     } else {
-                        filePath = this.styl.resolvePath(undefined,symb.import.from)
+                        filePath = this.styl.resolvePath(undefined, symb.import.from)
                     }
                     // (rslvd && rslvd._kind === 'js')
                     //     ? filePath = this.styl.resolvePath(undefined,symb.import.from)
@@ -652,7 +652,40 @@ function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Locat
                 })
             }
         })
-
+    });
+    meta!.rawAst.walkDecls(/./g, (decl) => {
+        if (decl.value.includes('value(')) {
+            refs.push({
+                uri,
+                range: {
+                    start: {
+                        line: decl.source.start!.line - 1,
+                        character: decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) + 'value('.length - 1
+                    },
+                    end: {
+                        line: decl.source.start!.line - 1,
+                        character: decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) + 'value('.length + word.length - 1
+                    }
+                }
+            })
+        }
+    });
+    meta!.rawAst.walkDecls(word, (decl) => {
+        if (decl.parent.type === 'rule' && decl.parent.selector === ':vars') {
+            refs.push({
+                uri,
+                range: {
+                    start: {
+                        line: decl.source.start!.line - 1,
+                        character: decl.source.start!.column - 1
+                    },
+                    end: {
+                        line: decl.source.start!.line - 1,
+                        character: decl.source.start!.column + word.length - 1
+                    }
+                }
+            })
+        }
     })
     return refs;
 }
@@ -694,7 +727,8 @@ export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
     } else if (isContainer(node)) {
         inner = (node.nodes || []).find(n => {
             return isDeclaration(n) &&
-                (n.prop === valueMapping.mixin || n.prop === valueMapping.extends) && (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
+                (n.prop === valueMapping.mixin || n.prop === valueMapping.extends || n.value.includes('value('))
+                && (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
                 && (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
         })
         if (inner) {
@@ -711,9 +745,23 @@ export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
             }
 
             if (val) {
-                word = val.value
+                if (val.value === 'value' && val.type === 'function') {
+                    word = val.nodes[0].value;
+                } else {
+                    word = val.value
+                }
+            }
+        } else {
+            let varNode: NodeBase | undefined = (node.nodes || []).find(n => {
+                return n.parent.type==='rule' && n.parent.selector===':vars'
+                && (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
+                && (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
+            })
+            if (varNode) {
+                word = (varNode as Declaration).prop;
             }
         }
+
     }
 
     refs = findClassRefs(word, params.textDocument.uri, fs);
