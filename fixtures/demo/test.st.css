@@ -1,4 +1,7 @@
-.local {
-    -st-states: artik, kartiv;
+:vars {
+    varvar: green;
 }
 
+.local {
+    color: rgb(value())
+}

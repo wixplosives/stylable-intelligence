@@ -246,6 +246,9 @@ export default class Provider {
         } else if (line.slice(0, pos.character).trim().includes(':')) {
             value = line.slice(0, pos.character).trim().slice(line.slice(0, pos.character).trim().indexOf(':') + 1).trim();
         }
+        if (/value\(\s*[^\)]*$/.test(value)) {
+            return null;
+        }
         const parsed = pvp(value);
 
         let mixin = '';
