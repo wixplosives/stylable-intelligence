@@ -1,8 +1,4 @@
-:vars {
-    varvar: pink;
-    jarjar: red;
+.local {
+    -st-states: artik, kartiv;
 }
 
-.local {
-    color: value(varvar) value(jarjar)
-}

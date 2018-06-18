@@ -9,7 +9,9 @@ import {
     StylableMeta,
     systemValidators,
     valueMapping,
-    VarSymbol
+    VarSymbol,
+    nativePseudoClasses,
+    nativePseudoElements
 } from 'stylable';
 import { CursorPosition, SelectorChunk } from "./utils/selector-analyzer";
 import {
@@ -729,7 +731,10 @@ export const StateSelectorCompletionProvider: CompletionProvider = {
     provide({ parentSelector, lineChunkAtCursor, resolvedElements, target, lastSelectoid, meta, position, fullLineText }: ProviderOptions): Completion[] {
         if (!parentSelector && !lineChunkAtCursor.endsWith('::') && !isBetweenChars(fullLineText, position, '(', ')')) {
 
-            const lastNode = resolvedElements[0][resolvedElements[0].length - 1];
+            let lastNode = resolvedElements[0][resolvedElements[0].length - 1];
+            if (lastNode.type === 'pseudo-element' && nativePseudoElements.indexOf(lastNode.name) !== -1) {
+                lastNode = resolvedElements[0][resolvedElements[0].length - 2];
+            };
             const chunk = Array.isArray(target.focusChunk) ? last(target.focusChunk) : target.focusChunk;
             const chunkyStates = (chunk && (chunk as SelectorChunk).states) ? (chunk as SelectorChunk).states : [];
 
@@ -743,6 +748,7 @@ export const StateSelectorCompletionProvider: CompletionProvider = {
                 keys((cur.symbol as ClassSymbol)[valueMapping.states]).forEach(k => {
                     if (!acc[k] && (
                         k.slice(0, -1).startsWith(lastSelectoid.replace(':', '')) || //selectoid is a substring of current state
+                        nativePseudoClasses.indexOf(lastSelectoid.replace(':', '')) !== -1 || // selectoid is a CSS native pseudo-sclass
                         allStates.hasOwnProperty(lastSelectoid.replace(':', ''))) &&
                         (chunkyStates.every(cs => cs !== k))) {
 
@@ -767,7 +773,7 @@ export const StateSelectorCompletionProvider: CompletionProvider = {
             }
 
             const lastState = lastSelectoid.replace(':', '');
-            const realState = allStates.hasOwnProperty(lastState);
+            const realState = allStates.hasOwnProperty(lastState) || nativePseudoClasses.indexOf(lastState) !== -1;
 
             return states.reduce((acc: Completion[], st) => {
                 acc.push(
