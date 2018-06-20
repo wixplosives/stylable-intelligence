@@ -1,10 +1,10 @@
 :import {
     -st-from: "./import.st.css";
-    -st-default: Comp;
+    -st-named: colcol;
 }
 
 .local {
     -st-extends: Comp;
 }
 
-.local::before::
+
