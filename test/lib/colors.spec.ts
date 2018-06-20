@@ -41,6 +41,12 @@ describe('Colors', function () {
                 color: createColor(0, 1, 0, 0.8)
             }])
         });
+
+        it('should resolve only one color when variable has another variable name as substring', function () {
+            const res = getDocumentColors('colors/substring-var-import.st.css');
+
+            expect(res.length).to.eql(1)
+        })
     });
 
     describe('ColorPresentation', () => {
