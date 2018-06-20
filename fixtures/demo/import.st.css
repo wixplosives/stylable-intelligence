@@ -1,12 +1,8 @@
-.gaga {
-    -st-states: aState
+:vars {
+    col: blue;
+    colcol: red;
 }
 
-.root {
-    -st-states: bState;
-}
-
-.gaga:aState {
-    color:blue;
-    mask: lala
+.local {
+    color: value(col)
 }

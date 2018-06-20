@@ -867,7 +867,7 @@ export const ValueCompletionProvider: CompletionProvider = {
 
             let comps: Completion[] = [];
             meta.vars.forEach(v => {
-                if (v.name.startsWith(inner) && !~fullLineText.slice(0, fullLineText.indexOf(':')).indexOf(v.name)) {
+                if (v.name.startsWith(inner))  {
                     const value = evalDeclarationValue(styl.resolver, v.text, meta, v.node)
                     comps.push(valueCompletion(v.name, 'Local variable', value, new ProviderRange(
                         new ProviderPosition(position.line, position.character - inner.length),
