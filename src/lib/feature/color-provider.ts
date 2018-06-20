@@ -44,7 +44,7 @@ export function resolveDocumentColors(
                         new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1]) - 'value('.length),
                         new ProviderPosition(ind, regexResult.index + regexResult[0].indexOf(regexResult[1]) + result.length)
                     );
-                    colorComps.push({color, range} as ColorInformation)
+                    colorComps.push({ color, range } as ColorInformation)
                 }
             }
         });
@@ -58,7 +58,9 @@ export function resolveDocumentColors(
                 if (color) {
                     meta.rawAst.walkDecls(valueMapping.named, (decl) => {
                         const lines = decl.value.split('\n');
-                        const lineIndex = lines.findIndex(l => l.includes(v.name)); //replace with regex
+                        const reg = new RegExp('\\b' + v.name + '\\b', 'g');
+
+                        const lineIndex = lines.findIndex(l => reg.test(l));
                         if (lineIndex > -1 && lines[lineIndex].indexOf(v.name) > -1) {
 
                             let extraLines = 0;
@@ -76,7 +78,7 @@ export function resolveDocumentColors(
                                 new ProviderPosition(decl.source.start!.line - 1 + lineIndex + extraLines, varStart),
                                 new ProviderPosition(decl.source.start!.line - 1 + lineIndex + extraLines, v.name.length + varStart)
                             );
-                            colorComps.push({color, range} as ColorInformation)
+                            colorComps.push({ color, range } as ColorInformation)
                         }
                     });
                 }
@@ -106,7 +108,7 @@ export function getColorPresentation(
     const wordStart = new ProviderPosition(params.range.start.line + 1, params.range.start.character + 1);
     let noPicker = false;
     meta.rawAst.walkDecls(valueMapping.named, (node) => {
-        if ( node &&
+        if (node &&
             ((wordStart.line === node.source.start!.line && wordStart.character >= node.source.start!.column) || wordStart.line > node.source.start!.line)
             &&
             ((wordStart.line === node.source.end!.line && wordStart.character <= node.source.end!.column) || wordStart.line < node.source.end!.line)
