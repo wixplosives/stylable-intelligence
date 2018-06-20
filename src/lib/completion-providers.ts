@@ -558,20 +558,26 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
         let comps: any[] = [];
         if (!parentSelector && resolved.length > 0 && !isBetweenChars(fullLineText, position, '(', ')')) {
 
-            const lastNode = resolvedElements[0][resolvedElements[0].length - 1];
+            let lastNode = resolvedElements[0][resolvedElements[0].length - 1];
+            if (lastNode.type === 'pseudo-element' && nativePseudoElements.indexOf(lastNode.name) !== -1) {
+                lastNode = resolvedElements[0][resolvedElements[0].length - 2];
+            };
             const states = lastNode.resolved.reduce((acc, cur) => {
                 acc = acc.concat(keys((cur.symbol as ClassSymbol)[valueMapping.states]))
                 return acc;
             }, cssPseudoClasses)
 
             let filter = lastNode.resolved.length
-                ? ~states.indexOf(lastSelectoid.replace(':', ''))
+                ? states.indexOf(lastSelectoid.replace(':', '')) !== -1
                     ? ''
                     : lastSelectoid.replace(':', '')
                 : lastNode.name;
 
             const scope = filter
-                ? resolvedElements[0][resolvedElements[0].length - 2]
+                ? (resolvedElements[0][resolvedElements[0].length - 2].type==='pseudo-element'
+                    && nativePseudoElements.indexOf(resolvedElements[0][resolvedElements[0].length - 2].name)!==-1)
+                    ? resolvedElements[0][resolvedElements[0].length - 3]
+                    : resolvedElements[0][resolvedElements[0].length - 2]
                 : lastNode;
 
             const colons = lineChunkAtCursor.match(/:*$/)![0].length;
