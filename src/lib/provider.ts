@@ -246,6 +246,9 @@ export default class Provider {
         } else if (line.slice(0, pos.character).trim().includes(':')) {
             value = line.slice(0, pos.character).trim().slice(line.slice(0, pos.character).trim().indexOf(':') + 1).trim();
         }
+        if (/value\(\s*[^\)]*$/.test(value)) {
+            return null;
+        }
         const parsed = pvp(value);
 
         let mixin = '';
@@ -677,7 +680,6 @@ function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Locat
     })
     meta!.rawAst.walkDecls((decl) => {
         //Variable usage
-
         if (decl.value.includes('value(')) {
             const usageRegex = new RegExp('value\\(\\s*' + word + '\\s*\\)', 'g');
             const match = usageRegex.exec(decl.value);
@@ -694,7 +696,7 @@ function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Locat
                             character: match.index + decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) + 'value('.length + word.length - 1
                         }
                     }
-                })
+                });
             }
         }
     });

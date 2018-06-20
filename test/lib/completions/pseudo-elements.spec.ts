@@ -1,6 +1,6 @@
 import * as asserters from './asserters';
 import { createRange, ProviderRange } from '../../../src/lib/completion-providers';
-import {Completion} from "../../../src/lib/completion-types";
+import { Completion } from "../../../src/lib/completion-types";
 
 describe('Pseudo-elements', function () {
 
@@ -440,4 +440,37 @@ describe('Pseudo-elements', function () {
         });
     });
 
+    describe('After CSS native elements', function () {
+
+        const str = '::momo';
+        const createCompletion = (str: string, rng: ProviderRange) => asserters.pseudoElementCompletion(str.slice(2), rng, './import.st.css');
+
+        str.split('').forEach((c, i) => {
+            let prefix = str.slice(0, i);
+
+            it('should complete pseudo-element ' + str + ' after CSS native pseudo-element with prefix: ' + prefix + ' ', function () {
+                let rng = createRange(9, 14, 9, 14 + i);
+
+                return asserters.getCompletions('pseudo-elements/default-import-with-native-element.st.css', prefix).then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+
+                    exp.push(createCompletion(str,rng))
+
+                    asserter.suggested(exp);
+                });
+            });
+
+            it('should complete pseudo-element ' + str + ' after CSS native pseudo-class with prefix: ' + prefix + ' ', function () {
+                let rng = createRange(9, 12, 9, 12 + i);
+
+                return asserters.getCompletions('pseudo-elements/default-import-with-native-class.st.css', prefix).then((asserter) => {
+                    let exp: Partial<Completion>[] = [];
+
+                    exp.push(createCompletion(str,rng))
+
+                    asserter.suggested(exp);
+                });
+            });
+        });
+    });
 });

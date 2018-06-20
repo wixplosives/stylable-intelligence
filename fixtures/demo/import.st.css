@@ -2,6 +2,10 @@
     -st-states: aState
 }
 
+.root {
+    -st-states: bState;
+}
+
 .gaga:aState {
     color:blue;
     mask: lala
