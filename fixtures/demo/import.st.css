@@ -1,6 +1,7 @@
 :import {
     -st-from: "./more.st.css";
     -st-default: Comp;
+    -st-named: ggg;
 }
 
 .root {
@@ -8,5 +9,5 @@
 }
 
 .root::joojoo {
-
+    color: value(ggg)
 }

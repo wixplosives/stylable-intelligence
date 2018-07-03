@@ -54,7 +54,7 @@ import { ParameterDeclaration, SignatureDeclaration, TypeReferenceNode } from 't
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 import { keys, last, values } from 'lodash';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
-import { ClassSymbol } from 'stylable/dist/src/stylable-processor';
+import { ClassSymbol, StylableSymbol } from 'stylable/dist/src/stylable-processor';
 import {
     createStateTypeSignature,
     createStateValidatorSignature,
@@ -103,55 +103,13 @@ export default class Provider {
         return this.dedupeComps(completions);
     }
 
-    public getDefSymbol(src: string, position: ProviderPosition, filePath: string) {
-        let res = fixAndProcess(src, position, filePath);
-        let meta = res.processed.meta;
-        if (!meta) {
-            return { word: '', meta: null }
-        };
-
-        const parsed: any[] = pvp(res.currentLine).nodes;
-
-        let val = findNode(parsed, position.character);
-        while (val.nodes && val.nodes.length > 0) {
-            if (findNode(val.nodes, position.character).sourceIndex >= 0) {
-                val = findNode(val.nodes, position.character)
-            } else {
-                break;
-            }
-        };
-
-        let word = val.value;
-
-        const { lineChunkAtCursor } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
-        const transformer = new StylableTransformer({
-            diagnostics: new Diagnostics(),
-            fileProcessor: this.styl.fileProcessor,
-            requireModule: () => {
-                throw new Error('Not implemented, why are we here')
-            }
-        })
-        const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: lineChunkAtCursor }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
-        const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
-
-
-        const reso = resolvedElements[0][resolvedElements[0].length - 1].resolved.find(res => {
-            return res.symbol.name === word.replace('.', '') || keys((res.symbol as ClassSymbol)[valueMapping.states]).some(k => k === word)
-        })
-
-        if (reso) {
-            meta = reso.meta;
-        }
-        return { word, meta }
-    }
-
     public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string, fs: ExtendedFSReadSync): Thenable<ProviderLocation[]> {
 
         if (!filePath.endsWith('.st.css')) {
             return Promise.resolve([])
         };
 
-        const { word, meta } = this.getDefSymbol(src, position, filePath);
+        const { word, meta } = getDefSymbol(src, position, filePath, this.styl);
         if (!meta || !word) {
             return Promise.resolve([])
         };
@@ -706,85 +664,17 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync, styl: Styla
 
 export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync, styl: Stylable) {
 
-    const doc = fs.get(params.textDocument.uri).getText();
-    const pos = { line: params.position.line + 1, character: params.position.character + 1 };
-    const { meta } = createMeta(doc, params.textDocument.uri);
-    const node = last(pathFromPosition(meta!.rawAst, pos))!;
-    let inner: NodeBase | undefined;
-    let word: string = '';
     let refs: Location[] = [];
 
-    if (isRoot(node)) {
-        inner = (node.nodes || []).find(n => {
-            return (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
-                &&
-                (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
-        })
-        if (inner && isSelector(inner)) {
-            const relPos = {
-                line: pos.line - inner.source.start!.line + 1,
-                character: pos.character - inner.source.start!.column + 1
-            }
-            const proc = psp();
-            const parsed: ContainerBase = proc.astSync(inner.selector);
-            const wordNode = ((parsed).nodes![0] as ContainerBase).nodes!
-                .find(n => {
-                    return (n.source.start!.line < relPos.line || (n.source.start!.line === relPos.line && n.source.start!.column <= pos.character))
-                        &&
-                        (n.source.end!.line > relPos.line || (n.source.end!.line === relPos.line && n.source.end!.column >= pos.character))
-                });
-            if (wordNode) {
-                word = (wordNode as Declaration).value;
-            }
-        }
-    } else if (isContainer(node)) {
-        inner = (node.nodes || []).find(n => {
-            return isDeclaration(n) &&
-                (n.prop === valueMapping.mixin || n.prop === valueMapping.extends || n.value.includes('value('))
-                && (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
-                && (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
-        })
-        if (inner) {
-            const parsed = pvp((inner as Declaration).value);
-            const relPos = inner.source.start!.line === pos.line
-                ? pos.character - (inner.source.start!.column + (inner as Declaration).prop.length + (inner.raws.between ? inner.raws.between.length : 0))
-                : pos.character - 1 + (inner as Declaration).value.split('\n').slice(0, pos.line - inner.source.start!.line).reduce((acc, cur) => {
-                    acc += (cur.length + 1);
-                    return acc;
-                }, 0)
-            let val = findNode(parsed.nodes, relPos);
-            if (val.type !== 'word') {
-                val = findNode(parsed.nodes, relPos - 1);
-            }
+    // let files: File[] = (fs.loadDirectoryTreeSync((styl as any).projectRoot).children) as File[];
+    // const cont = files.filter(f => f.name.endsWith('.st.css')).map(f => {
+    //     f.content = fs.loadTextFileSync(f.fullPath);
+    //     return f;
+    // })
 
-            if (val) {
-                if (val.value === 'value' && val.type === 'function') {
-                    word = val.nodes[0].value;
-                } else {
-                    word = val.value
-                }
-            }
-        } else {
-            let varNode: NodeBase | undefined = (node.nodes || []).find(n => {
-                return n.parent.type === 'rule' && n.parent.selector === ':vars'
-                    && (n.source.start!.line < pos.line || (n.source.start!.line === pos.line && n.source.start!.column <= pos.character))
-                    && (n.source.end!.line > pos.line || (n.source.end!.line === pos.line && n.source.end!.column >= pos.character))
-            })
-            if (varNode) {
-                word = (varNode as Declaration).prop;
-            }
-        }
-    }
+    const bla = getDefSymbol(fs.loadTextFileSync(params.textDocument.uri), params.position, params.textDocument.uri, styl)
 
-
-
-    let files: File[] = (fs.loadDirectoryTreeSync((styl as any).projectRoot).children) as File[];
-    const cont = files.filter(f => f.name.endsWith('.st.css')).map(f => {
-        f.content = fs.loadTextFileSync(f.fullPath);
-        return f;
-    })
-
-    refs = findRefs(word, params.textDocument.uri, fs, styl);
+    refs = findRefs(bla.word.replace('.',''), params.textDocument.uri, fs, styl);
     return refs;
 }
 
@@ -992,7 +882,6 @@ export function getExistingNames(lineText: string, position: ProviderPosition) {
     return { names, lastName };
 }
 
-
 function findNode(nodes: any[], index: number): any {
     return nodes
         .filter(n => n.sourceIndex <= index)
@@ -1000,6 +889,66 @@ function findNode(nodes: any[], index: number): any {
             return (m.sourceIndex > n.sourceIndex) ? m : n
         }, { sourceIndex: -1 })
 }
+
+export function getDefSymbol(src: string, position: ProviderPosition, filePath: string, styl: Stylable) {
+    let res = fixAndProcess(src, position, filePath);
+    let meta = res.processed.meta;
+    if (!meta) {
+        return { word: '', meta: null }
+    };
+
+    const parsed: any[] = pvp(res.currentLine).nodes;
+
+    let val = findNode(parsed, position.character);
+    while (val.nodes && val.nodes.length > 0) {
+        if (findNode(val.nodes, position.character).sourceIndex >= 0) {
+            val = findNode(val.nodes, position.character)
+        } else {
+            break;
+        }
+    };
+
+    let word = val.value;
+
+    const { lineChunkAtCursor } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
+    const transformer = new StylableTransformer({
+        diagnostics: new Diagnostics(),
+        fileProcessor: styl.fileProcessor,
+        requireModule: () => {
+            throw new Error('Not implemented, why are we here')
+        }
+    })
+
+    const varRegex = new RegExp('value\\(\\s*' + word)
+    if (varRegex.test(lineChunkAtCursor)) {
+        //we're looking at a var
+        if (!meta.mappedSymbols[word]) {
+            return {word, meta: null}
+        } else if (meta.mappedSymbols[word]._kind === 'var') { //deepResolve doesn't do local symbols
+            return {word, meta}
+        }
+        const resolvedVar = styl.resolver.deepResolve(meta.mappedSymbols[word]);
+        if (resolvedVar) {
+            return {word, meta: resolvedVar.meta}
+        } else {
+            return {word, meta: null}
+        }
+    }
+
+    const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: lineChunkAtCursor }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
+    const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
+
+
+    const reso = resolvedElements[0][resolvedElements[0].length - 1].resolved.find(res => {
+        return res.symbol.name === word.replace('.', '') || keys((res.symbol as ClassSymbol)[valueMapping.states]).some(k => k === word)
+    })
+
+    if (reso) {
+        meta = reso.meta;
+    }
+    return { word, meta }
+}
+
 
 
 
