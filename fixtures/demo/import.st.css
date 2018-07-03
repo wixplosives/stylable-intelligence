@@ -1,8 +1,12 @@
-:vars {
-    col: blue;
-    colcol: red;
+:import {
+    -st-from: "./more.st.css";
+    -st-default: Comp;
 }
 
-.local {
-    color: value(col)
+.root {
+    -st-extends: Comp;
+}
+
+.root::joojoo {
+
 }

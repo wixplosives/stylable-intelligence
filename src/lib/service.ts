@@ -105,7 +105,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
     });
 
     connection.onReferences((params: ReferenceParams): Location[] => {
-        const refs = getRefs(params, fs);
+        const refs = getRefs(params, fs, services.styl);
         if (refs.length) {
             return dedupeRefs(refs);
         } else {
@@ -135,7 +135,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
             context: {includeDeclaration: true},
             position: params.position,
             textDocument: params.textDocument
-        }, fs)
+        }, fs, services.styl)
             .forEach(ref => {
                 if (edit.changes![ref.uri]) {
                     edit.changes![ref.uri].push({range: ref.range, newText: params.newName})

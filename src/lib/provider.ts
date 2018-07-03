@@ -61,6 +61,7 @@ import {
     resolveStateParams,
     resolveStateTypeOrValidator
 } from './feature/pseudo-class';
+import { File } from 'kissfs';
 
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
@@ -102,18 +103,12 @@ export default class Provider {
         return this.dedupeComps(completions);
     }
 
-    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string, fs: ExtendedFSReadSync): Thenable<ProviderLocation[]> {
-
-        if (!filePath.endsWith('.st.css')) {
-            return Promise.resolve([])
-        }
-
+    public getDefSymbol(src: string, position: ProviderPosition, filePath: string) {
         let res = fixAndProcess(src, position, filePath);
         let meta = res.processed.meta;
         if (!meta) {
-            return Promise.resolve([])
-        }
-        ;
+            return { word: '', meta: null }
+        };
 
         const parsed: any[] = pvp(res.currentLine).nodes;
 
@@ -124,7 +119,7 @@ export default class Provider {
             } else {
                 break;
             }
-        }
+        };
 
         let word = val.value;
 
@@ -139,7 +134,6 @@ export default class Provider {
         const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: lineChunkAtCursor }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
         const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
 
-        let defs: ProviderLocation[] = [];
 
         const reso = resolvedElements[0][resolvedElements[0].length - 1].resolved.find(res => {
             return res.symbol.name === word.replace('.', '') || keys((res.symbol as ClassSymbol)[valueMapping.states]).some(k => k === word)
@@ -148,6 +142,21 @@ export default class Provider {
         if (reso) {
             meta = reso.meta;
         }
+        return { word, meta }
+    }
+
+    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string, fs: ExtendedFSReadSync): Thenable<ProviderLocation[]> {
+
+        if (!filePath.endsWith('.st.css')) {
+            return Promise.resolve([])
+        };
+
+        const { word, meta } = this.getDefSymbol(src, position, filePath);
+        if (!meta || !word) {
+            return Promise.resolve([])
+        };
+
+        let defs: ProviderLocation[] = [];
         let temp: ClassSymbol | null = null;
 
         if (keys(meta.mappedSymbols).find(sym => sym === word.replace('.', ''))) {
@@ -166,9 +175,6 @@ export default class Provider {
                     break;
                 }
                 case 'import': {
-
-                    // this.styl.resolvePath(this.styl.projectRoot,'fake-stylable-package')
-
                     let rslvd = null;
                     try {
                         rslvd = this.styl.resolver.resolve(symb);
@@ -181,10 +187,6 @@ export default class Provider {
                     } else {
                         filePath = this.styl.resolvePath(undefined, symb.import.from)
                     }
-                    // (rslvd && rslvd._kind === 'js')
-                    //     ? filePath = this.styl.resolvePath(undefined,symb.import.from)
-                    //     : filePath = (rslvd as CSSResolve).meta.source;
-
                     const doc = fs.get(filePath);
 
                     if (doc.getText() !== '') {
@@ -194,8 +196,7 @@ export default class Provider {
                                 this.findWord(word, doc.getText(), position)
                             )
                         )
-                    }
-                    ;
+                    };
                     break;
                 }
             }
@@ -586,7 +587,7 @@ function isIllegalLine(line: string): boolean {
 
 const lineEndsRegexp = /({|}|;)/;
 
-function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[] {
+function findRefs(word: string, uri: string, fs: ExtendedFSReadSync, styl: Stylable): Location[] {
     if (!word) {
         return []
     }
@@ -703,7 +704,7 @@ function findClassRefs(word: string, uri: string, fs: ExtendedFSReadSync): Locat
     return refs;
 }
 
-export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
+export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync, styl: Stylable) {
 
     const doc = fs.get(params.textDocument.uri).getText();
     const pos = { line: params.position.line + 1, character: params.position.character + 1 };
@@ -775,7 +776,15 @@ export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync) {
         }
     }
 
-    refs = findClassRefs(word, params.textDocument.uri, fs);
+
+
+    let files: File[] = (fs.loadDirectoryTreeSync((styl as any).projectRoot).children) as File[];
+    const cont = files.filter(f => f.name.endsWith('.st.css')).map(f => {
+        f.content = fs.loadTextFileSync(f.fullPath);
+        return f;
+    })
+
+    refs = findRefs(word, params.textDocument.uri, fs, styl);
     return refs;
 }
 

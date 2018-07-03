@@ -53,7 +53,7 @@ export function getReferences(fileName: string, pos: ProviderPosition): Location
     const fullPath = path.join(CASES_PATH, fileName);
     let src: string = fs.readFileSync(fullPath).toString();
     let doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src)
-    return getRefs({ context: { includeDeclaration: true }, position: pos, textDocument: doc }, docsFs)
+    return getRefs({ context: { includeDeclaration: true }, position: pos, textDocument: doc }, docsFs, stylable)
 }
 
 export function getSignatureHelp(fileName: string, prefix: string): SignatureHelp | null {
