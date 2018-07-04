@@ -545,7 +545,7 @@ function isIllegalLine(line: string): boolean {
 
 const lineEndsRegexp = /({|}|;)/;
 
-function findRefs(word: string, uri: string, fs: ExtendedFSReadSync, styl: Stylable): Location[] {
+function findRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[] {
     if (!word) {
         return []
     }
@@ -665,7 +665,7 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync, styl: Styla
 function newFindRefs(word: string, meta: StylableMeta, files: File[], fs: ExtendedFSReadSync, styl: Stylable): Location[] {
     let refs: Location[] = [];
     files.forEach(file => {
-        refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs, styl))
+        refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs))
     })
     return refs;
 }
@@ -682,7 +682,7 @@ export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync, styl: S
         return f;
     })
 
-    refs = findRefs(symb.word.replace('.',''), params.textDocument.uri, fs, styl);
+    refs = findRefs(symb.word.replace('.',''), params.textDocument.uri, fs);
     // refs = newFindRefs(symb.word, symb.meta, cont, fs, styl);
     return refs;
 }
