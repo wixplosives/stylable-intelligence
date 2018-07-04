@@ -1,12 +1,18 @@
-:import {
-    -st-from: "./import.st.css";
-    -st-default: Domp;
+  .gaga {
+    -st-states: active;
+    color: red;
 }
 
-.root {
-    -st-extends: Domp;
+.gaga:active .gaga {
+    background-color: fuchsia;
 }
 
-.root::joojoo {
-    color: gold;
+.lokal {
+    -st-extends:      gaga;
+}
+
+.mixed {
+    -st-mixin: lokal,
+    gaga, lokal,
+    gaga;
 }

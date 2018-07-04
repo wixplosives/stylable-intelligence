@@ -559,7 +559,7 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync, styl: Styla
             let match;
             while ((match = valueRegex.exec(rule.selector)) !== null) {
                 refs.push({
-                    uri,
+                    uri: toVscodePath(uri),
                     range: {
                         start: {
                             line: rule.source.start!.line - 1,
@@ -575,19 +575,19 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync, styl: Styla
         }
     });
     meta!.rawAst.walkDecls((decl) => {
-        const directiveRegex = new RegExp(valueMapping.extends + '|' + valueMapping.named)
+        const directiveRegex = new RegExp(valueMapping.extends + '|' + valueMapping.named + '|' + valueMapping.default)
         if (directiveRegex.test(decl.prop)) {
             if (decl.value === word) {
                 refs.push({
-                    uri,
+                    uri: toVscodePath(uri),
                     range: {
                         start: {
                             line: decl.source.start!.line - 1,
-                            character: decl.source.start!.column + valueMapping.extends.length + (decl.raws.between ? decl.raws.between.length : 0) - 1
+                            character: decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) - 1
                         },
                         end: {
                             line: decl.source.start!.line - 1,
-                            character: decl.source.start!.column + valueMapping.extends.length + (decl.raws.between ? decl.raws.between.length : 0) + word.length - 1
+                            character: decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) + word.length - 1
                         }
                     }
                 })
@@ -600,7 +600,7 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync, styl: Styla
             let match;
             while ((match = valueRegex.exec(line)) !== null) {
                 refs.push({
-                    uri,
+                    uri: toVscodePath(uri),
                     range: {
                         start: {
                             line: decl.source.start!.line - 1 + index,
@@ -623,7 +623,7 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync, styl: Styla
         //Variable definition
         if (decl.parent.type === 'rule' && decl.parent.selector === ':vars') {
             refs.push({
-                uri,
+                uri: toVscodePath(uri),
                 range: {
                     start: {
                         line: decl.source.start!.line - 1,
@@ -644,7 +644,7 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync, styl: Styla
             const match = usageRegex.exec(decl.value);
             if (match) {
                 refs.push({
-                    uri,
+                    uri: toVscodePath(uri),
                     range: {
                         start: {
                             line: decl.source.start!.line - 1,
@@ -662,19 +662,28 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync, styl: Styla
     return refs;
 }
 
-export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync, styl: Stylable) {
+function newFindRefs(word: string, meta: StylableMeta, files: File[], fs: ExtendedFSReadSync, styl: Stylable): Location[] {
+    let refs: Location[] = [];
+    files.forEach(file => {
+        refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs, styl))
+    })
+    return refs;
+}
+
+export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync, styl: Stylable): Location[] {
 
     let refs: Location[] = [];
+    const symb = getDefSymbol(fs.loadTextFileSync(params.textDocument.uri), params.position, params.textDocument.uri, styl)
+    if (!symb.meta) { return refs };
 
-    // let files: File[] = (fs.loadDirectoryTreeSync((styl as any).projectRoot).children) as File[];
-    // const cont = files.filter(f => f.name.endsWith('.st.css')).map(f => {
-    //     f.content = fs.loadTextFileSync(f.fullPath);
-    //     return f;
-    // })
+    let files: File[] = (fs.loadDirectoryTreeSync((styl as any).projectRoot).children) as File[];
+    const cont = files.filter(f => f.name.endsWith('.st.css')).map(f => {
+        f.content = fs.loadTextFileSync(f.fullPath);
+        return f;
+    })
 
-    const bla = getDefSymbol(fs.loadTextFileSync(params.textDocument.uri), params.position, params.textDocument.uri, styl)
-
-    refs = findRefs(bla.word.replace('.',''), params.textDocument.uri, fs, styl);
+    refs = findRefs(symb.word.replace('.',''), params.textDocument.uri, fs, styl);
+    // refs = newFindRefs(symb.word, symb.meta, cont, fs, styl);
     return refs;
 }
 
@@ -923,15 +932,15 @@ export function getDefSymbol(src: string, position: ProviderPosition, filePath: 
     if (varRegex.test(lineChunkAtCursor)) {
         //we're looking at a var
         if (!meta.mappedSymbols[word]) {
-            return {word, meta: null}
+            return { word, meta: null }
         } else if (meta.mappedSymbols[word]._kind === 'var') { //deepResolve doesn't do local symbols
-            return {word, meta}
+            return { word, meta }
         }
         const resolvedVar = styl.resolver.deepResolve(meta.mappedSymbols[word]);
         if (resolvedVar) {
-            return {word, meta: resolvedVar.meta}
+            return { word, meta: resolvedVar.meta }
         } else {
-            return {word, meta: null}
+            return { word, meta: null }
         }
     }
 
