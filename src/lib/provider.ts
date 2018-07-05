@@ -554,8 +554,9 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[]
     const { processed: { meta } } = fixAndProcess(src, new ProviderPosition(0, 0), fromVscodePath(uri));
     const valueRegex = new RegExp('(\\.?' + word + ')(\\s|$|\\:|,)', 'g');
     meta!.rawAst.walkRules((rule) => {
+        //Usage in selector
         const filterRegex = new RegExp('(\\.?' + word + ')(\\s|$|\\:)', 'g');
-        if (filterRegex.test(rule.selector)) {
+        if (filterRegex.test(rule.selector) && !!rule.source && !!rule.source.start) {
             let match;
             while ((match = valueRegex.exec(rule.selector)) !== null) {
                 refs.push({
@@ -575,8 +576,10 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[]
         }
     });
     meta!.rawAst.walkDecls((decl) => {
+        if (!decl.source || !decl.source.start) { return; }
         const directiveRegex = new RegExp(valueMapping.extends + '|' + valueMapping.named + '|' + valueMapping.default)
         if (directiveRegex.test(decl.prop)) {
+            //Usage in -st directives
             if (decl.value === word) {
                 refs.push({
                     uri: toVscodePath(uri),
@@ -595,6 +598,8 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[]
         }
     });
     meta!.rawAst.walkDecls(valueMapping.mixin, (decl) => {
+        //usage in mixin
+        if (!decl.source || !decl.source.start) { return; }
         const lines = decl.value.split('\n');
         lines.forEach((line, index) => {
             let match;
@@ -621,7 +626,7 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[]
     });
     meta!.rawAst.walkDecls(word, (decl) => {
         //Variable definition
-        if (decl.parent.type === 'rule' && decl.parent.selector === ':vars') {
+        if (decl.parent.type === 'rule' && decl.parent.selector === ':vars' && !!decl.source && !!decl.source.start) {
             refs.push({
                 uri: toVscodePath(uri),
                 range: {
@@ -639,7 +644,7 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[]
     })
     meta!.rawAst.walkDecls((decl) => {
         //Variable usage
-        if (decl.value.includes('value(')) {
+        if (decl.value.includes('value(') && !!decl.source && !!decl.source.start) {
             const usageRegex = new RegExp('value\\(\\s*' + word + '\\s*\\)', 'g');
             const match = usageRegex.exec(decl.value);
             if (match) {
@@ -663,10 +668,27 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[]
 }
 
 function newFindRefs(word: string, meta: StylableMeta, files: File[], fs: ExtendedFSReadSync, styl: Stylable): Location[] {
+    word = word.replace('.', '');
     let refs: Location[] = [];
-    files.forEach(file => {
-        refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs))
-    })
+    if (meta.mappedSymbols[word]._kind === 'var') {
+        files.forEach(file => {
+            const newMeta = styl.process(file.fullPath);
+            if (!newMeta.mappedSymbols[word] || (newMeta.mappedSymbols[word]._kind !== 'var' && newMeta.mappedSymbols[word]._kind !== 'import')) { return; }
+            if (newMeta.source === meta.source) { //We're in the defining file
+                refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs))
+            } else {
+                const newSymb = styl.resolver.deepResolve(newMeta.mappedSymbols[word]);
+                if (!newSymb || !newSymb.meta) { return; }
+                if (newSymb.meta.source === meta.source) {
+                    refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs))
+                }
+            }
+        })
+    } else {
+        files.forEach(file => {
+            refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs))
+        })
+    }
     return refs;
 }
 
@@ -682,8 +704,8 @@ export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync, styl: S
         return f;
     })
 
-    refs = findRefs(symb.word.replace('.',''), params.textDocument.uri, fs);
-    // refs = newFindRefs(symb.word, symb.meta, cont, fs, styl);
+    // refs = findRefs(symb.word.replace('.',''), params.textDocument.uri, fs);
+    refs = newFindRefs(symb.word, symb.meta, cont, fs, styl);
     return refs;
 }
 

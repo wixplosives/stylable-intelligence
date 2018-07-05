@@ -1,18 +1,4 @@
-  .gaga {
-    -st-states: active;
-    color: red;
+:vars {
+    ggg: goldenrod;
 }
-
-.gaga:active .gaga {
-    background-color: fuchsia;
-}
-
-.lokal {
-    -st-extends:      gaga;
-}
-
-.mixed {
-    -st-mixin: lokal,
-    gaga, lokal,
-    gaga;
-}
+    
