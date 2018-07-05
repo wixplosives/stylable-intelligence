@@ -33,18 +33,17 @@ export class LocalSyncFs extends LocalFileSystem implements FileSystemReadSync {
 function populate(path: string, dirPath: string, dir: Directory): Directory {
     if (!path) {
         const list = fs.readdirSync(dirPath);
-        list.forEach(path => {dir = populate(path, dirPath, dir)});
-    }
-    if (fs.statSync(dirPath + '/' + path).isFile()) {
+        list.forEach(path => { dir = populate(path, dirPath, dir) });
+    } else if (fs.statSync(dirPath + '/' + path).isFile()) {
         dir.children.push({
             name: path,
-            fullPath: (dirPath + '/' + path).replace('//','/'),
+            fullPath: (dirPath + '/' + path).replace('//', '/'),
             type: 'file'
         })
     }
     else if (fs.statSync(dirPath + '/' + path).isDirectory()) {
         const list = fs.readdirSync(dirPath + '/' + path);
-        list.forEach(p => {dir = populate(p, dirPath + '/' + path, dir)});
+        list.forEach(p => { dir = populate(p, dirPath + '/' + path, dir) });
     }
     return dir;
 }
