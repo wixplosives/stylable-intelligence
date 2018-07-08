@@ -1,5 +1,11 @@
 :import {
-    -st-from: "./test.st.css";
-    -st-named: gagaf;
+    -st-from: "./more.st.css";
+    -st-named: joojoo;
+}
+
+
+
+.local {
+    -st-extends: joojoo;
 }
 

@@ -676,13 +676,37 @@ function newFindRefs(word: string, meta: StylableMeta, files: File[], fs: Extend
             if (!newMeta.mappedSymbols[word] || (newMeta.mappedSymbols[word]._kind !== 'var' && newMeta.mappedSymbols[word]._kind !== 'import')) { return; }
             if (newMeta.source === meta.source) { //We're in the defining file
                 refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs))
-            } else {
+            } else { //We're in a using file
                 const newSymb = styl.resolver.deepResolve(newMeta.mappedSymbols[word]);
                 if (!newSymb || !newSymb.meta) { return; }
                 if (newSymb.meta.source === meta.source) {
                     refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs))
                 }
             }
+        })
+    } else if (meta.mappedSymbols[word]._kind === 'class' || meta.mappedSymbols[word]._kind === 'import') {
+        const trans = styl.createTransformer();
+        const valueRegex = new RegExp('(\\.?' + word + ')\\b', 'g');
+        files.forEach(file => {
+            const newMeta = styl.process(file.fullPath);
+            let done = false;
+            newMeta.rawAst.walkRules(r => {
+                if (valueRegex.test(r.selector) && !done) {
+                    const resolved = trans.resolveSelectorElements(newMeta, r.selector);
+                    const resolvedInner = resolved[0].find(r => r.name === word);
+                    if (resolvedInner && resolvedInner.resolved.some(r => r.meta.source === meta.source)) {
+                        refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs))
+                        done = true;
+                    }
+                }
+            })
+            newMeta.rawAst.walkDecls(d => {
+                if (valueRegex.test(d.value) && !done) {
+                    if (d.prop === valueMapping.named) {
+                        true;
+                    }
+                }
+            })
         })
     } else {
         files.forEach(file => {
@@ -971,7 +995,7 @@ export function getDefSymbol(src: string, position: ProviderPosition, filePath: 
 
 
     const reso = resolvedElements[0][resolvedElements[0].length - 1].resolved.find(res => {
-        return res.symbol.name === word.replace('.', '') || keys((res.symbol as ClassSymbol)[valueMapping.states]).some(k => k === word)
+        return (res.symbol.name === word.replace('.', '') && !(res.symbol as ClassSymbol).alias) || keys((res.symbol as ClassSymbol)[valueMapping.states]).some(k => k === word)
     })
 
     if (reso) {
