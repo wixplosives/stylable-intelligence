@@ -177,7 +177,7 @@ export default class Provider {
         } else if (word !== word.toLowerCase()) {
             //Default import, link to top of imported stylesheet
             defs.push(
-                new ProviderLocation(meta.source, createRange(0,0,0,0))
+                new ProviderLocation(meta.source, createRange(0, 0, 0, 0))
             )
         }
 
@@ -676,7 +676,36 @@ function findRefs(word: string, uri: string, fs: ExtendedFSReadSync): Location[]
 function newFindRefs(word: string, meta: StylableMeta, files: File[], fs: ExtendedFSReadSync, styl: Stylable): Location[] {
     word = word.replace('.', '');
     let refs: Location[] = [];
-    if (meta.mappedSymbols[word]._kind === 'var') {
+    if (!meta.mappedSymbols[word] && word !== word.toLowerCase()) {
+        files.forEach(file => {
+            const newMeta = styl.process(file.fullPath);
+            // if (newMeta.mappedSymbols[word]
+            // && ((newMeta.mappedSymbols[word]._kind === 'element'
+            //     && (newMeta.mappedSymbols[word] as ElementSymbol).alias
+            //     && ((newMeta.mappedSymbols[word] as ElementSymbol).alias!.import.from === meta.source))
+            //     || (newMeta.mappedSymbols[word]._kind === 'import'
+            //         && (newMeta.mappedSymbols[word] as ImportSymbol).import.from === meta.source))
+            // ) {
+            //     refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs))
+            // }
+            let tmp: string = '';
+            if (Object.keys(newMeta.mappedSymbols).some(k => {
+                tmp = k;
+                return (
+                    (newMeta.mappedSymbols[k]._kind === 'element'
+                        && (newMeta.mappedSymbols[k] as ElementSymbol).alias
+                        && ((newMeta.mappedSymbols[k] as ElementSymbol).alias!.import.from === meta.source)
+                    )
+                    || (
+                        newMeta.mappedSymbols[k]._kind === 'import'
+                        && (newMeta.mappedSymbols[k] as ImportSymbol).import.from === meta.source
+                    )
+                )
+            })) {
+                refs = refs.concat(findRefs(tmp, file.fullPath, fs))
+            }
+        })
+    } else if (meta.mappedSymbols[word]._kind === 'var') {
         files.forEach(file => {
             const newMeta = styl.process(file.fullPath);
             if (!newMeta.mappedSymbols[word] || (newMeta.mappedSymbols[word]._kind !== 'var' && newMeta.mappedSymbols[word]._kind !== 'import')) { return; }
@@ -712,7 +741,8 @@ function newFindRefs(word: string, meta: StylableMeta, files: File[], fs: Extend
                         return (n as Declaration).prop === valueMapping.from
                             && path.resolve(path.dirname(newMeta.source), (n as Declaration).value.replace(/"/g, '')) === meta.source
                     })) {
-                        refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs))
+                        refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs));
+                        done = true;
                     }
                 }
             })
@@ -979,15 +1009,20 @@ export function getDefSymbol(src: string, position: ProviderPosition, filePath: 
     const directiveRegex = new RegExp(valueMapping.extends + '|' + valueMapping.named + '|' + valueMapping.default + '|' + valueMapping.mixin)
 
     const match = lineChunkAtCursor.match(directiveRegex);
-    if (match && !!meta.mappedSymbols[word])  {
+    if (match && !!meta.mappedSymbols[word]) {
         let imp;
         if (meta.mappedSymbols[word]._kind === 'import') {
             imp = styl.resolver.resolveImport((meta.mappedSymbols[word]) as ImportSymbol);
         } else if (meta.mappedSymbols[word]._kind === 'element' && (meta.mappedSymbols[word] as ElementSymbol).alias) {
             imp = styl.resolver.resolveImport((meta.mappedSymbols[word] as ElementSymbol).alias as ImportSymbol);
+        } else if (meta.mappedSymbols[word]._kind === 'class') {
+            return { word, meta };
         }
         if (imp) {
-            return { word, meta: imp.meta }
+            if (imp._kind === 'js') {
+                return { word, meta }
+            } else
+                return { word, meta: imp.meta }
         } else {
             return { word: '', meta: null }
         }

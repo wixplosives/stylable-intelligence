@@ -1,9 +1,9 @@
 :import {
-    -st-from: "./more.st.css";
-    -st-named: joojoo;
+    -st-from: "./test.st.css";
+    -st-default: Domp;
 }
 
 .local {
-    -st-extends: joojoo;
+    -st-extends: Domp;
 }
 
