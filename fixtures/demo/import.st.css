@@ -8,6 +8,6 @@
     -st-extends: Comp;
 }
 
-.root::joojoo {
-    color: value(ggg)
+.root Comp {
+    color: aquamarine;
 }

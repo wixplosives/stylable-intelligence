@@ -54,7 +54,7 @@ import { ParameterDeclaration, SignatureDeclaration, TypeReferenceNode } from 't
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 import { keys, last, values } from 'lodash';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
-import { ClassSymbol, StylableSymbol } from 'stylable/dist/src/stylable-processor';
+import { ClassSymbol, StylableSymbol, ElementSymbol } from 'stylable/dist/src/stylable-processor';
 import {
     createStateTypeSignature,
     createStateValidatorSignature,
@@ -174,6 +174,11 @@ export default class Provider {
             defs.push(
                 new ProviderLocation(meta.source, this.findWord(':--' + word, src, position))
             );
+        } else if (word !== word.toLowerCase()) {
+            //Default import, link to top of imported stylesheet
+            defs.push(
+                new ProviderLocation(meta.source, createRange(0,0,0,0))
+            )
         }
 
         return Promise.resolve(defs)
@@ -968,14 +973,19 @@ export function getDefSymbol(src: string, position: ProviderPosition, filePath: 
         }
     };
 
-    let word = val.value;
+    let word: string = val.value;
 
     const { lineChunkAtCursor } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
     const directiveRegex = new RegExp(valueMapping.extends + '|' + valueMapping.named + '|' + valueMapping.default + '|' + valueMapping.mixin)
 
     const match = lineChunkAtCursor.match(directiveRegex);
-    if (match && !!meta.mappedSymbols[word] && meta.mappedSymbols[word]._kind === 'import') {
-        const imp = styl.resolver.resolveImport((meta.mappedSymbols[word]) as ImportSymbol);
+    if (match && !!meta.mappedSymbols[word])  {
+        let imp;
+        if (meta.mappedSymbols[word]._kind === 'import') {
+            imp = styl.resolver.resolveImport((meta.mappedSymbols[word]) as ImportSymbol);
+        } else if (meta.mappedSymbols[word]._kind === 'element' && (meta.mappedSymbols[word] as ElementSymbol).alias) {
+            imp = styl.resolver.resolveImport((meta.mappedSymbols[word] as ElementSymbol).alias as ImportSymbol);
+        }
         if (imp) {
             return { word, meta: imp.meta }
         } else {
@@ -1011,10 +1021,15 @@ export function getDefSymbol(src: string, position: ProviderPosition, filePath: 
     const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: lineChunkAtCursor }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
     const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);
 
+    let reso: CSSResolve | undefined;
+    if (word !== word.toLowerCase()) {
+        reso = resolvedElements[0][resolvedElements[0].length - 1].resolved.find(res => !!(res.symbol as ClassSymbol)["-st-root"])
+    } else {
+        reso = resolvedElements[0][resolvedElements[0].length - 1].resolved.find(res => {
+            return (res.symbol.name === word.replace('.', '') && !(res.symbol as ClassSymbol).alias) || keys((res.symbol as ClassSymbol)[valueMapping.states]).some(k => k === word)
+        })
+    }
 
-    const reso = resolvedElements[0][resolvedElements[0].length - 1].resolved.find(res => {
-        return (res.symbol.name === word.replace('.', '') && !(res.symbol as ClassSymbol).alias) || keys((res.symbol as ClassSymbol)[valueMapping.states]).some(k => k === word)
-    })
 
     if (reso) {
         meta = reso.meta;
