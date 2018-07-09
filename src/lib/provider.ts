@@ -62,6 +62,7 @@ import {
     resolveStateTypeOrValidator
 } from './feature/pseudo-class';
 import { File } from 'kissfs';
+import * as path from 'path';
 
 const pvp = require('postcss-value-parser');
 const psp = require('postcss-selector-parser');
@@ -702,17 +703,21 @@ function newFindRefs(word: string, meta: StylableMeta, files: File[], fs: Extend
             })
             newMeta.rawAst.walkDecls(d => {
                 if (valueRegex.test(d.value) && !done) {
-                    if (d.prop === valueMapping.named) {
-                        true;
+                    if (d.prop === valueMapping.named && d.parent.nodes!.find(n => {
+                        return (n as Declaration).prop === valueMapping.from
+                            && path.resolve(path.dirname(newMeta.source), (n as Declaration).value.replace(/"/g, '')) === meta.source
+                    })) {
+                        refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs))
                     }
                 }
             })
         })
-    } else {
-        files.forEach(file => {
-            refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs))
-        })
     }
+    //  else {
+    //     files.forEach(file => {
+    //         refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs))
+    //     })
+    // }
     return refs;
 }
 
@@ -966,6 +971,18 @@ export function getDefSymbol(src: string, position: ProviderPosition, filePath: 
     let word = val.value;
 
     const { lineChunkAtCursor } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
+    const directiveRegex = new RegExp(valueMapping.extends + '|' + valueMapping.named + '|' + valueMapping.default + '|' + valueMapping.mixin)
+
+    const match = lineChunkAtCursor.match(directiveRegex);
+    if (match && !!meta.mappedSymbols[word] && meta.mappedSymbols[word]._kind === 'import') {
+        const imp = styl.resolver.resolveImport((meta.mappedSymbols[word]) as ImportSymbol);
+        if (imp) {
+            return { word, meta: imp.meta }
+        } else {
+            return { word: '', meta: null }
+        }
+    }
+
     const transformer = new StylableTransformer({
         diagnostics: new Diagnostics(),
         fileProcessor: styl.fileProcessor,
@@ -989,6 +1006,7 @@ export function getDefSymbol(src: string, position: ProviderPosition, filePath: 
             return { word, meta: null }
         }
     }
+
 
     const expandedLine: string = expandCustomSelectors(PostCss.rule({ selector: lineChunkAtCursor }), meta.customSelectors).split(' ').pop()!;// TODO: replace with selector parser
     const resolvedElements = transformer.resolveSelectorElements(meta, expandedLine);

@@ -3,8 +3,6 @@
     -st-named: joojoo;
 }
 
-
-
 .local {
     -st-extends: joojoo;
 }
