@@ -561,8 +561,29 @@ function findRefs(word: string, defMeta: StylableMeta, curMeta: StylableMeta, st
     }
     const refs: Location[] = [];
     const trans = styl.createTransformer();
+
+    if (word.startsWith(':global(')) {
+        curMeta.rawAst.walkRules(rule => {
+            if (rule.selector.includes(word) && rule.source && rule.source.start) {
+                refs.push({
+                    uri: toVscodePath(curMeta.source),
+                    range: {
+                        start: {
+                            line: rule.source.start.line - 1,
+                            character: rule.selector.indexOf(word) + ':global('.length
+                        },
+                        end: {
+                            line: rule.source.start.line - 1,
+                            character: rule.selector.indexOf(word) + word.length - 1
+                        }
+                    }
+                })
+            }
+        })
+        return refs;
+    }
     const valueRegex = new RegExp('(\\.?' + word + ')(\\s|$|\\:|;|\\)|,)', 'g');
-    curMeta!.rawAst.walkRules((rule) => {
+    curMeta.rawAst.walkRules((rule) => {
         //Usage in selector
         const filterRegex = new RegExp('(\\.?' + word + ')(\\s|$|\\:|;|\\))', 'g');
         if (filterRegex.test(rule.selector) && !!rule.source && !!rule.source.start) {
@@ -573,7 +594,7 @@ function findRefs(word: string, defMeta: StylableMeta, curMeta: StylableMeta, st
 
                 let match;
                 while ((match = valueRegex.exec(rule.selector)) !== null) {
-                    const index = match[0].startsWith('.') ? match.index : match.index -1;
+                    const index = match[0].startsWith('.') ? match.index : match.index - 1;
                     refs.push({
                         uri: toVscodePath(curMeta.source),
                         range: {
@@ -686,8 +707,20 @@ function findRefs(word: string, defMeta: StylableMeta, curMeta: StylableMeta, st
 }
 
 function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Stylable): Location[] {
-    word = word.replace('.', '');
     let refs: Location[] = [];
+    if (word.startsWith(':global(')) {
+        files.forEach(file => {
+            const newMeta = styl.process(file.fullPath);
+            newMeta.rawAst.walkRules(rule => {
+                if (rule.selector.includes(word)) {
+                    refs = refs.concat(findRefs(word, meta, newMeta, styl))
+                }
+            })
+        })
+        return refs;
+    } else {
+        word = word.replace('.', '');
+    }
     if (!meta.mappedSymbols[word] && word.charAt(0) !== word.charAt(0).toLowerCase()) {
         //Default import
         files.forEach(file => {
@@ -1036,6 +1069,9 @@ export function getDefSymbol(src: string, position: ProviderPosition, filePath: 
 
     const { lineChunkAtCursor } = getChunkAtCursor(res.currentLine.slice(0, val.sourceIndex + val.value.length), position.character);
     const directiveRegex = new RegExp(valueMapping.extends + '|' + valueMapping.named + '|' + valueMapping.default + '|' + valueMapping.mixin)
+    if (lineChunkAtCursor.startsWith(':global')) {
+        return { word: ':global(' + word + ')', meta }
+    }
 
     const match = lineChunkAtCursor.match(directiveRegex);
     if (match && !!meta.mappedSymbols[word]) {
