@@ -1,9 +1,0 @@
-:import {
-    -st-from: "./test.st.css";
-    -st-default: Domp;
-}
-
-.local {
-    -st-extends: Domp;
-}
-
