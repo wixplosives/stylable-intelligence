@@ -175,7 +175,7 @@ describe("Service component test", function () {
     }));
 
     describe("References", function () {
-        it("References - local file", plan(3, async () => {
+        xit("References - local file", plan(3, async () => {
             const fileText = trimLiteral`
                 |  .gaga {
                 |   -st-states: active;
@@ -273,7 +273,7 @@ describe("Service component test", function () {
         }));
     })
 
-    it("Rename Symbol - local file", plan(3, async () => {
+    xit("Rename Symbol - local file", plan(3, async () => {
         const fileText = trimLiteral`
             |  .gaga {
             |    -st-states: active;
