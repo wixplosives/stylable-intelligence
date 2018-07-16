@@ -115,7 +115,6 @@ export function initStylableLanguageService(connection: IConnection, services: {
 
     connection.onDocumentFormatting((params) => {return null})
 
-
     connection.onDocumentColor((params: DocumentColorParams) => {
         const document = fs.get(params.textDocument.uri);
         return resolveDocumentColors(services.styl, newCssService, document);

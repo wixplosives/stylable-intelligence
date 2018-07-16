@@ -708,7 +708,7 @@ function findRefs(word: string, defMeta: StylableMeta, curMeta: StylableMeta, st
 
 function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Stylable): Location[] {
     let refs: Location[] = [];
-    if (word.startsWith(':global(')) {
+    if (word.startsWith(':global(')) { //Global selector strings are special
         files.forEach(file => {
             const newMeta = styl.process(file.fullPath);
             newMeta.rawAst.walkRules(rule => {
@@ -721,8 +721,7 @@ function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Styl
     } else {
         word = word.replace('.', '');
     }
-    if (!meta.mappedSymbols[word] && word.charAt(0) !== word.charAt(0).toLowerCase()) {
-        //Default import
+    if (!meta.mappedSymbols[word] && word.charAt(0) !== word.charAt(0).toLowerCase()) { //Default import
         files.forEach(file => {
             const newMeta = styl.process(file.fullPath);
             let tmp: string = '';
@@ -742,7 +741,7 @@ function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Styl
                 refs = refs.concat(findRefs(tmp, meta, newMeta, styl))
             }
         })
-    } else if (meta.mappedSymbols[word] && meta.mappedSymbols[word]._kind === 'var') {
+    } else if (meta.mappedSymbols[word] && meta.mappedSymbols[word]._kind === 'var') { //Vatiable
         files.forEach(file => {
             const newMeta = styl.process(file.fullPath);
             if (!newMeta.mappedSymbols[word] || (newMeta.mappedSymbols[word]._kind !== 'var' && newMeta.mappedSymbols[word]._kind !== 'import')) { return; }
@@ -756,7 +755,7 @@ function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Styl
                 }
             }
         })
-    } else if (meta.mappedSymbols[word] && (meta.mappedSymbols[word]._kind === 'class' || meta.mappedSymbols[word]._kind === 'import')) {
+    } else if (meta.mappedSymbols[word] && (meta.mappedSymbols[word]._kind === 'class' || meta.mappedSymbols[word]._kind === 'import')) { //Elements
         const trans = styl.createTransformer();
         const valueRegex = new RegExp('(\\.?' + word + ')\\b', 'g');
         files.forEach(file => {
@@ -813,7 +812,6 @@ function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Styl
                 }
             })
         })
-        // refs = refs.concat(findRefs(word.replace('.', ''), file.fullPath, fs));
     }
     return refs;
 }
@@ -828,7 +826,7 @@ export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync, styl: S
     const cont = files.filter(f => f.name.endsWith('.st.css')).map(f => {
         f.content = fs.loadTextFileSync(f.fullPath);
         return f;
-    })
+    });
 
     refs = newFindRefs(symb.word, symb.meta, cont, styl);
     return refs;

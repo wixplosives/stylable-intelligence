@@ -1,0 +1,21 @@
+:import {
+    -st-from: "./states-import.st.css";
+    -st-default: Fomp;
+}
+
+.root Fomp:rootState {}
+
+.root Fomp:rootState::one:topState {}
+
+.root Fomp::two:topState {}
+
+.local {
+    -st-extends: Fomp;
+    -st-states: extendState
+}
+
+.local:rootState:extendState {}
+
+.local::one:topState {}
+
+.local:rootState::two:topState {}
