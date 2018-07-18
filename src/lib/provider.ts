@@ -822,7 +822,7 @@ export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync, styl: S
     const symb = getDefSymbol(fs.loadTextFileSync(params.textDocument.uri), params.position, params.textDocument.uri, styl)
     if (!symb.meta) { return refs };
 
-    let files: File[] = (fs.loadDirectoryTreeSync((styl as any).projectRoot).children) as File[];
+    let files: File[] = (fs.loadDirectoryTreeSync(styl.projectRoot).children) as File[];
     const cont = files.filter(f => f.name.endsWith('.st.css')).map(f => {
         f.content = fs.loadTextFileSync(f.fullPath);
         return f;
@@ -836,7 +836,7 @@ export function getRenameRefs(params: ReferenceParams, fs: ExtendedFSReadSync, s
     const refs = getRefs(params, fs, styl);
     const newRefs: Location[] = [];
     refs.forEach(ref => {
-        if (!ref.uri.includes('node_modules') && fromVscodePath(ref.uri).startsWith((styl as any).projectRoot) ) {
+        if (!ref.uri.includes('node_modules') && fromVscodePath(ref.uri).startsWith(styl.projectRoot) ) {
             newRefs.push(ref);
         }
     })
