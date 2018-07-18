@@ -1,9 +1,9 @@
 # Changelog
 
-## v0.3.1
+## v0.3.2
 
 ### New features
-- Find references and Rename symbol now work across files. 
+- Find references and Rename symbol now work across files.
 - Diagnostics are published to all open files on any content change to a single file.
 
 ### Bug fix
