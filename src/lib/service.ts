@@ -16,7 +16,7 @@ import {createDiagnosis} from './diagnosis';
 import {Command, CompletionItem, Location, ParameterInformation, TextEdit} from 'vscode-languageserver-types';
 import {Stylable} from 'stylable';
 import {fromVscodePath, toVscodePath} from './utils/uri-utils';
-import {getRefs, getDefSymbol} from './provider';
+import {getRefs, getDefSymbol, getRenameRefs} from './provider';
 import {ExtendedFSReadSync, ExtendedTsLanguageService, NotificationTypes} from './types'
 import {IConnection} from "vscode-languageserver";
 import {CompletionParams} from 'vscode-languageclient/lib/main';
@@ -129,7 +129,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
 
     connection.onRenameRequest((params): WorkspaceEdit => {
         let edit: WorkspaceEdit = {changes: {}};
-        getRefs({
+        getRenameRefs({
             context: {includeDeclaration: true},
             position: params.position,
             textDocument: params.textDocument

@@ -832,6 +832,17 @@ export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync, styl: S
     return refs;
 }
 
+export function getRenameRefs(params: ReferenceParams, fs: ExtendedFSReadSync, styl: Stylable): Location[] {
+    const refs = getRefs(params, fs, styl);
+    const newRefs: Location[] = [];
+    refs.forEach(ref => {
+        if (!ref.uri.includes('node_modules') && fromVscodePath(ref.uri).startsWith((styl as any).projectRoot) ) {
+            newRefs.push(ref);
+        }
+    })
+    return newRefs;
+}
+
 export function createMeta(src: string, path: string) {
     let meta: StylableMeta;
     let fakes: PostCss.Rule[] = [];
