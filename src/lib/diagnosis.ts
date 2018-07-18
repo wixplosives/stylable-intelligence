@@ -37,7 +37,6 @@ export function createDiagnosis(doc: TextDocument, fs: FileSystemReadSync, fileP
         let range = createRange(report)
         return Diagnostic.create(range, report.message, severity as any)
     }
-
 }
 
 

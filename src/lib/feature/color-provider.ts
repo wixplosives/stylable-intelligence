@@ -1,7 +1,7 @@
 import { ColorPresentationParams, TextDocument } from 'vscode-languageserver-protocol';
 import { ProviderPosition, ProviderRange } from '../completion-providers';
 import { Color, ColorPresentation, ColorInformation } from 'vscode-css-languageservice';
-import { evalDeclarationValue, valueMapping, Stylable } from 'stylable';
+import { evalDeclarationValue, valueMapping, Stylable, StylableMeta } from 'stylable';
 import { CssService } from '../../model/css-service';
 import { fixAndProcess } from '../provider';
 import { last } from 'lodash';
@@ -50,10 +50,16 @@ export function resolveDocumentColors(
         });
 
         meta.imports.forEach(imp => {
-            const impMeta = processor.process(imp.from);
+            let impMeta: StylableMeta | undefined;
+            try {
+                impMeta = processor.process(imp.from);
+            } catch(e) {}
+
+            if (!impMeta) {return};
+
             const vars = impMeta.vars;
             vars.forEach(v => {
-                const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(stylable.resolver, v.text, impMeta, v.node) + '}');
+                const doc = TextDocument.create('', 'css', 0, '.gaga {border: ' + evalDeclarationValue(stylable.resolver, v.text, impMeta!, v.node) + '}');
                 const color = cssService.findColor(doc);
                 if (color) {
                     meta.rawAst.walkDecls(valueMapping.named, (decl) => {

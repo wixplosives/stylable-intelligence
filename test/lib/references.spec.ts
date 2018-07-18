@@ -3,9 +3,10 @@ import { expect } from 'chai';
 import * as path from 'path';
 import { getReferences, CASES_PATH } from '../../test-kit/asserters';
 import { toVscodePath } from '../../src/lib/utils/uri-utils';
+import { Location } from 'vscode-languageclient/lib/main';
 
 describe("References", function () {
-    describe("Local classes", function () {
+    describe("Local Classes", function () {
         it("should return all instances of local class when called from selector ", function () {
             const refs = getReferences('references/local-class-from-selector.st.css', { line: 5, character: 16 });
             expect(refs.length).to.equal(6);
@@ -46,7 +47,8 @@ describe("References", function () {
             })
         });
     });
-    describe("Local variables", function () {
+
+    describe("Local Variables", function () {
         it("Should return all instances of local variable when called from varaiable definition", function () {
             const refs = getReferences('references/local-var-from-def.st.css', { line: 2, character: 7 });
             expect(refs.length).to.equal(2);
@@ -63,4 +65,122 @@ describe("References", function () {
         });
 
     });
+
+    describe("Cross-File References", function () {
+        describe("Variables", function () {
+            //Definition, usage, named import, usage of import
+            it("Should return all instances of variable across file", function () {
+                const refs = getReferences('references/vars.st.css', { line: 6, character: 20 });
+                const path1 = toVscodePath(path.join(CASES_PATH, 'references/vars.st.css'));
+                const path2 = toVscodePath(path.join(CASES_PATH, 'references/var-import.st.css'));
+                const path3 = toVscodePath(path.join(CASES_PATH, 'references/other-var.st.css'));
+                const exp1 = { uri: path1, range: createRange(2, 15, 2, 22) };
+                const exp2 = { uri: path1, range: createRange(6, 17, 6, 24) };
+                const exp3 = { uri: path2, range: createRange(1, 4, 1, 11) };
+                const exp4 = { uri: path2, range: createRange(5, 17, 5, 24) };
+                const bad1 = { uri: path3, range: createRange(1, 4, 1, 11) };
+                const bad2 = { uri: path3, range: createRange(5, 17, 5, 24) };
+
+                expect(refs.length).to.equal(4);
+                expect(refs).to.deep.include(exp1);
+                expect(refs).to.deep.include(exp2);
+                expect(refs).to.deep.include(exp3);
+                expect(refs).to.deep.include(exp4);
+                //Not include different vars with same name
+                expect(refs).to.not.deep.include(bad1);
+                expect(refs).to.not.deep.include(bad2);
+
+            })
+        });
+        describe("Classes and Pseudo-elements", function () {
+            const path1 = 'references/classes-top.st.css';
+            const path2 = 'references/classes-import-default.st.css';
+            const path3 = 'references/classes-import-named.st.css';
+            it("Should find all references to aaa", function () {
+                const positions = [
+                    { path: path1, line: 4, character: 3 },
+                    { path: path1, line: 13, character: 18 },
+                    { path: path2, line: 11, character: 9 },
+                    { path: path3, line: 5, character: 9 },
+                    { path: path3, line: 2, character: 16 },
+                ]
+                const vscodePath1 = toVscodePath(path.join(CASES_PATH, path1));
+                const vscodePath2 = toVscodePath(path.join(CASES_PATH, path2));
+                const vscodePath3 = toVscodePath(path.join(CASES_PATH, path3));
+                const exp1 = { uri: vscodePath1, range: createRange(4, 1, 4, 4) };
+                const exp2 = { uri: vscodePath1, range: createRange(13, 17, 13, 20) };
+                const exp3 = { uri: vscodePath2, range: createRange(11, 8, 11, 11) };
+                const exp4 = { uri: vscodePath3, range: createRange(5, 7, 5, 10) };
+                const exp5 = { uri: vscodePath3, range: createRange(2, 15, 2, 18) };
+                const bad1 = { uri: vscodePath2, range: createRange(17, 1, 17, 4) };
+                positions.forEach(pos => {
+                    let refs = getReferences(pos.path, pos);
+                    expect(refs.length).to.equal(5);
+                    expect(refs).to.deep.include(exp1);
+                    expect(refs).to.deep.include(exp2);
+                    expect(refs).to.deep.include(exp3);
+                    expect(refs).to.deep.include(exp4);
+                    expect(refs).to.deep.include(exp5);
+                    //Not include different vars with same name
+                    expect(refs).to.not.deep.include(bad1);
+                })
+            });
+
+            it("Should find all references to bbb", function () {
+                const positions = [
+                    { path: path1, line: 8, character: 3 },
+                    { path: path3, line: 2, character: 19 },
+                    { path: path3, line: 14, character: 16 },
+                    { path: path3, line: 5, character: 13 },
+                ]
+                const vscodePath1 = toVscodePath(path.join(CASES_PATH, path1));
+                const vscodePath3 = toVscodePath(path.join(CASES_PATH, path3));
+                const exp1 = { uri: vscodePath1, range: createRange(8, 1, 8, 4) };
+                const exp2 = { uri: vscodePath3, range: createRange(2, 19, 2, 22) };
+                const exp3 = { uri: vscodePath3, range: createRange(14, 15, 14, 18) };
+                const exp4 = { uri: vscodePath3, range: createRange(5, 12, 5, 15) };
+                positions.forEach(pos => {
+                    let refs = getReferences(pos.path, pos);
+                    expect(refs.length).to.equal(4);
+                    expect(refs).to.deep.include(exp1);
+                    expect(refs).to.deep.include(exp2);
+                    expect(refs).to.deep.include(exp3);
+                    expect(refs).to.deep.include(exp4);
+                })
+            });
+
+            it("Should find all references to ccc", function () {
+                const positions = [
+                    { path: path1, line: 12, character: 3 },
+                    { path: path2, line: 13, character: 15 },
+                    { path: path3, line: 2, character: 24 },
+                    { path: path3, line: 5, character: 19 },
+                    { path: path3, line: 10, character: 18 },
+                ]
+                const vscodePath1 = toVscodePath(path.join(CASES_PATH, path1));
+                const vscodePath2 = toVscodePath(path.join(CASES_PATH, path2));
+                const vscodePath3 = toVscodePath(path.join(CASES_PATH, path3));
+                const exp1 = { uri: vscodePath1, range: createRange(12, 1, 12, 4) };
+                const exp2 = { uri: vscodePath2, range: createRange(13, 13, 13, 16) };
+                const exp3 = { uri: vscodePath3, range: createRange(2, 23, 2, 26) };
+                const exp4 = { uri: vscodePath3, range: createRange(5, 17, 5, 20) };
+                const exp5 = { uri: vscodePath3, range: createRange(10, 17, 10, 20) };
+
+                const bad1 = { uri: vscodePath1, range: createRange(16, 9, 16, 12) };
+
+                positions.slice(0, 1).forEach(pos => {
+                    let refs = getReferences(pos.path, pos);
+                    expect(refs.length).to.equal(5);
+                    expect(refs).to.deep.include(exp1);
+                    expect(refs).to.deep.include(exp2);
+                    expect(refs).to.deep.include(exp3);
+                    expect(refs).to.deep.include(exp4);
+                    expect(refs).to.deep.include(exp5);
+
+                    expect(refs).to.not.deep.include(bad1);
+                })
+            });
+        });
+
+    })
 });
