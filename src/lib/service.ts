@@ -9,24 +9,24 @@ import {
     DocumentColorParams,
     ColorPresentationParams
 } from 'vscode-languageserver-protocol';
-import {createProvider, MinimalDocsDispatcher,} from './provider-factory';
-import {ProviderPosition, ProviderRange} from './completion-providers';
-import {Completion} from './completion-types';
-import {createDiagnosis} from './diagnosis';
-import {Command, CompletionItem, Location, ParameterInformation, TextEdit} from 'vscode-languageserver-types';
-import {Stylable} from 'stylable';
-import {fromVscodePath, toVscodePath} from './utils/uri-utils';
-import {getRefs} from './provider';
-import {ExtendedFSReadSync, ExtendedTsLanguageService, NotificationTypes} from './types'
-import {IConnection} from "vscode-languageserver";
-import {CompletionParams} from 'vscode-languageclient/lib/main';
-import {CssService} from "../model/css-service";
-import {resolveDocumentColors, getColorPresentation} from './feature/color-provider';
+import { createProvider, MinimalDocsDispatcher, } from './provider-factory';
+import { ProviderPosition, ProviderRange } from './completion-providers';
+import { Completion } from './completion-types';
+import { createDiagnosis } from './diagnosis';
+import { Command, CompletionItem, Location, ParameterInformation, TextEdit } from 'vscode-languageserver-types';
+import { Stylable } from 'stylable';
+import { fromVscodePath, toVscodePath } from './utils/uri-utils';
+import { getRefs, getDefSymbol, getRenameRefs } from './provider';
+import { ExtendedFSReadSync, ExtendedTsLanguageService, NotificationTypes } from './types'
+import { IConnection } from "vscode-languageserver";
+import { CompletionParams } from 'vscode-languageclient/lib/main';
+import { CssService } from "../model/css-service";
+import { resolveDocumentColors, getColorPresentation } from './feature/color-provider';
 
-export {MinimalDocs} from './provider-factory';
+export { MinimalDocs } from './provider-factory';
 
 //exporting types for use in playground
-export {ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes} from './types'
+export { ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes } from './types'
 
 export class StylableLanguageService {
     constructor(connection: IConnection, services: { styl: Stylable, tsLanguageService: ExtendedTsLanguageService, requireModule: typeof require }, fs: ExtendedFSReadSync, docsDispatcher: MinimalDocsDispatcher, notifications: NotificationTypes) {
@@ -74,14 +74,20 @@ export function initStylableLanguageService(connection: IConnection, services: {
         }).concat(newCssService.getCompletions(document, position));
     });
 
-    function diagnose({document}: TextDocumentChangeEvent) {
-        if (document.languageId === 'stylable') {
-            let diagnostics = createDiagnosis(document, fs, processor, services.requireModule).map(diag => {
-                diag.source = 'stylable';
-                return diag;
-            }).concat(newCssService.getDiagnostics(document));
-            connection.sendDiagnostics({uri: document.uri, diagnostics: diagnostics});
-        }
+    function diagnose({ document }: TextDocumentChangeEvent) {
+        docsDispatcher.keys!().forEach(key => {
+            const doc = docsDispatcher.get!(key);
+            if (!!doc) {
+                if (doc.languageId === 'stylable') {
+                    let diagnostics = createDiagnosis(doc, fs, processor, services.requireModule).map(diag => {
+                        diag.source = 'stylable';
+                        return diag;
+                    }).concat(newCssService.getDiagnostics(doc));
+                    connection.sendDiagnostics({ uri: doc.uri, diagnostics: diagnostics });
+                }
+            }
+        })
+
     }
 
     // docsDispatcher.onDidOpen(diagnose);
@@ -105,7 +111,7 @@ export function initStylableLanguageService(connection: IConnection, services: {
     });
 
     connection.onReferences((params: ReferenceParams): Location[] => {
-        const refs = getRefs(params, fs);
+        const refs = getRefs(params, fs, services.styl);
         if (refs.length) {
             return dedupeRefs(refs);
         } else {
@@ -113,12 +119,10 @@ export function initStylableLanguageService(connection: IConnection, services: {
         }
     });
 
-    connection.onDocumentFormatting((params) => {return null})
-
+    connection.onDocumentFormatting((params) => { return null })
 
     connection.onDocumentColor((params: DocumentColorParams) => {
         const document = fs.get(params.textDocument.uri);
-
         return resolveDocumentColors(services.styl, newCssService, document);
 
     });
@@ -130,17 +134,17 @@ export function initStylableLanguageService(connection: IConnection, services: {
     });
 
     connection.onRenameRequest((params): WorkspaceEdit => {
-        let edit: WorkspaceEdit = {changes: {}};
-        getRefs({
-            context: {includeDeclaration: true},
+        let edit: WorkspaceEdit = { changes: {} };
+        getRenameRefs({
+            context: { includeDeclaration: true },
             position: params.position,
             textDocument: params.textDocument
-        }, fs)
+        }, fs, services.styl)
             .forEach(ref => {
                 if (edit.changes![ref.uri]) {
-                    edit.changes![ref.uri].push({range: ref.range, newText: params.newName})
+                    edit.changes![ref.uri].push({ range: ref.range, newText: params.newName })
                 } else {
-                    edit.changes![ref.uri] = [{range: ref.range, newText: params.newName}]
+                    edit.changes![ref.uri] = [{ range: ref.range, newText: params.newName }]
                 }
             })
 

@@ -1,8 +1,0 @@
-:vars {
-    col: blue;
-    colcol: red;
-}
-
-.local {
-    color: value(col)
-}

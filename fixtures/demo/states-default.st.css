@@ -1,0 +1,22 @@
+:import {
+    -st-from: "./states-import.st.css";
+    -st-default: Gompl;
+}
+
+.root Gompl:rootState {}
+
+.root Gompl:rootState::one:topState {}
+
+.root Gompl::two:topState {}
+
+.local {
+    -st-extends: Gompl;
+    -st-states: extendState
+}
+
+.local:rootState:extendState {}
+
+.local::one:topState {}
+
+.local:rootState::two:topState {}
+

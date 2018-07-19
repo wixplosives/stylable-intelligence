@@ -22,6 +22,9 @@ export function createDocFs(fileSystem: FileSystemReadSync, docs: MinimalDocs): 
             const fromDocs = docs.get(vscodePath);
             return fromDocs ? fromDocs.getText() : fileSystem.loadTextFileSync(fromVscodePath(path))
         },
+        loadDirectoryTreeSync(path: string) {
+            return fileSystem.loadDirectoryTreeSync(path);
+        },
         get(path: string) {
             return docs.get(path) || TextDocument.create(path, 'stylable', 0, this.loadTextFileSync(fromVscodePath(path)));
         },

@@ -1,0 +1,18 @@
+:import {
+    -st-from: "./classes-top.st.css";
+    -st-named: aaa,bbb,ccc;
+}
+
+.root .aaa .bbb .ccc {
+
+}
+
+.ddd {
+    -st-extends: ccc;
+}
+
+.other {
+    -st-mixin: bbb;
+}
+
+:global(.ccc) {}  /*Can't touch this*/
