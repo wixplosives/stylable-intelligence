@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.3.1
+
+### New features
+- Find references and Rename symbol now work across files. 
+- Diagnostics are published to all open files on any content change to a single file.
+
+### Bug fix
+- documentColor no longer throws an error when an imported file does not exist.
+
 ## v0.3.0
 
 ### New feature

@@ -1,7 +1,7 @@
 const isWindows = process.platform === 'win32';
 export const fromVscodePath = (uri: string) => {
     if (uri.startsWith('file://')) {
-        return isWindows ? uri.slice(8).replace('%3A', ':') : uri.slice(7)
+        return isWindows ? uri.slice(8).replace('%3A', ':').replace(/\//g,'\\') : uri.slice(7)
     }
     return uri;
 }

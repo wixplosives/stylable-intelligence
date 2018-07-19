@@ -1,17 +1,17 @@
 :import {
     -st-from: "./states-import.st.css";
-    -st-default: Fompl;
+    -st-default: Gompl;
 }
 
 
-.root Fompl:rootState {}
+.root Gompl:rootState {}
 
-.root Fompl::one:topState {}
+.root Gompl::one:topState {}
 
-.root Fompl::two:topState {}
+.root Gompl::two:topState {}
 
 .local {
-    -st-extends: Fompl;
+    -st-extends: Gompl;
     -st-states: extendState
 }
 
