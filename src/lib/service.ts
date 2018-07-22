@@ -76,13 +76,16 @@ export function initStylableLanguageService(connection: IConnection, services: {
     });
 
     async function diagnose() {
-        const res = await connection.workspace.getConfiguration({
-            section: 'stylable'
-        });
+        let res: any;
         let ignore = false;
-        if (!!res && !!res.diagnostics && !!res.diagnostics.ignore && !!res.diagnostics.ignore.length) {
-            ignore = true;
-        };
+        try {
+            res = await connection.workspace.getConfiguration({
+                section: 'stylable'
+            });
+            if (!!res && !!res.diagnostics && !!res.diagnostics.ignore && !!res.diagnostics.ignore.length) {
+                ignore = true;
+            };
+        } catch (e) {/*Client has no workspace/configuration method, ignore silently */ }
 
         docsDispatcher.keys!().forEach(key => {
             const doc = docsDispatcher.get!(key);
