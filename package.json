@@ -113,8 +113,8 @@
       "title": "Stylable Settings",
       "properties": {
         "stylable.diagnostics.ignore": {
-          "type": "array",
-          "default": [],
+          "type": "string",
+          "default": "",
           "description": "Array of files and folders to ignore when outputting diagnostics. Paths are relative to project root. No glob/regex patterns allowed."
         }
       }

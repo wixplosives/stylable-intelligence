@@ -1,7 +1,7 @@
 'use strict';
-import {createConnection, IConnection, IPCMessageReader, IPCMessageWriter} from 'vscode-languageserver';
-import {LocalSyncFs} from './local-sync-fs';
-import {init} from "./server-utils";
+import { createConnection, IConnection, IPCMessageReader, IPCMessageWriter, DidChangeConfigurationNotification } from 'vscode-languageserver';
+import { LocalSyncFs } from './local-sync-fs';
+import { init } from "./server-utils";
 import { initializeResult } from '../view';
 
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
@@ -14,3 +14,7 @@ connection.onInitialize((params) => {
 
     return initializeResult;
 });
+
+connection.onInitialized(() => {
+    connection.client.register(DidChangeConfigurationNotification.type, undefined)
+})

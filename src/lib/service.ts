@@ -93,6 +93,11 @@ export function initStylableLanguageService(connection: IConnection, services: {
     // docsDispatcher.onDidOpen(diagnose);
     docsDispatcher.onDidChangeContent(diagnose);
 
+    connection.onDidChangeConfiguration(change => {
+        let a = change;
+        a; connection;
+    })
+
     connection.onDefinition((params): Thenable<Definition> => {
         const doc = fs.loadTextFileSync(params.textDocument.uri);
         const pos = params.position;

@@ -21,5 +21,6 @@ export const initializeResult : InitializeResult = {
                 ','
             ]
         },
+
     } as CPServerCapabilities & ServerCapabilities)
 };
