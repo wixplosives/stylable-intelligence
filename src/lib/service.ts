@@ -112,15 +112,6 @@ export function initStylableLanguageService(connection: IConnection, services: {
     // docsDispatcher.onDidOpen(diagnose);
     docsDispatcher.onDidChangeContent(diagnose);
 
-    // connection.onDidChangeConfiguration(async change => {
-    // const res = await connection.workspace.getConfiguration({
-    //     section: 'stylable'
-    // });
-    // if (!!res && res.diagnostics) {
-    //     let a = 1;
-    // };
-    // });
-
     connection.onDidChangeConfiguration(diagnose);
 
     connection.onDefinition((params): Thenable<Definition> => {
