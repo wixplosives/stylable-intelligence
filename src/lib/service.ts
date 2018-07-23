@@ -13,7 +13,7 @@ import { createProvider, MinimalDocsDispatcher, } from './provider-factory';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import { createDiagnosis } from './diagnosis';
-import { Command, CompletionItem, Location, ParameterInformation, TextEdit } from 'vscode-languageserver-types';
+import { Command, CompletionItem, Location, ParameterInformation, TextEdit, Diagnostic } from 'vscode-languageserver-types';
 import { Stylable } from 'stylable';
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 import { getRefs, getDefSymbol, getRenameRefs } from './provider';
@@ -22,6 +22,7 @@ import { IConnection } from "vscode-languageserver";
 import { CompletionParams } from 'vscode-languageclient/lib/main';
 import { CssService } from "../model/css-service";
 import { resolveDocumentColors, getColorPresentation } from './feature/color-provider';
+import * as path from 'path';
 
 export { MinimalDocs } from './provider-factory';
 
@@ -74,15 +75,33 @@ export function initStylableLanguageService(connection: IConnection, services: {
         }).concat(newCssService.getCompletions(document, position));
     });
 
-    function diagnose({ document }: TextDocumentChangeEvent) {
+    async function diagnose() {
+        let res: any;
+        let ignore = false;
+        try {
+            res = await connection.workspace.getConfiguration({
+                section: 'stylable'
+            });
+            if (!!res && !!res.diagnostics && !!res.diagnostics.ignore && !!res.diagnostics.ignore.length) {
+                ignore = true;
+            };
+        } catch (e) {/*Client has no workspace/configuration method, ignore silently */ }
+
         docsDispatcher.keys!().forEach(key => {
             const doc = docsDispatcher.get!(key);
             if (!!doc) {
                 if (doc.languageId === 'stylable') {
-                    let diagnostics = createDiagnosis(doc, fs, processor, services.requireModule).map(diag => {
-                        diag.source = 'stylable';
-                        return diag;
-                    }).concat(newCssService.getDiagnostics(doc));
+                    let diagnostics: Diagnostic[];
+                    if (ignore && (res.diagnostics.ignore as string[]).some(p => {
+                        return fromVscodePath(doc.uri).startsWith(path.resolve(p))
+                    })) {
+                        diagnostics = [];
+                    } else {
+                        diagnostics = createDiagnosis(doc, fs, processor, services.requireModule).map(diag => {
+                            diag.source = 'stylable';
+                            return diag;
+                        }).concat(newCssService.getDiagnostics(doc));
+                    }
                     connection.sendDiagnostics({ uri: doc.uri, diagnostics: diagnostics });
                 }
             }
@@ -92,6 +111,8 @@ export function initStylableLanguageService(connection: IConnection, services: {
 
     // docsDispatcher.onDidOpen(diagnose);
     docsDispatcher.onDidChangeContent(diagnose);
+
+    connection.onDidChangeConfiguration(diagnose);
 
     connection.onDefinition((params): Thenable<Definition> => {
         const doc = fs.loadTextFileSync(params.textDocument.uri);
