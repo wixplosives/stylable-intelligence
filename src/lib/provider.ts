@@ -568,9 +568,38 @@ function findRefs(word: string, defMeta: StylableMeta, curMeta: StylableMeta, st
     });
     curMeta!.rawAst.walkDecls((decl) => {
         if (!decl.source || !decl.source.start) { return; }
-        const directiveRegex = new RegExp(valueMapping.extends + '|' + valueMapping.named + '|' + valueMapping.default + '|' + valueMapping.states)
+        const directiveRegex = new RegExp(valueMapping.extends + '|' + valueMapping.named + '|' + valueMapping.default)
         if (directiveRegex.test(decl.prop)) {
             //Usage in -st directives
+            const reg = new RegExp(valueRegex.source);
+            const match = reg.exec(decl.value);
+            if (match) {
+                refs.push({
+                    uri: toVscodePath(curMeta.source),
+                    range: {
+                        start: {
+                            line: decl.source.start!.line - 1,
+                            character: match.index + decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) - 1
+                        },
+                        end: {
+                            line: decl.source.start!.line - 1,
+                            character: match.index + decl.source.start!.column + decl.prop.length + (decl.raws.between ? decl.raws.between.length : 0) + word.length - 1
+                        }
+                    }
+                })
+            }
+        }
+    });
+    curMeta!.rawAst.walkDecls((decl) => {
+        if (!decl.source || !decl.source.start || !pos) { return; }
+        const directiveRegex = new RegExp(valueMapping.states)
+        const pfp = pathFromPosition(defMeta.rawAst, pos);
+        // if ((last(pfp) as PostCss.Rule).selector.replace('.', '') === sym.name) {
+        //     return true;
+        // }
+
+        if (directiveRegex.test(decl.prop) && (decl.parent as PostCss.Rule).selector === (last(pfp) as PostCss.Rule).selector) {
+            //Usage in -st-states
             const reg = new RegExp(valueRegex.source);
             const match = reg.exec(decl.value);
             if (match) {
@@ -753,7 +782,7 @@ function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Styl
             const newMeta = styl.process(file.fullPath);
             let done = false;
             if (meta.source === newMeta.source) {
-                refs = refs.concat(findRefs(word.replace('.', ''), meta, newMeta, styl));
+                refs = refs.concat(findRefs(word.replace('.', ''), meta, newMeta, styl, pos));
                 return;
             }
             const trans = styl.createTransformer();
