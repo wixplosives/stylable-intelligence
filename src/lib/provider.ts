@@ -161,11 +161,13 @@ export default class Provider {
             }
         } else if (values(meta.mappedSymbols).some(k => {
             if (k._kind === 'class' && keys(k[valueMapping.states]).some(key => key === word)) {
-                temp = k;
-                return true
-            } else {
-                return false
+                const pfp = pathFromPosition(meta.rawAst, position);
+                if ((last(pfp) as PostCss.Rule).selector.replace('.', '') === k.name) {
+                    temp = k;
+                    return true;
+                }
             }
+            return false
         })) {
             defs.push(
                 new ProviderLocation(meta.source, this.findWord(temp!.name, fs.get(meta.source).getText(), position))
@@ -836,7 +838,7 @@ export function getRenameRefs(params: ReferenceParams, fs: ExtendedFSReadSync, s
     const refs = getRefs(params, fs, styl);
     const newRefs: Location[] = [];
     refs.forEach(ref => {
-        if (!ref.uri.includes('node_modules') && fromVscodePath(ref.uri).startsWith(styl.projectRoot) ) {
+        if (!ref.uri.includes('node_modules') && fromVscodePath(ref.uri).startsWith(styl.projectRoot)) {
             newRefs.push(ref);
         }
     })
