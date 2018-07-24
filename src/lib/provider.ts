@@ -1,71 +1,23 @@
 //must remain independent from vscode
+import { File } from 'kissfs';
+import { keys, last, values } from 'lodash';
+import * as path from 'path';
 import * as PostCss from 'postcss';
-import { ContainerBase, Declaration, NodeBase } from 'postcss';
-import {
-    CSSResolve,
-    Diagnostics,
-    expandCustomSelectors,
-    ImportSymbol,
-    process as stylableProcess,
-    safeParse,
-    SRule,
-    StateParsedValue,
-    Stylable,
-    StylableMeta,
-    StylableTransformer,
-    valueMapping
-} from 'stylable';
-import { isContainer, isDeclaration, isRoot, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
-import {
-    CodeMixinCompletionProvider,
-    CompletionProvider,
-    createRange,
-    CssMixinCompletionProvider,
-    ExtendCompletionProvider,
-    FormatterCompletionProvider,
-    GlobalCompletionProvider,
-    ImportInternalDirectivesProvider,
-    NamedCompletionProvider,
-    ProviderOptions,
-    ProviderPosition,
-    ProviderRange,
-    PseudoElementCompletionProvider,
-    RulesetInternalDirectivesProvider,
-    SelectorCompletionProvider,
-    StateEnumCompletionProvider,
-    StateSelectorCompletionProvider,
-    StateTypeCompletionProvider,
-    TopLevelDirectiveProvider,
-    ValueCompletionProvider,
-    ValueDirectiveProvider
-} from './completion-providers';
-import { Completion, } from './completion-types';
-import { parseSelector, SelectorChunk, SelectorInternalChunk, } from './utils/selector-analyzer';
-import {
-    Location,
-    ParameterInformation,
-    Position,
-    ReferenceParams,
-    SignatureHelp,
-    SignatureInformation,
-} from 'vscode-languageserver';
+import { Declaration } from 'postcss';
+import { CSSResolve, Diagnostics, expandCustomSelectors, ImportSymbol, process as stylableProcess, safeParse, SRule, StateParsedValue, Stylable, StylableMeta, StylableTransformer, valueMapping } from 'stylable';
+import { ClassSymbol, ElementSymbol } from 'stylable/dist/src/stylable-processor';
 import * as ts from 'typescript';
 import { ParameterDeclaration, SignatureDeclaration, TypeReferenceNode } from 'typescript';
-import { fromVscodePath, toVscodePath } from './utils/uri-utils';
-import { keys, last, values } from 'lodash';
+import { Location, ParameterInformation, Position, ReferenceParams, SignatureHelp, SignatureInformation } from 'vscode-languageserver';
+import { CodeMixinCompletionProvider, CompletionProvider, createRange, CssMixinCompletionProvider, ExtendCompletionProvider, FormatterCompletionProvider, GlobalCompletionProvider, ImportInternalDirectivesProvider, NamedCompletionProvider, ProviderOptions, ProviderPosition, ProviderRange, PseudoElementCompletionProvider, RulesetInternalDirectivesProvider, SelectorCompletionProvider, StateEnumCompletionProvider, StateSelectorCompletionProvider, StateTypeCompletionProvider, TopLevelDirectiveProvider, ValueCompletionProvider, ValueDirectiveProvider } from './completion-providers';
+import { Completion } from './completion-types';
+import { createStateTypeSignature, createStateValidatorSignature, resolveStateParams, resolveStateTypeOrValidator } from './feature/pseudo-class';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
-import { ClassSymbol, StylableSymbol, ElementSymbol } from 'stylable/dist/src/stylable-processor';
-import {
-    createStateTypeSignature,
-    createStateValidatorSignature,
-    resolveStateParams,
-    resolveStateTypeOrValidator
-} from './feature/pseudo-class';
-import { File } from 'kissfs';
-import * as path from 'path';
+import { isRoot, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
+import { parseSelector, SelectorChunk, SelectorInternalChunk } from './utils/selector-analyzer';
+import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 
 const pvp = require('postcss-value-parser');
-const psp = require('postcss-selector-parser');
 const cst = require('css-selector-tokenizer');
 
 export default class Provider {
@@ -167,11 +119,11 @@ export default class Provider {
                     return true;
                 }
             }
-            return false
+            return false;
         })) {
             defs.push(
                 new ProviderLocation(meta.source, this.findWord(temp!.name, fs.get(meta.source).getText(), position))
-            )
+            );
         } else if (keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
             defs.push(
                 new ProviderLocation(meta.source, this.findWord(':--' + word, src, position))
@@ -180,10 +132,10 @@ export default class Provider {
             //Default import, link to top of imported stylesheet
             defs.push(
                 new ProviderLocation(meta.source, createRange(0, 0, 0, 0))
-            )
+            );
         }
 
-        return Promise.resolve(defs)
+        return Promise.resolve(defs);
     }
 
     public getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
@@ -557,7 +509,7 @@ function isIllegalLine(line: string): boolean {
 
 const lineEndsRegexp = /({|}|;)/;
 
-function findRefs(word: string, defMeta: StylableMeta, curMeta: StylableMeta, styl: Stylable): Location[] {
+function findRefs(word: string, defMeta: StylableMeta, curMeta: StylableMeta, styl: Stylable, pos?: Position): Location[] {
     if (!word) {
         return []
     }
@@ -708,7 +660,7 @@ function findRefs(word: string, defMeta: StylableMeta, curMeta: StylableMeta, st
     return refs;
 }
 
-function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Stylable): Location[] {
+function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Stylable, pos?: Position): Location[] {
     let refs: Location[] = [];
     if (word.startsWith(':global(')) { //Global selector strings are special
         files.forEach(file => {
@@ -743,7 +695,7 @@ function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Styl
                 refs = refs.concat(findRefs(tmp, meta, newMeta, styl))
             }
         })
-    } else if (meta.mappedSymbols[word] && meta.mappedSymbols[word]._kind === 'var') { //Vatiable
+    } else if (meta.mappedSymbols[word] && meta.mappedSymbols[word]._kind === 'var') { //Variable
         files.forEach(file => {
             const newMeta = styl.process(file.fullPath);
             if (!newMeta.mappedSymbols[word] || (newMeta.mappedSymbols[word]._kind !== 'var' && newMeta.mappedSymbols[word]._kind !== 'import')) { return; }
@@ -785,8 +737,17 @@ function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Styl
                 }
             })
         })
-    } else if (keys(meta.mappedSymbols).some(k => {
-        return meta.mappedSymbols[k]._kind === 'class' && keys((meta.mappedSymbols[k] as ClassSymbol)[valueMapping.states]).some(k => k === word)
+    } else if (values(meta.mappedSymbols).some(sym => {
+        return sym._kind === 'class' && keys((sym as ClassSymbol)[valueMapping.states]).some(k => {
+            if (k === word && !!pos) {
+                const pfp = pathFromPosition(meta.rawAst, pos);
+                if ((last(pfp) as PostCss.Rule).selector.replace('.', '') === sym.name) {
+                    return true;
+                }
+            }
+            return false;
+
+        })
     })) {
         files.forEach(file => {
             const newMeta = styl.process(file.fullPath);
@@ -808,7 +769,7 @@ function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Styl
                     if (symb && symb.resolved.some(r => {
                         return (r.symbol._kind === 'class' && r.symbol.name === elem && r.meta.source === meta.source)
                     })) {
-                        refs = refs.concat(findRefs(word.replace('.', ''), meta, newMeta, styl));
+                        refs = refs.concat(findRefs(word.replace('.', ''), meta, newMeta, styl, pos));
                         done = true;
                     }
                 }
@@ -830,7 +791,7 @@ export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync, styl: S
         return f;
     });
 
-    refs = newFindRefs(symb.word, symb.meta, cont, styl);
+    refs = newFindRefs(symb.word, symb.meta, cont, styl, params.position);
     return refs;
 }
 
