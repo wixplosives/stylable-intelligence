@@ -113,8 +113,11 @@ export default class Provider {
             }
         } else if (values(meta.mappedSymbols).some(k => {
             if (k._kind === 'class' && keys(k[valueMapping.states]).some(key => key === word)) {
-                const pfp = pathFromPosition(meta.rawAst, position);
-                if ((last(pfp) as PostCss.Rule).selector.replace('.', '') === k.name) {
+                const postcsspos = new ProviderPosition(position.line + 1, position.character)
+                const pfp = pathFromPosition(meta.rawAst, postcsspos, [], true);
+                let selec = (last(pfp) as PostCss.Rule).selector;
+                selec = selec.includes(':') ? selec.slice(0, selec.indexOf(':')).replace('.', '') : selec.replace('.','');
+                if (selec === k.name) {
                     temp = k;
                     return true;
                 }
@@ -564,6 +567,33 @@ function findRefs(word: string, defMeta: StylableMeta, curMeta: StylableMeta, st
                     })
                 }
             }
+            else if (!!pos && resLocal[0].some(rl => { //States in selector
+                const pfp = pathFromPosition(defMeta.rawAst, pos);
+                return (
+                    (rl.type === 'class' || rl.type === 'pseudo-element')
+                    && rl.resolved.some(res => !!(res.symbol as ClassSymbol)[valueMapping.states]
+                        && keys((res.symbol as ClassSymbol)[valueMapping.states]).indexOf(word) !== -1
+                        && (last(pfp) as PostCss.Rule).selector.replace('.', '') === rl.name)
+                )
+            })) {
+                let match;
+                while ((match = valueRegex.exec(rule.selector)) !== null) {
+                    const index = match[0].startsWith('.') ? match.index : match.index - 1;
+                    refs.push({
+                        uri: toVscodePath(curMeta.source),
+                        range: {
+                            start: {
+                                line: rule.source.start!.line - 1,
+                                character: rule.source.start!.column + index
+                            },
+                            end: {
+                                line: rule.source.start!.line - 1,
+                                character: rule.source.start!.column + index + word.length
+                            }
+                        }
+                    })
+                }
+            }
         }
     });
     curMeta!.rawAst.walkDecls((decl) => {
@@ -594,10 +624,6 @@ function findRefs(word: string, defMeta: StylableMeta, curMeta: StylableMeta, st
         if (!decl.source || !decl.source.start || !pos) { return; }
         const directiveRegex = new RegExp(valueMapping.states)
         const pfp = pathFromPosition(defMeta.rawAst, pos);
-        // if ((last(pfp) as PostCss.Rule).selector.replace('.', '') === sym.name) {
-        //     return true;
-        // }
-
         if (directiveRegex.test(decl.prop) && (decl.parent as PostCss.Rule).selector === (last(pfp) as PostCss.Rule).selector) {
             //Usage in -st-states
             const reg = new RegExp(valueRegex.source);
@@ -620,7 +646,7 @@ function findRefs(word: string, defMeta: StylableMeta, curMeta: StylableMeta, st
         }
     });
     curMeta!.rawAst.walkDecls(valueMapping.mixin, (decl) => {
-        //usage in mixin
+        //usage in -st-mixin
         if (!decl.source || !decl.source.start) { return; }
         const lines = decl.value.split('\n');
         lines.forEach((line, index) => {
@@ -766,7 +792,7 @@ function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Styl
                 }
             })
         })
-    } else if (values(meta.mappedSymbols).some(sym => {
+    } else if (values(meta.mappedSymbols).some(sym => { //states
         return sym._kind === 'class' && keys((sym as ClassSymbol)[valueMapping.states]).some(k => {
             if (k === word && !!pos) {
                 const pfp = pathFromPosition(meta.rawAst, pos);
@@ -785,6 +811,7 @@ function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Styl
                 refs = refs.concat(findRefs(word.replace('.', ''), meta, newMeta, styl, pos));
                 return;
             }
+            if (!pos) { return };
             const trans = styl.createTransformer();
             newMeta.rawAst.walkRules(r => {
                 if (r.selector.includes(':' + word) && !done) {
@@ -796,7 +823,13 @@ function newFindRefs(word: string, meta: StylableMeta, files: File[], styl: Styl
                     const reso = trans.resolveSelectorElements(newMeta, r.selector);
                     const symb = reso[0].find(o => o.name === elem);
                     if (symb && symb.resolved.some(r => {
-                        return (r.symbol._kind === 'class' && r.symbol.name === elem && r.meta.source === meta.source)
+                        const pfp = pathFromPosition(r.meta.rawAst, pos);
+                        return (
+                            r.symbol._kind === 'class'
+                            && r.symbol.name === elem
+                            && r.meta.source === meta.source
+                            && (last(pfp) as PostCss.Rule).selector.replace('.', '') === r.symbol.name
+                        )
                     })) {
                         refs = refs.concat(findRefs(word.replace('.', ''), meta, newMeta, styl, pos));
                         done = true;
