@@ -1,8 +1,9 @@
-import { createRange } from '../../src/lib/completion-providers';
+import { createRange, ProviderPosition } from '../../src/lib/completion-providers';
 import * as asserters from '../../test-kit/asserters';
 import { expect } from 'chai';
 import * as path from 'path';
-import {CASES_PATH} from "../../test-kit/asserters";
+import { CASES_PATH } from "../../test-kit/asserters";
+import { call } from 'when/node';
 
 describe("Definitions", function () {
     describe("Local elements", function () {
@@ -155,6 +156,48 @@ describe("Definitions", function () {
                     let def = defs[0];
                     expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/my-mixins.ts'));
                     expect(def.range).to.eql(createRange(19, 16, 19, 34))
+                });
+            });
+        });
+
+        describe("States", function () {
+
+            let callLocs = [
+                { filePath: 'definitions/states-import.st.css', pos: new ProviderPosition(1, 22) },
+                { filePath: 'definitions/states-default.st.css', pos: new ProviderPosition(5, 14) },
+                { filePath: 'definitions/states-default.st.css', pos: new ProviderPosition(7, 14) },
+                { filePath: 'definitions/states-default.st.css', pos: new ProviderPosition(16, 14) },
+                { filePath: 'definitions/states-default.st.css', pos: new ProviderPosition(20, 14) }
+            ]
+
+            callLocs.forEach(cl => {
+                xit("Should find definition of rootState when called from file " + cl.filePath + " in position " + JSON.stringify(cl.pos), function () {
+
+                    return asserters.getDefFromLoc(cl).then((defs) => {
+                        expect(defs.length).to.equal(1);
+                        let def = defs[0];
+                        expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/states-import.st.css'));
+                        expect(def.range).to.eql(createRange(0, 0, 0, 0))
+                    });
+                });
+                // });
+            });
+
+            callLocs = [
+                { filePath: 'definitions/states-import.st.css', pos: new ProviderPosition(5, 21) },
+                { filePath: 'definitions/states-default.st.css', pos: new ProviderPosition(7, 30) },
+                { filePath: 'definitions/states-default.st.css', pos: new ProviderPosition(18, 15) },
+                { filePath: 'definitions/states-named.st.css', pos: new ProviderPosition(5, 17) },
+            ]
+
+            callLocs.forEach(cl => {
+                it.only ("Should find definition of topState on element 'one' when called from file " + cl.filePath + " in position " + JSON.stringify(cl.pos), function () {
+                    return asserters.getDefFromLoc(cl).then((defs) => {
+                        expect(defs.length).to.equal(1);
+                        let def = defs[0];
+                        expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/states-import.st.css'));
+                        expect(def.range).to.eql(createRange(4, 1, 4, 4))
+                    });
                 });
             });
         });

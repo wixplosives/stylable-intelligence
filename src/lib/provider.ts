@@ -1,6 +1,6 @@
 //must remain independent from vscode
 import { File } from 'kissfs';
-import { keys, last, values } from 'lodash';
+import { keys, last, values, findLast } from 'lodash';
 import * as path from 'path';
 import * as PostCss from 'postcss';
 import { Declaration } from 'postcss';
@@ -13,8 +13,8 @@ import { CodeMixinCompletionProvider, CompletionProvider, createRange, CssMixinC
 import { Completion } from './completion-types';
 import { createStateTypeSignature, createStateValidatorSignature, resolveStateParams, resolveStateTypeOrValidator } from './feature/pseudo-class';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
-import { isRoot, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
-import { parseSelector, SelectorChunk, SelectorInternalChunk } from './utils/selector-analyzer';
+import { isRoot, isSelector, pathFromPosition, isInNode } from './utils/postcss-ast-utils';
+import { parseSelector, SelectorChunk, SelectorInternalChunk, SelectorQuery } from './utils/selector-analyzer';
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 
 const pvp = require('postcss-value-parser');
@@ -62,6 +62,7 @@ export default class Provider {
             return Promise.resolve([])
         };
 
+        const callingMeta = this.styl.process(filePath);
         const { word, meta } = getDefSymbol(src, position, filePath, this.styl);
         if (!meta || !word) {
             return Promise.resolve([])
@@ -114,10 +115,17 @@ export default class Provider {
         } else if (values(meta.mappedSymbols).some(k => {
             if (k._kind === 'class' && keys(k[valueMapping.states]).some(key => key === word)) {
                 const postcsspos = new ProviderPosition(position.line + 1, position.character)
-                const pfp = pathFromPosition(meta.rawAst, postcsspos, [], true);
+                const pfp = pathFromPosition(callingMeta.rawAst, postcsspos, [], true);
                 let selec = (last(pfp) as PostCss.Rule).selector;
-                selec = selec.includes(':') ? selec.slice(0, selec.indexOf(':')).replace('.', '') : selec.replace('.','');
-                if (selec === k.name) {
+                const char = isInNode(postcsspos, last(pfp)!) ? 1 : position.character; //If called from -st-state, i.e. inside node, pos is not in selector. Use 1 and not 0 for selector that starts with'.'
+                const parsel = parseSelector(selec, char);
+                const t = parsel.target;
+                let arr = (Array.isArray(t.focusChunk)
+                    ? (t.focusChunk as SelectorQuery[])[t.index].text
+                    : t.focusChunk.text);
+                let name = findLast(arr, (str: string) => !str.startsWith(':') || str.startsWith('::'))
+                name = name!.replace('.', '').replace(/:/g, '');
+                if (name === k.name) {
                     temp = k;
                     return true;
                 }

@@ -46,7 +46,15 @@ export function getDefinition(fileName: string): Thenable<ProviderLocation[]> {
     src = src.replace('|', "");
     return provider.getDefinitionLocation(src, pos, fullPath, docsFs).then((res) => {
         return res;
-    })
+    });
+}
+
+export function getDefFromLoc({filePath, pos}: {filePath: string, pos: ProviderPosition}) {
+    const fullPath = path.join(CASES_PATH, filePath);
+    let src: string = fs.readFileSync(fullPath).toString();
+    return provider.getDefinitionLocation(src, pos, fullPath, docsFs).then((res) => {
+        return res;
+    });
 }
 
 export function getReferences(fileName: string, pos: ProviderPosition): Location[] {
