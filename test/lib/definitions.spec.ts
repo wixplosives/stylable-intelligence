@@ -171,16 +171,15 @@ describe("Definitions", function () {
             ]
 
             callLocs.forEach(cl => {
-                xit("Should find definition of rootState when called from file " + cl.filePath + " in position " + JSON.stringify(cl.pos), function () {
+                it.only("Should find definition of rootState when called from file " + cl.filePath + " in position " + JSON.stringify(cl.pos), function () {
 
                     return asserters.getDefFromLoc(cl).then((defs) => {
                         expect(defs.length).to.equal(1);
                         let def = defs[0];
-                        expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/states-import.st.css'));
-                        expect(def.range).to.eql(createRange(0, 0, 0, 0))
+                        expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/states-import.st.css'));
+                        expect(def.range).to.eql(createRange(0, 1, 0, 5))
                     });
                 });
-                // });
             });
 
             callLocs = [

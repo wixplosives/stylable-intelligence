@@ -70,6 +70,7 @@ export default class Provider {
 
         let defs: ProviderLocation[] = [];
         let temp: ClassSymbol | null = null;
+        let stateMeta: StylableMeta;
 
         if (keys(meta.mappedSymbols).find(sym => sym === word.replace('.', ''))) {
             const symb = meta.mappedSymbols[word.replace('.', '')];
@@ -123,17 +124,25 @@ export default class Provider {
                 let arr = (Array.isArray(t.focusChunk)
                     ? (t.focusChunk as SelectorQuery[])[t.index].text
                     : t.focusChunk.text);
-                let name = findLast(arr, (str: string) => !str.startsWith(':') || str.startsWith('::'))
+                let name = findLast(arr, (str: string) => !str.startsWith(':') || str.startsWith('::'));
                 name = name!.replace('.', '').replace(/:/g, '');
-                if (name === k.name) {
+                if (name === k.name || (name.charAt(0) !== name.charAt(0).toLowerCase() && k.name === 'root')) {
                     temp = k;
+                    stateMeta = meta;
                     return true;
+                } else if (!!callingMeta.mappedSymbols[name] && !!(callingMeta.mappedSymbols[name] as ClassSymbol)[valueMapping.extends]) {
+                    const res = this.styl.resolver.resolveImport((callingMeta.mappedSymbols[name] as ClassSymbol)[valueMapping.extends] as ImportSymbol)
+                    if (!!res && keys(res.symbol[valueMapping.states]).indexOf(word) !== -1) {
+                        temp = k;
+                        stateMeta = res.meta!;
+                        return true;
+                    }
                 }
             }
             return false;
         })) {
             defs.push(
-                new ProviderLocation(meta.source, this.findWord(temp!.name, fs.get(meta.source).getText(), position))
+                new ProviderLocation(meta.source, this.findWord(temp!.name, fs.get(stateMeta!.source).getText(), position))
             );
         } else if (keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
             defs.push(
