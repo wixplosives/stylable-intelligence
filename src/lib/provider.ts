@@ -131,8 +131,8 @@ export default class Provider {
                     stateMeta = meta;
                     return true;
                 } else if (!!callingMeta.mappedSymbols[name] && !!(callingMeta.mappedSymbols[name] as ClassSymbol)[valueMapping.extends]) {
-                    const res = this.styl.resolver.resolveImport((callingMeta.mappedSymbols[name] as ClassSymbol)[valueMapping.extends] as ImportSymbol)
-                    if (!!res && keys(res.symbol[valueMapping.states]).indexOf(word) !== -1) {
+                    let res = this.findMyState(callingMeta, name, word);
+                    if (!!res) {
                         temp = k;
                         stateMeta = res.meta!;
                         return true;
@@ -156,6 +156,17 @@ export default class Provider {
         }
 
         return Promise.resolve(defs);
+    }
+
+    findMyState(origMeta: StylableMeta, elementName: string, state: string): CSSResolve | null {
+        let res = this.styl.resolver.resolveImport((origMeta.mappedSymbols[elementName] as ClassSymbol)[valueMapping.extends] as ImportSymbol);
+        if (!!res && res._kind === 'css' && keys((res.symbol as ClassSymbol)[valueMapping.states]).indexOf(state) !== -1) {
+            return res;
+        } else if (!!res && res._kind === 'css' && !!(origMeta.mappedSymbols[elementName] as ClassSymbol)[valueMapping.extends]) {
+            return this.findMyState(res.meta, res.symbol.name, state)
+        } else {
+            return null;
+        }
     }
 
     public getSignatureHelp(src: string, pos: Position, filePath: string, fs: ExtendedFSReadSync, paramInfo: typeof ParameterInformation): SignatureHelp | null {
