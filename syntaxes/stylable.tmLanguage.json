@@ -1380,7 +1380,7 @@
           "name": "variable.css"
         },
         {
-          "match": "-st-states|-st-extends|-st-compose|-st-mixin|-st-from|-st-default|-st-named|-st-theme|-st-global",
+          "match": "-st-states|-st-extends|-st-mixin|-st-from|-st-default|-st-named|-st-global",
           "name": "keyword.other.directive.stylable"
         },
         {

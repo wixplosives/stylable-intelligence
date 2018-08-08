@@ -12,7 +12,7 @@ import {
     VarSymbol,
     nativePseudoClasses,
     nativePseudoElements
-} from 'stylable';
+} from '@stylable/core';
 import { CursorPosition, SelectorChunk } from "./utils/selector-analyzer";
 import {
     classCompletion,
@@ -48,7 +48,7 @@ import {
 } from './provider';
 import { TypeReferenceNode } from 'typescript';
 import { toVscodePath } from './utils/uri-utils';
-import { ResolvedElement } from 'stylable/dist/src/stylable-transformer';
+import { ResolvedElement } from '@stylable/core/dist/src/stylable-transformer';
 import { find, keys, last } from 'lodash';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
 import { resolveStateTypeOrValidator } from './feature/pseudo-class';
@@ -162,8 +162,8 @@ function createDirectiveRange(position: ProviderPosition, fullLineText: string, 
     );
 }
 
-const importDeclarations: (keyof typeof importDirectives)[] = ['default', 'named', 'from', 'theme']
-const simpleRulesetDeclarations: (keyof typeof rulesetDirectives)[] = ['extends', 'states', 'variant', 'mixin']
+const importDeclarations: (keyof typeof importDirectives)[] = ['default', 'named', 'from']
+const simpleRulesetDeclarations: (keyof typeof rulesetDirectives)[] = ['extends', 'states', 'mixin']
 const topLevelDeclarations: (keyof typeof topLevelDirectives)[] = ['root', 'namespace', 'vars', 'import', 'customSelector']
 
 //Providers
