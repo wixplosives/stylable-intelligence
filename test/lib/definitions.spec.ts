@@ -173,7 +173,7 @@ describe("Definitions", function () {
             ]
 
             callLocs.forEach(cl => {
-                it.only("Should find definition of rootState when called from file " + cl.filePath + " in position " + JSON.stringify(cl.pos), function () {
+                it("Should find definition of rootState when called from file " + cl.filePath + " in position " + JSON.stringify(cl.pos), function () {
 
                     return asserters.getDefFromLoc(cl).then((defs) => {
                         expect(defs.length).to.equal(1);
@@ -201,21 +201,6 @@ describe("Definitions", function () {
                     });
                 });
             });
-
-            // callLocs = [
-            //     { filePath: 'definitions/states-import.st.css', pos: new ProviderPosition(5, 21) },
-            // ]
-
-            // callLocs.forEach(cl => {
-            //     it ("Should find definition of topState on element 'one' when called from file " + cl.filePath + " in position " + JSON.stringify(cl.pos), function () {
-            //         return asserters.getDefFromLoc(cl).then((defs) => {
-            //             expect(defs.length).to.equal(1);
-            //             let def = defs[0];
-            //             expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/states-import.st.css'));
-            //             expect(def.range).to.eql(createRange(4, 1, 4, 4))
-            //         });
-            //     });
-            // });
         });
     });
 });
