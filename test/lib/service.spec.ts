@@ -317,7 +317,7 @@ describe("Service component test", function () {
         expect(refsInExtends).to.eql(expectedRefs);
     }));
 
-    xit("Definitions - element", plan(5, async () => { //File system issue
+    it.only("Definitions - element", plan(5, async () => { //File system issue
         const topFileText = trimLiteral`
         |:import {
         |    -st-from: "./import.st.css";
