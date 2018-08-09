@@ -1,8 +1,8 @@
-import {StylableMeta} from 'stylable/dist/src/stylable-processor';
+import {StylableMeta} from '@stylable/core/dist/src/stylable-processor';
 import {Diagnostic, Range, TextDocument} from 'vscode-languageserver-types';
 import * as path from 'path';
-import {Diagnostics, FileProcessor, process as stylableProcess, safeParse, StylableTransformer} from 'stylable';
-import {Diagnostic as Report} from 'stylable/src/diagnostics'
+import {Diagnostics, FileProcessor, process as stylableProcess, safeParse, StylableTransformer} from '@stylable/core';
+import {Diagnostic as Report} from '@stylable/core/src/diagnostics'
 import {FileSystemReadSync} from 'kissfs';
 import {fromVscodePath} from './utils/uri-utils';
 

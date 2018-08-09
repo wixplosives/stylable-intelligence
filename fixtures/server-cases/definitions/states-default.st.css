@@ -18,6 +18,4 @@
 
 .local::one:topState {}
 
-.local:rootState::two:topState {} 
-
-Comp {}
+.local:rootState::two:topState {}

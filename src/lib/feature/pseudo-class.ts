@@ -1,4 +1,4 @@
-import { StylableMeta, ParsedValue, systemValidators, StateParsedValue } from 'stylable';
+import { StylableMeta, ParsedValue, systemValidators, StateParsedValue } from '@stylable/core';
 import { ProviderPosition } from '../completion-providers';
 import {
     ParameterInformation,

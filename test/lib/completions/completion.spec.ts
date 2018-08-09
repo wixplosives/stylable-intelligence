@@ -18,7 +18,6 @@ describe('Completions', function () {
                     asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
                     asserters.extendsDirectiveCompletion(createRange(0, 0, 0, 0)),
                     asserters.mixinDirectiveCompletion(createRange(0, 0, 0, 0)),
-                    asserters.variantDirectiveCompletion(createRange(0, 0, 0, 0))
                 ]);
             });
         });
@@ -37,7 +36,6 @@ describe('Completions', function () {
                     asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
                     asserters.extendsDirectiveCompletion(createRange(0, 0, 0, 0)),
                     asserters.mixinDirectiveCompletion(createRange(0, 0, 0, 0)),
-                    asserters.variantDirectiveCompletion(createRange(0, 0, 0, 0)),
                 ]);
             });
         });
@@ -53,7 +51,6 @@ describe('Completions', function () {
                     asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
                     asserters.extendsDirectiveCompletion(createRange(0, 0, 0, 0)),
                     asserters.mixinDirectiveCompletion(createRange(0, 0, 0, 0)),
-                    asserters.variantDirectiveCompletion(createRange(0, 0, 0, 0)),
                 ])
             });
         });
@@ -71,7 +68,6 @@ describe('Completions', function () {
                     asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
                     asserters.extendsDirectiveCompletion(createRange(0, 0, 0, 0)),
                     asserters.mixinDirectiveCompletion(createRange(0, 0, 0, 0)),
-                    asserters.variantDirectiveCompletion(createRange(0, 0, 0, 0)),
                 ])
             });
         });

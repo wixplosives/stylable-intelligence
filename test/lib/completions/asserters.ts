@@ -8,7 +8,7 @@ import {Completion, snippet} from '../../../src/lib/completion-types';
 import {ProviderPosition, ProviderRange} from '../../../src/lib/completion-providers';
 import {default as Provider} from '../../../src/lib/provider';
 import {fromVscodePath} from '../../../src/lib/utils/uri-utils';
-import {Stylable} from 'stylable';
+import {Stylable} from '@stylable/core';
 import {LocalSyncFs} from '../../../src/lib/local-sync-fs';
 import {createDocFs} from '../../../src/lib/server-utils';
 import {createBaseHost, createLanguageServiceHost} from '../../../src/lib/utils/temp-language-service-host';
@@ -186,15 +186,6 @@ export const statesDirectiveCompletion: (rng: ProviderRange) => Partial<Completi
         range: rng
     };
 }
-export const themeDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
-    return {
-        label: '-st-theme:',
-        detail: 'Declare a theme',
-        sortText: 'a',
-        insertText: '-st-theme: true;\n$0',
-        range: rng
-    };
-}
 export const valueDirective: (rng: ProviderRange) => Partial<Completion> = (rng) => {
     return {
         label: 'value()',
@@ -206,9 +197,6 @@ export const valueDirective: (rng: ProviderRange) => Partial<Completion> = (rng)
 }
 export const varsDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
     return {label: ':vars', detail: 'Declare variables', sortText: 'a', insertText: ':vars {\n\t$1\n}$0', range: rng};
-}
-export const variantDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
-    return {label: '-st-variant:', detail: 'Is a variant', sortText: 'a', insertText: '-st-variant: true;', range: rng};
 }
 export const globalCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
     return new Completion(':global()', 'Target a global selector', 'a', ':global($0)', rng)

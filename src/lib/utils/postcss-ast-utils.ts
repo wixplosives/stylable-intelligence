@@ -1,7 +1,7 @@
 import * as PostCss from 'postcss';
 import {ProviderPosition} from '../completion-providers'
 
-export function isInNode(position: ProviderPosition, node: PostCss.NodeBase): boolean {
+export function isInNode(position: ProviderPosition, node: PostCss.NodeBase, includeSelector = false): boolean {
     if (!node.source) {
         return false;
     }
@@ -23,7 +23,7 @@ export function isInNode(position: ProviderPosition, node: PostCss.NodeBase): bo
     if (node.source.end!.line === position.line && node.source.end!.column < position.character) {
         return false;
     }
-    if (isBeforeRuleset(position, node)) {
+    if (isBeforeRuleset(position, node) && !includeSelector) {
         return false;
     }
     if (isAfterRuleset(position, node)) {
@@ -79,15 +79,15 @@ export function isRoot(node: PostCss.NodeBase): node is PostCss.Root {
     return node.hasOwnProperty('type') && (node as PostCss.Root).type === 'root';
 }
 
-export function pathFromPosition(ast: PostCss.NodeBase, position: ProviderPosition, res: PostCss.NodeBase[] = []): PostCss.NodeBase[] {
+export function pathFromPosition(ast: PostCss.NodeBase, position: ProviderPosition, res: PostCss.NodeBase[] = [], includeSelector: boolean = false): PostCss.NodeBase[] {
     let currentNode = ast;
     res.push(ast);
     if (isContainer(currentNode) && currentNode.nodes) {
         const childNode = currentNode.nodes.find((node: PostCss.NodeBase) => {
-            return isInNode(position, node);
+            return isInNode(position, node, includeSelector);
         });
         if (childNode) {
-            return pathFromPosition(childNode, position, res);
+            return pathFromPosition(childNode, position, res, includeSelector);
         }
     }
     return res;

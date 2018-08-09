@@ -14,7 +14,7 @@ import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import { createDiagnosis } from './diagnosis';
 import { Command, CompletionItem, Location, ParameterInformation, TextEdit, Diagnostic } from 'vscode-languageserver-types';
-import { Stylable } from 'stylable';
+import { Stylable } from '@stylable/core';
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 import { getRefs, getDefSymbol, getRenameRefs } from './provider';
 import { ExtendedFSReadSync, ExtendedTsLanguageService, NotificationTypes } from './types'

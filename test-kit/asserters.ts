@@ -2,7 +2,7 @@ import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
 import { NodeBase } from 'postcss';
-import { Stylable } from 'stylable';
+import { Stylable } from '@stylable/core';
 import { TextDocument, TextDocumentIdentifier, Range } from 'vscode-languageserver-types';
 import { Location, ParameterInformation, SignatureHelp, ColorPresentation, Color } from 'vscode-languageserver';
 import { ColorInformation } from 'vscode-css-languageservice';
@@ -46,7 +46,15 @@ export function getDefinition(fileName: string): Thenable<ProviderLocation[]> {
     src = src.replace('|', "");
     return provider.getDefinitionLocation(src, pos, fullPath, docsFs).then((res) => {
         return res;
-    })
+    });
+}
+
+export function getDefFromLoc({filePath, pos}: {filePath: string, pos: ProviderPosition}) {
+    const fullPath = path.join(CASES_PATH, filePath);
+    let src: string = fs.readFileSync(fullPath).toString();
+    return provider.getDefinitionLocation(src, pos, fullPath, docsFs).then((res) => {
+        return res;
+    });
 }
 
 export function getReferences(fileName: string, pos: ProviderPosition): Location[] {
