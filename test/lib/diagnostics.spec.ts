@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { Stylable } from 'stylable';
+import { Stylable } from '@stylable/core';
 import { MemoryFileSystem } from 'kissfs';
 import { TextDocument } from 'vscode-languageserver-types'
 import { TextDocuments } from "vscode-languageserver";

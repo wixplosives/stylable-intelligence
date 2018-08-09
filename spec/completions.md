@@ -4,7 +4,7 @@ The provider provides completion suggestions when a user types a trigger charact
 
 Trigger charactes are:  "." ":" "-" and " "
 
-In the current examples '|' denotes the user's starting caret position. $1, $2, etc. denote tabstops inside the completion, with $0 being the final cursor position after completion. 
+In the current examples '|' denotes the user's starting caret position. $1, $2, etc. denote tabstops inside the completion, with $0 being the final cursor position after completion.
 
 ## Available Completions
 
@@ -45,13 +45,6 @@ Multiple use of the same directive in the same class is not allowed.
 ```css
     .gaga{
         -st-states:$1;
-    }$0
-```
-- -st-variant - defines the css class as a variant to be used as a mixin
-```css
-    .gaga{
-        -st-variant:true;
-        $1
     }$0
 ```
 

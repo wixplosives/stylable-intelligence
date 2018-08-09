@@ -2,7 +2,7 @@ import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
 import { NodeBase } from 'postcss';
-import { Stylable } from 'stylable';
+import { Stylable } from '@stylable/core';
 import { TextDocument, TextDocumentIdentifier, Range } from 'vscode-languageserver-types';
 import { Location, ParameterInformation, SignatureHelp, ColorPresentation, Color } from 'vscode-languageserver';
 import { ColorInformation } from 'vscode-css-languageservice';

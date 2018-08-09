@@ -2,6 +2,5 @@
     -st-states: a, b;
     -st-extends: Comp;
     -st-mixin: MixA;
-    -st-variant: BigButton;
     -|
 }
