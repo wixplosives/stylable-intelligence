@@ -1,5 +1,5 @@
 import {ProviderRange} from './completion-providers';
-import {valueMapping} from 'stylable'
+import {valueMapping} from '@stylable/core'
 
 export class Completion {
     constructor(public label: string, public detail: string = "", public sortText: string = 'd', public insertText: string | snippet = label,
@@ -16,14 +16,12 @@ export const importDirectives = {
     from: valueMapping.from,
     default: valueMapping.default,
     named: valueMapping.named,
-    theme: valueMapping.theme
 }
 
 export const rulesetDirectives = {
     extends: valueMapping.extends,
     mixin: valueMapping.mixin,
     states: valueMapping.states,
-    variant: valueMapping.variant
 }
 
 export const topLevelDirectives = {
@@ -44,8 +42,6 @@ export function importInternalDirective(type: keyof typeof importDirectives, rng
             return new Completion(valueMapping.from + ':', 'Path to library', 'a', new snippet(valueMapping.from + ': "$1";'), rng);
         case valueMapping.named:
             return new Completion(valueMapping.named + ':', 'Named export name', 'a', new snippet(valueMapping.named + ': $1;'), rng);
-        case valueMapping.theme:
-            return new Completion(valueMapping.theme + ':', 'Declare a theme', 'a', new snippet(valueMapping.theme + ': true;\n$0'), rng);
     }
 }
 
@@ -57,8 +53,6 @@ export function rulesetInternalDirective(type: keyof typeof rulesetDirectives, r
             return new Completion(valueMapping.mixin + ':', 'Apply mixins on the class', 'a', new snippet('-st-mixin: $1;'), rng, true);
         case valueMapping.states:
             return new Completion(valueMapping.states + ':', 'Define the CSS states available for this class', 'a', new snippet('-st-states: $1;'), rng);
-        case valueMapping.variant:
-            return new Completion(valueMapping.variant + ':', 'Is a variant', 'a', new snippet('-st-variant: true;'), rng);
     }
 }
 

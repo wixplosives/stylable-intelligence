@@ -14,7 +14,7 @@ import {
     StylableMeta,
     StylableTransformer,
     valueMapping
-} from 'stylable';
+} from '@stylable/core';
 import { isContainer, isDeclaration, isRoot, isSelector, pathFromPosition } from './utils/postcss-ast-utils';
 import {
     CodeMixinCompletionProvider,
@@ -54,7 +54,7 @@ import { ParameterDeclaration, SignatureDeclaration, TypeReferenceNode } from 't
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 import { keys, last, values } from 'lodash';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
-import { ClassSymbol, StylableSymbol, ElementSymbol } from 'stylable/dist/src/stylable-processor';
+import { ClassSymbol, StylableSymbol, ElementSymbol } from '@stylable/core/dist/src/stylable-processor';
 import {
     createStateTypeSignature,
     createStateValidatorSignature,

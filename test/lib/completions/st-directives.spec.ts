@@ -44,37 +44,22 @@ describe('Inner Directives', function () {
         });
     });
 
-    describe('should complete -st-theme inside import selector ', function () {
-        importDirectives.theme.split('').map((c, i) => {
-            let prefix = importDirectives.theme.slice(0, i);
-            it(' with Prefix: ' + prefix + ' ', function () {
-                return asserters.getCompletions('imports/inside-import-selector.st.css', prefix).then((asserter) => {
-                    asserter.suggested([
-                        asserters.themeDirectiveCompletion(createRange(2, 4, 2, 4 + i))
-                    ]);
-                });
-            });
-        });
-    });
-
-    it('should not complete -st-from, -st-default, -st-named, -st-theme inside import directives when exists', function () {
+    it('should not complete -st-from, -st-default, -st-named inside import directives when exists', function () {
         return asserters.getCompletions('imports/inside-import-selector-with-fields.st.css').then((asserter) => {
             asserter.notSuggested([
                 asserters.importFromDirectiveCompletion(createRange(0, 0, 0, 0)),
                 asserters.importDefaultDirectiveCompletion(createRange(0, 0, 0, 0)),
                 asserters.importNamedDirectiveCompletion(createRange(0, 0, 0, 0)),
-                asserters.themeDirectiveCompletion(createRange(0, 0, 0, 0)),
             ]);
         });
     });
 
-    it('should not complete -st-from, -st-default, -st-named, -st-theme outisde the import ruleset', function () {
+    it('should not complete -st-from, -st-default, -st-named outisde the import ruleset', function () {
         return asserters.getCompletions('imports/outside-ruleset.st.css').then((asserter) => {
             asserter.notSuggested([
                 asserters.importFromDirectiveCompletion(createRange(0, 0, 0, 0)),
                 asserters.importDefaultDirectiveCompletion(createRange(0, 0, 0, 0)),
                 asserters.importNamedDirectiveCompletion(createRange(0, 0, 0, 0)),
-                asserters.themeDirectiveCompletion(createRange(0, 0, 0, 0)),
             ]);
         });
     });
@@ -118,31 +103,17 @@ describe('Inner Directives', function () {
         });
     });
 
-    describe('should complete -st-variant inside simple selector ruleset ', function () {
-        rulesetDirectives.variant.split('').map((c, i) => {
-            let prefix = rulesetDirectives.variant.slice(0, i);
-            it(' with Prefix: ' + prefix + ' ', function () {
-                return asserters.getCompletions('imports/inside-ruleset.st.css', prefix).then((asserter) => {
-                    asserter.suggested([
-                        asserters.variantDirectiveCompletion(createRange(2, 4, 2, 4 + i))
-                    ]);
-                });
-            });
-        });
-    });
-
-    it('should not complete -st-states, -st-extends, -st-mixin, -st-variant inside simple selector ruleset when they exist', function () {
+    it('should not complete -st-states, -st-extends, -st-mixin inside simple selector ruleset when they exist', function () {
         return asserters.getCompletions('general/inside-simple-ruleset-with-all-st-fields.st.css').then((asserter) => {
             asserter.notSuggested([
                 asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
                 asserters.extendsDirectiveCompletion(createRange(0, 0, 0, 0)),
                 asserters.mixinDirectiveCompletion(createRange(0, 0, 0, 0)),
-                asserters.variantDirectiveCompletion(createRange(0, 0, 0, 0)),
             ]);
         });
     });
 
-    it('should complete -st-mixin, but not -st-states, -st-extends, -st-variant inside media query', function () {
+    it('should complete -st-mixin, but not -st-states, -st-extends inside media query', function () {
         return asserters.getCompletions('complex-selectors/media-query.st.css').then((asserter) => {
             asserter.suggested([
                 asserters.mixinDirectiveCompletion(createRange(2, 8, 2, 8)),
@@ -150,12 +121,11 @@ describe('Inner Directives', function () {
             asserter.notSuggested([
                 asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
                 asserters.extendsDirectiveCompletion(createRange(0, 0, 0, 0)),
-                asserters.variantDirectiveCompletion(createRange(0, 0, 0, 0)),
             ]);
         });
     });
 
-    describe('should complete -st-mixin, but not -st-states, -st-extends, -st-variant inside complex rules', function () {
+    describe('should complete -st-mixin, but not -st-states, -st-extends inside complex rules', function () {
         [
             'complex-selectors/class-and-class.st.css',
             'complex-selectors/class-and-descendant.st.css',
@@ -171,7 +141,6 @@ describe('Inner Directives', function () {
                     asserter.notSuggested([
                         asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
                         asserters.extendsDirectiveCompletion(createRange(0, 0, 0, 0)),
-                        asserters.variantDirectiveCompletion(createRange(0, 0, 0, 0)),
                     ]);
                 });
             })

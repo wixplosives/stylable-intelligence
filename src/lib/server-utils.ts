@@ -5,7 +5,7 @@ import {createFs, MinimalDocs,} from './provider-factory';
 import {ColorPresentationRequest, DocumentColorRequest} from 'vscode-languageserver-protocol';
 import {fromVscodePath, toVscodePath} from './utils/uri-utils';
 import {initStylableLanguageService} from './service'
-import {Stylable} from 'stylable';
+import {Stylable} from '@stylable/core';
 import *  as ts from 'typescript';
 import {FileSystemReadSync} from 'kissfs';
 import {ExtendedFSReadSync, ExtendedTsLanguageService} from './types';

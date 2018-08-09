@@ -16,7 +16,7 @@ import {
 } from 'vscode-languageserver-protocol';
 import {FileSystemReadSync} from 'kissfs';
 import * as ts from 'typescript';
-import {ParsedValue} from 'stylable';
+import {ParsedValue} from '@stylable/core';
 
 export interface NotificationTypes {
     openDoc: NotificationType<string, void>;

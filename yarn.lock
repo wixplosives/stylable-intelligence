@@ -8,6 +8,25 @@
   dependencies:
     samsam "1.3.0"
 
+"@stylable/core@^0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-0.1.7.tgz#a99f38fa4e5bede9b516b2e6c74533b84ed5fa52"
+  dependencies:
+    clean-css "^4.1.11"
+    css-selector-tokenizer "^0.7.0"
+    deindent "^0.1.0"
+    enhanced-resolve "^4.0.0"
+    is-vendor-prefixed "^1.0.0"
+    lodash.clonedeep "^4.5.0"
+    murmurhash "^0.0.2"
+    postcss "^6.0.23"
+    postcss-js "^1.0.1"
+    postcss-nested "^3.0.0"
+    postcss-safe-parser "^3.0.1"
+    postcss-selector-matches "^3.0.1"
+    postcss-value-parser "^3.3.0"
+    url-regex "^4.1.1"
+
 "@types/autobahn@^0.9.38":
   version "0.9.39"
   resolved "https://registry.yarnpkg.com/@types/autobahn/-/autobahn-0.9.39.tgz#005fa7d8375bde71f1fd401d73958b640e6b8963"
@@ -4261,25 +4280,6 @@ strip-bom@^3.0.0:
 strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
-
-stylable@^5.4.10:
-  version "5.4.11"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-5.4.11.tgz#a54fbd0cad902b5f98f3d01227b63527a6a9a4d7"
-  dependencies:
-    clean-css "^4.1.11"
-    css-selector-tokenizer "^0.7.0"
-    deindent "^0.1.0"
-    enhanced-resolve "^4.0.0"
-    is-vendor-prefixed "^1.0.0"
-    lodash.clonedeep "^4.5.0"
-    murmurhash "^0.0.2"
-    postcss "^6.0.23"
-    postcss-js "^1.0.1"
-    postcss-nested "^3.0.0"
-    postcss-safe-parser "^3.0.1"
-    postcss-selector-matches "^3.0.1"
-    postcss-value-parser "^3.3.0"
-    url-regex "^4.1.1"
 
 style-loader@^0.19.1:
   version "0.19.1"
