@@ -609,7 +609,6 @@ function findRefs(word: string, defMeta: StylableMeta, scannedMeta: StylableMeta
                     const selector = (last(pfp) as PostCss.Rule)!.selector
                     const blargh = trans.resolveSelectorElements(callingMeta, selector.slice(0, selector.indexOf(word) + word.length))
                     if (
-                        // last(rs.resolved)!.meta.source === defMeta.source &&
                         rs.resolved.some(inner => inner.meta.source === defMeta.source && keys((inner.symbol as ClassSymbol)[valueMapping.states]).indexOf(word) !== -1)
                         && last(rs.resolved)!.symbol.name === last(last(blargh[0])!.resolved)!.symbol.name
                     ) { return true }
@@ -677,14 +676,6 @@ function findRefs(word: string, defMeta: StylableMeta, scannedMeta: StylableMeta
                     && inner.resolved.some(s => s.symbol.name === (decl.parent as PostCss.Rule).selector.replace('.', ''))
             })
         ) {
-            // if (
-            //     directiveRegex.test(decl.prop)
-            //     && scannedMeta.source === defMeta.source
-            //     && !!blargh.length && !!callingElement && !!blargh[0].some(inner => {
-            //         return inner.name === callingElement.replace(/:/g, '').replace('.', '')
-            //             && !!last(inner.resolved) && last(inner.resolved)!.symbol.name === (decl.parent as PostCss.Rule).selector.replace('.', '')
-            //     })
-            // ) {
             const reg = new RegExp(valueRegex.source);
             const match = reg.exec(decl.value);
             if (match) {
@@ -854,7 +845,7 @@ function newFindRefs(word: string, defMeta: StylableMeta, callingMeta: StylableM
     } else if (values(defMeta.mappedSymbols).some(sym => { //states
         return sym._kind === 'class' && keys((sym as ClassSymbol)[valueMapping.states]).some(k => {
             if (k === word && !!pos) {
-                const postcsspos = new ProviderPosition(pos.line + 1, pos.character)
+                const postcsspos = new ProviderPosition(pos.line + 1, pos.character);
                 const pfp = pathFromPosition(callingMeta.rawAst, postcsspos, [], true);
                 let selec = (last(pfp) as PostCss.Rule).selector;
                 const char = isInNode(postcsspos, last(pfp)!) ? 1 : pos.character; //If called from -st-state, i.e. inside node, pos is not in selector. Use 1 and not 0 for selector that starts with'.'
@@ -867,9 +858,6 @@ function newFindRefs(word: string, defMeta: StylableMeta, callingMeta: StylableM
                 const trans = styl.createTransformer();
                 const pse = trans.resolveSelectorElements(callingMeta, selec);
                 name = name!.replace('.', '').replace(/:/g, '');
-                // if (!!pse && !!pse[0].some(psInner => psInner.name === name && !!last(psInner.resolved) && last(psInner.resolved)!.symbol.name === sym.name)) {
-                //     return true;
-                // }
                 if (!!pse && !!pse[0].some(psInner => psInner.name === name && psInner.resolved.some(r => r.symbol.name === sym.name))) {
                     return true;
                 }
@@ -888,10 +876,10 @@ function newFindRefs(word: string, defMeta: StylableMeta, callingMeta: StylableM
             const trans = styl.createTransformer();
             scannedMeta.rawAst.walkRules(r => {
                 if (r.selector.includes(':' + word) && !done) {
-                    const ido = parseSelector(r.selector, r.selector.indexOf(word)) //Won't work if word appears elsewhere in string
-                    const elem = (ido.selector[ido.target.index] as SelectorChunk).type === '*' || (ido.selector[ido.target.index] as SelectorChunk).type.charAt(0) !== (ido.selector[ido.target.index] as SelectorChunk).type.charAt(0).toLowerCase()
-                        ? findLast((ido.selector[ido.target.index] as SelectorChunk).text, (str: string) => !str.startsWith(':') || str.startsWith('::'))!.replace('.', '')
-                        : (ido.selector[ido.target.index] as SelectorInternalChunk).name
+                    const parsed = parseSelector(r.selector, r.selector.indexOf(word)) //Won't work if word appears elsewhere in string
+                    const elem = (parsed.selector[parsed.target.index] as SelectorChunk).type === '*' || (parsed.selector[parsed.target.index] as SelectorChunk).type.charAt(0) !== (parsed.selector[parsed.target.index] as SelectorChunk).type.charAt(0).toLowerCase()
+                        ? findLast((parsed.selector[parsed.target.index] as SelectorChunk).text, (str: string) => !str.startsWith(':') || str.startsWith('::'))!.replace('.', '')
+                        : (parsed.selector[parsed.target.index] as SelectorInternalChunk).name
                     const reso = trans.resolveSelectorElements(scannedMeta, r.selector);
                     const symb = reso[0].find(o => o.name === elem);
                     if (
@@ -900,8 +888,6 @@ function newFindRefs(word: string, defMeta: StylableMeta, callingMeta: StylableM
                             return inner.meta.source === defMeta.source
                                 && keys((inner.symbol as ClassSymbol)[valueMapping.states]).indexOf(word) !== -1
                         })
-                        // && last(symb.resolved)!.meta.source === defMeta.source
-                        // && keys((last(symb.resolved)!.symbol as ClassSymbol)[valueMapping.states]).indexOf(word) !== -1
                     ) {
                         refs = refs.concat(findRefs(word.replace('.', ''), defMeta, scannedMeta, callingMeta, styl, pos));
                         done = true;
