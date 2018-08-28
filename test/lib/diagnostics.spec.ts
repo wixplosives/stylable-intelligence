@@ -58,15 +58,15 @@ describe('diagnostics', function () {
         })
     })
 
-    it('should create cross file errors', function () {
-        let filePathA = 'style.css'
-        let filePathB = 'import-style.st.css'
+    xit('should create cross file errors', function () {
+        const filePathA = 'style.css'
+        const filePathB = 'import-style.st.css'
 
-        let diagnostics = createDiagnostics({
+        const diagnostics = createDiagnostics({
             [filePathA]: ``,
             [filePathB]: `
                         :import {
-                            -st-from: ${filePathA};
+                            -st-from: ./${filePathA};
                             -st-named: ninja;
                         }
 
@@ -74,13 +74,14 @@ describe('diagnostics', function () {
                         `
 
         }, filePathB)
+
         expect(diagnostics).to.deep.include({
             "range": {
                 "start": { "line": 3, "character": 39 },
                 "end": { "line": 3, "character": 44 }
             },
-            "message": "Trying to import unknown alias",
-            "severity": 1
+            "message": `cannot resolve imported symbol "ninja" in stylesheet "./${filePathA}"`,
+            "severity": 2
         })
     })
 })
