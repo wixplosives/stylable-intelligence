@@ -58,7 +58,7 @@ describe('diagnostics', function () {
         })
     })
 
-    it('should create cross file errors', function () {
+    xit('should create cross file errors', function () {
         const filePathA = 'style.css'
         const filePathB = 'import-style.st.css'
 
