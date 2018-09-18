@@ -1,4 +1,5 @@
-import vscode from 'vscode';
+import * as vscode from 'vscode';
+
 import path from 'path';
 import { expect } from 'chai'
 import pkgDir from 'pkg-dir';
