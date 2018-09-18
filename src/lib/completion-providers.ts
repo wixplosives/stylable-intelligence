@@ -948,7 +948,7 @@ function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLan
     const importSymbol = (meta.mappedSymbols[name] as ImportSymbol);
     if (importSymbol.import.fromRelative.endsWith('.ts')) {
         const sig = extractTsSignature(importSymbol.import.from, name, importSymbol.type === 'default', tsLangService)
-        if (!sig) {
+        if (!sig || !sig.declaration) {
             return false;
         }
         let rtype = sig.declaration.type

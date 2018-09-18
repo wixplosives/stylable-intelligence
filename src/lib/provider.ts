@@ -270,13 +270,15 @@ export default class Provider {
 
     private getSignatureForTsModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean, paramInfo: typeof ParameterInformation): SignatureHelp | null {
         let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault, this.tsLangService)
-
-        let ptypes = sig!.parameters.map(p => {
+        if (!sig || ! sig.declaration) {
+            return null
+        }
+        let ptypes = sig.parameters.map(p => {
             return p.name + ":" + ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
         });
 
-        let rtype = sig!.declaration.type
-            ? (sig!.declaration.type as TypeReferenceNode).getText()
+        let rtype = sig.declaration.type
+            ? (sig.declaration.type as TypeReferenceNode).getText()
             : "";
 
         let parameters: ParameterInformation[] = sig!.parameters.map(pt => {
@@ -1001,10 +1003,13 @@ export function extractTsSignature(filePath: string, mixin: string, isDefault: b
 
     tsLangService.setOpenedFiles([filePath])
     const program = tsLangService.ts.getProgram();
+    if (!program) {
+        return
+    }
     const tc = program.getTypeChecker();
     const sf = program.getSourceFile(filePath);
     if (!sf) {
-        return undefined;
+        return;
     }
     const mix = tc.getSymbolsInScope(sf, ts.SymbolFlags.Function).find(f => {
         if (isDefault) {
@@ -1014,7 +1019,7 @@ export function extractTsSignature(filePath: string, mixin: string, isDefault: b
         }
     });
     if (!mix) {
-        return undefined
+        return
     }
     return tc.getSignatureFromDeclaration(mix!.declarations![0] as SignatureDeclaration);
 }

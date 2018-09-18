@@ -17,10 +17,9 @@ import { createBaseHost, createLanguageServiceHost } from '../src/lib/utils/temp
 import { ExtendedTsLanguageService } from '../src/lib/types';
 import { CssService } from '../src/model/css-service';
 import { resolveDocumentColors, getColorPresentation } from '../src/lib/feature/color-provider';
+import pkgDir from 'pkg-dir';
 
-const pkgDir = require('pkg-dir');
-
-export const CASES_PATH = path.join(pkgDir.sync(__dirname), 'fixtures', 'server-cases');
+export const CASES_PATH = path.join(pkgDir.sync(__dirname)!, 'fixtures', 'server-cases');
 
 
 export function getCaretPosition(src: string) {

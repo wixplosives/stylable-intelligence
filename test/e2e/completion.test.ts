@@ -1,17 +1,17 @@
-import * as assert from 'assert';
-import * as path from 'path';
-import * as vscode from 'vscode';
-const pkgDir = require('pkg-dir');
+import vscode from 'vscode';
+import assert from 'assert';
+import path from 'path';
+import pkgDir from 'pkg-dir';
 
 
 suite("Extension Tests", () => {
-    let rootDir: string;
+    let rootDir: string | null;
     suiteSetup(async () => {
         rootDir = await pkgDir(__dirname);
     });
 
     function testCompletion(fileToTest: string, testCases: [vscode.Position, string[]][]) {
-        const casesPath = path.join(rootDir, 'fixtures', 'e2e-cases', fileToTest);
+        const casesPath = path.join(rootDir!, 'fixtures', 'e2e-cases', fileToTest);
         const ext = vscode.extensions.getExtension('wix.stylable-intelligence');
         let testDoc: vscode.TextDocument
 

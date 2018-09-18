@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
+import vscode from 'vscode';
+import path from 'path';
 import { expect } from 'chai'
-const pkgDir = require('pkg-dir');
+import pkgDir from 'pkg-dir';
 
 // const fileUriToNativePath = (uri: string) => isWindows ? uri.slice(8).replace('%3A', ':') : uri.slice(7);
 
@@ -27,13 +27,13 @@ function assertDiagnosticExist(client: any, casePath: string, result: Object) {
 
 suite('test diagnostics', function () {
 
-    let rootDir: string;
+    let rootDir: string | null;
     suiteSetup(async () => {
         rootDir = await pkgDir(__dirname);
     });
 
     test('should support single file error', function () {
-        const casePath = path.join(rootDir, 'fixtures', 'e2e-cases', 'single-file-diag.st.css')
+        const casePath = path.join(rootDir!, 'fixtures', 'e2e-cases', 'single-file-diag.st.css')
         const ext = vscode.extensions.getExtension('wix.stylable-intelligence')
         let extClient: any;
 

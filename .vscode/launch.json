@@ -45,8 +45,8 @@
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
       "stopOnEntry": false,
       "args": [
-        "--require",
-        "ts-node/register",
+        "-r",
+        "typescript-support",
         "test/lib/**/*.spec.ts"
       ],
       "cwd": "${workspaceRoot}",

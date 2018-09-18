@@ -13,10 +13,9 @@ import {LocalSyncFs} from '../../../src/lib/local-sync-fs';
 import {createDocFs} from '../../../src/lib/server-utils';
 import {createBaseHost, createLanguageServiceHost} from '../../../src/lib/utils/temp-language-service-host';
 import {ExtendedTsLanguageService} from '../../../src/lib/types';
+import pkgDir from 'pkg-dir';
 
-const pkgDir = require('pkg-dir');
-
-export const CASES_PATH = path.join(pkgDir.sync(__dirname), 'fixtures', 'server-cases');
+export const CASES_PATH = path.join(pkgDir.sync(__dirname)!, 'fixtures', 'server-cases');
 
 function assertPresent(actualCompletions: Completion[], expectedCompletions: Partial<Completion>[], prefix: string = '') {
     expectedCompletions.forEach(expected => {

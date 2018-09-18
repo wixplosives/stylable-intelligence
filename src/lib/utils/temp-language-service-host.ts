@@ -35,7 +35,7 @@ export function createBaseHost(syncFs: FileSystemReadSync, systemPath: typeof pa
         try {
             return syncFs.loadTextFileSync(filePath);
         } catch {
-            return undefined;
+            return;
         }
     }
 
