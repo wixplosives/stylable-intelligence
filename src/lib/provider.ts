@@ -270,7 +270,7 @@ export default class Provider {
 
     private getSignatureForTsModifier(mixin: string, activeParam: number, filePath: string, isDefault: boolean, paramInfo: typeof ParameterInformation): SignatureHelp | null {
         let sig: ts.Signature | undefined = extractTsSignature(filePath, mixin, isDefault, this.tsLangService)
-        if (!sig || ! sig.declaration) {
+        if (!sig || !sig.declaration) {
             return null
         }
         let ptypes = sig.parameters.map(p => {
