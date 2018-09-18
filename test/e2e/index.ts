@@ -7,4 +7,4 @@ testRunner.configure({
     useColors: true // colored output from test results
 });
 
-export default testRunner;
+export = testRunner;
