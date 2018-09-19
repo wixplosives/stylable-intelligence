@@ -22,7 +22,7 @@ describe('browser-compatible', () => {
             }
         });
 
-        compiler.outputFileSystem = memoryFS as any;
+        compiler.outputFileSystem = memoryFS;
 
         await new Promise((res, rej) => compiler.run((err, stats) => {
             if (err || stats.hasErrors()) {
