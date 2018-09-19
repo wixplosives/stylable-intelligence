@@ -1,8 +1,7 @@
-import webpack = require("webpack");
-import MemoryFS = require("memory-fs");
-import * as path from "path";
-
-const pkgDir = require('pkg-dir');
+import path from 'path';
+import webpack from 'webpack';
+import MemoryFS from 'memory-fs';
+import pkgDir from 'pkg-dir';
 
 describe('browser-compatible', () => {
     it('bundleable by webpack with no errors', async function () {
@@ -13,7 +12,7 @@ describe('browser-compatible', () => {
         const compiler = webpack({
             mode: 'development',
             entry: {
-                main: path.join(rootPath, 'dist', 'src', 'lib', 'service.js')
+                main: path.join(rootPath!, 'dist', 'src', 'lib', 'service.js')
             },
             node: {
                 path: 'empty', // users should provide alias to path-webpack
