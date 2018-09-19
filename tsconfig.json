@@ -4,7 +4,7 @@
       "es2015"
     ],
     "module": "commonjs",
-    "target": "es2015",
+    "target": "es2017",
     "strict": true,
     "importHelpers": true,
     "noImplicitReturns": true,
