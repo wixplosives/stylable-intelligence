@@ -46,7 +46,7 @@
       "stopOnEntry": false,
       "args": [
         "-r",
-        "typescript-support",
+        "@ts-tools/node",
         "test/lib/**/*.spec.ts"
       ],
       "cwd": "${workspaceRoot}",
