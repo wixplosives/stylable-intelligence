@@ -31,7 +31,7 @@
     "kissfs": "^0.6.3",
     "lodash": "^4.17.11",
     "pkg-dir": "^3.0.0",
-    "postcss": "^7.0.2",
+    "postcss": "^7.0.4",
     "postcss-selector-parser": "^5.0.0-rc.3",
     "postcss-value-parser": "^3.3.0",
     "tslib": "^1.9.3",
@@ -55,7 +55,7 @@
     "@types/sinon": "^5.0.2",
     "@types/sinon-chai": "^3.2.0",
     "@types/webpack": "^4.4.12",
-    "chai": "^4.1.2",
+    "chai": "^4.2.0",
     "chai-subset": "^1.6.0",
     "glob": "^7.1.3",
     "memory-fs": "^0.4.1",
@@ -66,8 +66,8 @@
     "rimraf": "^2.6.2",
     "sinon": "^6.3.4",
     "sinon-chai": "^3.2.0",
-    "vsce": "^1.49.2",
-    "webpack": "^4.19.1"
+    "vsce": "^1.50.0",
+    "webpack": "^4.20.2"
   },
   "author": "Nadav Abraami (nadav@wix.com)",
   "publisher": "wix",
