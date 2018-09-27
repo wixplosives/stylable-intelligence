@@ -4931,10 +4931,10 @@ vm-browserify@0.0.4:
   dependencies:
     indexof "0.0.1"
 
-vsce@^1.50.0:
-  version "1.50.0"
-  resolved "https://registry.yarnpkg.com/vsce/-/vsce-1.50.0.tgz#aa8a09f0ea72d2cff17b1efbe9aa61f1c1a47c10"
-  integrity sha512-2equVv0dwx1XI5iPnK1yLrOW/xU0Gidi9OsjCxqHJC/CSufz8GW1BeMtAKtZ6/TmUqUfvdthSFtrpHEm3WAB5w==
+vsce@^1.51.0:
+  version "1.51.0"
+  resolved "https://registry.yarnpkg.com/vsce/-/vsce-1.51.0.tgz#b47ac82e2fe7b55f72c417aea65784174a8fdbc0"
+  integrity sha512-x8vr8pwh4H8WTAaAmRVQby1sXv+e3K5l2uDCNE5LAKM8KVs7xWS2e3KpxNr22R5ZMkYW2P36TP7KzyszSHnstA==
   dependencies:
     cheerio "^1.0.0-rc.1"
     commander "^2.8.1"

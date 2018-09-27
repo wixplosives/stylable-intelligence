@@ -66,7 +66,7 @@
     "rimraf": "^2.6.2",
     "sinon": "^6.3.4",
     "sinon-chai": "^3.2.0",
-    "vsce": "^1.50.0",
+    "vsce": "^1.51.0",
     "webpack": "^4.20.2"
   },
   "author": "Nadav Abraami (nadav@wix.com)",
