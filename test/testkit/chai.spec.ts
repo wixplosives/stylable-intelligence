@@ -1,17 +1,14 @@
 import {SinonSpy, spy} from 'sinon';
 import * as chai from 'chai';
-import {delayedPromise} from "kissfs/dist/src/promise-utils";
 import ITestCallbackContext = Mocha.ITestCallbackContext;
 
+const sleep = (ms: number) => new Promise(res => setTimeout(res, ms))
 
 const NO_TESTS_GRACE = 20;
 const DEFAULT_TIMEOUT = 2 * 1000;
 const _expect: SinonSpy & typeof chai.expect = spy(chai.expect) as any;
 const assert = (chai as any).Assertion.prototype.assert = spy((chai as any).Assertion.prototype.assert);
 
-declare namespace assertNoError {
-    function forget():void;
-}
 function assertNoError() {
     // sometimes (like when running inside expect()) the last array element is undefined
     const exceptions = assert.exceptions.filter(Boolean);
@@ -39,7 +36,7 @@ export function plan(count: number, testCase: () => void | Promise<any>, timeout
                 if ((Date.now() - start) > (timeout - NO_TESTS_GRACE)) {
                     throw new Error(`only ${_expect.callCount} tests done out of ${count} planned`);
                 }
-                await delayedPromise(10);
+                await sleep(10);
             }
             assertNoError();
         })();
@@ -47,7 +44,7 @@ export function plan(count: number, testCase: () => void | Promise<any>, timeout
         if (_expect.callCount > count) {
             throw new Error(`${_expect.callCount} tests done but only ${count} planned`);
         }
-        await delayedPromise(NO_TESTS_GRACE);
+        await sleep(NO_TESTS_GRACE);
         if (_expect.callCount > count) {
             throw new Error(`${_expect.callCount} tests done but only ${count} planned`);
         }
