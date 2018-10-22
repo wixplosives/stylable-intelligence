@@ -133,18 +133,18 @@
     postcss-value-parser "^3.3.1"
     url-regex "^4.1.1"
 
-"@ts-tools/node@^0.6.7":
-  version "0.6.7"
-  resolved "https://registry.yarnpkg.com/@ts-tools/node/-/node-0.6.7.tgz#a623fb0f2a40b5987505bace5d64aab9044de0a7"
-  integrity sha512-/wY6nTWTl9gMd154bvlNOkZDMLZv93HBn55hELNwDQg4YQRXaX2rjjvpnSQzKoox1ua6d5NofDpajaET/2Wc+g==
+"@ts-tools/node@^0.6.8":
+  version "0.6.8"
+  resolved "https://registry.yarnpkg.com/@ts-tools/node/-/node-0.6.8.tgz#bf52d9f10dbe9cfec37185d92789f5a613bba7f7"
+  integrity sha512-8oQNKyiYi6SHc2D44RHPJWTesglNLQS7+6RvRRESD81MShd6vv1fScHIX/SLyQVqW0612mqImzeq3kfNvyQhug==
   dependencies:
-    "@ts-tools/typescript-service" "^0.8.1"
+    "@ts-tools/typescript-service" "^0.9.0"
     source-map-support "^0.5.9"
 
-"@ts-tools/typescript-service@^0.8.1":
-  version "0.8.1"
-  resolved "https://registry.yarnpkg.com/@ts-tools/typescript-service/-/typescript-service-0.8.1.tgz#044093a69c7412af4b68e28b6b5de9eeca49ebe8"
-  integrity sha512-/aKyvqRVqs6Sh7s9bISfiEJ201KgxR9B+wlFn0apXFM22SFQZ9yV4MIwRArkNhGC9FZpFXtfHnd/zZYBH6mBVA==
+"@ts-tools/typescript-service@^0.9.0":
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/@ts-tools/typescript-service/-/typescript-service-0.9.0.tgz#5d2f21196dda7caf5a805b00226934b80d7dfe6f"
+  integrity sha512-7DyZmhlKCEcfgPutFHRWY1rFKqyD8mBFykXJ6cnxmzUOte62zetLAw66i5f1kedYLfm9nJDAq2+o2CZ6XRBsnw==
 
 "@types/autobahn@^0.9.39":
   version "0.9.39"
@@ -1543,7 +1543,12 @@ domain-browser@^1.1.1:
   resolved "https://registry.yarnpkg.com/domain-browser/-/domain-browser-1.2.0.tgz#3d31f50191a6749dd1375a7f522e823d42e54eda"
   integrity sha512-jnjyiM6eRyZl2H+W8Q/zLMA481hzi0eszAaBUzIVnmYVDBbnLxVNnfu1HgEBvCbL+71FrxMl3E6lpKH7Ge3OXA==
 
-domelementtype@1, domelementtype@^1.3.0:
+domelementtype@1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/domelementtype/-/domelementtype-1.2.1.tgz#578558ef23befac043a1abb0db07635509393479"
+  integrity sha512-SQVCLFS2E7G5CRCMdn6K9bIhRj1bS6QBWZfF0TUPh4V/BbqrQ619IdSS3/izn0FZ+9l+uODzaZjb08fjOfablA==
+
+domelementtype@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/domelementtype/-/domelementtype-1.3.0.tgz#b17aed82e8ab59e52dd9c19b1756e0fc187204c2"
   integrity sha1-sXrtguirWeUt2cGbF1bg/BhyBMI=
