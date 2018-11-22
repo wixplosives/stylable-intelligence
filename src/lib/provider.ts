@@ -4,7 +4,7 @@ import { keys, last, values, findLast } from 'lodash';
 import * as path from 'path';
 import * as PostCss from 'postcss';
 import { Declaration } from 'postcss';
-import { CSSResolve, Diagnostics, expandCustomSelectors, ImportSymbol, process as stylableProcess, safeParse, SRule, StateParsedValue, Stylable, StylableMeta, StylableTransformer, valueMapping } from '@stylable/core';
+import { CSSResolve, Diagnostics, expandCustomSelectors, ImportSymbol, process as stylableProcess, safeParse, SRule, StateParsedValue, Stylable, StylableMeta, StylableTransformer, valueMapping, MappedStates } from '@stylable/core';
 import { ClassSymbol, ElementSymbol } from '@stylable/core';
 import * as ts from 'typescript';
 import { ParameterDeclaration, SignatureDeclaration, TypeReferenceNode } from 'typescript';
@@ -409,7 +409,7 @@ export default class Provider {
             })
         }
 
-        let stateDef = null as StateParsedValue | null;
+        let stateDef = null as StateParsedValue | string | null;
 
         if (word) {
             const transformer = new StylableTransformer({
@@ -426,7 +426,7 @@ export default class Provider {
                     stateDef = symbolStates[word];
                 }
             })
-            if (stateDef) {
+            if (stateDef && typeof stateDef === 'object') {
                 const parameters = resolveStateParams(stateDef);
 
                 const sigInfo: SignatureInformation = {

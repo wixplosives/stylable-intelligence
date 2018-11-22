@@ -11,7 +11,8 @@ import {
     valueMapping,
     VarSymbol,
     nativePseudoClasses,
-    nativePseudoElements
+    nativePseudoElements,
+    MappedStates
 } from '@stylable/core';
 import { CursorPosition, SelectorChunk } from "./utils/selector-analyzer";
 import {
@@ -751,21 +752,29 @@ export const StateSelectorCompletionProvider: CompletionProvider = {
                 if (!relPath.startsWith('.')) {
                     relPath = './' + relPath;
                 }
-                keys((cur.symbol as ClassSymbol)[valueMapping.states]).forEach(k => {
-                    if (!acc[k] && (
-                        k.slice(0, -1).startsWith(lastSelectoid.replace(':', '')) || //selectoid is a substring of current state
-                        nativePseudoClasses.indexOf(lastSelectoid.replace(':', '')) !== -1 || // selectoid is a CSS native pseudo-sclass
-                        allStates.hasOwnProperty(lastSelectoid.replace(':', ''))) &&
-                        (chunkyStates.every(cs => cs !== k))) {
+                const symbol = cur.symbol;
+                if (symbol._kind === 'class') {
+                    keys(symbol[valueMapping.states]).forEach(k => {
+                        if (!acc[k] && (
+                            k.slice(0, -1).startsWith(lastSelectoid.replace(':', '')) || //selectoid is a substring of current state
+                            nativePseudoClasses.indexOf(lastSelectoid.replace(':', '')) !== -1 || // selectoid is a CSS native pseudo-sclass
+                            allStates.hasOwnProperty(lastSelectoid.replace(':', ''))) &&
+                            (chunkyStates.every(cs => cs !== k))) {
 
-                        const stateDef = (cur.symbol as ClassSymbol)[valueMapping.states][k];
-                        acc[k] = {
-                            path: meta.source === cur.meta.source ? 'Local file' : relPath,
-                            hasParam: !!stateDef,
-                            type: (stateDef && stateDef.type) || null
+                                const symbolStates = symbol[valueMapping.states];
+                                const stateDef = symbolStates && symbolStates[k];
+
+                                // if (stateDef) {
+                                    const stateType = stateDef && typeof stateDef === 'object' ? stateDef.type : null;
+                                    acc[k] = {
+                                        path: meta.source === cur.meta.source ? 'Local file' : relPath,
+                                        hasParam: !!stateDef,
+                                        type: stateType
+                                    }
+                                // }
                         }
-                    }
-                })
+                    })
+                }
                 return acc;
             }, {} as { [k: string]: { path: string, hasParam: boolean, type: string | null } });
 
@@ -817,7 +826,7 @@ export const StateEnumCompletionProvider: CompletionProvider = {
             if (lastSelectoid.startsWith(':')) {
                 const stateName = lastSelectoid.slice(1);
                 const lastNode = resolvedElements[0][resolvedElements[0].length - 1];
-                const resolvedStates: { [key: string]: StateParsedValue } = collectStates(lastNode)
+                const resolvedStates: MappedStates = collectStates(lastNode)
 
                 if (Object.keys(resolvedStates).length) {
                     const resolvedStateNode = find(lastNode.resolved, (node: any) => {
@@ -906,14 +915,18 @@ export const ValueCompletionProvider: CompletionProvider = {
 }
 
 function collectStates(lastNode: ResolvedElement) {
-    return lastNode.resolved.reduce((acc, cur) => {
-        keys((cur.symbol as ClassSymbol)[valueMapping.states]).forEach(k => {
-            acc[k] = (cur.symbol as ClassSymbol)[valueMapping.states][k];
-        });
+    return lastNode.resolved.reduce<MappedStates>((acc, cur) => {
+        const symbol = cur.symbol;
+        if (symbol._kind === 'class') {
+            keys(symbol[valueMapping.states]).forEach(k => {
+                const symbolStates = symbol[valueMapping.states];
+                if (symbolStates && symbolStates[k] !== undefined) {
+                    acc[k] = symbolStates[k];
+                }
+            });
+        }
         return acc;
-    }, {} as {
-        [key: string]: StateParsedValue;
-    });
+    }, {});
 }
 
 function isBetweenChars(text: string, position: ProviderPosition, char1: string, char2: string) {
