@@ -21,7 +21,7 @@
     "test:browser-compatible": "mocha -r @ts-tools/node test/browser-compatible.spec.ts"
   },
   "dependencies": {
-    "@stylable/core": "^0.1.11",
+    "@stylable/core": "^0.1.13",
     "bignumber": "^1.1.0",
     "css-selector-tokenizer": "^0.7.1",
     "doctrine": "^2.1.0",
