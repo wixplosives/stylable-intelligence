@@ -1,7 +1,7 @@
 import * as asserters from './asserters';
 import { createRange } from '../../../src/lib/completion-providers';
 
-describe.only('Completions', function () {
+describe('Completions', function () {
     describe('Stylesheet Top Level', function () {
         it('should complete ONLY import and vars directive, root and existing classes at top level', function () {
             return asserters.getCompletions('general/top-level-existing-classes.st.css').then((asserter) => {
