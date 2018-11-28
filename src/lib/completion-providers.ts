@@ -165,7 +165,7 @@ function createDirectiveRange(position: ProviderPosition, fullLineText: string, 
 
 const importDeclarations: (keyof typeof importDirectives)[] = ['default', 'named', 'from']
 const simpleRulesetDeclarations: (keyof typeof rulesetDirectives)[] = ['extends', 'states', 'mixin']
-const topLevelDeclarations: (keyof typeof topLevelDirectives)[] = ['root', 'namespace', 'vars', 'import', 'customSelector']
+const topLevelDeclarations: (keyof typeof topLevelDirectives)[] = ['root', 'namespace', 'vars', 'import', 'customSelector', 'stScope']
 
 //Providers
 //Syntactic

@@ -1,15 +1,17 @@
 import * as asserters from './asserters';
 import { createRange } from '../../../src/lib/completion-providers';
 
-describe('Completions', function () {
+describe.only('Completions', function () {
     describe('Stylesheet Top Level', function () {
         it('should complete ONLY import and vars directive, root and existing classes at top level', function () {
             return asserters.getCompletions('general/top-level-existing-classes.st.css').then((asserter) => {
                 asserter.suggested(
                     [
                         asserters.importDirectiveCompletion(createRange(3, 0, 3, 0)),
-                        asserters.rootClassCompletion(createRange(3, 0, 3, 0)),
+                        asserters.customSelectorDirectiveCompletion(createRange(3, 0, 3, 0)),
+                        asserters.stScopeDirectiveCompletion(createRange(3, 0, 3, 0)),
                         asserters.varsDirectiveCompletion(createRange(3, 0, 3, 0)),
+                        asserters.rootClassCompletion(createRange(3, 0, 3, 0)),
                         asserters.classCompletion('gaga', (createRange(3, 0, 3, 0))),
                         asserters.classCompletion('baga', (createRange(3, 0, 3, 0))),
                     ]
@@ -27,6 +29,9 @@ describe('Completions', function () {
                 asserter.suggested(
                     [
                         asserters.importDirectiveCompletion(createRange(3, 0, 3, 0)),
+                        asserters.customSelectorDirectiveCompletion(createRange(3, 0, 3, 0)),
+                        asserters.stScopeDirectiveCompletion(createRange(3, 0, 3, 0)),
+                        asserters.varsDirectiveCompletion(createRange(3, 0, 3, 0)),
                         asserters.rootClassCompletion(createRange(3, 0, 3, 0)),
                         asserters.classCompletion('gaga', (createRange(3, 0, 3, 0))),
                     ]
@@ -51,6 +56,9 @@ describe('Completions', function () {
                     asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
                     asserters.extendsDirectiveCompletion(createRange(0, 0, 0, 0)),
                     asserters.mixinDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.customSelectorDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.stScopeDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.varsDirectiveCompletion(createRange(0, 0, 0, 0)),
                 ])
             });
         });
@@ -63,6 +71,8 @@ describe('Completions', function () {
                     asserters.varsDirectiveCompletion((createRange(9, 0, 9, 0))),
                     asserters.importDirectiveCompletion(createRange(9, 0, 9, 0)),
                     asserters.namespaceDirectiveCompletion(createRange(9, 0, 9, 0)),
+                    asserters.customSelectorDirectiveCompletion(createRange(9, 0, 9, 0)),
+                    asserters.stScopeDirectiveCompletion(createRange(9, 0, 9, 0)),
                 ]);
                 asserter.notSuggested([
                     asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
@@ -83,6 +93,10 @@ describe('Completions', function () {
                 );
                 asserter.notSuggested([
                     asserters.rootClassCompletion(createRange(0, 0, 0, 0)),
+                    asserters.customSelectorDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.stScopeDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    asserters.varsDirectiveCompletion(createRange(0, 0, 0, 0)),
+                    
                 ]);
             });
         });

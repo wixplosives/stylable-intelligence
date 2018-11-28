@@ -29,7 +29,8 @@ export const topLevelDirectives = {
     namespace: '@namespace' as '@namespace',
     customSelector: '@custom-selector :--' as '@custom-selector :--',
     vars: ':vars' as ':vars',
-    import: ':import' as ':import'
+    import: ':import' as ':import',
+    stScope: '@st-scope' as '@st-scope'
 }
 
 //syntactic
@@ -68,6 +69,8 @@ export function topLevelDirective(type: keyof typeof topLevelDirectives, rng: Pr
             return new Completion(topLevelDirectives.root, 'The root class', 'a', undefined, rng);
         case topLevelDirectives.vars:
             return new Completion(topLevelDirectives.vars, 'Declare variables', 'a', new snippet(':vars {\n\t$1\n}$0'), rng);
+        case topLevelDirectives.stScope:
+            return new Completion(topLevelDirectives.stScope, 'Define an @st-scope', 'a', new snippet('@st-scope $1 {\n\t$2\n}$0'), rng);
     }
 }
 
