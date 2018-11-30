@@ -84,14 +84,14 @@ describe("chai testkit", function () {
             }).bind(this);
             const thrown = await thePlan().catch((e: Error) => e);
             expect(thrown).to.be.instanceof(Error);
-            expect(thrown.message).to.equal('1 tests done but only 0 planned');
+            expect((thrown as Error).message).to.equal('1 tests done but only 0 planned');
         });
         it("fails when too few assertions", async function () {
             const thePlan = plan(1, () => {
             }, 10).bind(this);
             const thrown = await thePlan().catch((e: Error) => e);
             expect(thrown).to.be.instanceof(Error);
-            expect(thrown.message).to.equal('only 0 tests done out of 1 planned');
+            expect((thrown as Error).message).to.equal('only 0 tests done out of 1 planned');
         });
         it("waits for too many assertions and fails even if assertion is after promise", async function () {
             const thePlan = plan(0, () => {
@@ -100,7 +100,7 @@ describe("chai testkit", function () {
             }, 10).bind(this);
             const thrown = await thePlan().catch((e: Error) => e);
             expect(thrown).to.be.instanceof(Error);
-            expect(thrown.message).to.equal('1 tests done but only 0 planned');
+            expect((thrown as Error).message).to.equal('1 tests done but only 0 planned');
         });
         it("throws original error if assertion failed", async function () {
             const error = new Error('foo');

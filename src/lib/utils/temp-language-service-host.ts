@@ -2,27 +2,16 @@ import * as ts from 'typescript';
 import {checkExistsSync, FileSystemReadSync} from 'kissfs';
 import * as path from 'path';
 
-declare module 'typescript' {
-    function matchFiles(path: string, extensions: ReadonlyArray<string>, excludes: ReadonlyArray<string>,
-                        includes: ReadonlyArray<string>, useCaseSensitiveFileNames: boolean, currentDirectory: string,
-                        depth: number | undefined, getFileSystemEntries: (path: string) => FileSystemEntries): string[];
-
-    export interface FileSystemEntries {
-        files: ReadonlyArray<string>;
-        directories: ReadonlyArray<string>;
-    }
-
-    export interface SourceFile {
-        parseDiagnostics: ts.Diagnostic[];
-    }
-
-    export function getNewLineCharacter(options: ts.CompilerOptions | ts.PrinterOptions): string;
-}
-
-
 export interface BaseHost extends ts.ParseConfigHost {
     syncFs: FileSystemReadSync;
     path: typeof path.posix;
+    readDirectory(
+        path: string,
+        extensions?: ReadonlyArray<string>,
+        exclude?: ReadonlyArray<string>,
+        include?: ReadonlyArray<string>,
+        depth?: number
+    ): string[]
 }
 
 export function createBaseHost(syncFs: FileSystemReadSync, systemPath: typeof path.posix): BaseHost {

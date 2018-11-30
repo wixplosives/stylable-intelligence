@@ -84,23 +84,15 @@ class TestDuplex extends Duplex {
 // adapted from https://github.com/Microsoft/vscode-languageserver-node/blob/master/client/src/client.ts
 export class StreamConnectionClient {
     private readonly connection: IConnection;
-
-    // 'inherited' method
-    sendRequest: IConnection['sendRequest'];
-    onRequest: IConnection['onRequest'];
-    sendNotification: IConnection['sendNotification'];
-    onNotification: IConnection['onNotification'];
-    listen: IConnection['listen'];
-    dispose: IConnection['dispose'];
+    public sendRequest: IConnection['sendRequest']
 
     constructor(input: NodeJS.ReadableStream, output: NodeJS.WritableStream) {
         this.connection = createConnection(input, output);
-        this.sendRequest = this.connection.sendRequest.bind(this.connection);
-        this.onRequest = this.connection.onRequest.bind(this.connection);
-        this.sendNotification = this.connection.sendNotification.bind(this.connection);
-        this.onNotification = this.connection.onNotification.bind(this.connection);
-        this.listen = this.connection.listen.bind(this.connection);
-        this.dispose = this.connection.dispose.bind(this.connection);
+        this.sendRequest = this.connection.sendRequest.bind(this.connection) as any
+    }
+
+    public listen(): void {
+        this.connection.listen()
     }
 
     // extend
