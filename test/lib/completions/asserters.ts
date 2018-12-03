@@ -121,6 +121,15 @@ export const customSelectorDirectiveCompletion: (rng: ProviderRange) => Partial<
         range: rng
     };
 }
+export const stScopeDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
+    return {
+        label: '@st-scope',
+        detail: 'Define an @st-scope',
+        sortText: 'a',
+        insertText: '@st-scope $1 {\n\t$2\n}$0',
+        range: rng
+    };
+}
 export const extendsDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = (rng) => {
     return {
         label: '-st-extends:',

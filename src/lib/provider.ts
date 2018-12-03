@@ -216,26 +216,30 @@ export default class Provider {
             return null
         }
 
-        if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.ts')) {
-            return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
-        } else if ((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.endsWith('.js')) {
-            if (fs.getOpenedFiles().indexOf(toVscodePath((meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts')) !== -1) {
-                return this.getSignatureForTsModifier(mixin, activeParam, (meta.mappedSymbols[mixin]! as ImportSymbol).import.from.slice(0, -3) + '.d.ts', (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
-            } else {
-                const importPath = (meta.mappedSymbols[mixin]! as ImportSymbol).import.from;
-                const feh = this.styl.resolvePath(undefined, importPath);
+        const mappedSymbol = meta.mappedSymbols[mixin];
 
-                return this.getSignatureForJsModifier(
-                    mixin,
-                    activeParam,
-                    // fs.get(this.resolveImport((meta.mappedSymbols[mixin]! as ImportSymbol).import.from, this.styl, meta)!.source).getText(),
-                    fs.get(feh).getText(),
-                    paramInfo
-                )
-            }
-        } else {
-            return null;
-        }
+        if (mappedSymbol && mappedSymbol._kind === 'import') {
+            if (mappedSymbol.import.from.endsWith('.ts')) {
+                return this.getSignatureForTsModifier(mixin, activeParam, (mappedSymbol as ImportSymbol).import.from, (meta.mappedSymbols[mixin]! as ImportSymbol).type === 'default', paramInfo);
+            } else if (mappedSymbol.import.from.endsWith('.js')) {
+                if (fs.getOpenedFiles().indexOf(toVscodePath(mappedSymbol.import.from.slice(0, -3) + '.d.ts')) !== -1) {
+                    return this.getSignatureForTsModifier(mixin, activeParam, mappedSymbol.import.from.slice(0, -3) + '.d.ts', mappedSymbol.type === 'default', paramInfo);
+                } else {
+                    const importPath = mappedSymbol.import.from;
+                    const feh = this.styl.resolvePath(undefined, importPath);
+    
+                    return this.getSignatureForJsModifier(
+                        mixin,
+                        activeParam,
+                        // fs.get(this.resolveImport(mappedSymbol.import.from, this.styl, meta)!.source).getText(),
+                        fs.get(feh).getText(),
+                        paramInfo
+                    )
+                }
+            }    
+        } 
+            
+        return null;
     }
 
     private findWord(word: string, src: string, position: Position): ProviderRange {

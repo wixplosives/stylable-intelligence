@@ -63,7 +63,10 @@ export class CssService {
                 if (diag.code === 'emptyRules') {
                     return false;
                 }
-                if (diag.code === 'css-unknownatrule' && readDocRange(document, diag.range) === '@custom-selector') {
+                if (diag.code === 'unknownAtRules' && readDocRange(document, diag.range) === '@custom-selector') {
+                    return false;
+                }
+                if (diag.code === 'unknownAtRules' && readDocRange(document, diag.range) === '@st-scope') {
                     return false;
                 }
                 if (diag.code === 'css-lcurlyexpected' && readDocRange(document, Range.create(Position.create(diag.range.start.line, 0), diag.range.end)).startsWith('@custom-selector')) {
