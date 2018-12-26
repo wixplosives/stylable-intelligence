@@ -163,7 +163,7 @@ export class StreamConnectionClient {
         return await this.connection.sendRequest(SignatureHelpRequest.type, params);
     }
 
-    async definition(params: TextDocumentPositionParams): Promise<Definition> {
+    async definition(params: TextDocumentPositionParams) {
         return await this.connection.sendRequest(DefinitionRequest.type, params);
     }
 
