@@ -712,16 +712,16 @@ function findRefs(word: string, defMeta: StylableMeta, scannedMeta: StylableMeta
                     uri: toVscodePath(scannedMeta.source),
                     range: {
                         start: {
-                            line: decl.source.start!.line - 1 + index,
+                            line: decl.source!.start!.line - 1 + index,
                             character: index
                                 ? match.index
-                                : decl.source.start!.column + valueMapping.mixin.length + match.index + (decl.raws.between ? decl.raws.between.length : 0) - 1
+                                : decl.source!.start!.column + valueMapping.mixin.length + match.index + (decl.raws.between ? decl.raws.between.length : 0) - 1
                         },
                         end: {
-                            line: decl.source.start!.line - 1 + index,
+                            line: decl.source!.start!.line - 1 + index,
                             character: word.length + (index
                                 ? match.index
-                                : decl.source.start!.column + valueMapping.mixin.length + match.index + (decl.raws.between ? decl.raws.between.length : 0) - 1)
+                                : decl.source!.start!.column + valueMapping.mixin.length + match.index + (decl.raws.between ? decl.raws.between.length : 0) - 1)
                         }
                     }
                 })

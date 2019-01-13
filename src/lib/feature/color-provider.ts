@@ -79,10 +79,10 @@ export function resolveDocumentColors(
                                 ? lines[lineIndex].indexOf(v.name) //replace with regex
                                 : extraLines
                                     ? lines[lineIndex].indexOf(v.name) + extraChars
-                                    : lines[lineIndex].indexOf(v.name) + valueMapping.named.length + decl.source.start!.column + extraChars - 1
+                                    : lines[lineIndex].indexOf(v.name) + valueMapping.named.length + decl.source!.start!.column + extraChars - 1
                             const range = new ProviderRange(
-                                new ProviderPosition(decl.source.start!.line - 1 + lineIndex + extraLines, varStart),
-                                new ProviderPosition(decl.source.start!.line - 1 + lineIndex + extraLines, v.name.length + varStart)
+                                new ProviderPosition(decl.source!.start!.line - 1 + lineIndex + extraLines, varStart),
+                                new ProviderPosition(decl.source!.start!.line - 1 + lineIndex + extraLines, v.name.length + varStart)
                             );
                             colorComps.push({ color, range } as ColorInformation)
                         }
@@ -115,9 +115,9 @@ export function getColorPresentation(
     let noPicker = false;
     meta.rawAst.walkDecls(valueMapping.named, (node) => {
         if (node &&
-            ((wordStart.line === node.source.start!.line && wordStart.character >= node.source.start!.column) || wordStart.line > node.source.start!.line)
+            ((wordStart.line === node.source!.start!.line && wordStart.character >= node.source!.start!.column) || wordStart.line > node.source!.start!.line)
             &&
-            ((wordStart.line === node.source.end!.line && wordStart.character <= node.source.end!.column) || wordStart.line < node.source.end!.line)
+            ((wordStart.line === node.source!.end!.line && wordStart.character <= node.source!.end!.column) || wordStart.line < node.source!.end!.line)
         ) {
             noPicker = true;
         }

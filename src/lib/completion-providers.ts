@@ -227,7 +227,7 @@ export const TopLevelDirectiveProvider: CompletionProvider = {
         if (!parentSelector) {
             if (!isMediaQuery) {
                 return topLevelDeclarations
-                    .filter(d => !/@namespace/.test((meta.ast.source.input as any).css) || (d !== 'namespace'))
+                    .filter(d => !/@namespace/.test((meta.ast.source!.input as any).css) || (d !== 'namespace'))
                     .filter(d => topLevelDirectives[d].indexOf(fullLineText.trim()) === 0)
                     .map(d => topLevelDirective(d, createDirectiveRange(position, fullLineText, lineChunkAtCursor)));
             } else {
