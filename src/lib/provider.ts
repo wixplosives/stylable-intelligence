@@ -1,7 +1,7 @@
 import { File } from 'kissfs';
 import { keys, last, values, findLast } from 'lodash';
-import * as path from 'path';
-import * as PostCss from 'postcss';
+import path from 'path';
+import postcss from 'postcss';
 import { Declaration } from 'postcss';
 import {
     CSSResolve,
@@ -15,11 +15,10 @@ import {
     Stylable,
     StylableMeta,
     StylableTransformer,
-    valueMapping,
-    MappedStates
+    valueMapping
 } from '@stylable/core';
 import { ClassSymbol, ElementSymbol } from '@stylable/core';
-import * as ts from 'typescript';
+import ts from 'typescript';
 import { ParameterDeclaration, SignatureDeclaration, TypeReferenceNode } from 'typescript';
 import {
     Location,
@@ -178,7 +177,7 @@ export default class Provider {
                 if (k._kind === 'class' && keys(k[valueMapping.states]).some(key => key === word)) {
                     const postcsspos = new ProviderPosition(position.line + 1, position.character);
                     const pfp = pathFromPosition(callingMeta.rawAst, postcsspos, [], true);
-                    const selec = (last(pfp) as PostCss.Rule).selector;
+                    const selec = (last(pfp) as postcss.Rule).selector;
 
                     // If called from -st-state, i.e. inside node, pos is not in selector.
                     // Use 1 and not 0 for selector that starts with'.'
@@ -633,7 +632,7 @@ export default class Provider {
         src: string,
         position: ProviderPosition,
         meta: StylableMeta,
-        fakeRules: PostCss.Rule[],
+        fakeRules: postcss.Rule[],
         fullLineText: string,
         cursorPosInLine: number,
         fs: ExtendedFSReadSync
@@ -647,9 +646,9 @@ export default class Provider {
         });
 
         const path = pathFromPosition(meta.rawAst, { line: position.line + 1, character: position.character });
-        const astAtCursor: PostCss.NodeBase = path[path.length - 1];
-        const parentAst: PostCss.NodeBase | undefined = (astAtCursor as PostCss.Declaration).parent
-            ? (astAtCursor as PostCss.Declaration).parent
+        const astAtCursor: postcss.NodeBase = path[path.length - 1];
+        const parentAst: postcss.NodeBase | undefined = (astAtCursor as postcss.Declaration).parent
+            ? (astAtCursor as postcss.Declaration).parent
             : undefined;
         const parentSelector: SRule | null =
             parentAst &&
@@ -679,7 +678,7 @@ export default class Provider {
             (ps.selector[0] as SelectorChunk).customSelectors[0] ||
             chunkStrings[0];
         const expandedLine: string = expandCustomSelectors(
-            PostCss.rule({ selector: lineChunkAtCursor }),
+            postcss.rule({ selector: lineChunkAtCursor }),
             meta.customSelectors
         )
             .split(' ')
@@ -803,7 +802,7 @@ function findRefs(
                     const postcsspos = new ProviderPosition(pos.line + 1, pos.character);
                     const pfp = pathFromPosition(callingMeta.rawAst, postcsspos, [], true);
                     const char = isInNode(postcsspos, last(pfp)!) ? 1 : pos.character;
-                    const callPs = parseSelector((last(pfp) as PostCss.Rule).selector, char);
+                    const callPs = parseSelector((last(pfp) as postcss.Rule).selector, char);
                     const callingElement = findLast(
                         callPs.selector[callPs.target.index].text.slice(0, callPs.target.internalIndex + 1),
                         e => !e.startsWith(':') || e.startsWith('::')
@@ -811,7 +810,7 @@ function findRefs(
                     if (!callingElement) {
                         return false;
                     }
-                    const selector = (last(pfp) as PostCss.Rule)!.selector;
+                    const selector = (last(pfp) as postcss.Rule)!.selector;
                     const blargh = trans.resolveSelectorElements(
                         callingMeta,
                         selector.slice(0, selector.indexOf(word) + word.length)
@@ -894,12 +893,12 @@ function findRefs(
         const postcsspos = new ProviderPosition(pos.line + 1, pos.character);
         const pfp = pathFromPosition(callingMeta.rawAst, postcsspos, [], true);
         const char = isInNode(postcsspos, last(pfp)!) ? 1 : pos.character;
-        const callPs = parseSelector((last(pfp) as PostCss.Rule).selector, char);
+        const callPs = parseSelector((last(pfp) as postcss.Rule).selector, char);
         const callingElement = findLast(
             callPs.selector[callPs.target.index].text.slice(0, callPs.target.internalIndex + 1),
             e => !e.startsWith(':') || e.startsWith('::')
         );
-        const blargh = trans.resolveSelectorElements(callingMeta, (last(pfp) as PostCss.Rule)!.selector);
+        const blargh = trans.resolveSelectorElements(callingMeta, (last(pfp) as postcss.Rule)!.selector);
         if (
             directiveRegex.test(decl.prop) &&
             scannedMeta.source === defMeta.source &&
@@ -908,7 +907,7 @@ function findRefs(
             !!blargh[0].some(inner => {
                 return (
                     inner.name === callingElement.replace(/:/g, '').replace('.', '') &&
-                    inner.resolved.some(s => s.symbol.name === (decl.parent as PostCss.Rule).selector.replace('.', ''))
+                    inner.resolved.some(s => s.symbol.name === (decl.parent as postcss.Rule).selector.replace('.', ''))
                 );
             })
         ) {
@@ -1153,7 +1152,7 @@ function newFindRefs(
                     if (k === word && !!pos) {
                         const postcsspos = new ProviderPosition(pos.line + 1, pos.character);
                         const pfp = pathFromPosition(callingMeta.rawAst, postcsspos, [], true);
-                        const selec = (last(pfp) as PostCss.Rule).selector;
+                        const selec = (last(pfp) as postcss.Rule).selector;
                         // If called from -st-state, i.e. inside node, pos is not in selector.
                         // Use 1 and not 0 for selector that starts with'.'
                         const char = isInNode(postcsspos, last(pfp)!) ? 1 : pos.character;
@@ -1266,13 +1265,13 @@ export function getRenameRefs(params: ReferenceParams, fs: ExtendedFSReadSync, s
 
 export function createMeta(src: string, path: string) {
     let meta: StylableMeta;
-    const fakes: PostCss.Rule[] = [];
+    const fakes: postcss.Rule[] = [];
     try {
-        const ast: PostCss.Root = safeParse(src, { from: fromVscodePath(path) });
+        const ast: postcss.Root = safeParse(src, { from: fromVscodePath(path) });
         if (ast.nodes) {
             for (const node of ast.nodes) {
                 if (node.type === 'decl') {
-                    const r = PostCss.rule({ selector: node.prop + ':' + node.value });
+                    const r = postcss.rule({ selector: node.prop + ':' + node.value });
                     r.source = node.source;
                     node.replaceWith(r);
                     fakes.push(r);
@@ -1280,7 +1279,7 @@ export function createMeta(src: string, path: string) {
             }
         }
         if (ast.raws.after && ast.raws.after.trim()) {
-            const r = PostCss.rule({ selector: ast.raws.after.trim() });
+            const r = postcss.rule({ selector: ast.raws.after.trim() });
             ast.append(r);
             fakes.push(r);
         }
@@ -1415,8 +1414,8 @@ export function extractJsModifierReturnType(mixin: string, activeParam: number, 
     return returnType;
 }
 
-function isInMediaQuery(path: PostCss.NodeBase[]) {
-    return path.some(n => (n as PostCss.Container).type === 'atrule' && (n as PostCss.AtRule).name === 'media');
+function isInMediaQuery(path: postcss.NodeBase[]) {
+    return path.some(n => (n as postcss.Container).type === 'atrule' && (n as postcss.AtRule).name === 'media');
 }
 
 export function isDirective(line: string) {
@@ -1603,7 +1602,7 @@ export function getDefSymbol(src: string, position: ProviderPosition, filePath: 
     });
 
     const expandedLine: string = expandCustomSelectors(
-        PostCss.rule({ selector: lineChunkAtCursor }),
+        postcss.rule({ selector: lineChunkAtCursor }),
         meta.customSelectors
     )
         .split(' ')

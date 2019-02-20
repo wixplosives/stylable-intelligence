@@ -29,7 +29,7 @@ import { IConnection } from 'vscode-languageserver';
 import { CompletionParams } from 'vscode-languageclient/lib/main';
 import { CssService } from '../model/css-service';
 import { resolveDocumentColors, getColorPresentation } from './feature/color-provider';
-import * as path from 'path';
+import path from 'path';
 
 export { MinimalDocs } from './provider-factory';
 

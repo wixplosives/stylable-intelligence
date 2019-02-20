@@ -12,7 +12,7 @@ import {
 } from 'vscode-languageserver';
 import { ColorPresentationRequest, DocumentColorRequest } from 'vscode-languageserver-protocol';
 import { FileSystemReadSync } from 'kissfs';
-import * as ts from 'typescript';
+import ts from 'typescript';
 import { ParsedValue } from '@stylable/core';
 
 export interface NotificationTypes {

@@ -37,8 +37,8 @@ import {
     valueDirective
 } from './completion-types';
 import { isComment, isDeclaration } from './utils/postcss-ast-utils';
-import * as PostCss from 'postcss';
-import * as path from 'path';
+import postcss from 'postcss';
+import path from 'path';
 import {
     extractJsModifierReturnType,
     extractTsSignature,
@@ -64,7 +64,7 @@ export interface ProviderOptions {
     tsLangService: ExtendedTsLanguageService; // candidate for removal
     resolvedElements: ResolvedElement[][]; // candidate for removal
     parentSelector: SRule | null;
-    astAtCursor: PostCss.NodeBase; // candidate for removal
+    astAtCursor: postcss.NodeBase; // candidate for removal
     lineChunkAtCursor: string;
     lastSelectoid: string; // candidate for removal
     fullLineText: string;
@@ -73,7 +73,7 @@ export interface ProviderOptions {
     currentSelector: string; // candidate for removal
     target: CursorPosition; // candidate for removal
     isMediaQuery: boolean;
-    fakes: PostCss.Rule[];
+    fakes: postcss.Rule[];
 }
 
 export interface CompletionProvider {
@@ -618,12 +618,12 @@ export const NamedCompletionProvider: CompletionProvider & {
             if (
                 parentSelector &&
                 parentSelector.selector === ':import' &&
-                (astAtCursor as PostCss.Rule).nodes &&
-                (astAtCursor as PostCss.Rule).nodes!.length
+                (astAtCursor as postcss.Rule).nodes &&
+                (astAtCursor as postcss.Rule).nodes!.length
             ) {
-                importName = ((astAtCursor as PostCss.Rule).nodes!.find(
-                    n => (n as PostCss.Declaration).prop === valueMapping.from
-                ) as PostCss.Declaration).value.replace(/'|"/g, '');
+                importName = ((astAtCursor as postcss.Rule).nodes!.find(
+                    n => (n as postcss.Declaration).prop === valueMapping.from
+                ) as postcss.Declaration).value.replace(/'|"/g, '');
             } else {
                 return [];
             }
@@ -826,11 +826,11 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
     }
 };
 
-function isNodeRule(node: any): node is PostCss.Rule {
+function isNodeRule(node: any): node is postcss.Rule {
     return node.type === 'rule';
 }
 
-function isPositionInDecl(position: ProviderPosition, decl: PostCss.Declaration) {
+function isPositionInDecl(position: ProviderPosition, decl: postcss.Declaration) {
     const srcStart = decl.source && decl.source.start;
     const srcEnd = decl.source && decl.source.end;
 
@@ -860,7 +860,7 @@ export const StateTypeCompletionProvider: CompletionProvider = {
             const declNodes = astAtCursor.nodes;
 
             if (declNodes) {
-                const stateDeclInPos = declNodes.find((decl: PostCss.ChildNode) => {
+                const stateDeclInPos = declNodes.find((decl: postcss.ChildNode) => {
                     if (decl.type === 'decl' && decl.prop === valueMapping.states && isPositionInDecl(position, decl)) {
                         return true;
                     }
@@ -1033,7 +1033,7 @@ export const StateEnumCompletionProvider: CompletionProvider = {
         resolvedElements
     }: ProviderOptions): Completion[] {
         let acc: Completion[] = [];
-        const ast = astAtCursor as PostCss.Node;
+        const ast = astAtCursor as postcss.Node;
 
         if (!lineChunkAtCursor.endsWith('::') && (ast.type === 'root' || ast.type === 'atrule')) {
             if (lastSelectoid.startsWith(':')) {

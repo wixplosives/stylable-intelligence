@@ -1,7 +1,7 @@
-import * as PostCss from 'postcss';
+import postcss from 'postcss';
 import { ProviderPosition } from '../completion-providers';
 
-export function isInNode(position: ProviderPosition, node: PostCss.NodeBase, includeSelector = false): boolean {
+export function isInNode(position: ProviderPosition, node: postcss.NodeBase, includeSelector = false): boolean {
     if (!node.source) {
         return false;
     }
@@ -17,7 +17,7 @@ export function isInNode(position: ProviderPosition, node: PostCss.NodeBase, inc
     if (!node.source!.end) {
         return (
             !isBeforeRuleset(position, node) ||
-            (!!(node as PostCss.ContainerBase).nodes && !!((node as PostCss.ContainerBase).nodes!.length > 0))
+            (!!(node as postcss.ContainerBase).nodes && !!((node as postcss.ContainerBase).nodes!.length > 0))
         );
     }
     if (node.source!.end!.line < position.line) {
@@ -35,7 +35,7 @@ export function isInNode(position: ProviderPosition, node: PostCss.NodeBase, inc
     return true;
 }
 
-export function isBeforeRuleset(position: ProviderPosition, node: PostCss.NodeBase) {
+export function isBeforeRuleset(position: ProviderPosition, node: postcss.NodeBase) {
     const part = ((node.source!.input as any).css as string)
         .split('\n')
         .slice(node.source!.start!.line - 1, node.source!.end ? node.source!.end!.line : undefined);
@@ -48,7 +48,7 @@ export function isBeforeRuleset(position: ProviderPosition, node: PostCss.NodeBa
     return false;
 }
 
-export function isAfterRuleset(position: ProviderPosition, node: PostCss.NodeBase) {
+export function isAfterRuleset(position: ProviderPosition, node: postcss.NodeBase) {
     const part = ((node.source!.input as any).css as string)
         .split('\n')
         .slice(node.source!.start!.line - 1, node.source!.end!.line);
@@ -64,39 +64,39 @@ export function isAfterRuleset(position: ProviderPosition, node: PostCss.NodeBas
     return false;
 }
 
-export function isContainer(node: PostCss.NodeBase): node is PostCss.ContainerBase {
+export function isContainer(node: postcss.NodeBase): node is postcss.ContainerBase {
     return node.hasOwnProperty('nodes');
 }
 
-export function isSelector(node: PostCss.NodeBase): node is PostCss.Rule {
+export function isSelector(node: postcss.NodeBase): node is postcss.Rule {
     return node.hasOwnProperty('selector');
 }
 
-export function isVars(node: PostCss.NodeBase) {
-    return node.hasOwnProperty('selector') && (node as PostCss.Rule).selector === ':vars';
+export function isVars(node: postcss.NodeBase) {
+    return node.hasOwnProperty('selector') && (node as postcss.Rule).selector === ':vars';
 }
 
-export function isDeclaration(node: PostCss.NodeBase): node is PostCss.Declaration {
+export function isDeclaration(node: postcss.NodeBase): node is postcss.Declaration {
     return node.hasOwnProperty('prop');
 }
 
-export function isComment(node: PostCss.NodeBase): node is PostCss.Comment {
-    return node.hasOwnProperty('type') && (node as PostCss.Comment).type === 'comment';
+export function isComment(node: postcss.NodeBase): node is postcss.Comment {
+    return node.hasOwnProperty('type') && (node as postcss.Comment).type === 'comment';
 }
 
-export function isRoot(node: PostCss.NodeBase): node is PostCss.Root {
-    return node.hasOwnProperty('type') && (node as PostCss.Root).type === 'root';
+export function isRoot(node: postcss.NodeBase): node is postcss.Root {
+    return node.hasOwnProperty('type') && (node as postcss.Root).type === 'root';
 }
 
 export function pathFromPosition(
-    ast: PostCss.NodeBase,
+    ast: postcss.NodeBase,
     position: ProviderPosition,
-    res: PostCss.NodeBase[] = [],
+    res: postcss.NodeBase[] = [],
     includeSelector: boolean = false
-): PostCss.NodeBase[] {
+): postcss.NodeBase[] {
     res.push(ast);
     if (isContainer(ast) && ast.nodes) {
-        const childNode = ast.nodes.find((node: PostCss.NodeBase) => {
+        const childNode = ast.nodes.find((node: postcss.NodeBase) => {
             return isInNode(position, node, includeSelector);
         });
         if (childNode) {
