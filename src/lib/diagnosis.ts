@@ -1,9 +1,15 @@
-import { StylableMeta } from '@stylable/core/dist/src/stylable-processor';
-import { Diagnostic, Range, TextDocument } from 'vscode-languageserver-types';
 import path from 'path';
-import { Diagnostics, FileProcessor, process as stylableProcess, safeParse, StylableTransformer } from '@stylable/core';
-import { Diagnostic as Report } from '@stylable/core/src/diagnostics';
+import {
+    StylableTransformer,
+    Diagnostics,
+    safeParse,
+    process,
+    Diagnostic as StylableDiagnostic,
+    FileProcessor,
+    StylableMeta
+} from '@stylable/core';
 import { FileSystemReadSync } from 'kissfs';
+import { Diagnostic, Range, TextDocument } from 'vscode-languageserver-types';
 import { fromVscodePath } from './utils/uri-utils';
 
 export function createDiagnosis(
@@ -24,7 +30,7 @@ export function createDiagnosis(
     });
 
     const docPostCSSRoot = safeParse(doc.getText(), { from: path.resolve(file) });
-    const meta = stylableProcess(docPostCSSRoot);
+    const meta = process(docPostCSSRoot);
 
     fileProcessor.add(file, meta);
 
@@ -36,14 +42,14 @@ export function createDiagnosis(
         .map(reportToDiagnostic);
 
     // stylable diagnostic to protocol diagnostic
-    function reportToDiagnostic(report: Report) {
+    function reportToDiagnostic(report: StylableDiagnostic) {
         const severity = report.type === 'error' ? 1 : 2;
         const range = createRange(report);
-        return Diagnostic.create(range, report.message, severity as any);
+        return Diagnostic.create(range, report.message, severity);
     }
 }
 
-function createRange(report: Report) {
+function createRange(report: StylableDiagnostic) {
     const source = report.node.source;
     const start = { line: 0, character: 0 };
     const end = { line: 0, character: 0 };

@@ -1,10 +1,10 @@
 import { ColorPresentationParams, TextDocument } from 'vscode-languageserver-protocol';
-import { ProviderPosition, ProviderRange } from '../completion-providers';
+import { last } from 'lodash';
 import { Color, ColorPresentation, ColorInformation } from 'vscode-css-languageservice';
 import { evalDeclarationValue, valueMapping, Stylable, StylableMeta } from '@stylable/core';
+import { ProviderPosition, ProviderRange } from '../completion-providers';
 import { CssService } from '../../model/css-service';
 import { fixAndProcess } from '../provider';
-import { last } from 'lodash';
 
 export function resolveDocumentColors(stylable: Stylable, cssService: CssService, document: TextDocument) {
     const processor = stylable.fileProcessor;

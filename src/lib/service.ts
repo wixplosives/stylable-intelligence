@@ -1,18 +1,16 @@
+import path from 'path';
+import { CompletionParams } from 'vscode-languageclient';
 import {
     Definition,
     Hover,
     ReferenceParams,
     SignatureHelp,
-    TextDocumentChangeEvent,
     TextDocumentPositionParams,
     WorkspaceEdit,
     DocumentColorParams,
     ColorPresentationParams
 } from 'vscode-languageserver-protocol';
-import { createProvider, MinimalDocsDispatcher } from './provider-factory';
-import { ProviderPosition, ProviderRange } from './completion-providers';
-import { Completion } from './completion-types';
-import { createDiagnosis } from './diagnosis';
+import { IConnection } from 'vscode-languageserver';
 import {
     Command,
     CompletionItem,
@@ -22,18 +20,17 @@ import {
     Diagnostic
 } from 'vscode-languageserver-types';
 import { Stylable } from '@stylable/core';
+
+import { createProvider, MinimalDocsDispatcher } from './provider-factory';
+import { ProviderPosition, ProviderRange } from './completion-providers';
+import { Completion } from './completion-types';
+import { createDiagnosis } from './diagnosis';
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
-import { getRefs, getDefSymbol, getRenameRefs } from './provider';
+import { getRefs, getRenameRefs } from './provider';
 import { ExtendedFSReadSync, ExtendedTsLanguageService, NotificationTypes } from './types';
-import { IConnection } from 'vscode-languageserver';
-import { CompletionParams } from 'vscode-languageclient/lib/main';
 import { CssService } from '../model/css-service';
 import { resolveDocumentColors, getColorPresentation } from './feature/color-provider';
-import path from 'path';
-
 export { MinimalDocs } from './provider-factory';
-
-// exporting types for use in playground
 export { ExtendedTsLanguageService, ExtendedFSReadSync, NotificationTypes } from './types';
 
 export class StylableLanguageService {
@@ -57,7 +54,7 @@ export function initStylableLanguageService(
     services: { styl: Stylable; tsLanguageService: ExtendedTsLanguageService; requireModule: typeof require },
     fs: ExtendedFSReadSync,
     docsDispatcher: MinimalDocsDispatcher,
-    notifications: NotificationTypes
+    _notifications: NotificationTypes
 ) {
     const provider = createProvider(services.styl, services.tsLanguageService);
     const processor = services.styl.fileProcessor;

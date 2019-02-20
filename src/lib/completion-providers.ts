@@ -1,3 +1,8 @@
+import postcss from 'postcss';
+import path from 'path';
+import ts from 'typescript';
+import { find, keys, last } from 'lodash';
+
 import {
     ClassSymbol,
     CSSResolve,
@@ -12,8 +17,10 @@ import {
     VarSymbol,
     nativePseudoClasses,
     nativePseudoElements,
-    MappedStates
+    MappedStates,
+    ResolvedElement
 } from '@stylable/core';
+
 import { CursorPosition, SelectorChunk } from './utils/selector-analyzer';
 import {
     classCompletion,
@@ -37,8 +44,6 @@ import {
     valueDirective
 } from './completion-types';
 import { isComment, isDeclaration } from './utils/postcss-ast-utils';
-import postcss from 'postcss';
-import path from 'path';
 import {
     extractJsModifierReturnType,
     extractTsSignature,
@@ -47,10 +52,7 @@ import {
     isDirective,
     isInValue
 } from './provider';
-import { TypeReferenceNode } from 'typescript';
 import { toVscodePath } from './utils/uri-utils';
-import { ResolvedElement } from '@stylable/core/dist/src/stylable-transformer';
-import { find, keys, last } from 'lodash';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
 import { resolveStateTypeOrValidator } from './feature/pseudo-class';
 
@@ -1201,7 +1203,7 @@ function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLan
         if (!sig || !sig.declaration) {
             return false;
         }
-        const rtype = sig.declaration.type ? (sig.declaration.type as TypeReferenceNode).getText() : '';
+        const rtype = sig.declaration.type ? (sig.declaration.type as ts.TypeReferenceNode).getText() : '';
         return /(\w+.)?object/.test(rtype.trim());
     }
     if (importSymbol.import.fromRelative.endsWith('.js')) {

@@ -1,6 +1,6 @@
-import { FileSystemReadSync } from 'kissfs';
-import { Stylable } from '@stylable/core';
 import { Event, TextDocument, TextDocumentChangeEvent, TextDocuments } from 'vscode-languageserver';
+import { Stylable } from '@stylable/core';
+import { FileSystemReadSync } from 'kissfs';
 import Provider from './provider';
 import { ExtendedTsLanguageService } from './types';
 

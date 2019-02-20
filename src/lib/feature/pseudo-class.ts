@@ -1,6 +1,6 @@
+import { ParameterInformation, SignatureHelp, SignatureInformation } from 'vscode-languageserver';
 import { StylableMeta, ParsedValue, systemValidators, StateParsedValue } from '@stylable/core';
 import { ProviderPosition } from '../completion-providers';
-import { ParameterInformation, SignatureHelp, SignatureInformation } from 'vscode-languageserver';
 import { ParsedFuncOrDivValue } from '../types';
 
 const pvp = require('postcss-value-parser');

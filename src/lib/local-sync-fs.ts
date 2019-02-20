@@ -1,5 +1,5 @@
-import { Directory, DirectoryContent, File, FileSystemReadSync, LocalFileSystem, ShallowDirectory } from 'kissfs';
 import fs from 'fs';
+import { Directory, DirectoryContent, File, FileSystemReadSync, LocalFileSystem, ShallowDirectory } from 'kissfs';
 
 export class LocalSyncFs extends LocalFileSystem implements FileSystemReadSync {
     public loadTextFileSync(fullPath: string): string {

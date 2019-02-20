@@ -1,12 +1,13 @@
 import path from 'path';
+import ts from 'typescript';
 import { IConnection, NotificationType, TextDocument, TextDocuments } from 'vscode-languageserver';
+import { Stylable } from '@stylable/core';
+import { FileSystemReadSync } from 'kissfs';
+
 import { createFs, MinimalDocs } from './provider-factory';
 import { ColorPresentationRequest, DocumentColorRequest } from 'vscode-languageserver-protocol';
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 import { initStylableLanguageService } from './service';
-import { Stylable } from '@stylable/core';
-import ts from 'typescript';
-import { FileSystemReadSync } from 'kissfs';
 import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
 import { createBaseHost, createLanguageServiceHost } from './utils/temp-language-service-host';
 

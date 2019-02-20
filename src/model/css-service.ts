@@ -1,6 +1,5 @@
-import { ColorInformation, TextDocument } from 'vscode-languageserver-protocol';
 import * as VCL from 'vscode-css-languageservice';
-import { Color, ColorPresentation } from 'vscode-css-languageservice';
+import { ColorInformation, TextDocument } from 'vscode-languageserver-protocol';
 import { CompletionItem, Diagnostic, Hover, Location, Position, Range } from 'vscode-languageserver-types';
 import { createMeta } from '../lib/provider';
 import { ExtendedFSReadSync } from '../lib/types';
@@ -114,7 +113,7 @@ export class CssService {
         return this.inner.findReferences(document, position, stylesheet);
     }
 
-    public getColorPresentations(document: TextDocument, color: Color, range: Range): ColorPresentation[] {
+    public getColorPresentations(document: TextDocument, color: VCL.Color, range: Range): VCL.ColorPresentation[] {
         const stylesheet: VCL.Stylesheet = this.inner.parseStylesheet(document);
         return this.inner.getColorPresentations(document, stylesheet, color, range);
     }
@@ -124,7 +123,7 @@ export class CssService {
         return this.inner.findDocumentColors(document, stylesheet);
     }
 
-    public findColor(document: TextDocument): Color | null {
+    public findColor(document: TextDocument): VCL.Color | null {
         const colors = this.findColors(document);
         return colors.length ? colors[0].color : null;
     }

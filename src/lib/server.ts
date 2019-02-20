@@ -5,6 +5,7 @@ import {
     IPCMessageWriter,
     DidChangeConfigurationNotification
 } from 'vscode-languageserver';
+
 import { LocalSyncFs } from './local-sync-fs';
 import { init } from './server-utils';
 import { initializeResult } from '../view';

@@ -1,8 +1,17 @@
-import { File } from 'kissfs';
-import { keys, last, values, findLast } from 'lodash';
 import path from 'path';
+import {
+    Location,
+    ParameterInformation,
+    Position,
+    ReferenceParams,
+    SignatureHelp,
+    SignatureInformation
+} from 'vscode-languageserver';
+import ts from 'typescript';
+import { keys, last, values, findLast } from 'lodash';
 import postcss from 'postcss';
-import { Declaration } from 'postcss';
+import { File } from 'kissfs';
+
 import {
     CSSResolve,
     Diagnostics,
@@ -15,19 +24,11 @@ import {
     Stylable,
     StylableMeta,
     StylableTransformer,
+    ClassSymbol,
+    ElementSymbol,
     valueMapping
 } from '@stylable/core';
-import { ClassSymbol, ElementSymbol } from '@stylable/core';
-import ts from 'typescript';
-import { ParameterDeclaration, SignatureDeclaration, TypeReferenceNode } from 'typescript';
-import {
-    Location,
-    ParameterInformation,
-    Position,
-    ReferenceParams,
-    SignatureHelp,
-    SignatureInformation
-} from 'vscode-languageserver';
+
 import {
     CodeMixinCompletionProvider,
     CompletionProvider,
@@ -63,8 +64,8 @@ import { isRoot, isSelector, pathFromPosition, isInNode } from './utils/postcss-
 import { parseSelector, SelectorChunk, SelectorInternalChunk, SelectorQuery } from './utils/selector-analyzer';
 import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 
-const pvp = require('postcss-value-parser');
-const cst = require('css-selector-tokenizer');
+const valueParser = require('postcss-value-parser');
+const selectorTokenizer = require('css-selector-tokenizer');
 
 export default class Provider {
 
@@ -86,7 +87,7 @@ export default class Provider {
         PseudoElementCompletionProvider,
         ValueCompletionProvider
     ];
-    constructor(private styl: Stylable, private tsLangService: ExtendedTsLanguageService) {}
+    constructor(private styl: Stylable, private tsLangService: ExtendedTsLanguageService) { }
 
     public provideCompletionItemsFromSrc(
         src: string,
@@ -311,7 +312,7 @@ export default class Provider {
         if (/value\(\s*[^\)]*$/.test(value)) {
             return null;
         }
-        const parsed = pvp(value);
+        const parsed = valueParser(value);
 
         let mixin = '';
         const rev = parsed.nodes.reverse()[0];
@@ -407,15 +408,16 @@ export default class Provider {
         }
         const ptypes = sig.parameters.map(p => {
             return (
-                p.name + ':' + ((p.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText()
+                p.name + ':' +
+                ((p.valueDeclaration as ts.ParameterDeclaration).type as ts.TypeReferenceNode).getFullText()
             );
         });
 
-        const rtype = sig.declaration.type ? (sig.declaration.type as TypeReferenceNode).getText() : '';
+        const rtype = sig.declaration.type ? (sig.declaration.type as ts.TypeReferenceNode).getText() : '';
 
         const parameters: ParameterInformation[] = sig!.parameters.map(pt => {
-            const label =
-                pt.name + ':' + ((pt.valueDeclaration as ParameterDeclaration).type as TypeReferenceNode).getFullText();
+            const label = pt.name + ':' +
+                ((pt.valueDeclaration as ts.ParameterDeclaration).type as ts.TypeReferenceNode).getFullText();
             return paramInfo.create(label);
         });
 
@@ -556,7 +558,7 @@ export default class Provider {
     ): SignatureHelp | null {
         let word: string = '';
         const posChar = pos.character + 1;
-        const parsed = cst.parse(line);
+        const parsed = selectorTokenizer.parse(line);
         if (parsed.nodes[0].type === 'selector') {
             let length = 0;
             parsed.nodes[0].nodes.forEach((node: any) => {
@@ -652,18 +654,18 @@ export default class Provider {
             : undefined;
         const parentSelector: SRule | null =
             parentAst &&
-            isSelector(parentAst) &&
-            fakeRules.findIndex(f => {
-                return f.selector === parentAst.selector;
-            }) === -1
-                ?  parentAst as SRule
+                isSelector(parentAst) &&
+                fakeRules.findIndex(f => {
+                    return f.selector === parentAst.selector;
+                }) === -1
+                ? parentAst as SRule
                 : astAtCursor &&
-                  isSelector(astAtCursor) &&
-                  fakeRules.findIndex(f => {
-                      return f.selector === astAtCursor.selector;
-                  }) === -1
-                ?  astAtCursor as SRule
-                : null;
+                    isSelector(astAtCursor) &&
+                    fakeRules.findIndex(f => {
+                        return f.selector === astAtCursor.selector;
+                    }) === -1
+                    ? astAtCursor as SRule
+                    : null;
 
         const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(fullLineText, cursorPosInLine);
         const ps = parseSelector(lineChunkAtCursor, fixedCharIndex);
@@ -958,10 +960,10 @@ function findRefs(
                             character: index
                                 ? match.index
                                 : decl.source!.start!.column +
-                                  valueMapping.mixin.length +
-                                  match.index +
-                                  (decl.raws.between ? decl.raws.between.length : 0) -
-                                  1
+                                valueMapping.mixin.length +
+                                match.index +
+                                (decl.raws.between ? decl.raws.between.length : 0) -
+                                1
                         },
                         end: {
                             line: decl.source!.start!.line - 1 + index,
@@ -970,10 +972,10 @@ function findRefs(
                                 (index
                                     ? match.index
                                     : decl.source!.start!.column +
-                                      valueMapping.mixin.length +
-                                      match.index +
-                                      (decl.raws.between ? decl.raws.between.length : 0) -
-                                      1)
+                                    valueMapping.mixin.length +
+                                    match.index +
+                                    (decl.raws.between ? decl.raws.between.length : 0) -
+                                    1)
                         }
                     }
                 });
@@ -1129,10 +1131,10 @@ function newFindRefs(
                         d.prop === valueMapping.named &&
                         d.parent.nodes!.find(n => {
                             return (
-                                (n as Declaration).prop === valueMapping.from &&
+                                (n as postcss.Declaration).prop === valueMapping.from &&
                                 path.resolve(
                                     path.dirname(scannedMeta.source),
-                                    (n as Declaration).value.replace(/"/g, '')
+                                    (n as postcss.Declaration).value.replace(/"/g, '')
                                 ) === defMeta.source
                             );
                         })
@@ -1197,12 +1199,12 @@ function newFindRefs(
                     const parsed = parseSelector(r.selector, r.selector.indexOf(word));
                     const elem =
                         (parsed.selector[parsed.target.index] as SelectorChunk).type === '*' ||
-                        (parsed.selector[parsed.target.index] as SelectorChunk).type.charAt(0) !==
+                            (parsed.selector[parsed.target.index] as SelectorChunk).type.charAt(0) !==
                             (parsed.selector[parsed.target.index] as SelectorChunk).type.charAt(0).toLowerCase()
                             ? findLast(
-                                  (parsed.selector[parsed.target.index] as SelectorChunk).text,
-                                  (str: string) => !str.startsWith(':') || str.startsWith('::')
-                              )!.replace('.', '')
+                                (parsed.selector[parsed.target.index] as SelectorChunk).text,
+                                (str: string) => !str.startsWith(':') || str.startsWith('::')
+                            )!.replace('.', '')
                             : (parsed.selector[parsed.target.index] as SelectorInternalChunk).name;
                     const reso = trans.resolveSelectorElements(scannedMeta, r.selector);
                     const symb = reso[0].find(o => o.name === elem);
@@ -1330,7 +1332,7 @@ export function fixAndProcess(src: string, position: ProviderPosition, filePath:
 }
 
 export class ProviderLocation {
-    constructor(public uri: string, public range: ProviderRange) {}
+    constructor(public uri: string, public range: ProviderRange) { }
 }
 
 export function extractTsSignature(
@@ -1359,7 +1361,7 @@ export function extractTsSignature(
     if (!mix) {
         return;
     }
-    return tc.getSignatureFromDeclaration(mix!.declarations![0] as SignatureDeclaration);
+    return tc.getSignatureFromDeclaration(mix!.declarations![0] as ts.SignatureDeclaration);
 }
 
 export function extractJsModifierReturnType(mixin: string, activeParam: number, fileSrc: string): string {
@@ -1501,7 +1503,7 @@ export function getNamedValues(src: string, lineIndex: number): { isNamedValueLi
 export function getExistingNames(lineText: string, position: ProviderPosition) {
     const valueStart = lineText.indexOf(':') + 1;
     const value = lineText.slice(valueStart, position.character);
-    const parsed = pvp(value.trim());
+    const parsed = valueParser(value.trim());
     const names: string[] = parsed.nodes
         .filter((n: any) => n.type === 'function' || n.type === 'word')
         .map((n: any) => n.value);
@@ -1528,7 +1530,7 @@ export function getDefSymbol(src: string, position: ProviderPosition, filePath: 
         return { word: '', meta: null };
     }
 
-    const parsed: any[] = pvp(res.currentLine).nodes;
+    const parsed: any[] = valueParser(res.currentLine).nodes;
 
     let val = findNode(parsed, position.character);
     while (val.nodes && val.nodes.length > 0) {

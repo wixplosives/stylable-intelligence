@@ -1,6 +1,6 @@
+import path from 'path';
 import ts from 'typescript';
 import { checkExistsSync, FileSystemReadSync } from 'kissfs';
-import path from 'path';
 
 export interface BaseHost extends ts.ParseConfigHost {
     syncFs: FileSystemReadSync;
