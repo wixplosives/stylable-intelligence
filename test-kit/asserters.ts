@@ -1,15 +1,15 @@
-import * as ts from 'typescript';
-import * as fs from 'fs';
-import * as path from 'path';
+import ts from 'typescript';
+import fs from 'fs';
+import path from 'path';
 import { NodeBase } from 'postcss';
 import { Stylable } from '@stylable/core';
 import { TextDocument, TextDocumentIdentifier, Range } from 'vscode-languageserver-types';
 import { Location, ParameterInformation, SignatureHelp, ColorPresentation, Color } from 'vscode-languageserver';
 import { ColorInformation } from 'vscode-css-languageservice';
-import { createFs, createProvider, MinimalDocs } from '../src/lib/provider-factory'
+import { createFs, createProvider, MinimalDocs } from '../src/lib/provider-factory';
 import { ProviderPosition } from '../src/lib/completion-providers';
 import { createMeta, getRefs, ProviderLocation } from '../src/lib/provider';
-import { pathFromPosition } from '../src/lib/utils/postcss-ast-utils'
+import { pathFromPosition } from '../src/lib/utils/postcss-ast-utils';
 import { fromVscodePath, toVscodePath } from '../src/lib/utils/uri-utils';
 import { LocalSyncFs } from '../src/lib/local-sync-fs';
 import { createDocFs } from '../src/lib/server-utils';
@@ -21,7 +21,6 @@ import pkgDir from 'pkg-dir';
 
 export const CASES_PATH = path.join(pkgDir.sync(__dirname)!, 'fixtures', 'server-cases');
 
-
 export function getCaretPosition(src: string) {
     const caretPos = src.indexOf('|');
     const linesTillCaret = src.substr(0, caretPos).split('\n');
@@ -32,41 +31,41 @@ export function getCaretPosition(src: string) {
 export function getPath(fileName: string): NodeBase[] {
     const fullPath = path.join(CASES_PATH, fileName);
     let src: string = fs.readFileSync(fullPath).toString();
-    let pos = getCaretPosition(src);
-    src = src.replace('|', "");
+    const pos = getCaretPosition(src);
+    src = src.replace('|', '');
     const proc = createMeta(src, fullPath);
-    return pathFromPosition(proc.meta!.rawAst, new ProviderPosition(pos.line + 1, pos.character))
+    return pathFromPosition(proc.meta!.rawAst, new ProviderPosition(pos.line + 1, pos.character));
 }
 
 export function getDefinition(fileName: string): Thenable<ProviderLocation[]> {
     const fullPath = path.join(CASES_PATH, fileName);
     let src: string = fs.readFileSync(fullPath).toString();
-    let pos = getCaretPosition(src);
-    src = src.replace('|', "");
-    return provider.getDefinitionLocation(src, pos, fullPath, docsFs).then((res) => {
+    const pos = getCaretPosition(src);
+    src = src.replace('|', '');
+    return provider.getDefinitionLocation(src, pos, fullPath, docsFs).then(res => {
         return res;
     });
 }
 
-export function getDefFromLoc({filePath, pos}: {filePath: string, pos: ProviderPosition}) {
+export function getDefFromLoc({ filePath, pos }: { filePath: string; pos: ProviderPosition }) {
     const fullPath = path.join(CASES_PATH, filePath);
-    let src: string = fs.readFileSync(fullPath).toString();
-    return provider.getDefinitionLocation(src, pos, fullPath, docsFs).then((res) => {
+    const src: string = fs.readFileSync(fullPath).toString();
+    return provider.getDefinitionLocation(src, pos, fullPath, docsFs).then(res => {
         return res;
     });
 }
 
 export function getReferences(fileName: string, pos: ProviderPosition): Location[] {
     const fullPath = path.join(CASES_PATH, fileName);
-    let src: string = fs.readFileSync(fullPath).toString();
-    let doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src)
-    return getRefs({ context: { includeDeclaration: true }, position: pos, textDocument: doc }, docsFs, stylable)
+    const src: string = fs.readFileSync(fullPath).toString();
+    const doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src);
+    return getRefs({ context: { includeDeclaration: true }, position: pos, textDocument: doc }, docsFs, stylable);
 }
 
 export function getSignatureHelp(fileName: string, prefix: string): SignatureHelp | null {
     const fullPath = path.join(CASES_PATH, fileName);
     let src: string = fs.readFileSync(fullPath).toString();
-    let pos = getCaretPosition(src);
+    const pos = getCaretPosition(src);
     src = src.replace('|', prefix);
     pos.character += prefix.length;
     return provider.getSignatureHelp(src, pos, fullPath, docsFs, ParameterInformation);
@@ -74,30 +73,22 @@ export function getSignatureHelp(fileName: string, prefix: string): SignatureHel
 
 export function getDocumentColors(fileName: string): ColorInformation[] {
     const fullPath = path.join(CASES_PATH, fileName);
-    let src: string = fs.readFileSync(fullPath).toString();
-    let doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src)
+    const src: string = fs.readFileSync(fullPath).toString();
+    const doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src);
 
-    return resolveDocumentColors(
-        stylable,
-        newCssService,
-        doc
-    );
+    return resolveDocumentColors(stylable, newCssService, doc);
 }
 
-export function getDocColorPresentation(fileName: string, color: Color, range: Range ): ColorPresentation[] {
+export function getDocColorPresentation(fileName: string, color: Color, range: Range): ColorPresentation[] {
     const fullPath = path.join(CASES_PATH, fileName);
-    let src: string = fs.readFileSync(fullPath).toString();
-    let doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src)
+    const src: string = fs.readFileSync(fullPath).toString();
+    const doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src);
 
-    return getColorPresentation(
-        newCssService,
-        doc,
-        {
-            textDocument: TextDocumentIdentifier.create(doc.uri),
-            color,
-            range
-        }
-    );
+    return getColorPresentation(newCssService, doc, {
+        textDocument: TextDocumentIdentifier.create(doc.uri),
+        color,
+        range
+    });
 }
 
 const minDocs: MinimalDocs = {
@@ -106,8 +97,7 @@ const minDocs: MinimalDocs = {
     },
     keys(): string[] {
         return fs.readdirSync(path.join(CASES_PATH, 'imports'));
-    },
-
+    }
 };
 const docsFs = createDocFs(new LocalSyncFs(''), minDocs);
 
@@ -116,9 +106,12 @@ const tsLanguageServiceHost = createLanguageServiceHost({
     cwd: __dirname,
     getOpenedDocs: () => openedFiles,
     compilerOptions: {
-        target: ts.ScriptTarget.ES5, sourceMap: false, declaration: true, outDir: 'dist',
+        target: ts.ScriptTarget.ES5,
+        sourceMap: false,
+        declaration: true,
+        outDir: 'dist',
         module: ts.ModuleKind.CommonJS,
-        typeRoots: ["./node_modules/@types"]
+        typeRoots: ['./node_modules/@types']
     },
     defaultLibDirectory: CASES_PATH,
     baseHost: createBaseHost(docsFs, path)
@@ -126,7 +119,7 @@ const tsLanguageServiceHost = createLanguageServiceHost({
 const tsLanguageService = ts.createLanguageService(tsLanguageServiceHost);
 const wrappedTs: ExtendedTsLanguageService = {
     ts: tsLanguageService,
-    setOpenedFiles: (files: string[]) => openedFiles = files
+    setOpenedFiles: (files: string[]) => (openedFiles = files)
 };
 
 const stylable = new Stylable(CASES_PATH, createFs(docsFs), () => ({ default: {} }));

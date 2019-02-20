@@ -4,7 +4,7 @@ import MemoryFS from 'memory-fs';
 import pkgDir from 'pkg-dir';
 
 describe('browser-compatible', () => {
-    it('bundleable by webpack with no errors', async function () {
+    it('bundleable by webpack with no errors', async function() {
         this.timeout(50000);
         const memoryFS = new MemoryFS();
         const rootPath = await pkgDir(__dirname);
@@ -24,13 +24,14 @@ describe('browser-compatible', () => {
 
         compiler.outputFileSystem = memoryFS;
 
-        await new Promise((res, rej) => compiler.run((err, stats) => {
-            if (err || stats.hasErrors()) {
-                rej(err || new Error(stats.toString()));
-            } else {
-                res();
-            }
-        }));
-
+        await new Promise((res, rej) =>
+            compiler.run((err, stats) => {
+                if (err || stats.hasErrors()) {
+                    rej(err || new Error(stats.toString()));
+                } else {
+                    res();
+                }
+            })
+        );
     });
 });

@@ -1,5 +1,8 @@
+// tslint:disable: max-line-length
+
 // significant portions of this file were originally copied from Microsoft's vscode-languageserver-node sources
 // at commit 059dc8612d9cb72ec86c69beba3839ce02febfd9
+
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License.
@@ -17,10 +20,10 @@
  * OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * ------------------------------------------------------------------------------------------ */
 
-import {Duplex} from 'stream';
+import { Duplex } from 'stream';
 
-import {CompletionParams, createConnection, IConnection, InitializeResult} from "vscode-languageserver";
-import {expect, plan, obj} from "../testkit/chai.spec";
+import { CompletionParams, createConnection, IConnection, InitializeResult } from 'vscode-languageserver';
+import { expect, plan, obj } from '../testkit/chai.spec';
 import {
     CompletionItem,
     CompletionList,
@@ -60,7 +63,16 @@ import {
     SignatureHelp,
     SignatureHelpRequest,
     TelemetryEventNotification,
-    TextDocumentPositionParams, WorkspaceEdit, RenameRequest, RenameParams, ColorInformation, ColorPresentation, DocumentColorRequest, ColorPresentationRequest, ColorPresentationParams, DocumentColorParams
+    TextDocumentPositionParams,
+    WorkspaceEdit,
+    RenameRequest,
+    RenameParams,
+    ColorInformation,
+    ColorPresentation,
+    DocumentColorRequest,
+    ColorPresentationRequest,
+    ColorPresentationParams,
+    DocumentColorParams
 } from 'vscode-languageserver-protocol';
 
 class TestDuplex extends Duplex {
@@ -68,127 +80,126 @@ class TestDuplex extends Duplex {
         super();
     }
 
-    _write(chunk: string | Buffer, _encoding: string, done: Function) {
-        if (this.dbg) console.log(this.name + ': write: ' + chunk.toString());
+    public _write(chunk: string | Buffer, _encoding: string, done: () => void) {
+        if (this.dbg) { console.log(this.name + ': write: ' + chunk.toString()); }
         setImmediate(() => {
             this.emit('data', chunk);
         });
         done();
     }
 
-    _read(_size: number) {
-
-    }
+    public _read(_size: number) { /**/ }
 }
 
 // adapted from https://github.com/Microsoft/vscode-languageserver-node/blob/master/client/src/client.ts
 export class StreamConnectionClient {
+    public sendRequest: IConnection['sendRequest'];
     private readonly connection: IConnection;
-    public sendRequest: IConnection['sendRequest']
 
     constructor(input: NodeJS.ReadableStream, output: NodeJS.WritableStream) {
         this.connection = createConnection(input, output);
-        this.sendRequest = this.connection.sendRequest.bind(this.connection) as any
+        this.sendRequest = this.connection.sendRequest.bind(this.connection) as any;
     }
 
     public listen(): void {
-        this.connection.listen()
+        this.connection.listen();
     }
 
     // extend
-    async initialize(params: InitializeParams = {} as any): Promise<InitializeResult> {
+    public async initialize(params: InitializeParams = {} as any): Promise<InitializeResult> {
         if (!params.capabilities) {
             params.capabilities = {};
         }
         return await this.connection.sendRequest(InitializeRequest.type, params);
     }
 
-    async shutdown() {
+    public async shutdown() {
         return await this.connection.sendRequest(ShutdownRequest.type, undefined);
     }
 
-    exit() {
+    public exit() {
         return this.connection.sendNotification(ExitNotification.type);
     }
 
-    onLogMessage(handler: NotificationHandler<LogMessageParams>) {
+    public onLogMessage(handler: NotificationHandler<LogMessageParams>) {
         return this.connection.onNotification(LogMessageNotification.type, handler);
     }
 
-    onShowMessage(handler: NotificationHandler<ShowMessageParams>) {
+    public onShowMessage(handler: NotificationHandler<ShowMessageParams>) {
         return this.connection.onNotification(ShowMessageNotification.type, handler);
     }
 
-    onTelemetry(handler: NotificationHandler<any>) {
+    public onTelemetry(handler: NotificationHandler<any>) {
         return this.connection.onNotification(TelemetryEventNotification.type, handler);
     }
 
-    didChangeConfiguration(params: DidChangeConfigurationParams) {
+    public didChangeConfiguration(params: DidChangeConfigurationParams) {
         return this.connection.sendNotification(DidChangeConfigurationNotification.type, params);
     }
 
-    didChangeWatchedFiles(params: DidChangeWatchedFilesParams) {
+    public didChangeWatchedFiles(params: DidChangeWatchedFilesParams) {
         return this.connection.sendNotification(DidChangeWatchedFilesNotification.type, params);
     }
 
-    didOpenTextDocument(params: DidOpenTextDocumentParams) {
+    public didOpenTextDocument(params: DidOpenTextDocumentParams) {
         return this.connection.sendNotification(DidOpenTextDocumentNotification.type, params);
     }
 
-    didChangeTextDocument(params: DidChangeTextDocumentParams) {
+    public didChangeTextDocument(params: DidChangeTextDocumentParams) {
         return this.connection.sendNotification(DidChangeTextDocumentNotification.type, params);
     }
 
-    didCloseTextDocument(params: DidCloseTextDocumentParams) {
+    public didCloseTextDocument(params: DidCloseTextDocumentParams) {
         return this.connection.sendNotification(DidCloseTextDocumentNotification.type, params);
     }
 
-    didSaveTextDocument(params: DidSaveTextDocumentParams) {
+    public didSaveTextDocument(params: DidSaveTextDocumentParams) {
         return this.connection.sendNotification(DidSaveTextDocumentNotification.type, params);
     }
 
-    onDiagnostics(handler: NotificationHandler<PublishDiagnosticsParams>) {
+    public onDiagnostics(handler: NotificationHandler<PublishDiagnosticsParams>) {
         return this.connection.onNotification(PublishDiagnosticsNotification.type, handler);
     }
 
-    async completion(params: CompletionParams): Promise<CompletionList | CompletionItem[] | null> {
+    public async completion(params: CompletionParams): Promise<CompletionList | CompletionItem[] | null> {
         return await this.connection.sendRequest(CompletionRequest.type, params);
     }
 
-    async hover(params: TextDocumentPositionParams): Promise<Hover | null> {
+    public async hover(params: TextDocumentPositionParams): Promise<Hover | null> {
         return await this.connection.sendRequest(HoverRequest.type, params);
     }
 
-    async signatureHelp(params: TextDocumentPositionParams): Promise<SignatureHelp | null> {
+    public async signatureHelp(params: TextDocumentPositionParams): Promise<SignatureHelp | null> {
         return await this.connection.sendRequest(SignatureHelpRequest.type, params);
     }
 
-    async definition(params: TextDocumentPositionParams) {
+    public async definition(params: TextDocumentPositionParams) {
         return await this.connection.sendRequest(DefinitionRequest.type, params);
     }
 
-    async references(params: ReferenceParams): Promise<Location[] | null> {
+    public async references(params: ReferenceParams): Promise<Location[] | null> {
         return await this.connection.sendRequest(ReferencesRequest.type, params);
     }
 
-    async rename(params: RenameParams): Promise<WorkspaceEdit | null> {
+    public async rename(params: RenameParams): Promise<WorkspaceEdit | null> {
         return await this.connection.sendRequest(RenameRequest.type, params);
     }
 
-    async documentColor(params: DocumentColorParams): Promise< ColorInformation[]> {
+    public async documentColor(params: DocumentColorParams): Promise<ColorInformation[]> {
         return await this.connection.sendRequest(DocumentColorRequest.type, params);
     }
-    async colorPresentation(params: ColorPresentationParams): Promise<ColorPresentation[]> {
+    public async colorPresentation(params: ColorPresentationParams): Promise<ColorPresentation[]> {
         return await this.connection.sendRequest(ColorPresentationRequest.type, params);
     }
 }
 
 export class TestConnection {
+    // tslint:disable: member-ordering
     private duplexStream1 = new TestDuplex('ds1');
     private duplexStream2 = new TestDuplex('ds2');
-
     public server: IConnection = createConnection(this.duplexStream2, this.duplexStream1);
     public client = new StreamConnectionClient(this.duplexStream1, this.duplexStream2);
+    // tslint:enable: member-ordering
 
     public listen() {
         this.server.listen();
@@ -203,96 +214,121 @@ export class TestConnection {
 
 // adapted from https://github.com/Microsoft/vscode-languageserver-node/blob/master/jsonrpc/src/test/connection.test.ts
 
-describe("LSP connection test driver", function () {
+describe('LSP connection test driver', () => {
+    it(
+        'Test Duplex Stream',
+        plan(1, () => {
+            const stream = new TestDuplex('ds1');
+            stream.on('data', chunk => {
+                expect(chunk.toString()).to.eql('Hello World');
+            });
+            stream.write('Hello World');
+        })
+    );
 
-    it('Test Duplex Stream', plan(1, () => {
-        let stream = new TestDuplex('ds1');
-        stream.on('data', (chunk) => {
-            expect(chunk.toString()).to.eql('Hello World');
-        });
-        stream.write('Hello World');
-    }));
-
-    it('Test Duplex Stream Connection', plan(1, () => {
-        const type = new RequestType<string, string, void, void>('test/foo');
-        const inputStream = new TestDuplex('ds1');
-        const outputStream = new TestDuplex('ds2');
-        let connection: IConnection = createConnection(inputStream, outputStream);
-        connection.listen();
-        let content: string = "";
-        outputStream.on('data', (chunk) => {
-            content += chunk.toString();
-            const match = content.match(/Content-Length:\s*(\d+)\s*/);
-            if (match) {
-                const contentLength = Number(match[1]);
-                if (content.length === match[0].length + contentLength) {
-                    const message = JSON.parse(content.substr(contentLength * -1));
-                    expect(message).to.contain({
-                        "method": "test/foo",
-                        "params": "bar"
-                    });
+    it(
+        'Test Duplex Stream Connection',
+        plan(1, () => {
+            const type = new RequestType<string, string, void, void>('test/foo');
+            const inputStream = new TestDuplex('ds1');
+            const outputStream = new TestDuplex('ds2');
+            const connection: IConnection = createConnection(inputStream, outputStream);
+            connection.listen();
+            let content: string = '';
+            outputStream.on('data', chunk => {
+                content += chunk.toString();
+                const match = content.match(/Content-Length:\s*(\d+)\s*/);
+                if (match) {
+                    const contentLength = Number(match[1]);
+                    if (content.length === match[0].length + contentLength) {
+                        const message = JSON.parse(content.substr(contentLength * -1));
+                        expect(message).to.contain({
+                            method: 'test/foo',
+                            params: 'bar'
+                        });
+                    }
                 }
-            }
-        });
-        connection.sendRequest(type, 'bar');
-    }));
+            });
+            connection.sendRequest(type, 'bar');
+        })
+    );
 
-    describe("TestConnection", function () {
+    describe('TestConnection', () => {
         let testCon: TestConnection;
         beforeEach(() => {
             testCon = new TestConnection();
             testCon.listen();
         });
-        describe("onRequest", function () {
+        describe('onRequest', () => {
             const testRequest = new RequestType<string, string, void, void>('test/foo');
-            it('Handle Single Request', plan(2, async () => {
-                testCon.server.onRequest(testRequest, (p1) => {
-                    expect(p1).to.equal('argument');
-                    return 'result';
-                });
-                const result = await testCon.client.sendRequest(testRequest, 'argument');
-                expect(result).to.equal('result');
-            }));
+            it(
+                'Handle Single Request',
+                plan(2, async () => {
+                    testCon.server.onRequest(testRequest, p1 => {
+                        expect(p1).to.equal('argument');
+                        return 'result';
+                    });
+                    const result = await testCon.client.sendRequest(testRequest, 'argument');
+                    expect(result).to.equal('result');
+                })
+            );
 
-            it('Handle Multiple Requests', plan(1, async () => {
-                testCon.server.onRequest(testRequest, (p1) => {
-                    return p1 + '1';
-                });
-                let promises: Thenable<string>[] = [];
-                promises.push(testCon.client.sendRequest(testRequest, 'foo'));
-                promises.push(testCon.client.sendRequest(testRequest, 'bar'));
+            it(
+                'Handle Multiple Requests',
+                plan(1, async () => {
+                    testCon.server.onRequest(testRequest, p1 => {
+                        return p1 + '1';
+                    });
+                    const promises: Array<Thenable<string>> = [];
+                    promises.push(testCon.client.sendRequest(testRequest, 'foo'));
+                    promises.push(testCon.client.sendRequest(testRequest, 'bar'));
 
-                const values = await Promise.all(promises);
-                expect(values).to.eql(['foo1', 'bar1']);
-            }));
+                    const values = await Promise.all(promises);
+                    expect(values).to.eql(['foo1', 'bar1']);
+                })
+            );
 
-            it('Unhandled Request', plan(1, async () => {
-                try {
-                    await testCon.client.sendRequest(testRequest, 'foo');
-                } catch (error) {
-                    expect(error.code).to.eql(ErrorCodes.MethodNotFound);
-                }
-            }));
+            it(
+                'Unhandled Request',
+                plan(1, async () => {
+                    try {
+                        await testCon.client.sendRequest(testRequest, 'foo');
+                    } catch (error) {
+                        expect(error.code).to.eql(ErrorCodes.MethodNotFound);
+                    }
+                })
+            );
         });
-        describe("connection client", function () {
-
-            function testRequestFromClient(clientMethod: keyof StreamConnectionClient, serverMethod: keyof IConnection){
-                it(`.${clientMethod}()`, plan(2, async function () {
-                    (testCon.server[serverMethod] as any)((p:any) => {
-                        expect(p).to.contain(obj(1));
-                        return obj(2);
-                    });
-                    const response = await (testCon.client[clientMethod] as any)(obj(1));
-                    expect(response).to.contain(obj(2));
-                }));
+        describe('connection client', () => {
+            function testRequestFromClient(
+                clientMethod: keyof StreamConnectionClient,
+                serverMethod: keyof IConnection
+            ) {
+                it(
+                    `.${clientMethod}()`,
+                    plan(2, async () => {
+                        (testCon.server[serverMethod] as any)((p: any) => {
+                            expect(p).to.contain(obj(1));
+                            return obj(2);
+                        });
+                        const response = await (testCon.client[clientMethod] as any)(obj(1));
+                        expect(response).to.contain(obj(2));
+                    })
+                );
             }
-            function testNotificationToClient(clientMethod: keyof StreamConnectionClient, serverMethod: keyof IConnection){
-                it(`.${clientMethod}()`, plan(1, async function () {
-                    (testCon.client[clientMethod] as any)((p:any) => {
-                        expect(p).to.contain(obj(1));
-                    });
-                    (testCon.server[serverMethod] as any)(obj(1))
-                }));
+            function testNotificationToClient(
+                clientMethod: keyof StreamConnectionClient,
+                serverMethod: keyof IConnection
+            ) {
+                it(
+                    `.${clientMethod}()`,
+                    plan(1, async () => {
+                        (testCon.client[clientMethod] as any)((p: any) => {
+                            expect(p).to.contain(obj(1));
+                        });
+                        (testCon.server[serverMethod] as any)(obj(1));
+                    })
+                );
             }
 
             testRequestFromClient('initialize', 'onInitialize');
