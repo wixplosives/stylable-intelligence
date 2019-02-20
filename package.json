@@ -12,6 +12,7 @@
   },
   "scripts": {
     "clean": "rimraf ./dist",
+    "prebuild": "yarn clean",
     "build": "tsc",
     "prepublish": "node ./node_modules/vscode/bin/install",
     "test": "yarn test:server && yarn build && yarn test:e2e && yarn test:browser-compatible",
