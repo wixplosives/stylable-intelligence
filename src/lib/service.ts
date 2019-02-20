@@ -137,7 +137,7 @@ export function initStylableLanguageService(
                     ) {
                         diagnostics = [];
                     } else {
-                        diagnostics = createDiagnosis(doc, fs, processor, services.requireModule)
+                        diagnostics = createDiagnosis(doc, processor, services.requireModule)
                             .map(diag => {
                                 diag.source = 'stylable';
                                 return diag;
@@ -186,7 +186,7 @@ export function initStylableLanguageService(
         }
     );
 
-    connection.onDocumentFormatting(params => {
+    connection.onDocumentFormatting(() => {
         return null;
     });
 

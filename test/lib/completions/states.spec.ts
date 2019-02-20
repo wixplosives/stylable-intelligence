@@ -11,7 +11,7 @@ describe('States', () => {
             asserters.stateSelectorCompletion(str.slice(1), rng, path);
 
         [str1, str2].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
 
                 it('should complete available states from same file, with prefix ' + prefix + ' ', async () => {
@@ -46,8 +46,8 @@ describe('States', () => {
             });
         });
 
-        [str1, str3].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+        [str1, str3].forEach(str => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
 
                 it(
@@ -400,7 +400,7 @@ describe('States', () => {
             asserters.stateSelectorCompletion(str.slice(1), rng, path);
 
         [str1, str2].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
 
                 it(
@@ -452,7 +452,7 @@ describe('States', () => {
         });
 
         [str3, str4].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
 
                 it(
@@ -483,7 +483,7 @@ describe('States', () => {
         });
 
         [str1, str2].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
                 it('should complete state ' + str + ' after pseudo-element, with prefix ' + prefix + ' ', async () => {
                     const rng = createRange(10, 11, 10, 11 + i);
@@ -530,8 +530,8 @@ describe('States', () => {
             });
         });
 
-        [str3, str4].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+        [str3, str4].forEach(str => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
                 it(
                     'should complete only unused pseudo-element states when pseudo-element state exists, with prefix ' +
@@ -562,7 +562,7 @@ describe('States', () => {
         const createCompletion = (str: string, rng: ProviderRange, path: string) =>
             asserters.stateSelectorCompletion(str.slice(1), rng, path);
 
-        str.split('').forEach((c, i) => {
+        str.split('').forEach((_c, i) => {
             const prefix = str.slice(0, i);
             const rng = createRange(10, 52, 10, 52 + i);
             it(

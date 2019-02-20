@@ -4,7 +4,7 @@ import { topLevelDirectives } from '../../../src/lib/completion-types';
 
 describe('Custom selector Directive', () => {
     describe('should be completed at top level ', () => {
-        topLevelDirectives.customSelector.split('').map((c, i) => {
+        topLevelDirectives.customSelector.split('').map((_c, i) => {
             const prefix = topLevelDirectives.customSelector.slice(0, i);
             it(' with prefix: ' + prefix + ' ', async () => {
                 const asserter = await asserters.getCompletions('imports/top-level.st.css', prefix);

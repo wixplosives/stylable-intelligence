@@ -8,13 +8,11 @@ import {
     FileProcessor,
     StylableMeta
 } from '@stylable/core';
-import { FileSystemReadSync } from 'kissfs';
 import { Diagnostic, Range, TextDocument } from 'vscode-languageserver-types';
 import { fromVscodePath } from './utils/uri-utils';
 
 export function createDiagnosis(
     doc: TextDocument,
-    fs: FileSystemReadSync,
     fileProcessor: FileProcessor<StylableMeta>,
     requireModule: typeof require
 ): Diagnostic[] {

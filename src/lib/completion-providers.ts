@@ -855,7 +855,7 @@ function isPositionInDecl(position: ProviderPosition, decl: postcss.Declaration)
 }
 
 export const StateTypeCompletionProvider: CompletionProvider = {
-    provide({ astAtCursor, fullLineText, meta, position }: ProviderOptions): Completion[] {
+    provide({ astAtCursor, fullLineText, position }: ProviderOptions): Completion[] {
         const acc: Completion[] = [];
 
         if (isNodeRule(astAtCursor)) {
@@ -871,7 +871,7 @@ export const StateTypeCompletionProvider: CompletionProvider = {
                 });
 
                 if (stateDeclInPos) {
-                    const toSuggest = resolveStateTypeOrValidator(meta, position, fullLineText);
+                    const toSuggest = resolveStateTypeOrValidator(position, fullLineText);
                     const types = Object.keys(systemValidators);
                     const input = getStateDefinitionInput(fullLineText, position);
 
@@ -1031,7 +1031,6 @@ export const StateEnumCompletionProvider: CompletionProvider = {
         lineChunkAtCursor,
         position,
         lastSelectoid,
-        resolved,
         resolvedElements
     }: ProviderOptions): Completion[] {
         let acc: Completion[] = [];
@@ -1208,7 +1207,7 @@ function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLan
     }
     if (importSymbol.import.fromRelative.endsWith('.js')) {
         return (
-            extractJsModifierReturnType(name, 0, fs.get(toVscodePath(importSymbol.import.from)).getText()) === 'object'
+            extractJsModifierReturnType(name, fs.get(toVscodePath(importSymbol.import.from)).getText()) === 'object'
         );
     }
     return false;

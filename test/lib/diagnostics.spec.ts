@@ -31,7 +31,6 @@ function createDiagnostics(files: { [filePath: string]: string }, path: string) 
     return doc
         ? createDiagnosis(
               doc,
-              docsFs,
               Stylable.create({
                   fileSystem: createFs(docsFs),
                   projectRoot: '/'

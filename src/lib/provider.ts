@@ -276,7 +276,7 @@ export default class Provider {
                 .trim()
                 .startsWith(valueMapping.states)
         ) {
-            return this.getSignatureForStateWithParamDefinition(meta, pos, line);
+            return this.getSignatureForStateWithParamDefinition(pos, line);
         }
 
         // If last node is not root, we're in a declaration [TODO: or a media query]
@@ -615,11 +615,10 @@ export default class Provider {
     }
 
     private getSignatureForStateWithParamDefinition(
-        meta: StylableMeta,
         pos: ProviderPosition,
         line: string
     ): SignatureHelp | null {
-        const res = resolveStateTypeOrValidator(meta, pos, line);
+        const res = resolveStateTypeOrValidator(pos, line);
 
         if (typeof res === 'string') {
             return createStateValidatorSignature(res);
@@ -1364,7 +1363,7 @@ export function extractTsSignature(
     return tc.getSignatureFromDeclaration(mix!.declarations![0] as ts.SignatureDeclaration);
 }
 
-export function extractJsModifierReturnType(mixin: string, activeParam: number, fileSrc: string): string {
+export function extractJsModifierReturnType(mixin: string, fileSrc: string): string {
     const lines = fileSrc.split('\n');
     const mixinLine: number = lines.findIndex(l => l.trim().startsWith('exports.' + mixin));
     const docStartLine: number = lines.slice(0, mixinLine).lastIndexOf(

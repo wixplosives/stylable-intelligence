@@ -4,7 +4,7 @@ import { topLevelDirectives } from '../../../src/lib/completion-types';
 
 describe('Import Directive', () => {
     describe('should complete :import at top level ', () => {
-        topLevelDirectives.import.split('').map((c, i) => {
+        topLevelDirectives.import.split('').map((_c, i) => {
             const prefix = topLevelDirectives.import.slice(0, i);
             it("when it doesn't exist, with prefix: " + prefix + ' ', async () => {
                 const asserter = await asserters.getCompletions('imports/top-level.st.css', prefix);

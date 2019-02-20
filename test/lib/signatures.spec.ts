@@ -6,7 +6,7 @@ describe('Signature Help', () => {
     xdescribe('TS Paramful Mixin', () => {
         const str = "'25','lala','b'";
 
-        str.split('').forEach((c, i) => {
+        str.split('').forEach((_c, i) => {
             const prefix = str.slice(0, i);
             it('Provides signature help and identifies active parameter, with prefix ' + prefix, () => {
                 const filePath = 'mixins/imported-mixins-paramful-signature.st.css';
@@ -55,7 +55,7 @@ describe('Signature Help', () => {
     xdescribe('TS Paramful Mixin - Default Import', () => {
         const str = "'25','lala','b'";
 
-        str.split('').forEach((c, i) => {
+        str.split('').forEach((_c, i) => {
             const prefix = str.slice(0, i);
             it('Provides signature help and identifies active parameter, with prefix ' + prefix, () => {
                 const filePath = 'mixins/imported-mixins-default-paramful-signature.st.css';
@@ -83,7 +83,7 @@ describe('Signature Help', () => {
     describe('JS Paramful Mixin', () => {
         const str = "'25','lala','b'";
 
-        str.split('').forEach((c, i) => {
+        str.split('').forEach((_c, i) => {
             const prefix = str.slice(0, i);
             it('Provides signature help and identifies active parameter, with prefix ' + prefix, () => {
                 const filePath = 'mixins/imported-mixins-paramful-js-signature.st.css';
@@ -130,7 +130,7 @@ describe('Signature Help', () => {
     xdescribe('JS Paramful Mixin with .d.ts', () => {
         const str = "'25','lala','b'";
 
-        str.split('').forEach((c, i) => {
+        str.split('').forEach((_c, i) => {
             const prefix = str.slice(0, i);
             it('Provides signature help and identifies active parameter, with prefix ' + prefix, () => {
                 const filePath = 'mixins/imported-mixins-paramful-dts-signature.st.css';
@@ -208,7 +208,7 @@ describe('Signature Help', () => {
                 const types = ['string', 'number', 'enum', 'tag'];
 
                 types.forEach(str =>
-                    str.split('').forEach((c, i) => {
+                    str.split('').forEach((_c, i) => {
                         const prefix = str.slice(0, i);
                         it('Provides signature help and identifies state definition, with prefix ' + prefix, () => {
                             const filePath = 'states/with-param/state-def-with-param-start.st.css';
@@ -259,7 +259,7 @@ describe('Signature Help', () => {
                 const validators = ['regex', 'contains', 'minLength', 'maxLength'];
 
                 validators.forEach(validator =>
-                    validator.split('').forEach((c, i) => {
+                    validator.split('').forEach((_c, i) => {
                         const prefix = validator.slice(0, i);
                         it(
                             'Provides validator signature help for a local string state type definition, with prefix ' +
@@ -315,7 +315,7 @@ describe('Signature Help', () => {
         describe('usage', () => {
             const str = 'hello';
 
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
                 it(
                     'Provides signature help and identifies local state type definition, with prefix ' + prefix,
@@ -342,7 +342,7 @@ describe('Signature Help', () => {
                 );
             });
 
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
                 it(
                     'Provides signature help and identifies imported state type definition, with prefix ' + prefix,
@@ -369,7 +369,7 @@ describe('Signature Help', () => {
                 );
             });
 
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
                 it(
                     // tslint:disable-next-line: max-line-length
@@ -403,7 +403,7 @@ describe('Signature Help', () => {
     describe('JS 3rd Party Mixin', () => {
         const str = "'25','lala','b'";
 
-        str.split('').forEach((c, i) => {
+        str.split('').forEach((_c, i) => {
             const prefix = str.slice(0, i);
             it(
                 'Provides signature help and identifies active parameter from 3rd party, with prefix ' + prefix,

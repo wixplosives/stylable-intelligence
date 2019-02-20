@@ -10,11 +10,11 @@ describe('Custom Selectors', () => {
         const str4 = ':rooroo';
         const str5 = ':state';
         const str6 = ':otherState';
-        const createCompletion = (str: string, rng: ProviderRange, path: string) =>
+        const createCompletion = (str: string, rng: ProviderRange) =>
             asserters.classCompletion(str, rng, true);
 
         [str1, str2].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
 
                 it('should be completed at top level, with prefix ' + prefix + ' ', async () => {
@@ -22,11 +22,11 @@ describe('Custom Selectors', () => {
                     const asserter = await asserters.getCompletions('custom-selectors/local-selector.st.css', prefix);
                     const exp: Array<Partial<Completion>> = [];
                     const notExp: Array<Partial<Completion>> = [];
-                    exp.push(createCompletion(a[j], rng, 'custom-selectors/local-selector.st.css'));
+                    exp.push(createCompletion(a[j], rng));
                     if (prefix.length <= 5) {
-                        exp.push(createCompletion(a[1 - j], rng, 'custom-selectors/local-selector.st.css'));
+                        exp.push(createCompletion(a[1 - j], rng));
                     } else {
-                        notExp.push(createCompletion(a[1 - j], rng, 'custom-selectors/local-selector.st.css'));
+                        notExp.push(createCompletion(a[1 - j], rng));
                     }
                     asserter.suggested(exp);
                     asserter.notSuggested(notExp);
@@ -38,11 +38,11 @@ describe('Custom Selectors', () => {
                         .getCompletions('custom-selectors/local-selector-complex.st.css', prefix);
                     const exp: Array<Partial<Completion>> = [];
                     const notExp: Array<Partial<Completion>> = [];
-                    exp.push(createCompletion(a[j], rng, 'custom-selectors/local-selector-complex.st.css'));
+                    exp.push(createCompletion(a[j], rng));
                     if (prefix.length <= 5) {
-                        exp.push(createCompletion(a[1 - j], rng, 'custom-selectors/local-selector-complex.st.css'));
+                        exp.push(createCompletion(a[1 - j], rng));
                     } else {
-                        notExp.push(createCompletion(a[1 - j], rng, 'custom-selectors/local-selector-complex.st.css'));
+                        notExp.push(createCompletion(a[1 - j], rng));
                     }
                     asserter.suggested(exp);
                     asserter.notSuggested(notExp);
@@ -51,7 +51,7 @@ describe('Custom Selectors', () => {
         });
 
         [str3, str4].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
                 it(
                     'should have relevant states and pseudo-elements when extending root class, with prefix ' +
@@ -63,11 +63,11 @@ describe('Custom Selectors', () => {
                             .getCompletions('custom-selectors/local-selector-inner-2.st.css', prefix);
                         const exp: Array<Partial<Completion>> = [];
                         const notExp: Array<Partial<Completion>> = [];
-                        exp.push(createCompletion(a[j], rng, 'Local file'));
+                        exp.push(createCompletion(a[j], rng));
                         if (prefix.length <= 1) {
-                            exp.push(createCompletion(a[1 - j], rng, 'Local file'));
+                            exp.push(createCompletion(a[1 - j], rng));
                         } else {
-                            notExp.push(createCompletion(a[1 - j], rng, 'Local file'));
+                            notExp.push(createCompletion(a[1 - j], rng));
                         }
                         asserter.suggested(exp);
                         asserter.notSuggested(notExp);
@@ -77,7 +77,7 @@ describe('Custom Selectors', () => {
         });
 
         [str5, str6].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
                 it('should have relevant states when extending local class, with prefix ' + prefix + ' ', async () => {
                     const rng = createRange(16, 8, 16, 8 + i);
@@ -85,11 +85,11 @@ describe('Custom Selectors', () => {
                         .getCompletions('custom-selectors/local-selector-inner.st.css', prefix);
                     const exp: Array<Partial<Completion>> = [];
                     const notExp: Array<Partial<Completion>> = [];
-                    exp.push(createCompletion(a[j], rng, 'Local file'));
+                    exp.push(createCompletion(a[j], rng));
                     if (prefix.length <= 1) {
-                        exp.push(createCompletion(a[1 - j], rng, 'Local file'));
+                        exp.push(createCompletion(a[1 - j], rng));
                     } else {
-                        notExp.push(createCompletion(a[1 - j], rng, 'Local file'));
+                        notExp.push(createCompletion(a[1 - j], rng));
                     }
                     asserter.suggested(exp);
                     asserter.notSuggested(notExp);
@@ -105,7 +105,7 @@ describe('Custom Selectors', () => {
         const str4 = '::shlomo';
 
         [str1, str2].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
                 const createCompletion = (str: string, rng: ProviderRange, path: string) =>
                     asserters.stateSelectorCompletion(str.slice(1), rng, path);
@@ -129,7 +129,7 @@ describe('Custom Selectors', () => {
         });
 
         [str3, str4].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const createCompletion = (str: string, rng: ProviderRange, path: string) =>
                     asserters.pseudoElementCompletion(str.slice(2), rng, path);
                 const prefix = str.slice(0, i);
@@ -164,7 +164,7 @@ describe('Custom Selectors', () => {
             asserters.pseudoElementCompletion(str.slice(2), rng, path);
 
         [str1, str2].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
 
                 it('should be completed at top level after extending class, with prefix ' + prefix + ' ', async () => {
@@ -224,7 +224,7 @@ describe('Custom Selectors', () => {
         });
 
         [str3, str4].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
                 const createCompletion = (str: string, rng: ProviderRange, path: string) =>
                     asserters.stateSelectorCompletion(str.slice(1), rng, path);
@@ -274,7 +274,7 @@ describe('Custom Selectors', () => {
         });
 
         [str5, str6].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const createCompletion = (str: string, rng: ProviderRange, path: string) =>
                     asserters.pseudoElementCompletion(str.slice(2), rng, path);
                 const prefix = str.slice(0, i);

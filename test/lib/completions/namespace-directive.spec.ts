@@ -4,7 +4,7 @@ import { topLevelDirectives } from '../../../src/lib/completion-types';
 
 describe('Namespace Directive', () => {
     describe('should complete @namespace at top level ', () => {
-        topLevelDirectives.namespace.split('').map((c, i) => {
+        topLevelDirectives.namespace.split('').map((_c, i) => {
             const prefix = topLevelDirectives.namespace.slice(0, i);
             it(' with Prefix: ' + prefix + ' ', async () => {
                 const asserter = await asserters.getCompletions('imports/top-level.st.css', prefix);

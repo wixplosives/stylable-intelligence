@@ -1,5 +1,5 @@
 import { ParameterInformation, SignatureHelp, SignatureInformation } from 'vscode-languageserver';
-import { StylableMeta, ParsedValue, systemValidators, StateParsedValue } from '@stylable/core';
+import { ParsedValue, systemValidators, StateParsedValue } from '@stylable/core';
 import { ProviderPosition } from '../completion-providers';
 import { ParsedFuncOrDivValue } from '../types';
 
@@ -13,7 +13,6 @@ const pvp = require('postcss-value-parser');
 // a, b, c - require validator informationbased on type defined
 // args - TODO: should return validator function information
 export function resolveStateTypeOrValidator(
-    meta: StylableMeta,
     pos: ProviderPosition,
     line: string
 ): string | boolean | null {

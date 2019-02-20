@@ -9,8 +9,8 @@ describe('Named Values', () => {
     const str4 = 'shmoopy';
     const path = './import.st.css';
 
-    [str1, str2, str3, str4].forEach((str, j, a) => {
-        str.split('').forEach((c, i) => {
+    [str1, str2, str3, str4].forEach((str, _j, a) => {
+        str.split('').forEach((_c, i) => {
             const createComp = (str: string, rng: ProviderRange) =>
                 asserters.namedCompletion(
                     str,
@@ -120,8 +120,8 @@ describe('Named Values', () => {
     const str5 = 'aMixin';
     const str6 = 'aFormatter';
 
-    [str5, str6].forEach((str, j, a) => {
-        str.split('').forEach((c, i) => {
+    [str5, str6].forEach(str => {
+        str.split('').forEach((_c, i) => {
             const prefix = str.slice(0, i);
             const rng = createRange(2, 15, 2, 15 + i);
             const path = '../mixins/js-mixins.js';

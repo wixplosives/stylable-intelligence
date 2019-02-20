@@ -6,7 +6,7 @@ describe('Global scope reference', () => {
     const str = ':global()';
     const createComp = (rng: ProviderRange) => asserters.globalCompletion(rng);
 
-    str.split('').forEach((c, i) => {
+    str.split('').forEach((_c, i) => {
         const prefix = str.slice(0, i);
         it('should be completed at top level, with prefix ' + prefix, async () => {
             const rng = createRange(0, 0, 0, 0 + i);

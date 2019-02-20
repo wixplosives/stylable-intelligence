@@ -20,11 +20,11 @@ export class LocalSyncFs extends LocalFileSystem implements FileSystemReadSync {
         // return null as any;
     }
 
-    public loadDirectoryChildrenSync(fullPath: string): Array<File | ShallowDirectory> {
+    public loadDirectoryChildrenSync(_fullPath: string): Array<File | ShallowDirectory> {
         return [];
     }
 
-    public loadDirectoryContentSync(fullPath?: string): DirectoryContent {
+    public loadDirectoryContentSync(_fullPath?: string): DirectoryContent {
         return {};
     }
 }

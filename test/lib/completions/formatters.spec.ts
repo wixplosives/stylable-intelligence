@@ -14,8 +14,8 @@ describe('Formatters', () => {
     const createComp = (str: string, rng: ProviderRange, path: string) => asserters.codeMixinCompletion(str, rng, path);
 
     xdescribe('TS Formatters', () => {
-        [ts_formatter_1, ts_formatter_2].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+        [ts_formatter_1, ts_formatter_2].forEach(str => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
                 it('should complete imported TS formatters, but not mixins, with prefix ' + prefix, async () => {
                     const rng = createRange(12, 11, 12, 11 + i);
@@ -64,8 +64,8 @@ describe('Formatters', () => {
     });
 
     describe('JS Formatters', () => {
-        [js_formatter_1, js_formatter_2].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+        [js_formatter_1, js_formatter_2].forEach(str => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
                 it('should complete imported JS formatters, but not mixins, with prefix ' + prefix, async () => {
                     const rng = createRange(12, 11, 12, 11 + i);

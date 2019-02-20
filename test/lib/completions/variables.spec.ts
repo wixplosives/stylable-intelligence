@@ -4,7 +4,7 @@ import { createRange } from '../../../src/lib/completion-providers';
 describe('Variables', () => {
     describe('from path', () => {
         describe('value()', () => {
-            'value('.split('').map((c, i) => {
+            'value('.split('').map((_c, i) => {
                 const prefix = 'value('.slice(0, i);
 
                 it('should be completed inside rule value, with prefix ' + prefix + ' ', async () => {
@@ -45,7 +45,7 @@ describe('Variables', () => {
             const str1 = 'color1';
             const str2 = 'color2';
 
-            str1.split('').forEach((c, i) => {
+            str1.split('').forEach((_c, i) => {
                 const prefix = str1.slice(0, i);
                 it('Local variables should be completed, with prefix ' + prefix + ' ', async () => {
                     const asserter = await asserters
@@ -89,7 +89,7 @@ describe('Variables', () => {
         describe('value()', () => {
             const importedValue = 'color1';
 
-            importedValue.split('').forEach((c, i) => {
+            importedValue.split('').forEach((_c, i) => {
                 const prefix = importedValue.slice(0, i);
 
                 it('completes named variable imports in a declaration , with prefix ' + prefix + ' ', async () => {

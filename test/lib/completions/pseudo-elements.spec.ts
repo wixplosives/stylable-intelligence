@@ -10,7 +10,7 @@ describe('Pseudo-elements', () => {
             asserters.pseudoElementCompletion(str.slice(2), rng, './import.st.css');
 
         [str1, str2].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
 
                 it('should complete pseudo-element ' + a[j] + ' after class with prefix: ' + prefix + ' ', async () => {
@@ -98,7 +98,7 @@ describe('Pseudo-elements', () => {
             asserters.pseudoElementCompletion(str.slice(2), rng, './import.st.css');
 
         [str1, str2].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
 
                 it('should complete pseudo-element ' + a[j] + ' after class with prefix: ' + prefix + ' ', async () => {
@@ -204,7 +204,7 @@ describe('Pseudo-elements', () => {
             asserters.pseudoElementCompletion(str.slice(2), rng, './import.st.css');
 
         [str1, str2].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
 
                 it('should complete pseudo-element ' + a[j] + ' after class with prefix: ' + prefix + ' ', async () => {
@@ -319,7 +319,7 @@ describe('Pseudo-elements', () => {
             asserters.pseudoElementCompletion(str.slice(2), rng, './recursive-import-1.st.css');
 
         [str1, str2].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
 
                 it(
@@ -430,7 +430,7 @@ describe('Pseudo-elements', () => {
         let createCompletion = (str: string, rng: ProviderRange) =>
             asserters.pseudoElementCompletion(str.slice(2), rng, './recursive-import-0.st.css');
 
-        str.split('').forEach((c, i) => {
+        str.split('').forEach((_c, i) => {
             const rng = createRange(10, 39, 10, 39 + i);
             const prefix = str.slice(0, i);
 
@@ -455,7 +455,7 @@ describe('Pseudo-elements', () => {
                 str === str1 ? './recursive-import-0.st.css' : './recursive-import-0.st.css'
             );
 
-        str1.split('').forEach((c, i) => {
+        str1.split('').forEach((_c, i) => {
             const prefix = '::momi' + str1.slice(0, i);
             const rng = createRange(10, 45, 10, 39 + prefix.length);
 
@@ -477,7 +477,7 @@ describe('Pseudo-elements', () => {
         const createCompletion = (str: string, rng: ProviderRange) =>
             asserters.pseudoElementCompletion(str.slice(2), rng, './import.st.css');
 
-        str.split('').forEach((c, i) => {
+        str.split('').forEach((_c, i) => {
             const prefix = str.slice(0, i);
 
             it(

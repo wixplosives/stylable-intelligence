@@ -4,7 +4,7 @@ import { importDirectives, rulesetDirectives } from '../../../src/lib/completion
 
 describe('Inner Directives', () => {
     describe('should complete -st-from inside import selector ', () => {
-        importDirectives.from.split('').map((c, i) => {
+        importDirectives.from.split('').map((_c, i) => {
             const prefix = importDirectives.from.slice(0, i);
             it(' with Prefix: ' + prefix + ' ', async () => {
                 const asserter = await asserters.getCompletions('imports/inside-import-selector.st.css', prefix);
@@ -14,7 +14,7 @@ describe('Inner Directives', () => {
     });
 
     describe('should complete -st-default inside import selector ', () => {
-        importDirectives.default.split('').map((c, i) => {
+        importDirectives.default.split('').map((_c, i) => {
             const prefix = importDirectives.default.slice(0, i);
             it(' with Prefix: ' + prefix + ' ', async () => {
                 const asserter = await asserters.getCompletions('imports/inside-import-selector.st.css', prefix);
@@ -24,7 +24,7 @@ describe('Inner Directives', () => {
     });
 
     describe('should complete -st-named inside import selector ', () => {
-        importDirectives.named.split('').map((c, i) => {
+        importDirectives.named.split('').map((_c, i) => {
             const prefix = importDirectives.named.slice(0, i);
             it(' with Prefix: ' + prefix + ' ', async () => {
                 const asserter = await asserters.getCompletions('imports/inside-import-selector.st.css', prefix);
@@ -52,7 +52,7 @@ describe('Inner Directives', () => {
     });
 
     describe('should complete -st-states inside simple selector ruleset ', () => {
-        rulesetDirectives.states.split('').map((c, i) => {
+        rulesetDirectives.states.split('').map((_c, i) => {
             const prefix = rulesetDirectives.states.slice(0, i);
             it(' with Prefix: ' + prefix + ' ', async () => {
                 const asserter = await asserters.getCompletions('imports/inside-ruleset.st.css', prefix);
@@ -62,7 +62,7 @@ describe('Inner Directives', () => {
     });
 
     describe('should complete -st-extends inside simple selector ruleset ', () => {
-        rulesetDirectives.extends.split('').map((c, i) => {
+        rulesetDirectives.extends.split('').map((_c, i) => {
             const prefix = rulesetDirectives.extends.slice(0, i);
             it(' with Prefix: ' + prefix + ' ', async () => {
                 const asserter = await asserters.getCompletions('imports/inside-ruleset.st.css', prefix);
@@ -72,7 +72,7 @@ describe('Inner Directives', () => {
     });
 
     describe('should complete -st-mixin inside simple selector ruleset ', () => {
-        rulesetDirectives.mixin.split('').map((c, i) => {
+        rulesetDirectives.mixin.split('').map((_c, i) => {
             const prefix = rulesetDirectives.mixin.slice(0, i);
             it(' with Prefix: ' + prefix + ' ', async () => {
                 const asserter = await asserters.getCompletions('imports/inside-ruleset.st.css', prefix);

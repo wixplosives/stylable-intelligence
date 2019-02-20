@@ -18,7 +18,7 @@ describe('Mixins', () => {
         const froms = [from1, from2, from3, from4];
 
         [str1, str2, str3, str4].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
 
                 it('should be completed from local and imported classes, with prefix ' + prefix, async () => {
@@ -31,7 +31,7 @@ describe('Mixins', () => {
                     const notExp: Array<Partial<Completion>> = [];
 
                     if (i === 0) {
-                        a.forEach((comp, k) => exp.push(createComp(a[k], rng, froms[k])));
+                        a.forEach((_comp, k) => exp.push(createComp(a[k], rng, froms[k])));
                     } else {
                         exp.push(createComp(str, rng, froms[j]));
                         a.forEach((comp, k) => {
@@ -116,7 +116,7 @@ describe('Mixins', () => {
         });
 
         const mixin = 'part1';
-        mixin.split('').forEach((c, i) => {
+        mixin.split('').forEach((_c, i) => {
             const prefix = mixin.slice(0, i);
             it('should complete css mixin imported from 3rd party', async () => {
                 const rng = createRange(6, 14, 6, 14 + i);
@@ -145,7 +145,7 @@ describe('Mixins', () => {
 
         xdescribe('TS mixins', () => {
             [str0, str1, str2].forEach((str, j, a) => {
-                str.split('').forEach((c, i) => {
+                str.split('').forEach((_c, i) => {
                     const prefix = str.slice(0, i);
                     it('should complete imported TS mixins, but not formatters, with prefix ' + prefix, async () => {
                         const rng = createRange(12, 15, 12, 15 + i);
@@ -203,7 +203,7 @@ describe('Mixins', () => {
 
         describe('JS Mixins', () => {
             [str3, str4].forEach((str, j, a) => {
-                str.split('').forEach((c, i) => {
+                str.split('').forEach((_c, i) => {
                     const prefix = str.slice(0, i);
                     it(
                         'should complete imported JS mixins, but not formatters, with prefix ' + prefix,
@@ -214,7 +214,7 @@ describe('Mixins', () => {
                             const notExp: Array<Partial<Completion>> = [];
 
                             if (i <= 1) {
-                                a.forEach((comp, k) => exp.push(createComp(a[k], rng, jsFrom)));
+                                a.forEach((_comp, k) => exp.push(createComp(a[k], rng, jsFrom)));
                             } else {
                                 exp.push(createComp(str, rng, jsFrom));
                                 notExp.push(createComp(a[1 - j], rng, jsFrom));
@@ -236,7 +236,7 @@ describe('Mixins', () => {
                         const notExp: Array<Partial<Completion>> = [];
 
                         if (i <= 1) {
-                            a.forEach((comp, k) => exp.push(createComp(a[k], rng, jsFrom)));
+                            a.forEach((_comp, k) => exp.push(createComp(a[k], rng, jsFrom)));
                         } else {
                             exp.push(createComp(str, rng, jsFrom));
                             notExp.push(createComp(a[1 - j], rng, jsFrom));

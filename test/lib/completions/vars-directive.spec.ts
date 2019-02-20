@@ -4,7 +4,7 @@ import { topLevelDirectives } from '../../../src/lib/completion-types';
 
 describe('Variables Directive', () => {
     describe('should complete :vars at top level ', () => {
-        topLevelDirectives.vars.split('').map((c, i) => {
+        topLevelDirectives.vars.split('').map((_c, i) => {
             const prefix = topLevelDirectives.vars.slice(0, i);
             it("when it doesn't exist, with prefix: " + prefix + ' ', async () => {
                 const asserter = await asserters.getCompletions('imports/top-level.st.css', prefix);
@@ -12,7 +12,7 @@ describe('Variables Directive', () => {
             });
         });
 
-        topLevelDirectives.vars.split('').map((c, i) => {
+        topLevelDirectives.vars.split('').map((_c, i) => {
             const prefix = topLevelDirectives.vars.slice(0, i);
             it('when it exists, with prefix: ' + prefix + ' ', async () => {
                 const asserter = await asserters.getCompletions('imports/top-level-import-exists.st.css', prefix);

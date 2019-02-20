@@ -16,7 +16,7 @@ describe('Imported Values', () => {
             asserters.extendsCompletion(str, rng, path);
 
         [' ' + str1, ' ' + str2].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i + 1);
                 const rng = createRange(7, 17, 7, 17 + i);
 
@@ -70,7 +70,7 @@ describe('Imported Values', () => {
         });
 
         [str1, str3].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const createComp = (str: string, rng: ProviderRange) => asserters.classCompletion(str, rng, true);
                 const prefix = str.slice(0, i);
 
@@ -121,7 +121,7 @@ describe('Imported Values', () => {
             asserters.extendsCompletion(str.slice(1), rng, path);
 
         [defaultComp, namedComp].forEach((str, j, a) => {
-            str.split('').forEach((c, i) => {
+            str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i + 1);
                 const rng = createRange(7, 17, 7, 17 + i);
 
