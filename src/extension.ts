@@ -1,5 +1,5 @@
 import { Trace } from 'vscode-jsonrpc';
-import { ExtensionContext, workspace } from 'vscode';
+import { ExtensionContext } from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
 
 /**
