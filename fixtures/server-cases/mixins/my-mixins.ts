@@ -28,4 +28,3 @@
 //     enumParam: 'a' | 'b'): stNumber<0, 200> {
 //     return "4";
 // }
-
