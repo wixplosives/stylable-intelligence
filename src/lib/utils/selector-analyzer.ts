@@ -16,11 +16,9 @@ export interface SelectorInternalChunk extends SelectorChunk {
     name: string;
 }
 
-export interface SelectorDescendent extends SelectorQuery {
-}
+export interface SelectorDescendent extends SelectorQuery {}
 
-export interface SelectorDirectChild extends SelectorQuery {
-}
+export interface SelectorDirectChild extends SelectorQuery {}
 
 export interface CursorPosition {
     focusChunk: SelectorQuery | Array<SelectorChunk | SelectorInternalChunk>;
@@ -29,19 +27,19 @@ export interface CursorPosition {
 }
 
 export function createSelectorChunk(value?: Partial<SelectorChunk>): SelectorChunk {
-    return {type: '*', classes: [], customSelectors: [], states: [], text: [], ...value, _type: 'chunk'};
+    return { type: '*', classes: [], customSelectors: [], states: [], text: [], ...value, _type: 'chunk' };
 }
 
 export function createSelectorInternalChunk(value?: Partial<SelectorInternalChunk>): SelectorInternalChunk {
-    return {name: '', ...createSelectorChunk(value), _type: 'internal-chunk'};
+    return { name: '', ...createSelectorChunk(value), _type: 'internal-chunk' };
 }
 
 export function createSelectorDescendent(): SelectorDescendent {
-    return {_type: 'descendent', text: []};
+    return { _type: 'descendent', text: [] };
 }
 
 export function createSelectorDirectChild(): SelectorDirectChild {
-    return {_type: 'direct-child', text: []};
+    return { _type: 'direct-child', text: [] };
 }
 
 export function isSelectorChunk(chunk: SelectorQuery): chunk is SelectorInternalChunk {
@@ -60,10 +58,13 @@ export function isSelectorDirectChild(chunk: SelectorQuery): chunk is SelectorDi
     return chunk && chunk._type === 'direct-child';
 }
 
-export function parseSelector(inputSelector: string, cursorIndex: number = 0): { selector: SelectorQuery[], target: CursorPosition, lastSelector: string } {
+export function parseSelector(
+    inputSelector: string,
+    cursorIndex: number = 0
+): { selector: SelectorQuery[]; target: CursorPosition; lastSelector: string } {
     const res: SelectorQuery[] = [];
     const textArr: string[] = [];
-    let cursorTarget = {focusChunk: {} as any, text: textArr, index: -1, internalIndex: 0};
+    let cursorTarget = { focusChunk: {} as any, text: textArr, index: -1, internalIndex: 0 };
     const tokenizedSelectors = selectorTokenizer.parse(inputSelector);
 
     if (tokenizedSelectors.type !== 'selectors') {
@@ -73,13 +74,12 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
     const firstSelector = tokenizedSelectors.nodes[0];
     const spaceBeforeSelector = inputSelector.match(/^(\s)*/);
     let selector = inputSelector.trim();
-    let currentPosition = spaceBeforeSelector && spaceBeforeSelector[0].length || 0;
+    let currentPosition = (spaceBeforeSelector && spaceBeforeSelector[0].length) || 0;
     let currentSourceQuery: string = '';
     let lastSelector: string = '';
     let chunkInternalPos = 0;
     res.push(createSelectorChunk());
-    for (let i = 0; i < firstSelector.nodes.length; i++) {
-        const selectorQueryItem = firstSelector.nodes[i];
+    for (const selectorQueryItem of firstSelector.nodes) {
         let currentTarget = res[res.length - 1];
         if (isSelectorChunk(currentTarget) || isSelectorInternalChunk(currentTarget)) {
             switch (selectorQueryItem.type) {
@@ -103,7 +103,9 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                 case 'operator':
                     if (selectorQueryItem.operator === '>') {
                         const startDirectChildMatch = selector.match(/^(\s*>\s*)?/);
-                        currentSourceQuery = startDirectChildMatch && startDirectChildMatch[0] || 'no direct child found! - should not happen';
+                        currentSourceQuery =
+                            (startDirectChildMatch && startDirectChildMatch[0]) ||
+                            'no direct child found! - should not happen';
                         currentTarget = createSelectorDirectChild();
                         currentTarget.text.push(currentSourceQuery);
                         res.push(currentTarget, createSelectorChunk());
@@ -121,8 +123,7 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                         selector = selector.slice(currentSourceQuery.length);
                         lastSelector = '';
                         break;
-                    }
-                    else {
+                    } else {
                         chunkInternalPos++;
                         currentSourceQuery = ':' + selectorQueryItem.name;
                         currentTarget.text.push(currentSourceQuery);
@@ -172,7 +173,7 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
                 text: currentTarget.text,
                 index: res.indexOf(currentTarget),
                 internalIndex: chunkInternalPos
-            }
+            };
         }
         currentPosition += queryLength;
     }
@@ -193,7 +194,6 @@ export function parseSelector(inputSelector: string, cursorIndex: number = 0): {
     return {
         selector: res,
         target: cursorTarget,
-        lastSelector: lastSelector
+        lastSelector
     };
 }
-;

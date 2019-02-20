@@ -1,12 +1,8 @@
-import {
-    InitializeResult,
-    ServerCapabilities,
-    ServerCapabilities as CPServerCapabilities,
-} from 'vscode-languageserver-protocol';
+import { InitializeResult, TextDocumentSyncKind } from 'vscode-languageserver-protocol';
 
-export const initializeResult : InitializeResult = {
-    capabilities: ({
-        textDocumentSync: 1,//documents.syncKind,
+export const initializeResult: InitializeResult = {
+    capabilities: {
+        textDocumentSync: TextDocumentSyncKind.Full,
         completionProvider: {
             triggerCharacters: ['.', '-', ':', '"', ',']
         },
@@ -16,11 +12,7 @@ export const initializeResult : InitializeResult = {
         renameProvider: true,
         colorProvider: true,
         signatureHelpProvider: {
-            triggerCharacters: [
-                '(',
-                ','
-            ]
-        },
-
-    } as CPServerCapabilities & ServerCapabilities)
+            triggerCharacters: ['(', ',']
+        }
+    }
 };

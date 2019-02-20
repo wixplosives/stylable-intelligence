@@ -1,15 +1,14 @@
-'use strict';
 import * as path from 'path';
-import {IConnection, NotificationType, TextDocument, TextDocuments} from 'vscode-languageserver';
-import {createFs, MinimalDocs,} from './provider-factory';
-import {ColorPresentationRequest, DocumentColorRequest} from 'vscode-languageserver-protocol';
-import {fromVscodePath, toVscodePath} from './utils/uri-utils';
-import {initStylableLanguageService} from './service'
-import {Stylable} from '@stylable/core';
-import *  as ts from 'typescript';
-import {FileSystemReadSync} from 'kissfs';
-import {ExtendedFSReadSync, ExtendedTsLanguageService} from './types';
-import {createBaseHost, createLanguageServiceHost} from './utils/temp-language-service-host';
+import { IConnection, NotificationType, TextDocument, TextDocuments } from 'vscode-languageserver';
+import { createFs, MinimalDocs } from './provider-factory';
+import { ColorPresentationRequest, DocumentColorRequest } from 'vscode-languageserver-protocol';
+import { fromVscodePath, toVscodePath } from './utils/uri-utils';
+import { initStylableLanguageService } from './service';
+import { Stylable } from '@stylable/core';
+import * as ts from 'typescript';
+import { FileSystemReadSync } from 'kissfs';
+import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
+import { createBaseHost, createLanguageServiceHost } from './utils/temp-language-service-host';
 
 export function createDocFs(fileSystem: FileSystemReadSync, docs: MinimalDocs): ExtendedFSReadSync {
     return {
@@ -20,13 +19,15 @@ export function createDocFs(fileSystem: FileSystemReadSync, docs: MinimalDocs): 
         loadTextFileSync(path: string) {
             const vscodePath: string = toVscodePath(path);
             const fromDocs = docs.get(vscodePath);
-            return fromDocs ? fromDocs.getText() : fileSystem.loadTextFileSync(fromVscodePath(path))
+            return fromDocs ? fromDocs.getText() : fileSystem.loadTextFileSync(fromVscodePath(path));
         },
         loadDirectoryTreeSync(path: string) {
             return fileSystem.loadDirectoryTreeSync(path);
         },
         get(path: string) {
-            return docs.get(path) || TextDocument.create(path, 'stylable', 0, this.loadTextFileSync(fromVscodePath(path)));
+            return (
+                docs.get(path) || TextDocument.create(path, 'stylable', 0, this.loadTextFileSync(fromVscodePath(path)))
+            );
         },
         getOpenedFiles() {
             return docs.keys();
@@ -45,24 +46,32 @@ export function init(fileSystem: FileSystemReadSync, connection: IConnection, ba
         cwd: '/',
         getOpenedDocs: () => openedFiles,
         compilerOptions: {
-            target: ts.ScriptTarget.ES5, sourceMap: false, declaration: true, outDir: 'dist',
+            target: ts.ScriptTarget.ES5,
+            sourceMap: false,
+            declaration: true,
+            outDir: 'dist',
             lib: [],
             module: ts.ModuleKind.CommonJS,
-            typeRoots: ["./node_modules/@types"]
+            typeRoots: ['./node_modules/@types']
         },
         defaultLibDirectory: '',
         baseHost: createBaseHost(docFs, path)
     });
     const tsLanguageService = ts.createLanguageService(tsLanguageServiceHost);
     const wrappedTs: ExtendedTsLanguageService = {
-        setOpenedFiles: (files: string[]) => openedFiles = files,
+        setOpenedFiles: (files: string[]) => (openedFiles = files),
         ts: tsLanguageService
     };
 
-    initStylableLanguageService(connection, {styl, tsLanguageService: wrappedTs, requireModule: require}, docFs, docs, {
-        openDoc: OpenDocNotificationType,
-        colorPresentationRequest: ColorPresentationRequest,
-        colorRequest: DocumentColorRequest
-    });
+    initStylableLanguageService(
+        connection,
+        { styl, tsLanguageService: wrappedTs, requireModule: require },
+        docFs,
+        docs,
+        {
+            openDoc: OpenDocNotificationType,
+            colorPresentationRequest: ColorPresentationRequest,
+            colorRequest: DocumentColorRequest
+        }
+    );
 }
-

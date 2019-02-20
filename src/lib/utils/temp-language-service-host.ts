@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import {checkExistsSync, FileSystemReadSync} from 'kissfs';
+import { checkExistsSync, FileSystemReadSync } from 'kissfs';
 import * as path from 'path';
 
 export interface BaseHost extends ts.ParseConfigHost {
@@ -11,14 +11,13 @@ export interface BaseHost extends ts.ParseConfigHost {
         exclude?: ReadonlyArray<string>,
         include?: ReadonlyArray<string>,
         depth?: number
-    ): string[]
+    ): string[];
 }
 
 export function createBaseHost(syncFs: FileSystemReadSync, systemPath: typeof path.posix): BaseHost {
-    //TODO: support in kissfs.
     const useCaseSensitiveFileNames = false;
 
-    return {syncFs, useCaseSensitiveFileNames, readDirectory, fileExists, readFile, path: systemPath};
+    return { syncFs, useCaseSensitiveFileNames, readDirectory, fileExists, readFile, path: systemPath };
 
     function readFile(filePath: string): string | undefined {
         try {
@@ -28,13 +27,22 @@ export function createBaseHost(syncFs: FileSystemReadSync, systemPath: typeof pa
         }
     }
 
-    function readDirectory(rootDir: string,
-                           extensions: ReadonlyArray<string>,
-                           excludes: ReadonlyArray<string>,
-                           includes: ReadonlyArray<string>,
-                           depth: number): string[] {
+    function readDirectory(
+        rootDir: string,
+        extensions: ReadonlyArray<string>,
+        excludes: ReadonlyArray<string>,
+        includes: ReadonlyArray<string>,
+        depth: number
+    ): string[] {
         return ts.matchFiles(
-            rootDir, extensions, excludes, includes, useCaseSensitiveFileNames, rootDir, depth, getFileSystemEntries
+            rootDir,
+            extensions,
+            excludes,
+            includes,
+            useCaseSensitiveFileNames,
+            rootDir,
+            depth,
+            getFileSystemEntries
         );
     }
 
@@ -43,15 +51,14 @@ export function createBaseHost(syncFs: FileSystemReadSync, systemPath: typeof pa
         const directories: string[] = [];
         const entries = syncFs.loadDirectoryChildrenSync(path);
         for (const entry of entries) {
-            if (entry.type == "file") {
+            if (entry.type === 'file') {
                 files.push(entry.name);
             } else {
                 directories.push(entry.name);
             }
         }
-        return {files, directories};
+        return { files, directories };
     }
-
 
     function fileExists(fullPath: string) {
         try {
@@ -63,16 +70,15 @@ export function createBaseHost(syncFs: FileSystemReadSync, systemPath: typeof pa
     }
 }
 
-
 export interface LanguageServicesHostOptions {
     baseHost: BaseHost;
     compilerOptions: ts.CompilerOptions;
 
-    getOpenedDocs(): string[];
-
     cwd: string;
     defaultLibDirectory: string;
     customTransformers?: ts.CustomTransformers;
+
+    getOpenedDocs(): string[];
 
     log?(s: string): void;
 
@@ -85,42 +91,50 @@ export interface LanguageServicesHostOptions {
 
 export function createLanguageServiceHost(hostOptions: LanguageServicesHostOptions): ts.LanguageServiceHost {
     const {
-        baseHost, compilerOptions, getOpenedDocs, cwd, customTransformers, defaultLibDirectory,
-        log, trace, error, getProjectVersion
+        baseHost,
+        compilerOptions,
+        getOpenedDocs,
+        cwd,
+        customTransformers,
+        defaultLibDirectory,
+        log,
+        trace,
+        error,
+        getProjectVersion
     } = hostOptions;
 
-    const {syncFs} = baseHost;
+    const { syncFs } = baseHost;
 
     function getDirectories(path: string) {
-        return syncFs.loadDirectoryChildrenSync(path).filter((child) => child.type === 'dir').map(child => child.name);
+        return syncFs
+            .loadDirectoryChildrenSync(path)
+            .filter(child => child.type === 'dir')
+            .map(child => child.name);
     }
 
     function dirExistsSync(targetPath: string) {
-        return checkExistsSync('dir', syncFs, targetPath)
+        return checkExistsSync('dir', syncFs, targetPath);
     }
 
     const tempCounters: { [key: string]: number } = {};
 
     function getVersion(targetPath: string) {
-        //add capability to kiss-fs
+        // add capability to kiss-fs
         if (tempCounters[targetPath] !== undefined) {
-            tempCounters[targetPath]++
+            tempCounters[targetPath]++;
         } else {
             tempCounters[targetPath] = 0;
         }
-        return tempCounters[targetPath]
+        return tempCounters[targetPath];
     }
 
     return {
         getCompilationSettings: () => compilerOptions,
         getNewLine: () => ts.getNewLineCharacter(compilerOptions),
         getProjectVersion,
-        getScriptFileNames: getOpenedDocs,//() => [],//
-        // getScriptKind?(fileName: string): ScriptKind;
+        getScriptFileNames: getOpenedDocs, // () => [],//
         getScriptVersion: (filePath: string) => getVersion(filePath) + '',
         getScriptSnapshot: (filePath: string) => ts.ScriptSnapshot.fromString(syncFs.loadTextFileSync(filePath)),
-        // getLocalizedDiagnosticMessages?(): any;
-        // getCancellationToken?(): HostCancellationToken;
         getCurrentDirectory: () => cwd,
         getDefaultLibFileName: (options: ts.CompilerOptions) =>
             baseHost.path.join(defaultLibDirectory, ts.getDefaultLibFileName(options)),
@@ -131,13 +145,8 @@ export function createLanguageServiceHost(hostOptions: LanguageServicesHostOptio
         readDirectory: baseHost.readDirectory,
         readFile: baseHost.readFile,
         fileExists: baseHost.fileExists,
-        // getTypeRootsVersion?(): number;
-        // resolveModuleNames?(moduleNames: string[], containingFile: string): ResolvedModule[];
-        // resolveTypeReferenceDirectives?(
-        //     typeDirectiveNames: string[], containingFile: string
-        // ): ResolvedTypeReferenceDirective[];
         directoryExists: dirExistsSync,
-        getDirectories: getDirectories,
+        getDirectories,
         getCustomTransformers: () => customTransformers
     };
 }

@@ -1,14 +1,12 @@
-'use strict';
 import { FileSystemReadSync } from 'kissfs';
 import { Stylable } from '@stylable/core';
 import { Event, TextDocument, TextDocumentChangeEvent, TextDocuments } from 'vscode-languageserver';
 import Provider from './provider';
 import { ExtendedTsLanguageService } from './types';
 
-export function createProvider(stylable: Stylable, tsLangService: ExtendedTsLanguageService, withFilePrefix: boolean = true): Provider {
-    return new Provider(stylable, tsLangService)
+export function createProvider(stylable: Stylable, tsLangService: ExtendedTsLanguageService): Provider {
+    return new Provider(stylable, tsLangService);
 }
-
 
 let legacyBehvior = true;
 
@@ -20,33 +18,32 @@ const isWindows = process.platform === 'win32';
 export function createFs(fileSystem: FileSystemReadSync): any {
     return {
         readFileSync(path: string) {
-            path = (!legacyBehvior && isWindows) ? `/${path.slice(path.lastIndexOf(':')+1).replace(/\\/g, '/')}` : path;
+            path = !legacyBehvior && isWindows ? `/${path.slice(path.lastIndexOf(':') + 1).replace(/\\/g, '/')}` : path;
 
             return fileSystem.loadTextFileSync(path).toString();
         },
         statSync(path: string) {
+            path = !legacyBehvior && isWindows ? `/${path.slice(path.lastIndexOf(':') + 1).replace(/\\/g, '/')}` : path;
 
-            path = (!legacyBehvior && isWindows) ? `/${path.slice(path.lastIndexOf(':')+1).replace(/\\/g, '/')}` : path;
-
-            const s = fileSystem.statSync(path)
+            const s = fileSystem.statSync(path);
 
             const stat = {
                 type: s.type,
                 isDirectory() {
-                    return s.type === 'dir'
+                    return s.type === 'dir';
                 },
                 isFile() {
-                    return s.type === 'file'
+                    return s.type === 'file';
                 },
                 mtime: new Date(Date.now())
-            }
+            };
 
             return stat;
         },
         readlinkSync(_path: string) {
-            return null//require('fs').readlinkSync(_path);
+            return null; // require('fs').readlinkSync(_path);
         }
-    }
+    };
 }
 
 export interface MinimalDocs extends Partial<FileSystemReadSync> {
