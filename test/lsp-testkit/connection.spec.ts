@@ -28,7 +28,6 @@ import {
     CompletionItem,
     CompletionList,
     CompletionRequest,
-    Definition,
     DefinitionRequest,
     DidChangeConfigurationNotification,
     DidChangeConfigurationParams,
