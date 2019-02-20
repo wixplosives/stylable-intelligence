@@ -11,6 +11,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "strictNullChecks": true,
     "sourceMap": true,
     "declaration": true,
@@ -19,6 +20,7 @@
   "exclude": [
     "service.d.ts",
     "node_modules",
-    "dist"
+    "dist",
+    "fixtures"
   ]
 }
