@@ -1,6 +1,7 @@
-import { createRange } from '../../src/lib/completion-providers';
 import { expect } from 'chai';
 import path from 'path';
+
+import { createRange } from '../../src/lib/completion-providers';
 import { getReferences, CASES_PATH } from '../../test-kit/asserters';
 import { toVscodePath } from '../../src/lib/utils/uri-utils';
 

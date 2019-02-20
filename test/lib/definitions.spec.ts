@@ -1,7 +1,8 @@
+import path from 'path';
+import { expect } from 'chai';
+
 import { createRange, ProviderPosition } from '../../src/lib/completion-providers';
 import * as asserters from '../../test-kit/asserters';
-import { expect } from 'chai';
-import path from 'path';
 import { CASES_PATH } from '../../test-kit/asserters';
 
 describe('Definitions', () => {

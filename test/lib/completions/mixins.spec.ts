@@ -147,62 +147,55 @@ describe('Mixins', () => {
             [str0, str1, str2].forEach((str, j, a) => {
                 str.split('').forEach((c, i) => {
                     const prefix = str.slice(0, i);
-                    it('should complete imported TS mixins, but not formatters, with prefix ' + prefix, () => {
+                    it('should complete imported TS mixins, but not formatters, with prefix ' + prefix, async () => {
                         const rng = createRange(12, 15, 12, 15 + i);
-                        return asserters.getCompletions('mixins/imported-mixins.st.css', prefix).then(asserter => {
-                            const exp: Array<Partial<Completion>> = [];
-                            const notExp: Array<Partial<Completion>> = [];
-
-                            if (i === 0) {
-                                exp.push(createComp(str0, rng, tsFrom));
-                                exp.push(createComp(str1, rng, tsFrom));
-                                exp.push(createComp(str2, rng, tsFrom));
-                            } else if (str === str0) {
-                                exp.push(createComp(str0, rng, tsFrom));
-                                notExp.push(createComp(str1, rng, tsFrom));
-                                notExp.push(createComp(str2, rng, tsFrom));
-                            } else if (i <= 5) {
-                                exp.push(createComp(str1, rng, tsFrom));
-                                exp.push(createComp(str2, rng, tsFrom));
-                                notExp.push(createComp(str0, rng, tsFrom));
-                            } else {
-                                exp.push(createComp(str, rng, tsFrom));
-                                notExp.push(createComp(a[1 - j], rng, tsFrom));
-                                notExp.push(createComp(str0, rng, tsFrom));
-                            }
-                            notExp.push(createComp(badStr, rng, tsFrom));
-
-                            asserter.suggested(exp);
-                            asserter.notSuggested(notExp);
-                        });
+                        const asserter = await asserters.getCompletions('mixins/imported-mixins.st.css', prefix);
+                        const exp: Array<Partial<Completion>> = [];
+                        const notExp: Array<Partial<Completion>> = [];
+                        if (i === 0) {
+                            exp.push(createComp(str0, rng, tsFrom));
+                            exp.push(createComp(str1, rng, tsFrom));
+                            exp.push(createComp(str2, rng, tsFrom));
+                        } else if (str === str0) {
+                            exp.push(createComp(str0, rng, tsFrom));
+                            notExp.push(createComp(str1, rng, tsFrom));
+                            notExp.push(createComp(str2, rng, tsFrom));
+                        } else if (i <= 5) {
+                            exp.push(createComp(str1, rng, tsFrom));
+                            exp.push(createComp(str2, rng, tsFrom));
+                            notExp.push(createComp(str0, rng, tsFrom));
+                        } else {
+                            exp.push(createComp(str, rng, tsFrom));
+                            notExp.push(createComp(a[1 - j], rng, tsFrom));
+                            notExp.push(createComp(str0, rng, tsFrom));
+                        }
+                        notExp.push(createComp(badStr, rng, tsFrom));
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
                     }).timeout(10000);
 
-                    it('should complete imported TS mixins after value, with prefix ' + prefix, () => {
+                    it('should complete imported TS mixins after value, with prefix ' + prefix, async () => {
                         const rng = createRange(11, 46, 11, 46 + i);
-                        return asserters
-                            .getCompletions('mixins/imported-mixins-single-value.st.css', prefix)
-                            .then(asserter => {
-                                const exp: Array<Partial<Completion>> = [];
-                                const notExp: Array<Partial<Completion>> = [];
-
-                                if (i === 0) {
-                                    exp.push(createComp(str1, rng, tsFrom));
-                                    exp.push(createComp(str2, rng, tsFrom));
-                                } else if (str === str0) {
-                                    notExp.push(createComp(str1, rng, tsFrom));
-                                    notExp.push(createComp(str2, rng, tsFrom));
-                                } else if (i <= 5) {
-                                    exp.push(createComp(str1, rng, tsFrom));
-                                    exp.push(createComp(str2, rng, tsFrom));
-                                } else {
-                                    exp.push(createComp(str, rng, tsFrom));
-                                    notExp.push(createComp(a[1 - j], rng, tsFrom));
-                                }
-                                notExp.push(createComp(badStr, rng, tsFrom));
-
-                                asserter.suggested(exp);
-                                asserter.notSuggested(notExp);
-                            });
+                        const asserter = await asserters
+                            .getCompletions('mixins/imported-mixins-single-value.st.css', prefix);
+                        const exp: Array<Partial<Completion>> = [];
+                        const notExp: Array<Partial<Completion>> = [];
+                        if (i === 0) {
+                            exp.push(createComp(str1, rng, tsFrom));
+                            exp.push(createComp(str2, rng, tsFrom));
+                        } else if (str === str0) {
+                            notExp.push(createComp(str1, rng, tsFrom));
+                            notExp.push(createComp(str2, rng, tsFrom));
+                        } else if (i <= 5) {
+                            exp.push(createComp(str1, rng, tsFrom));
+                            exp.push(createComp(str2, rng, tsFrom));
+                        } else {
+                            exp.push(createComp(str, rng, tsFrom));
+                            notExp.push(createComp(a[1 - j], rng, tsFrom));
+                        }
+                        notExp.push(createComp(badStr, rng, tsFrom));
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
                     }).timeout(10000);
                 });
             });

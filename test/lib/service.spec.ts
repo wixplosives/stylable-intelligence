@@ -1,11 +1,12 @@
+import { TextDocumentItem, ReferenceParams } from 'vscode-languageserver-protocol';
+import { Diagnostic, Range, Location } from 'vscode-languageserver-types';
+import { MemoryFileSystem } from 'kissfs';
+
 import { TestConnection } from '../lsp-testkit/connection.spec';
 import { expect, plan } from '../testkit/chai.spec';
 import { init } from '../../src/lib/server-utils';
-import { MemoryFileSystem } from 'kissfs';
 import { toVscodePath } from '../../src/lib/utils/uri-utils';
-import { TextDocumentItem, ReferenceParams } from 'vscode-languageserver-protocol';
 import { getRangeAndText } from '../testkit/text.spec';
-import { Diagnostic, Range, Location } from 'vscode-languageserver-types';
 import { createRange } from '../../src/lib/completion-providers';
 import { createColor } from './colors.spec';
 import { toggleLegacy } from '../../src/lib/provider-factory';

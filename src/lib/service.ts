@@ -156,23 +156,16 @@ export function initStylableLanguageService(
     connection.onDidChangeConfiguration(diagnose);
 
     connection.onDefinition(
-        (params): Thenable<Definition> => {
+        async (params): Promise<Definition> => {
             const doc = fs.loadTextFileSync(params.textDocument.uri);
             const pos = params.position;
 
-            return provider
-                .getDefinitionLocation(
-                    doc,
-                    {
-                        line: pos.line,
-                        character: pos.character
-                    },
-                    fromVscodePath(params.textDocument.uri),
-                    fs
-                )
-                .then(res => {
-                    return res.map(loc => Location.create(toVscodePath(loc.uri), loc.range));
-                });
+            const res = await provider
+                .getDefinitionLocation(doc, {
+                    line: pos.line,
+                    character: pos.character
+                }, fromVscodePath(params.textDocument.uri), fs);
+            return res.map(loc => Location.create(toVscodePath(loc.uri), loc.range));
         }
     );
 

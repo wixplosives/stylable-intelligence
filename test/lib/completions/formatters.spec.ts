@@ -17,54 +17,47 @@ describe('Formatters', () => {
         [ts_formatter_1, ts_formatter_2].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
                 const prefix = str.slice(0, i);
-                it('should complete imported TS formatters, but not mixins, with prefix ' + prefix, () => {
+                it('should complete imported TS formatters, but not mixins, with prefix ' + prefix, async () => {
                     const rng = createRange(12, 11, 12, 11 + i);
-                    return asserters.getCompletions('mixins/imported-formatters.st.css', prefix).then(asserter => {
-                        const exp: Array<Partial<Completion>> = [];
-                        const notExp: Array<Partial<Completion>> = [];
-
-                        if (i === 0) {
-                            exp.push(createComp(ts_formatter_1, rng, tsFrom));
-                            exp.push(createComp(ts_formatter_2, rng, tsFrom));
-                        } else if (str === ts_formatter_1) {
-                            exp.push(createComp(ts_formatter_1, rng, tsFrom));
-                            notExp.push(createComp(ts_formatter_2, rng, tsFrom));
-                        } else {
-                            exp.push(createComp(ts_formatter_2, rng, tsFrom));
-                            notExp.push(createComp(ts_formatter_1, rng, tsFrom));
-                        }
-                        notExp.push(createComp(ts_mixin_1, rng, tsFrom));
-                        notExp.push(createComp(ts_mixin_2, rng, tsFrom));
-
-                        asserter.suggested(exp);
-                        asserter.notSuggested(notExp);
-                    });
+                    const asserter = await asserters.getCompletions('mixins/imported-formatters.st.css', prefix);
+                    const exp: Array<Partial<Completion>> = [];
+                    const notExp: Array<Partial<Completion>> = [];
+                    if (i === 0) {
+                        exp.push(createComp(ts_formatter_1, rng, tsFrom));
+                        exp.push(createComp(ts_formatter_2, rng, tsFrom));
+                    } else if (str === ts_formatter_1) {
+                        exp.push(createComp(ts_formatter_1, rng, tsFrom));
+                        notExp.push(createComp(ts_formatter_2, rng, tsFrom));
+                    } else {
+                        exp.push(createComp(ts_formatter_2, rng, tsFrom));
+                        notExp.push(createComp(ts_formatter_1, rng, tsFrom));
+                    }
+                    notExp.push(createComp(ts_mixin_1, rng, tsFrom));
+                    notExp.push(createComp(ts_mixin_2, rng, tsFrom));
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
                 }).timeout(10000);
 
-                it('should complete imported TS formatters after value, with prefix ' + prefix, () => {
+                it('should complete imported TS formatters after value, with prefix ' + prefix, async () => {
                     const rng = createRange(11, 49, 11, 49 + i);
-                    return asserters
-                        .getCompletions('mixins/imported-formatters-single-value.st.css', prefix)
-                        .then(asserter => {
-                            const exp: Array<Partial<Completion>> = [];
-                            const notExp: Array<Partial<Completion>> = [];
-
-                            if (i === 0) {
-                                exp.push(createComp(ts_formatter_1, rng, tsFrom));
-                                exp.push(createComp(ts_formatter_2, rng, tsFrom));
-                            } else if (str === ts_formatter_1) {
-                                exp.push(createComp(ts_formatter_1, rng, tsFrom));
-                                notExp.push(createComp(ts_formatter_2, rng, tsFrom));
-                            } else {
-                                exp.push(createComp(ts_formatter_2, rng, tsFrom));
-                                notExp.push(createComp(ts_formatter_1, rng, tsFrom));
-                            }
-                            notExp.push(createComp(ts_mixin_1, rng, tsFrom));
-                            notExp.push(createComp(ts_mixin_2, rng, tsFrom));
-
-                            asserter.suggested(exp);
-                            asserter.notSuggested(notExp);
-                        });
+                    const asserter = await asserters
+                        .getCompletions('mixins/imported-formatters-single-value.st.css', prefix);
+                    const exp: Array<Partial<Completion>> = [];
+                    const notExp: Array<Partial<Completion>> = [];
+                    if (i === 0) {
+                        exp.push(createComp(ts_formatter_1, rng, tsFrom));
+                        exp.push(createComp(ts_formatter_2, rng, tsFrom));
+                    } else if (str === ts_formatter_1) {
+                        exp.push(createComp(ts_formatter_1, rng, tsFrom));
+                        notExp.push(createComp(ts_formatter_2, rng, tsFrom));
+                    } else {
+                        exp.push(createComp(ts_formatter_2, rng, tsFrom));
+                        notExp.push(createComp(ts_formatter_1, rng, tsFrom));
+                    }
+                    notExp.push(createComp(ts_mixin_1, rng, tsFrom));
+                    notExp.push(createComp(ts_mixin_2, rng, tsFrom));
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
                 }).timeout(10000);
             });
         });
@@ -74,58 +67,48 @@ describe('Formatters', () => {
         [js_formatter_1, js_formatter_2].forEach((str, j, a) => {
             str.split('').forEach((c, i) => {
                 const prefix = str.slice(0, i);
-                it('should complete imported JS formatters, but not mixins, with prefix ' + prefix, () => {
+                it('should complete imported JS formatters, but not mixins, with prefix ' + prefix, async () => {
                     const rng = createRange(12, 11, 12, 11 + i);
-                    return asserters.getCompletions('mixins/imported-formatters.st.css', prefix).then(asserter => {
-                        const exp: Array<Partial<Completion>> = [];
-                        const notExp: Array<Partial<Completion>> = [];
-
-                        if (i <= js_formatter_1.length) {
-                            exp.push(createComp(js_formatter_1, rng, jsFrom));
-                        } else {
-                            notExp.push(createComp(js_formatter_1, rng, jsFrom));
-                        }
-                        exp.push(createComp(js_formatter_2, rng, jsFrom));
-
-                        asserter.suggested(exp);
-                        asserter.notSuggested(notExp);
-                    });
+                    const asserter = await asserters.getCompletions('mixins/imported-formatters.st.css', prefix);
+                    const exp: Array<Partial<Completion>> = [];
+                    const notExp: Array<Partial<Completion>> = [];
+                    if (i <= js_formatter_1.length) {
+                        exp.push(createComp(js_formatter_1, rng, jsFrom));
+                    } else {
+                        notExp.push(createComp(js_formatter_1, rng, jsFrom));
+                    }
+                    exp.push(createComp(js_formatter_2, rng, jsFrom));
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
                 }).timeout(10000);
 
-                it('should complete imported JS formatters after value, with prefix ' + prefix, () => {
+                it('should complete imported JS formatters after value, with prefix ' + prefix, async () => {
                     const rng = createRange(11, 49, 11, 49 + i);
-                    return asserters
-                        .getCompletions('mixins/imported-formatters-single-value.st.css', prefix)
-                        .then(asserter => {
-                            const exp: Array<Partial<Completion>> = [];
-                            const notExp: Array<Partial<Completion>> = [];
-
-                            if (i <= js_formatter_1.length) {
-                                exp.push(createComp(js_formatter_1, rng, jsFrom));
-                            } else {
-                                notExp.push(createComp(js_formatter_1, rng, jsFrom));
-                            }
-                            exp.push(createComp(js_formatter_2, rng, jsFrom));
-
-                            asserter.suggested(exp);
-                            asserter.notSuggested(notExp);
-                        });
+                    const asserter = await asserters
+                        .getCompletions('mixins/imported-formatters-single-value.st.css', prefix);
+                    const exp: Array<Partial<Completion>> = [];
+                    const notExp: Array<Partial<Completion>> = [];
+                    if (i <= js_formatter_1.length) {
+                        exp.push(createComp(js_formatter_1, rng, jsFrom));
+                    } else {
+                        notExp.push(createComp(js_formatter_1, rng, jsFrom));
+                    }
+                    exp.push(createComp(js_formatter_2, rng, jsFrom));
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
                 }).timeout(10000);
             });
         });
 
-        it('should complete formatters inside a mixin param list', () => {
-            return asserters.getCompletions('mixins/imported-mixins-in-param-list.st.css').then(asserter => {
-                const rng = createRange(0, 0, 0, 0);
-                const notExp: Array<Partial<Completion>> = [];
-
-                notExp.push(createComp('paramlessMixin', rng, tsFrom));
-                notExp.push(createComp('paramfulMixin', rng, tsFrom));
-                notExp.push(createComp('aMixin', rng, jsFrom));
-                notExp.push(createComp('aBareMixin', rng, jsFrom));
-
-                asserter.notSuggested(notExp);
-            });
+        it('should complete formatters inside a mixin param list', async () => {
+            const asserter = await asserters.getCompletions('mixins/imported-mixins-in-param-list.st.css');
+            const rng = createRange(0, 0, 0, 0);
+            const notExp: Array<Partial<Completion>> = [];
+            notExp.push(createComp('paramlessMixin', rng, tsFrom));
+            notExp.push(createComp('paramfulMixin', rng, tsFrom));
+            notExp.push(createComp('aMixin', rng, jsFrom));
+            notExp.push(createComp('aBareMixin', rng, jsFrom));
+            asserter.notSuggested(notExp);
         });
     });
 });

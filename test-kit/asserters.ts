@@ -37,22 +37,20 @@ export function getPath(fileName: string): NodeBase[] {
     return pathFromPosition(proc.meta!.rawAst, new ProviderPosition(pos.line + 1, pos.character));
 }
 
-export function getDefinition(fileName: string): Thenable<ProviderLocation[]> {
+export async function getDefinition(fileName: string): Promise<ProviderLocation[]> {
     const fullPath = path.join(CASES_PATH, fileName);
     let src: string = fs.readFileSync(fullPath).toString();
     const pos = getCaretPosition(src);
     src = src.replace('|', '');
-    return provider.getDefinitionLocation(src, pos, fullPath, docsFs).then(res => {
-        return res;
-    });
+    const res = await provider.getDefinitionLocation(src, pos, fullPath, docsFs);
+    return res;
 }
 
-export function getDefFromLoc({ filePath, pos }: { filePath: string; pos: ProviderPosition }) {
+export async function getDefFromLoc({ filePath, pos }: { filePath: string; pos: ProviderPosition }) {
     const fullPath = path.join(CASES_PATH, filePath);
     const src: string = fs.readFileSync(fullPath).toString();
-    return provider.getDefinitionLocation(src, pos, fullPath, docsFs).then(res => {
-        return res;
-    });
+    const res = await provider.getDefinitionLocation(src, pos, fullPath, docsFs);
+    return res;
 }
 
 export function getReferences(fileName: string, pos: ProviderPosition): Location[] {

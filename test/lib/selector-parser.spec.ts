@@ -1,5 +1,5 @@
-import { parseSelector, SelectorInternalChunk } from '../../src/lib/utils/selector-analyzer';
 import { expect } from 'chai';
+import { parseSelector, SelectorInternalChunk } from '../../src/lib/utils/selector-analyzer';
 
 describe('Selector Parser', () => {
     let sel: string;

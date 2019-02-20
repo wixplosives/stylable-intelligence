@@ -2,18 +2,19 @@ import { expect } from 'chai';
 import ts from 'typescript';
 import fs from 'fs';
 import path from 'path';
+import pkgDir from 'pkg-dir';
 import { TextDocument } from 'vscode-languageserver-types';
+
 import { createFs, createProvider, MinimalDocs } from '../../../src/lib/provider-factory';
 import { Completion, Snippet } from '../../../src/lib/completion-types';
 import { ProviderPosition, ProviderRange } from '../../../src/lib/completion-providers';
-import { default as Provider } from '../../../src/lib/provider';
+import Provider from '../../../src/lib/provider';
 import { fromVscodePath } from '../../../src/lib/utils/uri-utils';
 import { Stylable } from '@stylable/core';
 import { LocalSyncFs } from '../../../src/lib/local-sync-fs';
 import { createDocFs } from '../../../src/lib/server-utils';
 import { createBaseHost, createLanguageServiceHost } from '../../../src/lib/utils/temp-language-service-host';
 import { ExtendedTsLanguageService } from '../../../src/lib/types';
-import pkgDir from 'pkg-dir';
 
 export const CASES_PATH = path.join(pkgDir.sync(__dirname)!, 'fixtures', 'server-cases');
 

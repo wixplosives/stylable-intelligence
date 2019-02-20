@@ -1,5 +1,5 @@
-import { expect } from './chai.spec';
 import { Position, Range } from 'vscode-languageserver-protocol';
+import { expect } from './chai.spec';
 
 export function offsetToLspPos(offset: number, content: string): Position {
     const lines = content.substr(0, offset).split('\n');

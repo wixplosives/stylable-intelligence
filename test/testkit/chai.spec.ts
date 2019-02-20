@@ -1,13 +1,12 @@
-import { SinonSpy, spy } from 'sinon';
-import * as chai from 'chai';
-import ITestCallbackContext = Mocha.ITestCallbackContext;
+import chai from 'chai';
+import sinon from 'sinon';
 
 const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 const NO_TESTS_GRACE = 20;
 const DEFAULT_TIMEOUT = 2 * 1000;
-const _expect: SinonSpy & typeof chai.expect = spy(chai.expect) as any;
-const assert = ((chai as any).Assertion.prototype.assert = spy((chai as any).Assertion.prototype.assert));
+const _expect: sinon.SinonSpy & typeof chai.expect = sinon.spy(chai.expect) as any;
+const assert = ((chai as any).Assertion.prototype.assert = sinon.spy((chai as any).Assertion.prototype.assert));
 
 function assertNoError() {
     // sometimes (like when running inside expect()) the last array element is undefined
@@ -22,7 +21,7 @@ assertNoError.forget = function forget() {
 };
 
 export function plan(count: number, testCase: () => void | Promise<any>, timeout = DEFAULT_TIMEOUT) {
-    return async function(this: ITestCallbackContext) {
+    return async function(this: Mocha.ITestCallbackContext) {
         _expect.resetHistory();
         if (this) {
             this.timeout(timeout * 1000);

@@ -1,6 +1,6 @@
+import { Color } from 'vscode-languageserver-protocol';
 import { expect } from 'chai';
 import { getDocumentColors, getDocColorPresentation } from '../../test-kit/asserters';
-import { Color } from 'vscode-languageserver-protocol';
 import { createRange } from '../../src/lib/completion-providers';
 
 export function createColor(red: number, green: number, blue: number, alpha: number): Color {

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { getSignatureHelp } from '../../test-kit/asserters';
 import { SignatureHelp, SignatureInformation, ParameterInformation } from 'vscode-languageserver';
+import { getSignatureHelp } from '../../test-kit/asserters';
 
 describe('Signature Help', () => {
     xdescribe('TS Paramful Mixin', () => {
