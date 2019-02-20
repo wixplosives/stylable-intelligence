@@ -24,7 +24,9 @@ function assertDiagnosticExist(client: any, casePath: string, result: object) {
     return expect(diagnostic[0]).to.contain.keys(result);
 }
 
-suite('test diagnostics', () => {
+suite('test diagnostics', function() {
+    this.timeout(60000);
+
     let rootDir: string | null;
     suiteSetup(async () => {
         rootDir = await pkgDir(__dirname);

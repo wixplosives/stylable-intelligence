@@ -3,7 +3,9 @@ import assert from 'assert';
 import path from 'path';
 import pkgDir from 'pkg-dir';
 
-suite('Extension Tests', () => {
+suite('Extension Tests', function() {
+    this.timeout(60000);
+
     let rootDir: string | null;
 
     suiteSetup(async () => {
@@ -39,22 +41,19 @@ suite('Extension Tests', () => {
         }
     }
 
-    test('simple completion', function() {
-        this.timeout(30000);
+    test('simple completion', () => {
         const testCases: Array<[vscode.Position, string[]]> = [
             [new vscode.Position(0, 0), [':import', '.root', ':vars', '.gaga', '@namespace']]
         ];
         return testCompletion('simple-completion.st.css', testCases);
     });
 
-    test('simple completion includes css completions', function() {
-        this.timeout(30000);
+    test('simple completion includes css completions', () => {
         const testCases: Array<[vscode.Position, string[]]> = [[new vscode.Position(2, 11), ['goldenrod']]];
         return testCompletion('simple-completion.st.css', testCases);
     });
 
-    test('advanced completion', function() {
-        this.timeout(30000);
+    test('advanced completion', () => {
         const testCases: Array<[vscode.Position, string[]]> = [[new vscode.Position(10, 6), [':shmover', ':bover']]];
         return testCompletion('advanced-completion.st.css', testCases);
     });
