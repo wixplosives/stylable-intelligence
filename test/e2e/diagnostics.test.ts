@@ -27,7 +27,7 @@ function assertDiagnosticExist(client: any, casePath: string, result: object) {
 suite('test diagnostics', function() {
     this.timeout(60000);
 
-    let rootDir: string | null;
+    let rootDir: string | undefined;
     suiteSetup(async () => {
         rootDir = await pkgDir(__dirname);
     });
