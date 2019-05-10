@@ -1,5 +1,7 @@
-const path = require('path');
-process.env.CODE_TESTS_PATH = path.join(__dirname, 'dist', 'test', 'e2e');
-process.env.CODE_TESTS_WORKSPACE = path.join(__dirname, 'fixtures', 'e2e-cases');
+const { join } = require('path');
+const { env } = process;
+
+env.CODE_TESTS_PATH = join(__dirname, 'dist', 'test', 'e2e');
+env.CODE_TESTS_WORKSPACE = join(__dirname, 'fixtures', 'e2e-cases');
 
 require('vscode/bin/test');
