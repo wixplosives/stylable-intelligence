@@ -39,6 +39,7 @@
     "vscode-uri": "^2.0.2"
   },
   "devDependencies": {
+    "@file-services/commonjs": "^2.0.0",
     "@file-services/webpack": "^2.0.0",
     "@ts-tools/node": "^0.9.8",
     "@types/chai": "^4.1.7",

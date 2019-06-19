@@ -7,6 +7,7 @@ import {
 } from 'vscode-languageserver-protocol';
 import { Location } from 'vscode-languageserver-types';
 import { createMemoryFs } from '@file-services/memory';
+import { createCjsModuleSystem } from '@file-services/commonjs';
 
 import { TestConnection } from '../lsp-testkit/connection.spec';
 import { expect, plan } from '../testkit/chai.spec';
@@ -20,7 +21,7 @@ import { createExpectedDiagnosis, trimLiteral } from '../lsp-testkit/diagnostic-
 import { TestDocuments } from './test-documents';
 import { createConnection, IConnection, TextDocuments } from 'vscode-languageserver';
 
-describe('Service component test', () => {
+describe.only('Service component test', () => {
     let testCon: TestConnection;
 
     beforeEach(() => {
@@ -47,9 +48,11 @@ describe('Service component test', () => {
                     )
                 ];
 
+                const memFs = createMemoryFs({ [baseFileName]: rangeAndText.text });
+                const { requireModule } = createCjsModuleSystem({ fs: memFs });
                 const stylableLSP = new StylableLanguageService({
-                    fs: createMemoryFs({ [baseFileName]: rangeAndText.text }),
-                    requireModule: require,
+                    fs: memFs,
+                    requireModule,
                     rootPath: '/',
                     textDocuments: new TestDocuments({
                         [baseTextDocument.uri]: baseTextDocument
@@ -91,9 +94,12 @@ describe('Service component test', () => {
                     createExpectedDiagnosis(createRange(5, 19, 5, 25), 'unknown pseudo-state "bState"')
                 ];
 
+                const memFs = createMemoryFs({ [baseFileName]: baseFilecContent, [topFileName]: topFileContent });
+                const { requireModule } = createCjsModuleSystem({ fs: memFs });
+
                 const stylableLSP = new StylableLanguageService({
-                    fs: createMemoryFs({ [baseFileName]: baseFilecContent, [topFileName]: topFileContent }),
-                    requireModule: require,
+                    fs: memFs,
+                    requireModule,
                     rootPath: '/',
                     textDocuments: new TestDocuments({
                         [baseTextDocument.uri]: baseTextDocument,
@@ -146,9 +152,12 @@ describe('Service component test', () => {
                     )
                 ];
 
+                const memFs = createMemoryFs({ [baseFileName]: baseFilecContent });
+                const { requireModule } = createCjsModuleSystem({ fs: memFs });
+
                 const stylableLSP = new StylableLanguageService({
-                    fs: createMemoryFs({ [baseFileName]: baseFilecContent }),
-                    requireModule: require,
+                    fs: memFs,
+                    requireModule,
                     rootPath: '/',
                     textDocuments: new TestDocuments({
                         [baseTextDocument.uri]: baseTextDocument
@@ -192,9 +201,12 @@ describe('Service component test', () => {
             const range3 = createRange(2, 15, 2, 22);
             const color = createColor(0, 1, 0, 0.8);
 
+            const memFs = createMemoryFs({ [baseFileName]: baseFilecContent, [importFileName]: importFileContent });
+            const { requireModule } = createCjsModuleSystem({ fs: memFs });
+
             const stylableLSP = new StylableLanguageService({
-                fs: createMemoryFs({ [baseFileName]: baseFilecContent, [importFileName]: importFileContent }),
-                requireModule: require,
+                fs: memFs,
+                requireModule,
                 rootPath: '/',
                 textDocuments: new TestDocuments({
                     [baseTextDocument.uri]: baseTextDocument,
