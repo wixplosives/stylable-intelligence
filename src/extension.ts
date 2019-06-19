@@ -35,4 +35,6 @@ export async function activate(context: ExtensionContext) {
  * vs-code plugin API implementation
  * deactivation cleanup
  */
-export async function deactivate() { /**/ }
+export async function deactivate() {
+    /**/
+}

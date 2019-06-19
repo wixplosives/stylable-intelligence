@@ -1,4 +1,4 @@
-import * as asserters from './asserters';
+import * as asserters from '../../../test-kit/completions-asserters';
 import { createRange, ProviderRange } from '../../../src/lib/completion-providers';
 import { Completion } from '../../../src/lib/completion-types';
 
@@ -40,8 +40,10 @@ describe('Formatters', () => {
 
                 it('should complete imported TS formatters after value, with prefix ' + prefix, async () => {
                     const rng = createRange(11, 49, 11, 49 + i);
-                    const asserter = await asserters
-                        .getCompletions('mixins/imported-formatters-single-value.st.css', prefix);
+                    const asserter = await asserters.getCompletions(
+                        'mixins/imported-formatters-single-value.st.css',
+                        prefix
+                    );
                     const exp: Array<Partial<Completion>> = [];
                     const notExp: Array<Partial<Completion>> = [];
                     if (i === 0) {
@@ -84,8 +86,10 @@ describe('Formatters', () => {
 
                 it('should complete imported JS formatters after value, with prefix ' + prefix, async () => {
                     const rng = createRange(11, 49, 11, 49 + i);
-                    const asserter = await asserters
-                        .getCompletions('mixins/imported-formatters-single-value.st.css', prefix);
+                    const asserter = await asserters.getCompletions(
+                        'mixins/imported-formatters-single-value.st.css',
+                        prefix
+                    );
                     const exp: Array<Partial<Completion>> = [];
                     const notExp: Array<Partial<Completion>> = [];
                     if (i <= js_formatter_1.length) {

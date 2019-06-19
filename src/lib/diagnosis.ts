@@ -1,40 +1,24 @@
 import path from 'path';
-import {
-    StylableTransformer,
-    Diagnostics,
-    safeParse,
-    process,
-    Diagnostic as StylableDiagnostic,
-    FileProcessor,
-    StylableMeta
-} from '@stylable/core';
-import { Diagnostic, Range, TextDocument } from 'vscode-languageserver-types';
+import { safeParse, process, Diagnostic as StylableDiagnostic, Stylable } from '@stylable/core';
+import { Diagnostic, Range } from 'vscode-languageserver-types';
 import { fromVscodePath } from './utils/uri-utils';
 
-export function createDiagnosis(
-    doc: TextDocument,
-    fileProcessor: FileProcessor<StylableMeta>,
-    requireModule: typeof require
-): Diagnostic[] {
-    if (!doc.uri.endsWith('.st.css')) {
+export function createDiagnosis(content: string, fullPath: string, stylable: Stylable): Diagnostic[] {
+    if (!fullPath.endsWith('.st.css')) {
         return [];
     }
-    const file = fromVscodePath(doc.uri);
+    const file = fromVscodePath(fullPath);
 
-    const transformer = new StylableTransformer({
-        diagnostics: new Diagnostics(),
-        fileProcessor,
-        requireModule
-    });
-
-    const docPostCSSRoot = safeParse(doc.getText(), { from: path.resolve(file) });
+    const docPostCSSRoot = safeParse(content, { from: path.resolve(file) });
     const meta = process(docPostCSSRoot);
 
-    fileProcessor.add(file, meta);
+    stylable.fileProcessor.add(file, meta);
 
     try {
-        transformer.transform(meta);
-    } catch { /**/ }
+        stylable.transform(meta);
+    } catch {
+        /**/
+    }
     return meta.diagnostics.reports
         .concat(meta.transformDiagnostics ? meta.transformDiagnostics.reports : [])
         .map(reportToDiagnostic);

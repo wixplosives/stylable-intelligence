@@ -1,48 +1,25 @@
 import { expect } from 'chai';
-import { Stylable } from '@stylable/core';
-import { MemoryFileSystem } from 'kissfs';
-import { TextDocument } from 'vscode-languageserver-types';
+import { createMemoryFs } from '@file-services/memory';
 import { TextDocuments } from 'vscode-languageserver';
-
 import { createDiagnosis } from '../../src/lib/diagnosis';
-import { createFs } from '../../src/lib/provider-factory';
-import { createDocFs } from '../../src/lib/server-utils';
+import { StylableLanguageService } from '../../src/lib/service';
 
 function createDiagnostics(files: { [filePath: string]: string }, path: string) {
-    const docs: { [path: string]: TextDocument } = {};
-    Object.keys(files).reduce((prev, path: string) => {
-        prev[path] = TextDocument.create('/' + path, 'css', 0, files[path]);
-        return prev;
-    }, docs);
+    const fs = createMemoryFs(files);
+    const stylableLSP = new StylableLanguageService({
+        rootPath: '/',
+        fs,
+        requireModule: require,
+        textDocuments: new TextDocuments()
+    });
 
-    const documents: TextDocuments = {
-        get: filePath => {
-            return docs[filePath];
-        },
-        keys: () => {
-            return Object.keys(docs);
-        }
-    } as TextDocuments;
-    // const fs =  new LocalSyncFs('');
-    const fs = new MemoryFileSystem('/', { content: files });
-    const docsFs = createDocFs(fs, documents);
-
-    const doc = documents.get(path);
-    return doc
-        ? createDiagnosis(
-              doc,
-              Stylable.create({
-                  fileSystem: createFs(docsFs),
-                  projectRoot: '/'
-              }).fileProcessor,
-              require
-          )
-        : null;
+    const file = stylableLSP.getFs().readFileSync(path, 'utf8');
+    return file ? createDiagnosis(file, path, stylableLSP.getStylable()) : null;
 }
 
 describe('diagnostics', () => {
     it('should create basic diagnostics', () => {
-        const filePath = 'style.st.css';
+        const filePath = '/style.st.css';
 
         const diagnostics = createDiagnostics(
             {

@@ -1,4 +1,4 @@
-import * as asserters from './asserters';
+import * as asserters from '../../../test-kit/completions-asserters';
 import { createRange, ProviderRange } from '../../../src/lib/completion-providers';
 import { Completion } from '../../../src/lib/completion-types';
 
@@ -45,39 +45,36 @@ describe('Mixins', () => {
                     asserter.notSuggested(notExp);
                 });
 
-                it(
-                    'should complete local and imported classes after single value, with prefix ' + prefix,
-                    async () => {
-                        const rng = createRange(15, 23, 15, 23 + i);
-                        const asserter = await asserters.getCompletions(
-                            'pseudo-elements/recursive-import-3-mixin-single-value.st.css',
-                            prefix
-                        );
-                        const exp: Array<Partial<Completion>> = [];
-                        const notExp: Array<Partial<Completion>> = [];
+                it('should complete local and imported classes after single value, with prefix ' + prefix, async () => {
+                    const rng = createRange(15, 23, 15, 23 + i);
+                    const asserter = await asserters.getCompletions(
+                        'pseudo-elements/recursive-import-3-mixin-single-value.st.css',
+                        prefix
+                    );
+                    const exp: Array<Partial<Completion>> = [];
+                    const notExp: Array<Partial<Completion>> = [];
 
-                        if (i === 0) {
-                            a.forEach((comp, k) => {
-                                if (k !== 1) {
-                                    exp.push(createComp(comp, rng, froms[k]));
-                                } else {
-                                    notExp.push(createComp(comp, rng, froms[k]));
-                                }
-                            });
-                        } else {
-                            a.forEach((comp, k) => {
-                                if (k !== 1 && comp.startsWith(prefix)) {
-                                    exp.push(createComp(comp, rng, froms[k]));
-                                } else {
-                                    notExp.push(createComp(comp, rng, froms[k]));
-                                }
-                            });
-                        }
-
-                        asserter.suggested(exp);
-                        asserter.notSuggested(notExp);
+                    if (i === 0) {
+                        a.forEach((comp, k) => {
+                            if (k !== 1) {
+                                exp.push(createComp(comp, rng, froms[k]));
+                            } else {
+                                notExp.push(createComp(comp, rng, froms[k]));
+                            }
+                        });
+                    } else {
+                        a.forEach((comp, k) => {
+                            if (k !== 1 && comp.startsWith(prefix)) {
+                                exp.push(createComp(comp, rng, froms[k]));
+                            } else {
+                                notExp.push(createComp(comp, rng, froms[k]));
+                            }
+                        });
                     }
-                );
+
+                    asserter.suggested(exp);
+                    asserter.notSuggested(notExp);
+                });
 
                 it(
                     'should complete local and imported classes after multiple values, with prefix ' + prefix,
@@ -176,8 +173,10 @@ describe('Mixins', () => {
 
                     it('should complete imported TS mixins after value, with prefix ' + prefix, async () => {
                         const rng = createRange(11, 46, 11, 46 + i);
-                        const asserter = await asserters
-                            .getCompletions('mixins/imported-mixins-single-value.st.css', prefix);
+                        const asserter = await asserters.getCompletions(
+                            'mixins/imported-mixins-single-value.st.css',
+                            prefix
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         const notExp: Array<Partial<Completion>> = [];
                         if (i === 0) {
@@ -205,26 +204,23 @@ describe('Mixins', () => {
             [str3, str4].forEach((str, j, a) => {
                 str.split('').forEach((_c, i) => {
                     const prefix = str.slice(0, i);
-                    it(
-                        'should complete imported JS mixins, but not formatters, with prefix ' + prefix,
-                        async () => {
-                            const rng = createRange(12, 15, 12, 15 + i);
-                            const asserter = await asserters.getCompletions('mixins/imported-mixins.st.css', prefix);
-                            const exp: Array<Partial<Completion>> = [];
-                            const notExp: Array<Partial<Completion>> = [];
+                    it('should complete imported JS mixins, but not formatters, with prefix ' + prefix, async () => {
+                        const rng = createRange(12, 15, 12, 15 + i);
+                        const asserter = await asserters.getCompletions('mixins/imported-mixins.st.css', prefix);
+                        const exp: Array<Partial<Completion>> = [];
+                        const notExp: Array<Partial<Completion>> = [];
 
-                            if (i <= 1) {
-                                a.forEach((_comp, k) => exp.push(createComp(a[k], rng, jsFrom)));
-                            } else {
-                                exp.push(createComp(str, rng, jsFrom));
-                                notExp.push(createComp(a[1 - j], rng, jsFrom));
-                            }
-                            notExp.push(createComp(badJsStr, rng, tsFrom));
-
-                            asserter.suggested(exp);
-                            asserter.notSuggested(notExp);
+                        if (i <= 1) {
+                            a.forEach((_comp, k) => exp.push(createComp(a[k], rng, jsFrom)));
+                        } else {
+                            exp.push(createComp(str, rng, jsFrom));
+                            notExp.push(createComp(a[1 - j], rng, jsFrom));
                         }
-                    ).timeout(10000);
+                        notExp.push(createComp(badJsStr, rng, tsFrom));
+
+                        asserter.suggested(exp);
+                        asserter.notSuggested(notExp);
+                    }).timeout(10000);
 
                     it('should complete imported JS mixins after value, with prefix ' + prefix, async () => {
                         const rng = createRange(11, 46, 11, 46 + i);

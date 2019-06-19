@@ -52,16 +52,16 @@ import {
     isDirective,
     isInValue
 } from './provider';
-import { toVscodePath } from './utils/uri-utils';
-import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
+import { ExtendedTsLanguageService } from './types';
 import { resolveStateTypeOrValidator } from './feature/pseudo-class';
+import { IFileSystem } from '@file-services/types';
 
 const pvp = require('postcss-value-parser');
 
 export interface ProviderOptions {
     meta: StylableMeta;
-    fs: ExtendedFSReadSync; // candidate for removal
-    styl: Stylable; // candidate for removal
+    fs: IFileSystem;
+    stylable: Stylable;
     src: string; // candidate for removal : meta.source
     tsLangService: ExtendedTsLanguageService; // candidate for removal
     resolvedElements: ResolvedElement[][]; // candidate for removal
@@ -83,15 +83,15 @@ export interface CompletionProvider {
 }
 
 export class ProviderPosition {
-    constructor(public line: number, public character: number) { }
+    constructor(public line: number, public character: number) {}
 }
 
 export class ProviderRange {
-    constructor(public start: ProviderPosition, public end: ProviderPosition) { }
+    constructor(public start: ProviderPosition, public end: ProviderPosition) {}
 }
 
 export class ProviderLocation {
-    constructor(public uri: string, public range: ProviderRange) { }
+    constructor(public uri: string, public range: ProviderRange) {}
 }
 
 const cssPseudoClasses = [
@@ -161,9 +161,9 @@ function createDirectiveRange(
             Math.max(
                 0,
                 position.character -
-                (topLevelDirectives.customSelector.startsWith(fullLineText)
-                    ? fullLineText.length
-                    : lineChunkAtCursor.length)
+                    (topLevelDirectives.customSelector.startsWith(fullLineText)
+                        ? fullLineText.length
+                        : lineChunkAtCursor.length)
             )
         ),
         position
@@ -386,7 +386,7 @@ export const SelectorCompletionProvider: CompletionProvider = {
         lineChunkAtCursor,
         meta,
         fakes,
-        styl
+        stylable
     }: ProviderOptions): Completion[] {
         if (!parentSelector && (lineChunkAtCursor === ':' || !lineChunkAtCursor.endsWith(':'))) {
             const comps: Completion[] = [];
@@ -413,7 +413,7 @@ export const SelectorCompletionProvider: CompletionProvider = {
                         );
                     }
                     keys(imp.named).forEach(exp => {
-                        const res = styl.resolver.resolve(meta.mappedSymbols[exp]);
+                        const res = stylable.resolver.resolve(meta.mappedSymbols[exp]);
                         if (
                             res &&
                             res._kind === 'css' &&
@@ -441,7 +441,7 @@ export const SelectorCompletionProvider: CompletionProvider = {
 // Inside ruleset of simple selector, not :import or :vars
 // RHS of -st-extends
 export const ExtendCompletionProvider: CompletionProvider = {
-    provide({ lineChunkAtCursor, position, meta, styl }: ProviderOptions): Completion[] {
+    provide({ lineChunkAtCursor, position, meta, stylable }: ProviderOptions): Completion[] {
         if (lineChunkAtCursor.startsWith(valueMapping.extends)) {
             const value = lineChunkAtCursor.slice((valueMapping.extends + ':').length);
             const spaces = value.search(/\S|$/);
@@ -461,7 +461,7 @@ export const ExtendCompletionProvider: CompletionProvider = {
                 comps.push(
                     ...keys(i.named)
                         .filter(s => {
-                            const res = styl.resolver.resolve(meta.mappedSymbols[s]);
+                            const res = stylable.resolver.resolve(meta.mappedSymbols[s]);
                             return (
                                 res &&
                                 res._kind === 'css' &&
@@ -537,7 +537,7 @@ export const CodeMixinCompletionProvider: CompletionProvider = {
         position,
         fs,
         tsLangService,
-        styl
+        stylable
     }: ProviderOptions): Completion[] {
         if (
             meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) &&
@@ -554,7 +554,7 @@ export const CodeMixinCompletionProvider: CompletionProvider = {
                 .filter(ms => meta.mappedSymbols[ms]._kind === 'import')
                 .filter(ms => ms.startsWith(lastName))
                 .filter(ms => {
-                    const res = styl.resolver.resolve(meta.mappedSymbols[ms]);
+                    const res = stylable.resolver.resolve(meta.mappedSymbols[ms]);
                     return res && res._kind === 'js';
                 })
                 .filter(ms => isMixin(ms, meta, fs, tsLangService))
@@ -576,7 +576,7 @@ export const FormatterCompletionProvider: CompletionProvider = {
         position,
         fs,
         tsLangService,
-        styl
+        stylable
     }: ProviderOptions): Completion[] {
         if (
             meta.imports.some(imp => imp.fromRelative.endsWith('.ts') || imp.fromRelative.endsWith('.js')) &&
@@ -594,7 +594,7 @@ export const FormatterCompletionProvider: CompletionProvider = {
                     .filter(ms => meta.mappedSymbols[ms]._kind === 'import')
                     .filter(ms => ms.startsWith(lastName))
                     .filter(ms => {
-                        const res = styl.resolver.resolve(meta.mappedSymbols[ms]);
+                        const res = stylable.resolver.resolve(meta.mappedSymbols[ms]);
                         return res && res._kind === 'js';
                     })
                     // .filter(ms => names.length === 0 || !~names.indexOf(ms))
@@ -611,9 +611,17 @@ export const FormatterCompletionProvider: CompletionProvider = {
 // RHS of -st-named
 // import exists
 export const NamedCompletionProvider: CompletionProvider & {
-    resolveImport: (importName: string, styl: Stylable, meta: StylableMeta) => StylableMeta | null;
+    resolveImport: (importName: string, stylable: Stylable, meta: StylableMeta) => StylableMeta | null;
 } = {
-    provide({ parentSelector, astAtCursor, styl, meta, position, fullLineText, src }: ProviderOptions): Completion[] {
+    provide({
+        parentSelector,
+        astAtCursor,
+        stylable,
+        meta,
+        position,
+        fullLineText,
+        src
+    }: ProviderOptions): Completion[] {
         const { isNamedValueLine, namedValues } = getNamedValues(src, position.line);
         if (isNamedValueLine) {
             let importName: string = '';
@@ -633,7 +641,7 @@ export const NamedCompletionProvider: CompletionProvider & {
             const comps: string[][] = [[]];
 
             if (importName.endsWith('.st.css')) {
-                const resolvedImport: StylableMeta | null = this.resolveImport(importName, styl, meta);
+                const resolvedImport: StylableMeta | null = this.resolveImport(importName, stylable, meta);
                 if (resolvedImport) {
                     const { lastName } = getExistingNames(fullLineText, position);
                     comps.push(
@@ -674,7 +682,7 @@ export const NamedCompletionProvider: CompletionProvider & {
             } else if (importName.endsWith('.js')) {
                 let req: any;
                 try {
-                    req = require(path.join(path.dirname(meta.source), importName));
+                    req = (stylable as any).requireModule(path.join(path.dirname(meta.source), importName));
                 } catch (e) {
                     return [];
                 }
@@ -703,14 +711,16 @@ export const NamedCompletionProvider: CompletionProvider & {
         return [];
     },
 
-    resolveImport(importName: string, styl: Stylable, meta: StylableMeta): StylableMeta | null {
+    resolveImport(importName: string, stylable: Stylable, meta: StylableMeta): StylableMeta | null {
         let resolvedImport: StylableMeta | null = null;
         if (importName && importName.endsWith('.st.css')) {
             try {
-                resolvedImport = styl.fileProcessor.process(
+                resolvedImport = stylable.fileProcessor.process(
                     meta.imports.find(i => i.fromRelative === importName)!.from
                 );
-            } catch { /**/ }
+            } catch {
+                /**/
+            }
         }
         return resolvedImport;
     }
@@ -746,7 +756,7 @@ export const PseudoElementCompletionProvider: CompletionProvider = {
 
             const scope = filter
                 ? resolvedElements[0][resolvedElements[0].length - 2].type === 'pseudo-element' &&
-                    nativePseudoElements.indexOf(resolvedElements[0][resolvedElements[0].length - 2].name) !== -1
+                  nativePseudoElements.indexOf(resolvedElements[0][resolvedElements[0].length - 2].name) !== -1
                     ? resolvedElements[0][resolvedElements[0].length - 3]
                     : resolvedElements[0][resolvedElements[0].length - 2]
                 : lastNode;
@@ -1005,8 +1015,8 @@ export const StateSelectorCompletionProvider: CompletionProvider = {
                                     ? realState
                                         ? position.character - (lineChunkAtCursor.endsWith(':') ? 1 : 0)
                                         : position.character -
-                                        (lastState.length + 1) -
-                                        (lineChunkAtCursor.endsWith(':') ? 1 : 0)
+                                          (lastState.length + 1) -
+                                          (lineChunkAtCursor.endsWith(':') ? 1 : 0)
                                     : position.character - (lineChunkAtCursor.endsWith(':') ? 1 : 0)
                             ),
                             position
@@ -1088,7 +1098,7 @@ export const StateEnumCompletionProvider: CompletionProvider = {
 };
 
 export const ValueCompletionProvider: CompletionProvider = {
-    provide({ fullLineText, position, meta, styl }: ProviderOptions): Completion[] {
+    provide({ fullLineText, position, meta, stylable }: ProviderOptions): Completion[] {
         if (isInValue(fullLineText, position)) {
             const inner = fullLineText
                 .slice(0, fullLineText.indexOf(')', position.character) + 1)
@@ -1100,7 +1110,7 @@ export const ValueCompletionProvider: CompletionProvider = {
             const comps: Completion[] = [];
             meta.vars.forEach(v => {
                 if (v.name.startsWith(inner)) {
-                    const value = evalDeclarationValue(styl.resolver, v.text, meta, v.node);
+                    const value = evalDeclarationValue(stylable.resolver, v.text, meta, v.node);
                     comps.push(
                         valueCompletion(
                             v.name,
@@ -1118,7 +1128,7 @@ export const ValueCompletionProvider: CompletionProvider = {
             const importVars: any[] = [];
             meta.imports.forEach(imp => {
                 try {
-                    styl.fileProcessor.process(imp.from).vars.forEach(v =>
+                    stylable.fileProcessor.process(imp.from).vars.forEach(v =>
                         importVars.push({
                             name: v.name,
                             value: v.text,
@@ -1126,7 +1136,9 @@ export const ValueCompletionProvider: CompletionProvider = {
                             node: v.node
                         })
                     );
-                } catch (e) { /**/ }
+                } catch (e) {
+                    /**/
+                }
             });
 
             importVars.forEach(v => {
@@ -1134,7 +1146,7 @@ export const ValueCompletionProvider: CompletionProvider = {
                     v.name.startsWith(inner) &&
                     meta.imports.some(imp => Object.keys(imp.named).some(key => key === v.name))
                 ) {
-                    const value = evalDeclarationValue(styl.resolver, v.value, meta, v.node);
+                    const value = evalDeclarationValue(stylable.resolver, v.value, meta, v.node);
                     comps.push(
                         valueCompletion(
                             v.name,
@@ -1195,7 +1207,7 @@ function createCodeMixinCompletion(name: string, lastName: string, position: Pro
     );
 }
 
-function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLangService: ExtendedTsLanguageService) {
+function isMixin(name: string, meta: StylableMeta, fs: IFileSystem, tsLangService: ExtendedTsLanguageService) {
     const importSymbol = meta.mappedSymbols[name] as ImportSymbol;
     if (importSymbol.import.fromRelative.endsWith('.ts')) {
         const sig = extractTsSignature(importSymbol.import.from, name, importSymbol.type === 'default', tsLangService);
@@ -1206,9 +1218,7 @@ function isMixin(name: string, meta: StylableMeta, fs: ExtendedFSReadSync, tsLan
         return /(\w+.)?object/.test(rtype.trim());
     }
     if (importSymbol.import.fromRelative.endsWith('.js')) {
-        return (
-            extractJsModifierReturnType(name, fs.get(toVscodePath(importSymbol.import.from)).getText()) === 'object'
-        );
+        return extractJsModifierReturnType(name, fs.readFileSync(importSymbol.import.from, 'utf8')) === 'object';
     }
     return false;
 }

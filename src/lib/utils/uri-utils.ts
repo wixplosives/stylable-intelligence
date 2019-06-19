@@ -1,7 +1,8 @@
 const isWindows = process.platform === 'win32';
 
-export function fromVscodePath(uri: string): string {
+export function fromVscodePath(uri: string): string { // TODO: Remove me, replace with Location
     if (uri.startsWith('file://')) {
+        console.warn(new Error('this code path is legacy').stack);
         return isWindows
             ? uri
                   .slice(8)

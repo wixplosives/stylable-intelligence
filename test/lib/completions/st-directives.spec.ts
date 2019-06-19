@@ -1,4 +1,4 @@
-import * as asserters from './asserters';
+import * as asserters from '../../../test-kit/completions-asserters';
 import { createRange } from '../../../src/lib/completion-providers';
 import { importDirectives, rulesetDirectives } from '../../../src/lib/completion-types';
 
@@ -81,16 +81,15 @@ describe('Inner Directives', () => {
         });
     });
 
-    it(
-        'should not complete -st-states, -st-extends, -st-mixin inside simple selector ruleset when they exist',
-        async () => {
-            const asserter = await asserters.getCompletions('general/inside-simple-ruleset-with-all-st-fields.st.css');
-            asserter.notSuggested([
-                asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
-                asserters.extendsDirectiveCompletion(createRange(0, 0, 0, 0)),
-                asserters.mixinDirectiveCompletion(createRange(0, 0, 0, 0))
-            ]);
-        });
+    // tslint:disable-next-line: max-line-length
+    it('should not complete -st-states, -st-extends, -st-mixin inside simple selector ruleset when they exist', async () => {
+        const asserter = await asserters.getCompletions('general/inside-simple-ruleset-with-all-st-fields.st.css');
+        asserter.notSuggested([
+            asserters.statesDirectiveCompletion(createRange(0, 0, 0, 0)),
+            asserters.extendsDirectiveCompletion(createRange(0, 0, 0, 0)),
+            asserters.mixinDirectiveCompletion(createRange(0, 0, 0, 0))
+        ]);
+    });
 
     it('should complete -st-mixin, but not -st-states, -st-extends inside media query', async () => {
         const asserter = await asserters.getCompletions('complex-selectors/media-query.st.css');

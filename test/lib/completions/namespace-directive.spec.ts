@@ -1,4 +1,4 @@
-import * as asserters from './asserters';
+import * as asserters from '../../../test-kit/completions-asserters';
 import { createRange } from '../../../src/lib/completion-providers';
 import { topLevelDirectives } from '../../../src/lib/completion-types';
 

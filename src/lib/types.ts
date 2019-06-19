@@ -7,21 +7,19 @@ import {
     ParameterInformation,
     Position,
     Range,
-    TextDocument,
     TextEdit
 } from 'vscode-languageserver';
 import { ColorPresentationRequest, DocumentColorRequest } from 'vscode-languageserver-protocol';
-import { FileSystemReadSync } from 'kissfs';
 import ts from 'typescript';
 import { ParsedValue } from '@stylable/core';
 
-export interface NotificationTypes {
+export interface NotificationTypes { // TODO: remove me?
     openDoc: NotificationType<string, void>;
     colorRequest: typeof DocumentColorRequest;
     colorPresentationRequest: typeof ColorPresentationRequest;
 }
 
-export interface LSPTypeHelpers {
+export interface LSPTypeHelpers { // TODO: remove me?
     CompletionItem: typeof CompletionItem;
     TextEdit: typeof TextEdit;
     Location: typeof Location;
@@ -31,11 +29,6 @@ export interface LSPTypeHelpers {
     ParameterInformation: typeof ParameterInformation;
     Diagnostic: typeof Diagnostic;
 }
-
-export type ExtendedFSReadSync = {
-    get(path: string): TextDocument;
-    getOpenedFiles(): string[];
-} & FileSystemReadSync;
 
 export interface ExtendedTsLanguageService {
     setOpenedFiles: (files: string[]) => void;

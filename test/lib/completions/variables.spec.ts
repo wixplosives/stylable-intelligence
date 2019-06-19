@@ -1,4 +1,4 @@
-import * as asserters from './asserters';
+import * as asserters from '../../../test-kit/completions-asserters';
 import { createRange } from '../../../src/lib/completion-providers';
 
 describe('Variables', () => {
@@ -15,8 +15,10 @@ describe('Variables', () => {
                 it(
                     'should be completed inside rule value when other values exist, with prefix ' + prefix + ' ',
                     async () => {
-                        const asserter = await asserters
-                            .getCompletions('variables/local-vars-several-values.st.css', prefix);
+                        const asserter = await asserters.getCompletions(
+                            'variables/local-vars-several-values.st.css',
+                            prefix
+                        );
                         asserter.suggested([asserters.valueDirective(createRange(6, 25, 6, 26 + i))]);
                     }
                 );
@@ -48,8 +50,7 @@ describe('Variables', () => {
             str1.split('').forEach((_c, i) => {
                 const prefix = str1.slice(0, i);
                 it('Local variables should be completed, with prefix ' + prefix + ' ', async () => {
-                    const asserter = await asserters
-                        .getCompletions('variables/inside-value-local-vars.st.css', prefix);
+                    const asserter = await asserters.getCompletions('variables/inside-value-local-vars.st.css', prefix);
                     asserter.suggested([
                         asserters.valueCompletion(str1, createRange(6, 27, 6, 27 + i), 'red', 'Local variable'),
                         asserters.valueCompletion(str2, createRange(6, 27, 6, 27 + i), 'blue', 'Local variable')
@@ -57,8 +58,10 @@ describe('Variables', () => {
                 });
 
                 it('Imported variables should be completed, with prefix ' + prefix + ' ', async () => {
-                    const asserter = await asserters
-                        .getCompletions('variables/inside-value-imported-vars.st.css', prefix);
+                    const asserter = await asserters.getCompletions(
+                        'variables/inside-value-imported-vars.st.css',
+                        prefix
+                    );
                     asserter.suggested([
                         asserters.valueCompletion(str1, createRange(6, 27, 6, 27 + i), 'red', './import.st.css'),
                         asserters.valueCompletion(str2, createRange(6, 27, 6, 27 + i), 'blue', './import.st.css')
@@ -66,8 +69,10 @@ describe('Variables', () => {
                 });
 
                 it('Variable being defined should not be completed, with prefix ' + prefix + ' ', async () => {
-                    const asserter = await asserters
-                        .getCompletions('variables/inside-value-defined-var.st.css', prefix);
+                    const asserter = await asserters.getCompletions(
+                        'variables/inside-value-defined-var.st.css',
+                        prefix
+                    );
                     asserter.suggested([
                         asserters.valueCompletion(str1, createRange(6, 20, 6, 20 + i), 'red', './import.st.css'),
                         asserters.valueCompletion(str2, createRange(6, 20, 6, 20 + i), 'blue', './import.st.css')

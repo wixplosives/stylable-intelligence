@@ -1,32 +1,36 @@
+import fs from '@file-services/node';
+import { createWebpackFs } from '@file-services/webpack';
+import { createMemoryFs } from '@file-services/memory';
 import path from 'path';
 import webpack from 'webpack';
-import MemoryFS from 'memory-fs';
-import pkgDir from 'pkg-dir';
 
 describe('browser-compatible', () => {
     it('bundleable by webpack with no errors', async function() {
         this.timeout(50000);
-        const memoryFS = new MemoryFS();
-        const rootPath = await pkgDir(__dirname);
+        const rootPath = fs.dirname(fs.findClosestFileSync(__dirname, 'package.json')!);
 
         const compiler = webpack({
             mode: 'development',
             entry: {
                 main: path.join(rootPath!, 'dist', 'src', 'lib', 'service.js')
             },
+            module: {
+                rules: [],
+                noParse: [
+                    require.resolve('typescript/lib/typescript.js')
+                ] as any
+            },
             node: {
-                path: 'empty', // users should provide alias to path-webpack
-                net: 'empty',
                 fs: 'empty',
-                module: 'empty'
+                net: 'empty'
             }
         });
 
-        compiler.outputFileSystem = memoryFS;
+        compiler.outputFileSystem = createWebpackFs(createMemoryFs());
 
         await new Promise((res, rej) =>
             compiler.run((err, stats) => {
-                if (err || stats.hasErrors()) {
+                if (err || stats.hasErrors() || stats.hasWarnings()) {
                     rej(err || new Error(stats.toString()));
                 } else {
                     res();

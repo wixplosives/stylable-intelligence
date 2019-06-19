@@ -2,7 +2,8 @@ import { expect } from 'chai';
 import path from 'path';
 
 import { createRange } from '../../src/lib/completion-providers';
-import { getReferences, CASES_PATH } from '../../test-kit/asserters';
+import { getReferences } from '../../test-kit/asserters';
+import { CASES_PATH } from '../../test-kit/stylable-fixtures-lsp';
 import { toVscodePath } from '../../src/lib/utils/uri-utils';
 
 describe('References', () => {
@@ -256,21 +257,18 @@ describe('References', () => {
                 { path: path5, line: 10, character: 25 }
             ];
             positions.forEach(pos => {
-                it(
-                    'Should find all references to extendState in ' + pos.path + ' at ' + JSON.stringify(pos),
-                    () => {
-                        const exp1 = { uri: vscodePath3, range: createRange(13, 16, 13, 27) };
-                        const exp2 = { uri: vscodePath3, range: createRange(16, 17, 16, 28) };
-                        const exp3 = { uri: vscodePath4, range: createRange(10, 16, 10, 27) };
-                        const exp4 = { uri: vscodePath5, range: createRange(10, 20, 10, 31) };
-                        const refs = getReferences(pos.path, pos);
-                        expect(refs.length).to.equal(4);
-                        expect(refs).to.deep.include(exp1);
-                        expect(refs).to.deep.include(exp2);
-                        expect(refs).to.deep.include(exp3);
-                        expect(refs).to.deep.include(exp4);
-                    }
-                );
+                it('Should find all references to extendState in ' + pos.path + ' at ' + JSON.stringify(pos), () => {
+                    const exp1 = { uri: vscodePath3, range: createRange(13, 16, 13, 27) };
+                    const exp2 = { uri: vscodePath3, range: createRange(16, 17, 16, 28) };
+                    const exp3 = { uri: vscodePath4, range: createRange(10, 16, 10, 27) };
+                    const exp4 = { uri: vscodePath5, range: createRange(10, 20, 10, 31) };
+                    const refs = getReferences(pos.path, pos);
+                    expect(refs.length).to.equal(4);
+                    expect(refs).to.deep.include(exp1);
+                    expect(refs).to.deep.include(exp2);
+                    expect(refs).to.deep.include(exp3);
+                    expect(refs).to.deep.include(exp4);
+                });
             });
         });
     });

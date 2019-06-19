@@ -1,4 +1,4 @@
-import * as asserters from './asserters';
+import * as asserters from '../../../test-kit/completions-asserters';
 import { createRange, ProviderRange } from '../../../src/lib/completion-providers';
 import { Completion } from '../../../src/lib/completion-types';
 
@@ -37,8 +37,10 @@ describe('Imported Values', () => {
                 it(
                     'completes named and default imports in -st-extends with final ; , with prefix ' + prefix + ' ',
                     async () => {
-                        const asserter = await asserters
-                            .getCompletions('imports/st-extends-with-semicolon.st.css', prefix);
+                        const asserter = await asserters.getCompletions(
+                            'imports/st-extends-with-semicolon.st.css',
+                            prefix
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         const notExp: Array<Partial<Completion>> = [];
                         exp.push(createComp(a[j], rng, realPath));
@@ -89,14 +91,17 @@ describe('Imported Values', () => {
                         }
                         asserter.suggested(exp);
                         asserter.notSuggested(notExp);
-                    });
+                    }
+                );
 
                 it(
                     'completes named and default imports as non-initial selectors, with prefix ' + prefix + ' ',
                     async () => {
                         const rng = createRange(6, 6, 6, 6 + i);
-                        const asserter = await asserters
-                            .getCompletions('imports/st-extends-complex-selectors.st.css', prefix);
+                        const asserter = await asserters.getCompletions(
+                            'imports/st-extends-complex-selectors.st.css',
+                            prefix
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         const notExp: Array<Partial<Completion>> = [];
                         exp.push(createComp(a[j], rng));

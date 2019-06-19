@@ -71,7 +71,9 @@ export function resolveDocumentColors(stylable: Stylable, cssService: CssService
             let impMeta: StylableMeta | undefined;
             try {
                 impMeta = processor.process(imp.from);
-            } catch { /**/ }
+            } catch {
+                /**/
+            }
 
             if (!impMeta) {
                 return;

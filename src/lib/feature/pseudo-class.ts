@@ -12,10 +12,7 @@ const pvp = require('postcss-value-parser');
 // 1, 2, 3 - requires typing information (string, number, enum, tag)
 // a, b, c - require validator informationbased on type defined
 // args - TODO: should return validator function information
-export function resolveStateTypeOrValidator(
-    pos: ProviderPosition,
-    line: string
-): string | boolean | null {
+export function resolveStateTypeOrValidator(pos: ProviderPosition, line: string): string | boolean | null {
     const valueStartChar = line.indexOf(':') + 1;
     const value = line.slice(valueStartChar);
     const stateParts: ParsedValue[] = pvp(value).nodes;

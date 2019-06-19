@@ -2,7 +2,7 @@ import * as VCL from 'vscode-css-languageservice';
 import { ColorInformation, TextDocument } from 'vscode-languageserver-protocol';
 import { CompletionItem, Diagnostic, Hover, Location, Position, Range } from 'vscode-languageserver-types';
 import { createMeta } from '../lib/provider';
-import { ExtendedFSReadSync } from '../lib/types';
+import { IFileSystem } from '@file-services/types';
 
 function readDocRange(doc: TextDocument, rng: Range): string {
     const lines = doc.getText().split('\n');
@@ -39,7 +39,7 @@ function findPseudoStateStart(line: string, lookFrom: number) {
 export class CssService {
     private inner = VCL.getCSSLanguageService();
 
-    constructor(private fs: ExtendedFSReadSync) {}
+    constructor(private fs: IFileSystem) {}
 
     public getCompletions(document: TextDocument, position: Position): CompletionItem[] {
         const cssCompsRaw = this.inner.doComplete(document, position, this.inner.parseStylesheet(document));
@@ -89,7 +89,7 @@ export class CssService {
                 }
                 if (diag.code === 'unknownProperties') {
                     const prop = diag.message.match(/'(.*)'/)![1];
-                    const src = this.fs.loadTextFileSync(document.uri);
+                    const src = this.fs.readFileSync(document.uri, 'utf8');
                     const meta = createMeta(src, document.uri).meta;
                     if (meta && Object.keys(meta.mappedSymbols).some(ms => ms === prop)) {
                         return false;

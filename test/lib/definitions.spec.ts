@@ -3,7 +3,7 @@ import { expect } from 'chai';
 
 import { createRange, ProviderPosition } from '../../src/lib/completion-providers';
 import * as asserters from '../../test-kit/asserters';
-import { CASES_PATH } from '../../test-kit/asserters';
+import { CASES_PATH } from '../../test-kit/stylable-fixtures-lsp';
 
 describe('Definitions', () => {
     describe('Local elements', () => {
