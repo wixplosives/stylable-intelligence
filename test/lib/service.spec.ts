@@ -20,8 +20,9 @@ import { connect } from '../../src/lib/server';
 import { createExpectedDiagnosis, trimLiteral } from '../lsp-testkit/diagnostic-test-kit';
 import { TestDocuments } from './test-documents';
 import { createConnection, IConnection, TextDocuments } from 'vscode-languageserver';
+import { URI } from 'vscode-uri';
 
-describe.only('Service component test', () => {
+describe('Service component test', () => {
     let testCon: TestConnection;
 
     beforeEach(() => {
@@ -238,7 +239,7 @@ describe.only('Service component test', () => {
     );
 
     describe('References', () => {
-        xit(
+        it(
             'References - local file',
             plan(3, async () => {
                 const fileText = trimLiteral`
@@ -261,42 +262,37 @@ describe.only('Service component test', () => {
                 |    gaga;
                 |}`;
 
-                const fileName = 'references.st.css';
-                const fileSystem = createMemoryFs({ [fileName]: fileText });
+                const filePath = '/references.st.css';
+                const textDocument = TextDocument.create(URI.file(filePath).toString(), 'stylable', 0, fileText);
+                const memFs = createMemoryFs({ [filePath]: fileText });
+                const { requireModule } = createCjsModuleSystem({ fs: memFs });
 
                 const stylableLSP = new StylableLanguageService({
-                    fs: fileSystem,
-                    requireModule: require,
+                    fs: memFs,
+                    requireModule,
                     rootPath: '/',
-                    textDocuments: new TextDocuments()
+                    textDocuments: new TestDocuments({
+                        [textDocument.uri]: textDocument
+                    })
                 });
-                connect(
-                    stylableLSP,
-                    testCon.server
-                );
 
                 const context = { includeDeclaration: true };
-                const textDocument = TextDocumentItem.create(
-                    toVscodePath('/' + fileName),
-                    'stylable',
-                    0,
-                    fileSystem.readFileSync(fileName, 'utf8')
-                );
-                const refsInSelector = await testCon.client.references({
+                const refsInSelector = stylableLSP.onReferences({
                     context,
-                    textDocument,
-                    position: { line: 5, character: 16 }
+                    position: { line: 5, character: 16 },
+                    textDocument
                 });
-                const refsInMixin = await testCon.client.references({
+                const refsInMixin = stylableLSP.onReferences({
                     context,
-                    textDocument,
-                    position: { line: 10, character: 25 }
+                    position: { line: 10, character: 25 },
+                    textDocument
                 });
-                const refsInExtends = await testCon.client.references({
+                const refsInExtends = stylableLSP.onReferences({
                     context,
-                    textDocument,
-                    position: { line: 15, character: 6 }
+                    position: { line: 15, character: 6 },
+                    textDocument
                 });
+
                 const expectedRefs = [
                     // Refs should be listed in the order they appear in the file
                     Location.create(textDocument.uri, createRange(0, 3, 0, 7)),
