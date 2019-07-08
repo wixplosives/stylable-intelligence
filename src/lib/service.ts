@@ -23,6 +23,8 @@ import {
     TextDocument
 } from 'vscode-languageserver-types';
 import { Stylable } from '@stylable/core';
+import { IFileSystem, ReadFileOptions, IBaseFileSystemSyncActions } from '@file-services/types';
+import { URI } from 'vscode-uri';
 
 import { Provider } from './provider';
 
@@ -36,8 +38,6 @@ import { CssService } from '../model/css-service';
 import { resolveDocumentColors, getColorPresentation } from './feature/color-provider';
 import { dedupeRefs } from './dedupe-refs';
 import { typescriptSupport } from './typescript-support';
-import { IFileSystem, ReadFileOptions, IBaseFileSystemSyncActions } from '@file-services/types';
-import { URI } from 'vscode-uri';
 
 interface Config {
     rootPath: string;
@@ -176,16 +176,22 @@ export class StylableLanguageService {
     }
 
     public async onDefinition(params: TextDocumentPositionParams): Promise<Definition> {
-        const doc = this.fs.readFileSync(params.textDocument.uri, 'utf8');
+        const documentUri = params.textDocument.uri;
+
+        if (!documentUri.endsWith('.st.css') && !documentUri.startsWith('untitled:')) {
+            return [];
+        }
+
+        const fileContent = this.fs.readFileSync(documentUri, 'utf8');
         const pos = params.position;
 
         const res = await this.provider.getDefinitionLocation(
-            doc,
+            fileContent,
             {
                 line: pos.line,
                 character: pos.character
             },
-            fromVscodePath(params.textDocument.uri),
+            fromVscodePath(documentUri),
             this.fs
         );
 
@@ -194,11 +200,15 @@ export class StylableLanguageService {
 
     public onHover(params: TextDocumentPositionParams): Hover | null {
         const doc = this.docsDispatcher.get(params.textDocument.uri);
-        return doc ? this.cssService.doHover(doc, params.position) : null;
+        return doc && doc.uri.endsWith('.st.css') ? this.cssService.doHover(doc, params.position) : null;
     }
 
     public onReferences(params: ReferenceParams): Location[] {
         const u = URI.parse(params.textDocument.uri);
+
+        if (!u.path.endsWith('.st.css') && !u.path.startsWith('untitled:')) {
+            return [];
+        }
 
         const refs = this.getRefs(u.fsPath, params.position);
 
@@ -211,16 +221,34 @@ export class StylableLanguageService {
     }
 
     public onDocumentColor(params: DocumentColorParams) {
+        const documentUri = params.textDocument.uri;
+
+        if (!documentUri.endsWith('.st.css') && !documentUri.startsWith('untitled:')) {
+            return [];
+        }
+
         const doc = this.docsDispatcher.get(params.textDocument.uri);
         return doc ? resolveDocumentColors(this.stylable, this.cssService, doc) : [];
     }
 
     public onColorPresentation(params: ColorPresentationParams) {
+        const documentUri = params.textDocument.uri;
+
+        if (!documentUri.endsWith('.st.css') && !documentUri.startsWith('untitled:')) {
+            return [];
+        }
+
         const doc = this.docsDispatcher.get(params.textDocument.uri);
         return doc ? getColorPresentation(this.cssService, doc, params) : [];
     }
 
     public onRenameRequest(params: RenameParams): WorkspaceEdit {
+        const documentUri = params.textDocument.uri;
+
+        if (!documentUri.endsWith('.st.css') && !documentUri.startsWith('untitled:')) {
+            return { changes: {} };
+        }
+
         const edit: WorkspaceEdit = { changes: {} };
         getRenameRefs(URI.parse(params.textDocument.uri).fsPath, params.position, this.fs, this.stylable).forEach(
             ref => {
@@ -235,7 +263,13 @@ export class StylableLanguageService {
         return edit;
     }
 
-    public onSignatureHelp(params: TextDocumentPositionParams): Thenable<SignatureHelp> {
+    public onSignatureHelp(params: TextDocumentPositionParams): Thenable<SignatureHelp> | null {
+        const documentUri = params.textDocument.uri;
+
+        if (!documentUri.endsWith('.st.css') && !documentUri.startsWith('untitled:')) {
+            return null;
+        }
+
         const doc: string = this.fs.readFileSync(params.textDocument.uri, 'utf8');
 
         const sig = this.provider.getSignatureHelp(
