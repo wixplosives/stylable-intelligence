@@ -14,7 +14,7 @@
     "clean": "rimraf ./dist",
     "prebuild": "yarn clean",
     "build": "tsc",
-    "test": "yarn test:unit && yarn build && yarn test:e2e",
+    "test": "yarn build && yarn test:unit && yarn test:e2e",
     "test:unit": "mocha -r @ts-tools/node/r test/lib/**/*.spec.ts test/lib/*.spec.ts",
     "test:e2e": "node ./run-e2e-tests"
   },
