@@ -1,10 +1,31 @@
-const testRunner = require('vscode/lib/testrunner');
+import { promisify } from 'util';
+import { normalize } from 'path';
+import Mocha from 'mocha';
+import globCb from 'glob';
 
-// You can directly control Mocha options by uncommenting the following lines
-// See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for more info
-testRunner.configure({
-    ui: 'tdd', // the TDD UI is being used in extension.test.ts (suite, test, etc.)
-    useColors: true // colored output from test results
-});
+const glob = promisify(globCb);
+const testsRoot = __dirname;
 
-module.exports = testRunner;
+export async function run() {
+    const mocha = new Mocha({
+        ui: 'tdd'
+    });
+    mocha.useColors(true);
+    const testFilePaths = await glob('**/**.test.js', { cwd: testsRoot, absolute: true });
+    for (const filePath of testFilePaths) {
+        mocha.addFile(normalize(filePath));
+    }
+    await new Promise((resolve, reject) => {
+        try {
+            mocha.run(failures => {
+                if (failures > 0) {
+                    reject(new Error(`${failures} tests failed.`));
+                } else {
+                    resolve();
+                }
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
