@@ -3,6 +3,7 @@ import { ColorInformation, TextDocument } from 'vscode-languageserver-protocol';
 import { CompletionItem, Diagnostic, Hover, Location, Position, Range } from 'vscode-languageserver-types';
 import { createMeta } from '../lib/provider';
 import { IFileSystem } from '@file-services/types';
+import { URI } from 'vscode-uri';
 
 function readDocRange(doc: TextDocument, rng: Range): string {
     const lines = doc.getText().split('\n');
@@ -89,8 +90,9 @@ export class CssService {
                 }
                 if (diag.code === 'unknownProperties') {
                     const prop = diag.message.match(/'(.*)'/)![1];
-                    const src = this.fs.readFileSync(document.uri, 'utf8');
-                    const meta = createMeta(src, document.uri).meta;
+                    const filePath = URI.parse(document.uri).fsPath;
+                    const src = this.fs.readFileSync(filePath, 'utf8');
+                    const meta = createMeta(src, filePath).meta;
                     if (meta && Object.keys(meta.mappedSymbols).some(ms => ms === prop)) {
                         return false;
                     }

@@ -1,10 +1,10 @@
 import { Diagnostic, Range } from 'vscode-languageserver-types';
-import { toVscodePath } from '../../src/lib/utils/uri-utils';
+import { URI } from 'vscode-uri';
 
 export function createDiagnosisNotification(diagnostics: Diagnostic[], fileName: string) {
     return {
         diagnostics,
-        uri: toVscodePath('/' + fileName)
+        uri: URI.file('/' + fileName).toString()
     };
 }
 

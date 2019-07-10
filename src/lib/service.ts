@@ -31,7 +31,6 @@ import { Provider } from './provider';
 import { ProviderPosition, ProviderRange } from './completion-providers';
 import { Completion } from './completion-types';
 import { createDiagnosis } from './diagnosis';
-import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 import { getRefs, getRenameRefs } from './provider';
 import { ExtendedTsLanguageService } from './types';
 import { CssService } from '../model/css-service';
@@ -48,7 +47,8 @@ interface Config {
 
 function wrapFs(fs: IFileSystem, docs: TextDocuments): IFileSystem {
     const readFileSync = ((path: string, ...args: [ReadFileOptions]) => {
-        const file = docs.get(path);
+        const file = docs.get(URI.file(path).toString());
+
         return file ? file.getText() : fs.readFileSync(path, ...args);
     }) as IBaseFileSystemSyncActions['readFileSync'];
 
@@ -140,7 +140,7 @@ export class StylableLanguageService {
                     line: position.line,
                     character: position.character
                 },
-                documentUri,
+                URI.parse(documentUri).fsPath,
                 this.fs
             );
 
@@ -177,12 +177,13 @@ export class StylableLanguageService {
 
     public async onDefinition(params: TextDocumentPositionParams): Promise<Definition> {
         const documentUri = params.textDocument.uri;
+        const docPath = URI.parse(documentUri).fsPath;
 
         if (!documentUri.endsWith('.st.css') && !documentUri.startsWith('untitled:')) {
             return [];
         }
 
-        const fileContent = this.fs.readFileSync(documentUri, 'utf8');
+        const fileContent = this.fs.readFileSync(docPath, 'utf8');
         const pos = params.position;
 
         const res = await this.provider.getDefinitionLocation(
@@ -191,15 +192,16 @@ export class StylableLanguageService {
                 line: pos.line,
                 character: pos.character
             },
-            fromVscodePath(documentUri),
+            docPath,
             this.fs
         );
 
-        return res.map(loc => Location.create(toVscodePath(loc.uri), loc.range));
+        return res.map(loc => Location.create(URI.file(loc.uri).toString(), loc.range));
     }
 
     public onHover(params: TextDocumentPositionParams): Hover | null {
         const doc = this.docsDispatcher.get(params.textDocument.uri);
+
         return doc && doc.uri.endsWith('.st.css') ? this.cssService.doHover(doc, params.position) : null;
     }
 
@@ -318,7 +320,7 @@ async function diagnose({ connection, docsDispatcher, stylable, cssService }: Di
                 if (
                     ignore &&
                     (res.diagnostics.ignore as string[]).some(p => {
-                        return fromVscodePath(doc.uri).startsWith(path.resolve(p));
+                        return URI.parse(doc.uri).path.startsWith(path.resolve(p));
                     })
                 ) {
                     diagnostics = [];

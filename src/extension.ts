@@ -17,14 +17,12 @@ export async function activate(context: ExtensionContext) {
     };
 
     const clientOptions: LanguageClientOptions = {
-        documentSelector: [
-            { language: 'stylable', scheme: 'file' }
-        ],
+        documentSelector: [{ language: 'stylable', scheme: 'file' }],
         diagnosticCollectionName: 'stylable'
     };
 
     const client = new LanguageClient('stylable', serverOptions, clientOptions);
-    client.trace = Trace.Verbose; // Elevate debugging message info in output
+    client.trace = Trace.Messages; // Elevated debugging message info in output
 
     context.subscriptions.push(client.start());
     await client.onReady();

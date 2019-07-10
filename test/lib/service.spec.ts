@@ -12,7 +12,6 @@ import { createCjsModuleSystem } from '@file-services/commonjs';
 import { TestConnection } from '../lsp-testkit/connection.spec';
 import { expect, plan } from '../testkit/chai.spec';
 import { StylableLanguageService } from '../../src/lib/service';
-import { toVscodePath } from '../../src/lib/utils/uri-utils';
 import { getRangeAndText } from '../testkit/text.spec';
 import { createRange } from '../../src/lib/completion-providers';
 import { createColor } from './colors.spec';
@@ -40,7 +39,12 @@ describe('Service component test', () => {
                     new IPCMessageWriter(process)
                 );
                 const baseFileName = '/base-file.st.css';
-                const baseTextDocument = TextDocument.create(baseFileName, 'stylable', 0, rangeAndText.text);
+                const baseTextDocument = TextDocument.create(
+                    URI.file(baseFileName).toString(),
+                    'stylable',
+                    0,
+                    rangeAndText.text
+                );
                 const expectedDiagnostics = [
                     createExpectedDiagnosis(
                         rangeAndText.range,
@@ -89,8 +93,18 @@ describe('Service component test', () => {
                 );
                 const baseFileName = '/base-file.st.css';
                 const topFileName = '/top-file.st.css';
-                const baseTextDocument = TextDocument.create(baseFileName, 'stylable', 0, baseFilecContent);
-                const topTextDocument = TextDocument.create(topFileName, 'stylable', 0, topFileContent);
+                const baseTextDocument = TextDocument.create(
+                    URI.file(baseFileName).toString(),
+                    'stylable',
+                    0,
+                    baseFilecContent
+                );
+                const topTextDocument = TextDocument.create(
+                    URI.file(topFileName).toString(),
+                    'stylable',
+                    0,
+                    topFileContent
+                );
                 const expectedDiagnostics = [
                     createExpectedDiagnosis(createRange(5, 19, 5, 25), 'unknown pseudo-state "bState"')
                 ];
@@ -140,7 +154,12 @@ describe('Service component test', () => {
                     new IPCMessageWriter(process)
                 );
                 const baseFileName = '/base-file.st.css';
-                const baseTextDocument = TextDocument.create(baseFileName, 'stylable', 0, baseFilecContent);
+                const baseTextDocument = TextDocument.create(
+                    URI.file(baseFileName).toString(),
+                    'stylable',
+                    0,
+                    baseFilecContent
+                );
                 const expectedDiagnostics = [
                     // CSS diagnostics that shouldn't appear:
                     // empty ruleset, unknown property 'varavar', css-rparentexpected, css-identifierexpected
@@ -193,9 +212,11 @@ describe('Service component test', () => {
 
             const baseFileName = '/single-file-color.st.css';
             const importFileName = '/import-color.st.css';
+            const baseFileUri = URI.file(baseFileName).toString();
+            const importedFileUri = URI.file(importFileName).toString();
 
-            const baseTextDocument = TextDocument.create(baseFileName, 'stylable', 0, baseFilecContent);
-            const importTextDocument = TextDocument.create(importFileName, 'stylable', 0, importFileContent);
+            const baseTextDocument = TextDocument.create(baseFileUri, 'stylable', 0, baseFilecContent);
+            const importTextDocument = TextDocument.create(importedFileUri, 'stylable', 0, importFileContent);
 
             const range1 = createRange(5, 11, 5, 24);
             const range2 = createRange(1, 13, 1, 33);
@@ -215,8 +236,8 @@ describe('Service component test', () => {
                 })
             });
 
-            const docColors = stylableLSP.onDocumentColor({ textDocument: { uri: baseFileName } });
-            const importDocColors = stylableLSP.onDocumentColor({ textDocument: { uri: importFileName } });
+            const docColors = stylableLSP.onDocumentColor({ textDocument: { uri: baseFileUri } });
+            const importDocColors = stylableLSP.onDocumentColor({ textDocument: { uri: importedFileUri } });
 
             expect(docColors).to.eql([
                 {
@@ -352,13 +373,13 @@ describe('Service component test', () => {
 
                 const context = { includeDeclaration: true };
                 const baseTextDocument = TextDocumentItem.create(
-                    toVscodePath('/' + baseFileName),
+                    URI.file('/' + baseFileName).toString(),
                     'stylable',
                     0,
                     fileSystem.readFileSync(baseFileName, 'utf8')
                 );
                 const topTextDocument = TextDocumentItem.create(
-                    toVscodePath('/' + topFileName),
+                    URI.file('/' + topFileName).toString(),
                     'stylable',
                     0,
                     fileSystem.readFileSync(topFileName, 'utf8')
@@ -430,7 +451,7 @@ describe('Service component test', () => {
 
             const context = { includeDeclaration: true };
             const textDocument = TextDocumentItem.create(
-                toVscodePath('/' + fileName),
+                URI.file('/' + fileName).toString(),
                 'stylable',
                 0,
                 fileSystem.readFileSync(fileName, 'utf8')
@@ -501,13 +522,13 @@ describe('Service component test', () => {
             const importFileName = 'import.st.css';
             const fileSystem = createMemoryFs({ [topFileName]: topFileText, [importFileName]: importFileText });
             const topTextDocument = TextDocumentItem.create(
-                toVscodePath('/' + topFileName),
+                URI.file('/' + topFileName).toString(),
                 'stylable',
                 0,
                 topFileText
             );
             const importTextDocument = TextDocumentItem.create(
-                toVscodePath('/' + importFileName),
+                URI.file('/' + importFileName).toString(),
                 'stylable',
                 0,
                 importFileText

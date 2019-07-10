@@ -3,11 +3,11 @@ import path from 'path';
 import { NodeBase } from 'postcss';
 import { TextDocument, TextDocumentIdentifier, Range } from 'vscode-languageserver-types';
 import { Location, ParameterInformation, SignatureHelp, ColorPresentation, Color } from 'vscode-languageserver';
+import { URI } from 'vscode-uri';
 import { ColorInformation } from 'vscode-css-languageservice';
 import { ProviderPosition } from '../src/lib/completion-providers';
 import { createMeta, ProviderLocation } from '../src/lib/provider';
 import { pathFromPosition } from '../src/lib/utils/postcss-ast-utils';
-import { toVscodePath } from '../src/lib/utils/uri-utils';
 import { CASES_PATH, stylableLSP } from './stylable-fixtures-lsp';
 
 export function getCaretPosition(src: string) {
@@ -59,7 +59,7 @@ export function getSignatureHelp(fileName: string, prefix: string): SignatureHel
 export function getDocumentColors(fileName: string): ColorInformation[] {
     const fullPath = path.join(CASES_PATH, fileName);
     const src: string = fs.readFileSync(fullPath).toString();
-    const doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src);
+    const doc = TextDocument.create(URI.file(fullPath).toString(), 'stylable', 1, src);
 
     return stylableLSP.resolveDocumentColors(doc);
 }
@@ -67,7 +67,7 @@ export function getDocumentColors(fileName: string): ColorInformation[] {
 export function getDocColorPresentation(fileName: string, color: Color, range: Range): ColorPresentation[] {
     const fullPath = path.join(CASES_PATH, fileName);
     const src: string = fs.readFileSync(fullPath).toString();
-    const doc = TextDocument.create(toVscodePath(fullPath), 'stylable', 1, src);
+    const doc = TextDocument.create(URI.file(fullPath).toString(), 'stylable', 1, src);
 
     return stylableLSP.getColorPresentation(doc, {
         textDocument: TextDocumentIdentifier.create(doc.uri),

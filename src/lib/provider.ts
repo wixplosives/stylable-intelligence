@@ -3,7 +3,6 @@ import { Location, ParameterInformation, Position, SignatureHelp, SignatureInfor
 import ts from 'typescript';
 import { keys, last, values, findLast } from 'lodash';
 import postcss from 'postcss';
-
 import {
     CSSResolve,
     Diagnostics,
@@ -20,6 +19,8 @@ import {
     ElementSymbol,
     valueMapping
 } from '@stylable/core';
+import { IFileSystem, IFileSystemDescriptor } from '@file-services/types';
+import { URI } from 'vscode-uri';
 
 import {
     CodeMixinCompletionProvider,
@@ -54,8 +55,6 @@ import {
 import { ExtendedTsLanguageService } from './types';
 import { isRoot, isSelector, pathFromPosition, isInNode } from './utils/postcss-ast-utils';
 import { parseSelector, SelectorChunk, SelectorInternalChunk, SelectorQuery } from './utils/selector-analyzer';
-import { fromVscodePath, toVscodePath } from './utils/uri-utils';
-import { IFileSystem, IFileSystemDescriptor } from '@file-services/types';
 
 const valueParser = require('postcss-value-parser');
 const selectorTokenizer = require('css-selector-tokenizer');
@@ -750,7 +749,7 @@ function findRefs(
         scannedMeta.rawAst.walkRules(rule => {
             if (rule.selector.includes(word) && rule.source && rule.source.start) {
                 refs.push({
-                    uri: toVscodePath(scannedMeta.source),
+                    uri: URI.file(scannedMeta.source).toString(),
                     range: {
                         start: {
                             line: rule.source.start.line - 1,
@@ -782,7 +781,7 @@ function findRefs(
                 while ((match = valueRegex.exec(rule.selector)) !== null) {
                     const index = match[0].startsWith('.') ? match.index : match.index - 1;
                     refs.push({
-                        uri: toVscodePath(scannedMeta.source),
+                        uri: URI.file(scannedMeta.source).toString(),
                         range: {
                             start: {
                                 line: rule.source.start!.line - 1,
@@ -831,7 +830,7 @@ function findRefs(
                 while ((match = valueRegex.exec(rule.selector)) !== null) {
                     const index = match[0].startsWith('.') ? match.index : match.index - 1;
                     refs.push({
-                        uri: toVscodePath(scannedMeta.source),
+                        uri: URI.file(scannedMeta.source).toString(),
                         range: {
                             start: {
                                 line: rule.source.start!.line - 1,
@@ -858,7 +857,7 @@ function findRefs(
             const match = reg.exec(decl.value);
             if (match) {
                 refs.push({
-                    uri: toVscodePath(scannedMeta.source),
+                    uri: URI.file(scannedMeta.source).toString(),
                     range: {
                         start: {
                             line: decl.source.start!.line - 1,
@@ -914,7 +913,7 @@ function findRefs(
             const match = reg.exec(decl.value);
             if (match) {
                 refs.push({
-                    uri: toVscodePath(scannedMeta.source),
+                    uri: URI.file(scannedMeta.source).toString(),
                     range: {
                         start: {
                             line: decl.source.start!.line - 1,
@@ -950,7 +949,7 @@ function findRefs(
             let match;
             while ((match = valueRegex.exec(line)) !== null) {
                 refs.push({
-                    uri: toVscodePath(scannedMeta.source),
+                    uri: URI.file(scannedMeta.source).toString(),
                     range: {
                         start: {
                             line: decl.source!.start!.line - 1 + index,
@@ -983,7 +982,7 @@ function findRefs(
         // Variable definition
         if (decl.parent.type === 'rule' && decl.parent.selector === ':vars' && !!decl.source && !!decl.source.start) {
             refs.push({
-                uri: toVscodePath(scannedMeta.source),
+                uri: URI.file(scannedMeta.source).toString(),
                 range: {
                     start: {
                         line: decl.source.start!.line - 1,
@@ -1004,7 +1003,7 @@ function findRefs(
             const match = usageRegex.exec(decl.value);
             if (match) {
                 refs.push({
-                    uri: toVscodePath(scannedMeta.source),
+                    uri: URI.file(scannedMeta.source).toString(),
                     range: {
                         start: {
                             line: decl.source.start!.line - 1,
@@ -1239,7 +1238,7 @@ export function getRenameRefs(
     const refs = getRefs(filePath, pos, fs, stylable);
     const newRefs: Location[] = [];
     refs.forEach(ref => {
-        const FISH = fromVscodePath(ref.uri).startsWith(stylable.projectRoot);
+        const FISH = URI.parse(ref.uri).path.startsWith(stylable.projectRoot);
         const isRefInProject = ref.uri.startsWith(stylable.projectRoot);
 
         if (!ref.uri.includes('node_modules') && (FISH || isRefInProject)) {
@@ -1272,7 +1271,7 @@ export function createMeta(src: string, path: string) {
     let meta: StylableMeta;
     const fakes: postcss.Rule[] = [];
     try {
-        const ast: postcss.Root = safeParse(src, { from: fromVscodePath(path) });
+        const ast: postcss.Root = safeParse(src, { from: URI.file(path).fsPath });
         if (ast.nodes) {
             for (const node of ast.nodes) {
                 if (node.type === 'decl') {

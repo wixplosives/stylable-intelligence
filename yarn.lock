@@ -108,10 +108,10 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/core@^2.0.9":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-2.1.0.tgz#16d0300494dc27e2b0a4f5ded02512bd944dfb11"
-  integrity sha512-3y0Ik1OzH6k2vqwh0JHru1YDbNteOZhcfJGWi6+xQUwuNS4RY7gzy60OctlfmJsNQFei31ivjrdtXOMw8qeHzw==
+"@stylable/core@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-2.1.1.tgz#ad4b4f2631f927adaa3e15bf00dd713b649e85df"
+  integrity sha512-6s3CPbW5Lf8eaPIfD9h6T+GJBQVnIihszTGnOypE7MZKuekjfQ40lxMnc49IJnLX9ALy87tUrQRW5FvXRlMzIg==
   dependencies:
     clean-css "^4.2.1"
     css-selector-tokenizer "^0.7.1"
@@ -122,7 +122,7 @@
     lodash.clonedeepwith "^4.5.0"
     murmurhash "^0.0.2"
     postcss "^7.0.17"
-    postcss-js "^2.0.1"
+    postcss-js "^2.0.2"
     postcss-nested "^4.1.2"
     postcss-safe-parser "^4.0.1"
     postcss-selector-matches "^4.0.0"
@@ -3067,13 +3067,13 @@ posix-character-classes@^0.1.0:
   resolved "https://registry.yarnpkg.com/posix-character-classes/-/posix-character-classes-0.1.1.tgz#01eac0fe3b5af71a2a6c02feabb8c1fef7e00eab"
   integrity sha1-AerA/jta9xoqbAL+q7jB/vfgDqs=
 
-postcss-js@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/postcss-js/-/postcss-js-2.0.1.tgz#4154e906ff410930afab63a24210be1b831e89a9"
-  integrity sha512-8XQGohCbj6+kq8e3w6WlexkGaSjb5S8zoXnH49eB8JC6+qN2kQW+ib6fTjRgCpRRN9eeFOhMlD0NDjThW1DCBg==
+postcss-js@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/postcss-js/-/postcss-js-2.0.2.tgz#a5e75d3fb9d85b28e1d2bd57956c115665ea8542"
+  integrity sha512-HxXLw1lrczsbVXxyC+t/VIfje9ZeZhkkXE8KpFa3MEKfp2FyHDv29JShYY9eLhYrhLyWWHNIuwkktTfLXu2otw==
   dependencies:
     camelcase-css "^2.0.1"
-    postcss "^7.0.14"
+    postcss "^7.0.17"
 
 postcss-nested@^4.1.2:
   version "4.1.2"

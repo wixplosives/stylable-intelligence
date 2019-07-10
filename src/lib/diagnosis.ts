@@ -1,13 +1,13 @@
 import path from 'path';
 import { safeParse, process, Diagnostic as StylableDiagnostic, Stylable } from '@stylable/core';
 import { Diagnostic, Range } from 'vscode-languageserver-types';
-import { fromVscodePath } from './utils/uri-utils';
+import { URI } from 'vscode-uri';
 
 export function createDiagnosis(content: string, fullPath: string, stylable: Stylable): Diagnostic[] {
     if (!fullPath.endsWith('.st.css')) {
         return [];
     }
-    const file = fromVscodePath(fullPath);
+    const file = URI.parse(fullPath).fsPath;
 
     const docPostCSSRoot = safeParse(content, { from: path.resolve(file) });
     const meta = process(docPostCSSRoot);
