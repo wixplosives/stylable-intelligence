@@ -7,6 +7,8 @@ import { getReferences } from '../../test-kit/asserters';
 import { CASES_PATH } from '../../test-kit/stylable-fixtures-lsp';
 
 describe('References', () => {
+    const getCasePath = (innerPath: string) => URI.file(path.join(CASES_PATH, innerPath)).toString();
+
     describe('Local Classes', () => {
         it('should return all instances of local class when called from selector ', () => {
             const refs = getReferences('references/local-class-from-selector.st.css', { line: 5, character: 16 });
@@ -18,9 +20,7 @@ describe('References', () => {
             expect(refs[4].range).to.deep.equal(createRange(15, 4, 15, 8));
             expect(refs[5].range).to.deep.equal(createRange(16, 4, 16, 8));
             refs.forEach(ref => {
-                expect(ref.uri).to.equal(
-                    URI.file(path.join(CASES_PATH, 'references/local-class-from-selector.st.css')).toString()
-                );
+                expect(ref.uri).to.equal(getCasePath('references/local-class-from-selector.st.css'));
             });
         });
         it('should return all instances of local class when called from -st-mixin ', () => {
@@ -33,9 +33,7 @@ describe('References', () => {
             expect(refs[4].range).to.deep.equal(createRange(15, 4, 15, 8));
             expect(refs[5].range).to.deep.equal(createRange(16, 4, 16, 8));
             refs.forEach(ref => {
-                expect(ref.uri).to.equal(
-                    URI.file(path.join(CASES_PATH, 'references/local-class-from-selector.st.css')).toString()
-                );
+                expect(ref.uri).to.equal(getCasePath('references/local-class-from-selector.st.css'));
             });
         });
         it('should return all instances of local class when called from -st-extends ', () => {
@@ -48,9 +46,7 @@ describe('References', () => {
             expect(refs[4].range).to.deep.equal(createRange(15, 4, 15, 8));
             expect(refs[5].range).to.deep.equal(createRange(16, 4, 16, 8));
             refs.forEach(ref => {
-                expect(ref.uri).to.equal(
-                    URI.file(path.join(CASES_PATH, 'references/local-class-from-selector.st.css')).toString()
-                );
+                expect(ref.uri).to.equal(getCasePath('references/local-class-from-selector.st.css'));
             });
         });
     });
@@ -76,9 +72,9 @@ describe('References', () => {
             // Definition, usage, named import, usage of import
             it('Should return all instances of variable across file', () => {
                 const refs = getReferences('references/vars.st.css', { line: 6, character: 20 });
-                const path1 = URI.file(path.join(CASES_PATH, 'references/vars.st.css')).toString();
-                const path2 = URI.file(path.join(CASES_PATH, 'references/var-import.st.css')).toString();
-                const path3 = URI.file(path.join(CASES_PATH, 'references/other-var.st.css')).toString();
+                const path1 = getCasePath('references/vars.st.css');
+                const path2 = getCasePath('references/var-import.st.css');
+                const path3 = getCasePath('references/other-var.st.css');
                 const exp1 = { uri: path1, range: createRange(2, 15, 2, 22) };
                 const exp2 = { uri: path1, range: createRange(6, 17, 6, 24) };
                 const exp3 = { uri: path2, range: createRange(1, 4, 1, 11) };
@@ -108,9 +104,9 @@ describe('References', () => {
                     { path: path3, line: 5, character: 9 },
                     { path: path3, line: 2, character: 16 }
                 ];
-                const vscodePath1 = URI.file(path.join(CASES_PATH, path1)).toString();
-                const vscodePath2 = URI.file(path.join(CASES_PATH, path2)).toString();
-                const vscodePath3 = URI.file(path.join(CASES_PATH, path3)).toString();
+                const vscodePath1 = getCasePath(path1);
+                const vscodePath2 = getCasePath(path2);
+                const vscodePath3 = getCasePath(path3);
                 const exp1 = { uri: vscodePath1, range: createRange(4, 1, 4, 4) };
                 const exp2 = { uri: vscodePath1, range: createRange(13, 17, 13, 20) };
                 const exp3 = { uri: vscodePath2, range: createRange(11, 8, 11, 11) };
@@ -137,8 +133,8 @@ describe('References', () => {
                     { path: path3, line: 14, character: 16 },
                     { path: path3, line: 5, character: 13 }
                 ];
-                const vscodePath1 = URI.file(path.join(CASES_PATH, path1)).toString();
-                const vscodePath3 = URI.file(path.join(CASES_PATH, path3)).toString();
+                const vscodePath1 = getCasePath(path1);
+                const vscodePath3 = getCasePath(path3);
                 const exp1 = { uri: vscodePath1, range: createRange(8, 1, 8, 4) };
                 const exp2 = { uri: vscodePath3, range: createRange(2, 19, 2, 22) };
                 const exp3 = { uri: vscodePath3, range: createRange(14, 15, 14, 18) };
@@ -161,9 +157,9 @@ describe('References', () => {
                     { path: path3, line: 5, character: 19 },
                     { path: path3, line: 10, character: 18 }
                 ];
-                const vscodePath1 = URI.file(path.join(CASES_PATH, path1)).toString();
-                const vscodePath2 = URI.file(path.join(CASES_PATH, path2)).toString();
-                const vscodePath3 = URI.file(path.join(CASES_PATH, path3)).toString();
+                const vscodePath1 = getCasePath(path1);
+                const vscodePath2 = getCasePath(path2);
+                const vscodePath3 = getCasePath(path3);
                 const exp1 = { uri: vscodePath1, range: createRange(12, 1, 12, 4) };
                 const exp2 = { uri: vscodePath2, range: createRange(13, 13, 13, 16) };
                 const exp3 = { uri: vscodePath3, range: createRange(2, 23, 2, 26) };
@@ -191,11 +187,11 @@ describe('References', () => {
             const path3 = 'definitions/states-default.st.css';
             const path4 = 'definitions/states-deep.st.css';
             const path5 = 'definitions/states-very-deep.st.css';
-            const vscodePath1 = URI.file(path.join(CASES_PATH, path1)).toString();
-            const vscodePath2 = URI.file(path.join(CASES_PATH, path2)).toString();
-            const vscodePath3 = URI.file(path.join(CASES_PATH, path3)).toString();
-            const vscodePath4 = URI.file(path.join(CASES_PATH, path4)).toString();
-            const vscodePath5 = URI.file(path.join(CASES_PATH, path5)).toString();
+            const vscodePath1 = getCasePath(path1);
+            const vscodePath2 = getCasePath(path2);
+            const vscodePath3 = getCasePath(path3);
+            const vscodePath4 = getCasePath(path4);
+            const vscodePath5 = getCasePath(path5);
             let positions = [
                 { path: path1, line: 5, character: 20 },
                 { path: path2, line: 5, character: 15 },
