@@ -25,7 +25,7 @@
       "protocol": "inspector"
     },
     {
-      "name": "Test e2e",
+      "name": "test:e2e",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
@@ -39,7 +39,7 @@
       "preLaunchTask": "compile"
     },
     {
-      "name": "Test server",
+      "name": "test:unit",
       "request": "launch",
       "type": "node",
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
