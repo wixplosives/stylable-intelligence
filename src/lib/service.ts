@@ -266,9 +266,9 @@ export class StylableLanguageService {
     }
 
     public onSignatureHelp(params: TextDocumentPositionParams): Thenable<SignatureHelp> | null {
-        const documentUri = params.textDocument.uri;
+        const documentPath = URI.parse(params.textDocument.uri).fsPath;
 
-        if (!documentUri.endsWith('.st.css') && !documentUri.startsWith('untitled:')) {
+        if (!documentPath.endsWith('.st.css') && !documentPath.startsWith('untitled:')) {
             return null;
         }
 
@@ -277,7 +277,7 @@ export class StylableLanguageService {
         const sig = this.provider.getSignatureHelp(
             doc,
             params.position,
-            params.textDocument.uri,
+            documentPath,
             this.fs,
             ParameterInformation
         );
