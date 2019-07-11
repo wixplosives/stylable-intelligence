@@ -6,11 +6,22 @@ import { evalDeclarationValue, valueMapping, Stylable, StylableMeta } from '@sty
 import { ProviderPosition, ProviderRange } from '../completion-providers';
 import { CssService } from '../../model/css-service';
 import { fixAndProcess } from '../provider';
+import { IFileSystem } from '@file-services/types';
 
-export function resolveDocumentColors(stylable: Stylable, cssService: CssService, document: TextDocument) {
+export function resolveDocumentColors(
+    stylable: Stylable,
+    cssService: CssService,
+    document: TextDocument,
+    fs: IFileSystem
+) {
     const processor = stylable.fileProcessor;
     const src = document.getText();
-    const res = fixAndProcess(src, new ProviderPosition(0, 0), URI.parse(document.uri).fsPath);
+    const filePath = URI.parse(document.uri).fsPath;
+    const res = fixAndProcess(
+        src,
+        new ProviderPosition(0, 0),
+        fs.sep === '/' ? filePath.replace(/\\/g, '/') : filePath
+    );
     const meta = res.processed.meta;
 
     const colorComps: ColorInformation[] = [];

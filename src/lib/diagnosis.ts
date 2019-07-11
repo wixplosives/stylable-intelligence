@@ -1,28 +1,23 @@
 import { Diagnostic, Range } from 'vscode-languageserver-types';
-import { URI } from 'vscode-uri';
-import { IFileSystem } from '@file-services/types';
 import { safeParse, process, Diagnostic as StylableDiagnostic, Stylable } from '@stylable/core';
 
-export function createDiagnosis(content: string, fullPath: string, stylable: Stylable, fs: IFileSystem): Diagnostic[] {
-    if (!fullPath.endsWith('.st.css')) {
+export function createDiagnosis(content: string, filePath: string, stylable: Stylable): Diagnostic[] {
+    if (!filePath.endsWith('.st.css')) {
         return [];
     }
-    const file = URI.parse(fullPath).path;
-
-    const from = fs.resolve(file);
-    const docPostCSSRoot = safeParse(content, { from });
+    const docPostCSSRoot = safeParse(content, { from: filePath });
 
     if (docPostCSSRoot.source) {
         const { input } = docPostCSSRoot.source;
 
         // postcss runs path.resolve, which messes up in-memory fs implementation on windows
-        Object.defineProperty(input, 'from', { value: from });
-        input.file = from;
+        Object.defineProperty(input, 'from', { value: filePath });
+        input.file = filePath;
     }
 
     const meta = process(docPostCSSRoot);
 
-    stylable.fileProcessor.add(file, meta);
+    stylable.fileProcessor.add(filePath, meta);
 
     try {
         stylable.transform(meta);

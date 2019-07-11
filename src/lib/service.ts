@@ -1,4 +1,3 @@
-import path from 'path';
 import { CompletionParams } from 'vscode-languageclient';
 import {
     Definition,
@@ -59,7 +58,6 @@ export class StylableLanguageService {
     private docsDispatcher: TextDocuments;
     private tsLanguageService: ExtendedTsLanguageService;
     private stylable: Stylable;
-    private requireModule: (request: string) => any;
     private provider: Provider;
     private cssService: CssService;
     private fs: IFileSystem;
@@ -70,7 +68,6 @@ export class StylableLanguageService {
 
         this.tsLanguageService = typescriptSupport(this.fs);
         this.stylable = new Stylable(rootPath, this.fs as any, requireModule);
-        this.requireModule = requireModule;
         this.provider = new Provider(this.stylable, this.tsLanguageService);
         this.cssService = new CssService(this.fs);
     }
@@ -105,7 +102,7 @@ export class StylableLanguageService {
     }
 
     public resolveDocumentColors(document: TextDocument) {
-        return resolveDocumentColors(this.stylable, this.cssService, document);
+        return resolveDocumentColors(this.stylable, this.cssService, document, this.fs);
     }
 
     public getColorPresentation(document: TextDocument, params: ColorPresentationParams) {
@@ -117,8 +114,6 @@ export class StylableLanguageService {
             connection,
             cssService: this.cssService,
             docsDispatcher: this.docsDispatcher,
-            fileSystem: this.fs,
-            requireModule: this.requireModule,
             stylable: this.stylable
         };
 
@@ -232,7 +227,7 @@ export class StylableLanguageService {
         }
 
         const doc = this.docsDispatcher.get(params.textDocument.uri);
-        return doc ? resolveDocumentColors(this.stylable, this.cssService, doc) : [];
+        return doc ? resolveDocumentColors(this.stylable, this.cssService, doc, this.fs) : [];
     }
 
     public onColorPresentation(params: ColorPresentationParams) {
@@ -295,12 +290,11 @@ export class StylableLanguageService {
 interface DiagConfig {
     connection: IConnection;
     docsDispatcher: TextDocuments;
-    fileSystem: IFileSystem;
     stylable: Stylable;
     cssService: CssService;
 }
 
-async function diagnose({ connection, docsDispatcher, fileSystem, stylable, cssService }: DiagConfig) {
+async function diagnose({ connection, docsDispatcher, stylable, cssService }: DiagConfig) {
     let res: any;
     let ignore = false;
     try {
@@ -323,12 +317,12 @@ async function diagnose({ connection, docsDispatcher, fileSystem, stylable, cssS
                 if (
                     ignore &&
                     (res.diagnostics.ignore as string[]).some(p => {
-                        return URI.parse(doc.uri).path.startsWith(path.resolve(p));
+                        return URI.parse(doc.uri).fsPath.startsWith(p);
                     })
                 ) {
                     diagnostics = [];
                 } else {
-                    diagnostics = createDiagnosis(doc.getText(), doc.uri, stylable, fileSystem)
+                    diagnostics = createDiagnosis(doc.getText(), URI.parse(doc.uri).fsPath, stylable)
                         .map(diag => {
                             diag.source = 'stylable';
                             return diag;
