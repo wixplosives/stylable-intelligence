@@ -263,7 +263,7 @@ describe('Signature Help', () => {
                         const prefix = validator.slice(0, i);
                         it(
                             'Provides validator signature help for a local string state type definition, with prefix ' +
-                            prefix,
+                                prefix,
                             () => {
                                 const filePath = 'states/with-param/string/local-state-string-validators.st.css';
 
@@ -317,29 +317,26 @@ describe('Signature Help', () => {
 
             str.split('').forEach((_c, i) => {
                 const prefix = str.slice(0, i);
-                it(
-                    'Provides signature help and identifies local state type definition, with prefix ' + prefix,
-                    () => {
-                        const filePath = 'states/with-param/local-state-param-suggestion.st.css';
+                it('Provides signature help and identifies local state type definition, with prefix ' + prefix, () => {
+                    const filePath = 'states/with-param/local-state-param-suggestion.st.css';
 
-                        const sig = getSignatureHelp(filePath, prefix);
+                    const sig = getSignatureHelp(filePath, prefix);
 
-                        const exp: SignatureHelp = {
-                            activeSignature: 0,
-                            activeParameter: 0,
-                            signatures: [
-                                SignatureInformation.create(
-                                    'hello(string)',
-                                    undefined,
-                                    ParameterInformation.create('string')
-                                )
-                            ]
-                        };
+                    const exp: SignatureHelp = {
+                        activeSignature: 0,
+                        activeParameter: 0,
+                        signatures: [
+                            SignatureInformation.create(
+                                'hello(string)',
+                                undefined,
+                                ParameterInformation.create('string')
+                            )
+                        ]
+                    };
 
-                        expect(sig).to.not.equal(null);
-                        expect(sig).to.deep.equal(exp);
-                    }
-                );
+                    expect(sig).to.not.equal(null);
+                    expect(sig).to.deep.equal(exp);
+                });
             });
 
             str.split('').forEach((_c, i) => {
@@ -374,7 +371,7 @@ describe('Signature Help', () => {
                 it(
                     // tslint:disable-next-line: max-line-length
                     'Provides signature help and identifies imported state type definition and validators, with prefix ' +
-                    prefix,
+                        prefix,
                     () => {
                         const filePath = 'states/with-param/imported-state-param-and-validators-suggestion.st.css';
 
@@ -405,31 +402,28 @@ describe('Signature Help', () => {
 
         str.split('').forEach((_c, i) => {
             const prefix = str.slice(0, i);
-            it(
-                'Provides signature help and identifies active parameter from 3rd party, with prefix ' + prefix,
-                () => {
-                    const filePath = 'mixins/imported-mixins-third-party.st.css';
+            it('Provides signature help and identifies active parameter from 3rd party, with prefix ' + prefix, () => {
+                const filePath = 'mixins/imported-mixins-third-party.st.css';
 
-                    const sig = getSignatureHelp(filePath, prefix);
+                const sig = getSignatureHelp(filePath, prefix);
 
-                    const exp: SignatureHelp = {
-                        activeSignature: 0,
-                        activeParameter: prefix.match(/,/g) ? prefix.match(/,/g)!.length : 0,
-                        signatures: [
-                            SignatureInformation.create(
-                                "aMixin(strParam: string, numParam: string, enumParam: 'a'|'b'): object",
-                                'A mixin with some params',
-                                ParameterInformation.create('strParam: string', 'A string param'),
-                                ParameterInformation.create('numParam: string', 'A num param'),
-                                ParameterInformation.create("enumParam: 'a'|'b'", 'An enum param')
-                            )
-                        ]
-                    };
+                const exp: SignatureHelp = {
+                    activeSignature: 0,
+                    activeParameter: prefix.match(/,/g) ? prefix.match(/,/g)!.length : 0,
+                    signatures: [
+                        SignatureInformation.create(
+                            "aMixin(strParam: string, numParam: string, enumParam: 'a'|'b'): object",
+                            'A mixin with some params',
+                            ParameterInformation.create('strParam: string', 'A string param'),
+                            ParameterInformation.create('numParam: string', 'A num param'),
+                            ParameterInformation.create("enumParam: 'a'|'b'", 'An enum param')
+                        )
+                    ]
+                };
 
-                    expect(sig).to.not.equal(null);
-                    expect(sig).to.deep.equal(exp);
-                }
-            ).timeout(5000);
+                expect(sig).to.not.equal(null);
+                expect(sig).to.deep.equal(exp);
+            }).timeout(5000);
         });
     });
 });

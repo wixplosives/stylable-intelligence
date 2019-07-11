@@ -1,15 +1,27 @@
 import { ColorPresentationParams, TextDocument } from 'vscode-languageserver-protocol';
 import { last } from 'lodash';
 import { Color, ColorPresentation, ColorInformation } from 'vscode-css-languageservice';
+import { URI } from 'vscode-uri';
 import { evalDeclarationValue, valueMapping, Stylable, StylableMeta } from '@stylable/core';
 import { ProviderPosition, ProviderRange } from '../completion-providers';
 import { CssService } from '../../model/css-service';
 import { fixAndProcess } from '../provider';
+import { IFileSystem } from '@file-services/types';
 
-export function resolveDocumentColors(stylable: Stylable, cssService: CssService, document: TextDocument) {
+export function resolveDocumentColors(
+    stylable: Stylable,
+    cssService: CssService,
+    document: TextDocument,
+    fs: IFileSystem
+) {
     const processor = stylable.fileProcessor;
     const src = document.getText();
-    const res = fixAndProcess(src, new ProviderPosition(0, 0), document.uri);
+    const filePath = URI.parse(document.uri).fsPath;
+    const res = fixAndProcess(
+        src,
+        new ProviderPosition(0, 0),
+        fs.sep === '/' ? filePath.replace(/\\/g, '/') : filePath
+    );
     const meta = res.processed.meta;
 
     const colorComps: ColorInformation[] = [];
@@ -71,7 +83,9 @@ export function resolveDocumentColors(stylable: Stylable, cssService: CssService
             let impMeta: StylableMeta | undefined;
             try {
                 impMeta = processor.process(imp.from);
-            } catch { /**/ }
+            } catch {
+                /**/
+            }
 
             if (!impMeta) {
                 return;

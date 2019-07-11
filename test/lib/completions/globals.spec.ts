@@ -1,4 +1,4 @@
-import * as asserters from './asserters';
+import * as asserters from '../../../test-kit/completions-asserters';
 import { createRange, ProviderRange } from '../../../src/lib/completion-providers';
 import { Completion } from '../../../src/lib/completion-types';
 

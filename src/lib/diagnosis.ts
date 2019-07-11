@@ -1,40 +1,29 @@
-import path from 'path';
-import {
-    StylableTransformer,
-    Diagnostics,
-    safeParse,
-    process,
-    Diagnostic as StylableDiagnostic,
-    FileProcessor,
-    StylableMeta
-} from '@stylable/core';
-import { Diagnostic, Range, TextDocument } from 'vscode-languageserver-types';
-import { fromVscodePath } from './utils/uri-utils';
+import { Diagnostic, Range } from 'vscode-languageserver-types';
+import { safeParse, process, Diagnostic as StylableDiagnostic, Stylable } from '@stylable/core';
 
-export function createDiagnosis(
-    doc: TextDocument,
-    fileProcessor: FileProcessor<StylableMeta>,
-    requireModule: typeof require
-): Diagnostic[] {
-    if (!doc.uri.endsWith('.st.css')) {
+export function createDiagnosis(content: string, filePath: string, stylable: Stylable): Diagnostic[] {
+    if (!filePath.endsWith('.st.css')) {
         return [];
     }
-    const file = fromVscodePath(doc.uri);
+    const docPostCSSRoot = safeParse(content, { from: filePath });
 
-    const transformer = new StylableTransformer({
-        diagnostics: new Diagnostics(),
-        fileProcessor,
-        requireModule
-    });
+    if (docPostCSSRoot.source) {
+        const { input } = docPostCSSRoot.source;
 
-    const docPostCSSRoot = safeParse(doc.getText(), { from: path.resolve(file) });
+        // postcss runs path.resolve, which messes up in-memory fs implementation on windows
+        Object.defineProperty(input, 'from', { value: filePath });
+        input.file = filePath;
+    }
+
     const meta = process(docPostCSSRoot);
 
-    fileProcessor.add(file, meta);
+    stylable.fileProcessor.add(filePath, meta);
 
     try {
-        transformer.transform(meta);
-    } catch { /**/ }
+        stylable.transform(meta);
+    } catch {
+        /**/
+    }
     return meta.diagnostics.reports
         .concat(meta.transformDiagnostics ? meta.transformDiagnostics.reports : [])
         .map(reportToDiagnostic);

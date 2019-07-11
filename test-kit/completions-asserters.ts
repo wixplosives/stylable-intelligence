@@ -1,22 +1,10 @@
 import { expect } from 'chai';
-import ts from 'typescript';
-import fs from 'fs';
+import fs from '@file-services/node';
 import path from 'path';
-import pkgDir from 'pkg-dir';
-import { TextDocument } from 'vscode-languageserver-types';
+import { Completion, Snippet } from '../src/lib/completion-types';
+import { ProviderPosition, ProviderRange } from '../src/lib/completion-providers';
+import { CASES_PATH, stylableLSP } from './stylable-fixtures-lsp';
 
-import { createFs, createProvider, MinimalDocs } from '../../../src/lib/provider-factory';
-import { Completion, Snippet } from '../../../src/lib/completion-types';
-import { ProviderPosition, ProviderRange } from '../../../src/lib/completion-providers';
-import Provider from '../../../src/lib/provider';
-import { fromVscodePath } from '../../../src/lib/utils/uri-utils';
-import { Stylable } from '@stylable/core';
-import { LocalSyncFs } from '../../../src/lib/local-sync-fs';
-import { createDocFs } from '../../../src/lib/server-utils';
-import { createBaseHost, createLanguageServiceHost } from '../../../src/lib/utils/temp-language-service-host';
-import { ExtendedTsLanguageService } from '../../../src/lib/types';
-
-export const CASES_PATH = path.join(pkgDir.sync(__dirname)!, 'fixtures', 'server-cases');
 
 function assertPresent(
     actualCompletions: Completion[],
@@ -71,7 +59,11 @@ export async function getCompletions(fileName: string, prefix: string = '') {
     const fullPath = path.join(CASES_PATH, fileName);
     const src: string = fs.readFileSync(fullPath).toString();
 
-    const completions = completionsIntenal(provider, fullPath, src, prefix);
+    const pos = getCaretPosition(src);
+    pos.character += prefix.length;
+
+    const completions = stylableLSP.provideCompletionItemsFromSrc(src.replace('|', prefix), pos, fullPath);
+
     return {
         suggested: (expectedCompletions: Array<Partial<Completion>>) => {
             assertPresent(completions, expectedCompletions, prefix);
@@ -82,14 +74,6 @@ export async function getCompletions(fileName: string, prefix: string = '') {
     };
 }
 
-function completionsIntenal(provider: Provider, fileName: string, src: string, prefix: string): Completion[] {
-    const pos = getCaretPosition(src);
-    src = src.replace('|', prefix);
-    pos.character += prefix.length;
-
-    return provider.provideCompletionItemsFromSrc(src, pos, fileName, docsFs);
-}
-
 export function getCaretPosition(src: string) {
     const caretPos = src.indexOf('|');
     const linesTillCaret = src.substr(0, caretPos).split('\n');
@@ -97,41 +81,7 @@ export function getCaretPosition(src: string) {
     return new ProviderPosition(linesTillCaret.length - 1, character);
 }
 
-const minDocs: MinimalDocs = {
-    get(uri: string): TextDocument {
-        return TextDocument.create(uri, 'css', 1, fs.readFileSync(fromVscodePath(uri)).toString());
-    },
-    keys(): string[] {
-        return fs.readdirSync(path.join(CASES_PATH, 'imports'));
-    }
-};
-const docsFs = createDocFs(new LocalSyncFs(''), minDocs);
-
-let openedFiles: string[] = [];
-const tsLanguageServiceHost = createLanguageServiceHost({
-    cwd: __dirname,
-    getOpenedDocs: () => openedFiles,
-    compilerOptions: {
-        target: ts.ScriptTarget.ES5,
-        sourceMap: false,
-        declaration: true,
-        outDir: 'dist',
-        module: ts.ModuleKind.CommonJS,
-        typeRoots: ['./node_modules/@types']
-    },
-    defaultLibDirectory: CASES_PATH,
-    baseHost: createBaseHost(docsFs, path)
-});
-const tsLanguageService = ts.createLanguageService(tsLanguageServiceHost);
-const wrappedTs: ExtendedTsLanguageService = {
-    ts: tsLanguageService,
-    setOpenedFiles: (files: string[]) => (openedFiles = files)
-};
-
-const provider = createProvider(new Stylable(CASES_PATH, createFs(docsFs), () => ({ default: {} })), wrappedTs);
-
 // syntactic
-
 export const customSelectorDirectiveCompletion: (rng: ProviderRange) => Partial<Completion> = rng => {
     return {
         label: '@custom-selector',

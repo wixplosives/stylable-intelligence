@@ -1,4 +1,4 @@
-import * as asserters from './asserters';
+import * as asserters from '../../../test-kit/completions-asserters';
 import { createRange, ProviderRange } from '../../../src/lib/completion-providers';
 import { Completion } from '../../../src/lib/completion-types';
 
@@ -52,12 +52,14 @@ describe('States', () => {
 
                 it(
                     'should complete only unused states in complex selectors ending in state name, with prefix ' +
-                    prefix +
-                    ' ',
+                        prefix +
+                        ' ',
                     async () => {
                         const rng = createRange(9, 25, 9, 25 + i);
-                        const asserter = await asserters
-                            .getCompletions('states/complex-selectors-with-states.st.css', prefix);
+                        const asserter = await asserters.getCompletions(
+                            'states/complex-selectors-with-states.st.css',
+                            prefix
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         const notExp: Array<Partial<Completion>> = [];
                         if (str === str1) {
@@ -89,8 +91,7 @@ describe('States', () => {
                 const createCompletion = (str: string, rng: ProviderRange, path?: string) =>
                     asserters.stateTypeDefinitionCompletion(str, rng, path);
 
-                const asserter = await asserters
-                    .getCompletions('states/with-param/state-def-with-param-start.st.css');
+                const asserter = await asserters.getCompletions('states/with-param/state-def-with-param-start.st.css');
                 const exp: Array<Partial<Completion>> = [];
                 exp.push(createCompletion('string', rng));
                 exp.push(createCompletion('number', rng));
@@ -105,8 +106,9 @@ describe('States', () => {
                     const createCompletion = (str: string, rng: ProviderRange, path?: string) =>
                         asserters.stateTypeDefinitionCompletion(str, rng, path);
 
-                    const asserter = await asserters
-                        .getCompletions('states/with-param/string/state-def-with-param-string-start.st.css');
+                    const asserter = await asserters.getCompletions(
+                        'states/with-param/string/state-def-with-param-string-start.st.css'
+                    );
                     const exp: Array<Partial<Completion>> = [];
                     const unExp: Array<Partial<Completion>> = [];
                     exp.push(createCompletion('string', rng));
@@ -123,8 +125,9 @@ describe('States', () => {
                         const createCompletion = (validator: string, rng: ProviderRange, type: string, path?: string) =>
                             asserters.stateValidatorDefinitionCompletion(validator, rng, type, path);
 
-                        const asserter = await asserters
-                            .getCompletions('states/with-param/string/local-state-string-validators.st.css');
+                        const asserter = await asserters.getCompletions(
+                            'states/with-param/string/local-state-string-validators.st.css'
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         exp.push(createCompletion('regex', rng, 'string'));
                         exp.push(createCompletion('contains', rng, 'string'));
@@ -138,8 +141,9 @@ describe('States', () => {
                         const createCompletion = (validator: string, rng: ProviderRange, type: string, path?: string) =>
                             asserters.stateValidatorDefinitionCompletion(validator, rng, type, path);
 
-                        const asserter = await asserters
-                            .getCompletions('states/with-param/string/state-def-with-param-string-regex-start.st.css');
+                        const asserter = await asserters.getCompletions(
+                            'states/with-param/string/state-def-with-param-string-regex-start.st.css'
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         const unExp: Array<Partial<Completion>> = [];
                         exp.push(createCompletion('regex', rng, 'string'));
@@ -173,8 +177,9 @@ describe('States', () => {
                         const createCompletion = (validator: string, rng: ProviderRange, type: string, path?: string) =>
                             asserters.stateValidatorDefinitionCompletion(validator, rng, type, path);
 
-                        const asserter = await asserters
-                            .getCompletions('states/with-param/string/state-def-with-param-string-m-start.st.css');
+                        const asserter = await asserters.getCompletions(
+                            'states/with-param/string/state-def-with-param-string-m-start.st.css'
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         const unExp: Array<Partial<Completion>> = [];
                         exp.push(createCompletion('minLength', rng, 'string'));
@@ -192,8 +197,9 @@ describe('States', () => {
                     const createCompletion = (str: string, rng: ProviderRange, path?: string) =>
                         asserters.stateTypeDefinitionCompletion(str, rng, path);
 
-                    const asserter = await asserters
-                        .getCompletions('states/with-param/number/state-def-with-param-number-start.st.css');
+                    const asserter = await asserters.getCompletions(
+                        'states/with-param/number/state-def-with-param-number-start.st.css'
+                    );
                     const exp: Array<Partial<Completion>> = [];
                     const unExp: Array<Partial<Completion>> = [];
                     exp.push(createCompletion('number', rng));
@@ -210,8 +216,9 @@ describe('States', () => {
                         const createCompletion = (validator: string, rng: ProviderRange, type: string, path?: string) =>
                             asserters.stateValidatorDefinitionCompletion(validator, rng, type, path);
 
-                        const asserter = await asserters
-                            .getCompletions('states/with-param/number/local-state-number-validators.st.css');
+                        const asserter = await asserters.getCompletions(
+                            'states/with-param/number/local-state-number-validators.st.css'
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         exp.push(createCompletion('min', rng, 'number'));
                         exp.push(createCompletion('max', rng, 'number'));
@@ -224,8 +231,9 @@ describe('States', () => {
                         const createCompletion = (validator: string, rng: ProviderRange, type: string, path?: string) =>
                             asserters.stateValidatorDefinitionCompletion(validator, rng, type, path);
 
-                        const asserter = await asserters
-                            .getCompletions('states/with-param/number/state-def-with-param-number-min-start.st.css');
+                        const asserter = await asserters.getCompletions(
+                            'states/with-param/number/state-def-with-param-number-min-start.st.css'
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         const unExp: Array<Partial<Completion>> = [];
                         exp.push(createCompletion('min', rng, 'number'));
@@ -240,8 +248,9 @@ describe('States', () => {
                         const createCompletion = (validator: string, rng: ProviderRange, type: string, path?: string) =>
                             asserters.stateValidatorDefinitionCompletion(validator, rng, type, path);
 
-                        const asserter = await asserters
-                            .getCompletions('states/with-param/number/state-def-with-param-number-max-start.st.css');
+                        const asserter = await asserters.getCompletions(
+                            'states/with-param/number/state-def-with-param-number-max-start.st.css'
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         const unExp: Array<Partial<Completion>> = [];
                         exp.push(createCompletion('max', rng, 'number'));
@@ -276,8 +285,9 @@ describe('States', () => {
                     const createCompletion = (str: string, rng: ProviderRange, path?: string) =>
                         asserters.stateTypeDefinitionCompletion(str, rng, path);
 
-                    const asserter = await asserters
-                        .getCompletions('states/with-param/enum/state-def-with-param-enum-start.st.css');
+                    const asserter = await asserters.getCompletions(
+                        'states/with-param/enum/state-def-with-param-enum-start.st.css'
+                    );
                     const exp: Array<Partial<Completion>> = [];
                     const unExp: Array<Partial<Completion>> = [];
                     exp.push(createCompletion('enum', rng));
@@ -295,8 +305,9 @@ describe('States', () => {
                     const createCompletion = (str: string, rng: ProviderRange, path?: string) =>
                         asserters.stateTypeDefinitionCompletion(str, rng, path);
 
-                    const asserter = await asserters
-                        .getCompletions('states/with-param/tag/state-def-with-param-tag-start.st.css');
+                    const asserter = await asserters.getCompletions(
+                        'states/with-param/tag/state-def-with-param-tag-start.st.css'
+                    );
                     const exp: Array<Partial<Completion>> = [];
                     const unExp: Array<Partial<Completion>> = [];
                     exp.push(createCompletion('tag', rng));
@@ -337,8 +348,9 @@ describe('States', () => {
                 const createCompletion = (str: string, rng: ProviderRange, path?: string) =>
                     asserters.stateEnumCompletion(str, rng, path);
 
-                const asserter = await asserters
-                    .getCompletions('states/with-param/enum/state-with-param-enum-suggestion.st.css');
+                const asserter = await asserters.getCompletions(
+                    'states/with-param/enum/state-with-param-enum-suggestion.st.css'
+                );
                 const exp: Array<Partial<Completion>> = [];
                 exp.push(createCompletion('bob', rng));
                 exp.push(createCompletion('alice', rng));
@@ -351,8 +363,9 @@ describe('States', () => {
                 const createCompletion = (str: string, rng: ProviderRange, path?: string) =>
                     asserters.stateEnumCompletion(str, rng, path);
 
-                const asserter = await asserters
-                    .getCompletions('states/with-param/enum/imported-state-with-enum-middle.st.css');
+                const asserter = await asserters.getCompletions(
+                    'states/with-param/enum/imported-state-with-enum-middle.st.css'
+                );
                 const exp: Array<Partial<Completion>> = [];
                 const unExp: Array<Partial<Completion>> = [];
                 exp.push(createCompletion('eve', rng, './state-with-enum.st.css'));
@@ -362,31 +375,31 @@ describe('States', () => {
                 asserter.notSuggested(unExp);
             });
 
-            it(
-                'should not complete pseudo-states and pseudo-elements when inside an enum (from imported file)',
-                async () => {
-                    const rng = createRange(9, 12, 9, 12);
-                    const createEnumComp = (str: string, rng: ProviderRange, path?: string) =>
-                        asserters.stateEnumCompletion(str, rng, path);
-                    const createStateComp = (str: string, rng: ProviderRange, path?: string) =>
-                        asserters.stateSelectorCompletion(str, rng, path);
-                    const createElementComp = (str: string, rng: ProviderRange, path?: string) =>
-                        asserters.pseudoElementCompletion(str, rng, path);
-                    const createGlobalComp = (rng: ProviderRange) => asserters.globalCompletion(rng);
+            // tslint:disable-next-line: max-line-length
+            it('should not complete pseudo-states and pseudo-elements when inside an enum (from imported file)', async () => {
+                const rng = createRange(9, 12, 9, 12);
+                const createEnumComp = (str: string, rng: ProviderRange, path?: string) =>
+                    asserters.stateEnumCompletion(str, rng, path);
+                const createStateComp = (str: string, rng: ProviderRange, path?: string) =>
+                    asserters.stateSelectorCompletion(str, rng, path);
+                const createElementComp = (str: string, rng: ProviderRange, path?: string) =>
+                    asserters.pseudoElementCompletion(str, rng, path);
+                const createGlobalComp = (rng: ProviderRange) => asserters.globalCompletion(rng);
 
-                    const asserter = await asserters
-                        .getCompletions('states/with-param/enum/imported-state-with-enum-start.st.css');
-                    const exp: Array<Partial<Completion>> = [];
-                    const unExp: Array<Partial<Completion>> = [];
-                    exp.push(createEnumComp('eve', rng, './state-with-enum.st.css'));
-                    exp.push(createEnumComp('alice', rng, './state-with-enum.st.css'));
-                    exp.push(createEnumComp('bob', rng, './state-with-enum.st.css'));
-                    unExp.push(createStateComp('otherState', rng, './state-with-enum.st.css'));
-                    unExp.push(createElementComp('part', rng));
-                    unExp.push(createGlobalComp(rng));
-                    asserter.suggested(exp);
-                    asserter.notSuggested(unExp);
-                });
+                const asserter = await asserters.getCompletions(
+                    'states/with-param/enum/imported-state-with-enum-start.st.css'
+                );
+                const exp: Array<Partial<Completion>> = [];
+                const unExp: Array<Partial<Completion>> = [];
+                exp.push(createEnumComp('eve', rng, './state-with-enum.st.css'));
+                exp.push(createEnumComp('alice', rng, './state-with-enum.st.css'));
+                exp.push(createEnumComp('bob', rng, './state-with-enum.st.css'));
+                unExp.push(createStateComp('otherState', rng, './state-with-enum.st.css'));
+                unExp.push(createElementComp('part', rng));
+                unExp.push(createGlobalComp(rng));
+                asserter.suggested(exp);
+                asserter.notSuggested(unExp);
+            });
         });
     });
 
@@ -405,14 +418,16 @@ describe('States', () => {
 
                 it(
                     'should complete state ' +
-                    str +
-                    ' value for default import used as tag, with prefix ' +
-                    prefix +
-                    ' ',
+                        str +
+                        ' value for default import used as tag, with prefix ' +
+                        prefix +
+                        ' ',
                     async () => {
                         const rng = createRange(6, 4, 6, 4 + i);
-                        const asserter = await asserters
-                            .getCompletions('pseudo-elements/default-import-as-tag.st.css', prefix);
+                        const asserter = await asserters.getCompletions(
+                            'pseudo-elements/default-import-as-tag.st.css',
+                            prefix
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         const notExp: Array<Partial<Completion>> = [];
                         exp.push(createCompletion(a[j], rng, './import.st.css'));
@@ -428,14 +443,16 @@ describe('States', () => {
 
                 it(
                     'should complete state ' +
-                    str +
-                    ' value for local class extending default import, with prefix ' +
-                    prefix +
-                    ' ',
+                        str +
+                        ' value for local class extending default import, with prefix ' +
+                        prefix +
+                        ' ',
                     async () => {
                         const rng = createRange(9, 5, 9, 5 + i);
-                        const asserter = await asserters
-                            .getCompletions('pseudo-elements/default-import-extended.st.css', prefix);
+                        const asserter = await asserters.getCompletions(
+                            'pseudo-elements/default-import-extended.st.css',
+                            prefix
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         const notExp: Array<Partial<Completion>> = [];
                         exp.push(createCompletion(a[j], rng, './import.st.css'));
@@ -457,14 +474,16 @@ describe('States', () => {
 
                 it(
                     'should complete state ' +
-                    str +
-                    ' value for local class extending named import, with prefix ' +
-                    prefix +
-                    ' ',
+                        str +
+                        ' value for local class extending named import, with prefix ' +
+                        prefix +
+                        ' ',
                     async () => {
                         const rng = createRange(9, 5, 9, 5 + i);
-                        const asserter = await asserters
-                            .getCompletions('pseudo-elements/named-import-extended-named.st.css', prefix);
+                        const asserter = await asserters.getCompletions(
+                            'pseudo-elements/named-import-extended-named.st.css',
+                            prefix
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         const notExp: Array<Partial<Completion>> = [];
                         exp.push(createCompletion(a[j], rng, './import.st.css'));
@@ -487,8 +506,10 @@ describe('States', () => {
                 const prefix = str.slice(0, i);
                 it('should complete state ' + str + ' after pseudo-element, with prefix ' + prefix + ' ', async () => {
                     const rng = createRange(10, 11, 10, 11 + i);
-                    const asserter = await asserters
-                        .getCompletions('pseudo-elements/recursive-import-3.st.css', prefix);
+                    const asserter = await asserters.getCompletions(
+                        'pseudo-elements/recursive-import-3.st.css',
+                        prefix
+                    );
                     const exp: Array<Partial<Completion>> = [];
                     const notExp: Array<Partial<Completion>> = [];
                     exp.push(createCompletion(a[j], rng, './recursive-import-1.st.css'));
@@ -505,14 +526,16 @@ describe('States', () => {
 
                 it(
                     'should complete state ' +
-                    str +
-                    ' after pseudo-element when line has leading spaces, with prefix ' +
-                    prefix +
-                    ' ',
+                        str +
+                        ' after pseudo-element when line has leading spaces, with prefix ' +
+                        prefix +
+                        ' ',
                     async () => {
                         const rng = createRange(10, 12, 10, 12 + i);
-                        const asserter = await asserters
-                            .getCompletions('pseudo-elements/recursive-import-3-leading-space.st.css', prefix);
+                        const asserter = await asserters.getCompletions(
+                            'pseudo-elements/recursive-import-3-leading-space.st.css',
+                            prefix
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         const notExp: Array<Partial<Completion>> = [];
                         exp.push(createCompletion(a[j], rng, './recursive-import-1.st.css'));
@@ -535,12 +558,14 @@ describe('States', () => {
                 const prefix = str.slice(0, i);
                 it(
                     'should complete only unused pseudo-element states when pseudo-element state exists, with prefix ' +
-                    prefix +
-                    ' ',
+                        prefix +
+                        ' ',
                     async () => {
                         const rng = createRange(9, 25, 9, 25 + i);
-                        const asserter = await asserters
-                            .getCompletions('pseudo-elements/multiple-states.st.css', prefix);
+                        const asserter = await asserters.getCompletions(
+                            'pseudo-elements/multiple-states.st.css',
+                            prefix
+                        );
                         const exp: Array<Partial<Completion>> = [];
                         const notExp: Array<Partial<Completion>> = [];
                         if (prefix.length <= 1 || str === str4) {
@@ -568,8 +593,10 @@ describe('States', () => {
             it(
                 'should complete state ' + str + ' in deep chain ending with state, with prefix ' + prefix + ' ',
                 async () => {
-                    const asserter = await asserters
-                        .getCompletions('pseudo-elements/recursive-import-3-deep-state.st.css', prefix);
+                    const asserter = await asserters.getCompletions(
+                        'pseudo-elements/recursive-import-3-deep-state.st.css',
+                        prefix
+                    );
                     const exp: Array<Partial<Completion>> = [];
                     const notExp: Array<Partial<Completion>> = [];
                     exp.push(createCompletion(str, rng, './recursive-import-0.st.css'));

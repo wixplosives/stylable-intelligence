@@ -1,17 +1,8 @@
 import path from 'path';
-import {
-    Location,
-    ParameterInformation,
-    Position,
-    ReferenceParams,
-    SignatureHelp,
-    SignatureInformation
-} from 'vscode-languageserver';
+import { Location, ParameterInformation, Position, SignatureHelp, SignatureInformation } from 'vscode-languageserver';
 import ts from 'typescript';
 import { keys, last, values, findLast } from 'lodash';
 import postcss from 'postcss';
-import { File } from 'kissfs';
-
 import {
     CSSResolve,
     Diagnostics,
@@ -28,6 +19,8 @@ import {
     ElementSymbol,
     valueMapping
 } from '@stylable/core';
+import { IFileSystem, IFileSystemDescriptor } from '@file-services/types';
+import { URI } from 'vscode-uri';
 
 import {
     CodeMixinCompletionProvider,
@@ -59,16 +52,14 @@ import {
     resolveStateParams,
     resolveStateTypeOrValidator
 } from './feature/pseudo-class';
-import { ExtendedFSReadSync, ExtendedTsLanguageService } from './types';
+import { ExtendedTsLanguageService } from './types';
 import { isRoot, isSelector, pathFromPosition, isInNode } from './utils/postcss-ast-utils';
 import { parseSelector, SelectorChunk, SelectorInternalChunk, SelectorQuery } from './utils/selector-analyzer';
-import { fromVscodePath, toVscodePath } from './utils/uri-utils';
 
 const valueParser = require('postcss-value-parser');
 const selectorTokenizer = require('css-selector-tokenizer');
 
-export default class Provider {
-
+export class Provider {
     private providers: CompletionProvider[] = [
         RulesetInternalDirectivesProvider,
         ImportInternalDirectivesProvider,
@@ -87,14 +78,9 @@ export default class Provider {
         PseudoElementCompletionProvider,
         ValueCompletionProvider
     ];
-    constructor(private styl: Stylable, private tsLangService: ExtendedTsLanguageService) { }
+    constructor(private stylable: Stylable, private tsLangService: ExtendedTsLanguageService) {}
 
-    public provideCompletionItemsFromSrc(
-        src: string,
-        pos: Position,
-        fileName: string,
-        fs: ExtendedFSReadSync
-    ): Completion[] {
+    public provideCompletionItemsFromSrc(src: string, pos: Position, fileName: string, fs: IFileSystem): Completion[] {
         const res = fixAndProcess(src, pos, fileName);
         const completions: Completion[] = [];
         try {
@@ -110,7 +96,9 @@ export default class Provider {
             this.providers.forEach(p => {
                 completions.push(...p.provide(options));
             });
-        } catch { /**/ }
+        } catch {
+            /**/
+        }
         return this.dedupeComps(completions);
     }
 
@@ -118,14 +106,14 @@ export default class Provider {
         src: string,
         position: ProviderPosition,
         filePath: string,
-        fs: ExtendedFSReadSync
+        fs: IFileSystem
     ): Thenable<ProviderLocation[]> {
         if (!filePath.endsWith('.st.css')) {
             return Promise.resolve([]);
         }
 
-        const callingMeta = this.styl.process(filePath);
-        const { word, meta } = getDefSymbol(src, position, filePath, this.styl);
+        const callingMeta = this.stylable.process(filePath);
+        const { word, meta } = getDefSymbol(src, position, filePath, this.stylable);
         if (!meta || !word) {
             return Promise.resolve([]);
         }
@@ -141,34 +129,39 @@ export default class Provider {
                     defs.push(
                         new ProviderLocation(
                             meta.source,
-                            this.findWord(word.replace('.', ''), fs.get(meta.source).getText(), position)
+                            this.findWord(word.replace('.', ''), fs.readFileSync(meta.source, 'utf8'), position)
                         )
                     );
                     break;
                 }
                 case 'var': {
                     defs.push(
-                        new ProviderLocation(meta.source, this.findWord(word, fs.get(meta.source).getText(), position))
+                        new ProviderLocation(
+                            meta.source,
+                            this.findWord(word, fs.readFileSync(meta.source, 'utf8'), position)
+                        )
                     );
                     break;
                 }
                 case 'import': {
                     let rslvd = null;
                     try {
-                        rslvd = this.styl.resolver.resolve(symb);
-                    } catch { /**/ }
+                        rslvd = this.stylable.resolver.resolve(symb);
+                    } catch {
+                        /**/
+                    }
 
                     let filePath: string;
 
                     if (rslvd && rslvd._kind !== 'js') {
                         filePath = (rslvd as CSSResolve).meta.source;
                     } else {
-                        filePath = this.styl.resolvePath(undefined, symb.import.from);
+                        filePath = this.stylable.resolvePath(undefined, symb.import.from);
                     }
-                    const doc = fs.get(filePath);
+                    const doc = fs.readFileSync(filePath, 'utf8');
 
-                    if (doc.getText() !== '') {
-                        defs.push(new ProviderLocation(filePath, this.findWord(word, doc.getText(), position)));
+                    if (doc !== '') {
+                        defs.push(new ProviderLocation(filePath, this.findWord(word, doc, position)));
                     }
                     break;
                 }
@@ -212,7 +205,7 @@ export default class Provider {
             defs.push(
                 new ProviderLocation(
                     meta.source,
-                    this.findWord(temp!.name, fs.get(stateMeta!.source).getText(), position)
+                    this.findWord(temp!.name, fs.readFileSync(stateMeta!.source, 'utf8'), position)
                 )
             );
         } else if (keys(meta.customSelectors).find(sym => sym === ':--' + word)) {
@@ -226,7 +219,7 @@ export default class Provider {
     }
 
     public findMyState(origMeta: StylableMeta, elementName: string, state: string): CSSResolve | null {
-        const res = this.styl.resolver.resolveImport((origMeta.mappedSymbols[elementName] as ClassSymbol)[
+        const res = this.stylable.resolver.resolveImport((origMeta.mappedSymbols[elementName] as ClassSymbol)[
             valueMapping.extends
         ] as ImportSymbol);
         if (
@@ -250,7 +243,7 @@ export default class Provider {
         src: string,
         pos: Position,
         filePath: string,
-        fs: ExtendedFSReadSync,
+        fs: IFileSystem,
         paramInfo: typeof ParameterInformation
     ): SignatureHelp | null {
         if (!filePath.endsWith('.st.css')) {
@@ -259,7 +252,9 @@ export default class Provider {
         const {
             processed: { meta }
         } = fixAndProcess(src, pos, filePath);
-        if (!meta) { return null; }
+        if (!meta) {
+            return null;
+        }
 
         const split = src.split('\n');
         const line = split[pos.line];
@@ -340,7 +335,7 @@ export default class Provider {
                     paramInfo
                 );
             } else if (mappedSymbol.import.from.endsWith('.js')) {
-                if (fs.getOpenedFiles().indexOf(toVscodePath(mappedSymbol.import.from.slice(0, -3) + '.d.ts')) !== -1) {
+                if (fs.fileExistsSync(mappedSymbol.import.from.slice(0, -3) + '.d.ts')) {
                     return this.getSignatureForTsModifier(
                         mixin,
                         activeParam,
@@ -350,15 +345,17 @@ export default class Provider {
                     );
                 } else {
                     const importPath = mappedSymbol.import.from;
-                    const feh = this.styl.resolvePath(undefined, importPath);
+                    const resolvedPath = this.stylable.resolvePath(undefined, importPath);
+                    const fileExists = fs.fileExistsSync(resolvedPath);
 
-                    return this.getSignatureForJsModifier(
-                        mixin,
-                        activeParam,
-                        // fs.get(this.resolveImport(mappedSymbol.import.from, this.styl, meta)!.source).getText(),
-                        fs.get(feh).getText(),
-                        paramInfo
-                    );
+                    return fileExists
+                        ? this.getSignatureForJsModifier(
+                              mixin,
+                              activeParam,
+                              fs.readFileSync(resolvedPath, 'utf8'),
+                              paramInfo
+                          )
+                        : null;
                 }
             }
         }
@@ -408,7 +405,8 @@ export default class Provider {
         }
         const ptypes = sig.parameters.map(p => {
             return (
-                p.name + ':' +
+                p.name +
+                ':' +
                 ((p.valueDeclaration as ts.ParameterDeclaration).type as ts.TypeReferenceNode).getFullText()
             );
         });
@@ -416,7 +414,9 @@ export default class Provider {
         const rtype = sig.declaration.type ? (sig.declaration.type as ts.TypeReferenceNode).getText() : '';
 
         const parameters: ParameterInformation[] = sig!.parameters.map(pt => {
-            const label = pt.name + ':' +
+            const label =
+                pt.name +
+                ':' +
                 ((pt.valueDeclaration as ts.ParameterDeclaration).type as ts.TypeReferenceNode).getFullText();
             return paramInfo.create(label);
         });
@@ -584,7 +584,7 @@ export default class Provider {
         if (word) {
             const transformer = new StylableTransformer({
                 diagnostics: new Diagnostics(),
-                fileProcessor: this.styl.fileProcessor,
+                fileProcessor: this.stylable.fileProcessor,
                 requireModule: () => {
                     throw new Error('Not implemented, why are we here');
                 }
@@ -614,10 +614,7 @@ export default class Provider {
         return null;
     }
 
-    private getSignatureForStateWithParamDefinition(
-        pos: ProviderPosition,
-        line: string
-    ): SignatureHelp | null {
+    private getSignatureForStateWithParamDefinition(pos: ProviderPosition, line: string): SignatureHelp | null {
         const res = resolveStateTypeOrValidator(pos, line);
 
         if (typeof res === 'string') {
@@ -636,11 +633,11 @@ export default class Provider {
         fakeRules: postcss.Rule[],
         fullLineText: string,
         cursorPosInLine: number,
-        fs: ExtendedFSReadSync
+        fs: IFileSystem
     ): ProviderOptions {
         const transformer = new StylableTransformer({
             diagnostics: new Diagnostics(),
-            fileProcessor: this.styl.fileProcessor,
+            fileProcessor: this.stylable.fileProcessor,
             requireModule: () => {
                 throw new Error('Not implemented, why are we here');
             }
@@ -653,18 +650,18 @@ export default class Provider {
             : undefined;
         const parentSelector: SRule | null =
             parentAst &&
-                isSelector(parentAst) &&
-                fakeRules.findIndex(f => {
-                    return f.selector === parentAst.selector;
-                }) === -1
-                ? parentAst as SRule
+            isSelector(parentAst) &&
+            fakeRules.findIndex(f => {
+                return f.selector === parentAst.selector;
+            }) === -1
+                ? (parentAst as SRule)
                 : astAtCursor &&
-                    isSelector(astAtCursor) &&
-                    fakeRules.findIndex(f => {
-                        return f.selector === astAtCursor.selector;
-                    }) === -1
-                    ? astAtCursor as SRule
-                    : null;
+                  isSelector(astAtCursor) &&
+                  fakeRules.findIndex(f => {
+                      return f.selector === astAtCursor.selector;
+                  }) === -1
+                ? (astAtCursor as SRule)
+                : null;
 
         const { lineChunkAtCursor, fixedCharIndex } = getChunkAtCursor(fullLineText, cursorPosInLine);
         const ps = parseSelector(lineChunkAtCursor, fixedCharIndex);
@@ -697,7 +694,7 @@ export default class Provider {
         return {
             meta,
             fs,
-            styl: this.styl,
+            stylable: this.stylable,
             src,
             tsLangService: this.tsLangService,
             resolvedElements,
@@ -739,20 +736,20 @@ function findRefs(
     defMeta: StylableMeta,
     scannedMeta: StylableMeta,
     callingMeta: StylableMeta,
-    styl: Stylable,
+    stylable: Stylable,
     pos?: Position
 ): Location[] {
     if (!word) {
         return [];
     }
     const refs: Location[] = [];
-    const trans = styl.createTransformer();
+    const trans = stylable.createTransformer();
 
     if (word.startsWith(':global(')) {
         scannedMeta.rawAst.walkRules(rule => {
             if (rule.selector.includes(word) && rule.source && rule.source.start) {
                 refs.push({
-                    uri: toVscodePath(scannedMeta.source),
+                    uri: URI.file(scannedMeta.source).toString(),
                     range: {
                         start: {
                             line: rule.source.start.line - 1,
@@ -784,7 +781,7 @@ function findRefs(
                 while ((match = valueRegex.exec(rule.selector)) !== null) {
                     const index = match[0].startsWith('.') ? match.index : match.index - 1;
                     refs.push({
-                        uri: toVscodePath(scannedMeta.source),
+                        uri: URI.file(scannedMeta.source).toString(),
                         range: {
                             start: {
                                 line: rule.source.start!.line - 1,
@@ -833,7 +830,7 @@ function findRefs(
                 while ((match = valueRegex.exec(rule.selector)) !== null) {
                     const index = match[0].startsWith('.') ? match.index : match.index - 1;
                     refs.push({
-                        uri: toVscodePath(scannedMeta.source),
+                        uri: URI.file(scannedMeta.source).toString(),
                         range: {
                             start: {
                                 line: rule.source.start!.line - 1,
@@ -860,7 +857,7 @@ function findRefs(
             const match = reg.exec(decl.value);
             if (match) {
                 refs.push({
-                    uri: toVscodePath(scannedMeta.source),
+                    uri: URI.file(scannedMeta.source).toString(),
                     range: {
                         start: {
                             line: decl.source.start!.line - 1,
@@ -916,7 +913,7 @@ function findRefs(
             const match = reg.exec(decl.value);
             if (match) {
                 refs.push({
-                    uri: toVscodePath(scannedMeta.source),
+                    uri: URI.file(scannedMeta.source).toString(),
                     range: {
                         start: {
                             line: decl.source.start!.line - 1,
@@ -952,17 +949,17 @@ function findRefs(
             let match;
             while ((match = valueRegex.exec(line)) !== null) {
                 refs.push({
-                    uri: toVscodePath(scannedMeta.source),
+                    uri: URI.file(scannedMeta.source).toString(),
                     range: {
                         start: {
                             line: decl.source!.start!.line - 1 + index,
                             character: index
                                 ? match.index
                                 : decl.source!.start!.column +
-                                valueMapping.mixin.length +
-                                match.index +
-                                (decl.raws.between ? decl.raws.between.length : 0) -
-                                1
+                                  valueMapping.mixin.length +
+                                  match.index +
+                                  (decl.raws.between ? decl.raws.between.length : 0) -
+                                  1
                         },
                         end: {
                             line: decl.source!.start!.line - 1 + index,
@@ -971,10 +968,10 @@ function findRefs(
                                 (index
                                     ? match.index
                                     : decl.source!.start!.column +
-                                    valueMapping.mixin.length +
-                                    match.index +
-                                    (decl.raws.between ? decl.raws.between.length : 0) -
-                                    1)
+                                      valueMapping.mixin.length +
+                                      match.index +
+                                      (decl.raws.between ? decl.raws.between.length : 0) -
+                                      1)
                         }
                     }
                 });
@@ -985,7 +982,7 @@ function findRefs(
         // Variable definition
         if (decl.parent.type === 'rule' && decl.parent.selector === ':vars' && !!decl.source && !!decl.source.start) {
             refs.push({
-                uri: toVscodePath(scannedMeta.source),
+                uri: URI.file(scannedMeta.source).toString(),
                 range: {
                     start: {
                         line: decl.source.start!.line - 1,
@@ -1006,7 +1003,7 @@ function findRefs(
             const match = usageRegex.exec(decl.value);
             if (match) {
                 refs.push({
-                    uri: toVscodePath(scannedMeta.source),
+                    uri: URI.file(scannedMeta.source).toString(),
                     range: {
                         start: {
                             line: decl.source.start!.line - 1,
@@ -1041,18 +1038,18 @@ function newFindRefs(
     word: string,
     defMeta: StylableMeta,
     callingMeta: StylableMeta,
-    files: File[],
-    styl: Stylable,
+    stylesheetsPath: string[], // TODO: use docs instead?
+    stylable: Stylable,
     pos?: Position
 ): Location[] {
     let refs: Location[] = [];
     if (word.startsWith(':global(')) {
         // Global selector strings are special
-        files.forEach(file => {
-            const scannedMeta = styl.process(file.fullPath);
+        stylesheetsPath.forEach(stylesheetPath => {
+            const scannedMeta = stylable.process(stylesheetPath);
             scannedMeta.rawAst.walkRules(rule => {
                 if (rule.selector.includes(word)) {
-                    refs = refs.concat(findRefs(word, defMeta, scannedMeta, callingMeta, styl));
+                    refs = refs.concat(findRefs(word, defMeta, scannedMeta, callingMeta, stylable));
                 }
             });
         });
@@ -1062,8 +1059,8 @@ function newFindRefs(
     }
     if (!defMeta.mappedSymbols[word] && word.charAt(0) !== word.charAt(0).toLowerCase()) {
         // Default import
-        files.forEach(file => {
-            const scannedMeta = styl.process(file.fullPath);
+        stylesheetsPath.forEach(stylesheetPath => {
+            const scannedMeta = stylable.process(stylesheetPath);
             let tmp: string = '';
             if (
                 Object.keys(scannedMeta.mappedSymbols).some(k => {
@@ -1077,13 +1074,13 @@ function newFindRefs(
                     );
                 })
             ) {
-                refs = refs.concat(findRefs(tmp, defMeta, scannedMeta, callingMeta, styl));
+                refs = refs.concat(findRefs(tmp, defMeta, scannedMeta, callingMeta, stylable));
             }
         });
     } else if (defMeta.mappedSymbols[word] && defMeta.mappedSymbols[word]._kind === 'var') {
         // Variable
-        files.forEach(file => {
-            const scannedMeta = styl.process(file.fullPath);
+        stylesheetsPath.forEach(stylesheetPath => {
+            const scannedMeta = stylable.process(stylesheetPath);
             if (
                 !scannedMeta.mappedSymbols[word] ||
                 (scannedMeta.mappedSymbols[word]._kind !== 'var' && scannedMeta.mappedSymbols[word]._kind !== 'import')
@@ -1092,15 +1089,15 @@ function newFindRefs(
             }
             if (scannedMeta.source === defMeta.source) {
                 // We're in the defining file
-                refs = refs.concat(findRefs(word.replace('.', ''), defMeta, scannedMeta, callingMeta, styl));
+                refs = refs.concat(findRefs(word.replace('.', ''), defMeta, scannedMeta, callingMeta, stylable));
             } else {
                 // We're in a using file
-                const newSymb = styl.resolver.deepResolve(scannedMeta.mappedSymbols[word]);
+                const newSymb = stylable.resolver.deepResolve(scannedMeta.mappedSymbols[word]);
                 if (!newSymb || !newSymb.meta) {
                     return;
                 }
                 if (newSymb.meta.source === defMeta.source) {
-                    refs = refs.concat(findRefs(word.replace('.', ''), defMeta, scannedMeta, callingMeta, styl));
+                    refs = refs.concat(findRefs(word.replace('.', ''), defMeta, scannedMeta, callingMeta, stylable));
                 }
             }
         });
@@ -1109,17 +1106,19 @@ function newFindRefs(
         (defMeta.mappedSymbols[word]._kind === 'class' || defMeta.mappedSymbols[word]._kind === 'import')
     ) {
         // Elements
-        const trans = styl.createTransformer();
+        const trans = stylable.createTransformer();
         const valueRegex = new RegExp('(\\.?' + word + ')\\b', 'g');
-        files.forEach(file => {
-            const scannedMeta = styl.process(file.fullPath);
+        stylesheetsPath.forEach(stylesheetPath => {
+            const scannedMeta = stylable.process(stylesheetPath);
             let done = false;
             scannedMeta.rawAst.walkRules(r => {
                 if (valueRegex.test(r.selector) && !done) {
                     const resolved = trans.resolveSelectorElements(scannedMeta, r.selector);
                     const resolvedInner = resolved[0].find(r => r.name === word);
                     if (resolvedInner && resolvedInner.resolved.some(r => r.meta.source === defMeta.source)) {
-                        refs = refs.concat(findRefs(word.replace('.', ''), defMeta, scannedMeta, callingMeta, styl));
+                        refs = refs.concat(
+                            findRefs(word.replace('.', ''), defMeta, scannedMeta, callingMeta, stylable)
+                        );
                         done = true;
                     }
                 }
@@ -1138,7 +1137,9 @@ function newFindRefs(
                             );
                         })
                     ) {
-                        refs = refs.concat(findRefs(word.replace('.', ''), defMeta, scannedMeta, callingMeta, styl));
+                        refs = refs.concat(
+                            findRefs(word.replace('.', ''), defMeta, scannedMeta, callingMeta, stylable)
+                        );
                         done = true;
                     }
                 }
@@ -1163,7 +1164,7 @@ function newFindRefs(
                             ? (t.focusChunk as SelectorQuery[])[t.index].text
                             : t.focusChunk.text;
                         let name = findLast(arr, (str: string) => !str.startsWith(':') || str.startsWith('::'));
-                        const trans = styl.createTransformer();
+                        const trans = stylable.createTransformer();
                         const pse = trans.resolveSelectorElements(callingMeta, selec);
                         name = name!.replace('.', '').replace(/:/g, '');
                         if (
@@ -1181,29 +1182,29 @@ function newFindRefs(
             );
         })
     ) {
-        files.forEach(file => {
-            const scannedMeta = styl.process(file.fullPath);
+        stylesheetsPath.forEach(stylesheetPath => {
+            const scannedMeta = stylable.process(stylesheetPath);
             let done = false;
             if (defMeta.source === scannedMeta.source) {
-                refs = refs.concat(findRefs(word.replace('.', ''), defMeta, scannedMeta, callingMeta, styl, pos));
+                refs = refs.concat(findRefs(word.replace('.', ''), defMeta, scannedMeta, callingMeta, stylable, pos));
                 return;
             }
             if (!pos) {
                 return;
             }
-            const trans = styl.createTransformer();
+            const trans = stylable.createTransformer();
             scannedMeta.rawAst.walkRules(r => {
                 if (r.selector.includes(':' + word) && !done) {
                     // Won't work if word appears elsewhere in string
                     const parsed = parseSelector(r.selector, r.selector.indexOf(word));
                     const elem =
                         (parsed.selector[parsed.target.index] as SelectorChunk).type === '*' ||
-                            (parsed.selector[parsed.target.index] as SelectorChunk).type.charAt(0) !==
+                        (parsed.selector[parsed.target.index] as SelectorChunk).type.charAt(0) !==
                             (parsed.selector[parsed.target.index] as SelectorChunk).type.charAt(0).toLowerCase()
                             ? findLast(
-                                (parsed.selector[parsed.target.index] as SelectorChunk).text,
-                                (str: string) => !str.startsWith(':') || str.startsWith('::')
-                            )!.replace('.', '')
+                                  (parsed.selector[parsed.target.index] as SelectorChunk).text,
+                                  (str: string) => !str.startsWith(':') || str.startsWith('::')
+                              )!.replace('.', '')
                             : (parsed.selector[parsed.target.index] as SelectorInternalChunk).name;
                     const reso = trans.resolveSelectorElements(scannedMeta, r.selector);
                     const symb = reso[0].find(o => o.name === elem);
@@ -1217,7 +1218,7 @@ function newFindRefs(
                         })
                     ) {
                         refs = refs.concat(
-                            findRefs(word.replace('.', ''), defMeta, scannedMeta, callingMeta, styl, pos)
+                            findRefs(word.replace('.', ''), defMeta, scannedMeta, callingMeta, stylable, pos)
                         );
                         done = true;
                     }
@@ -1228,47 +1229,48 @@ function newFindRefs(
     return refs;
 }
 
-export function getRefs(params: ReferenceParams, fs: ExtendedFSReadSync, styl: Stylable): Location[] {
-    let refs: Location[] = [];
-    const callingMeta = styl.process(fromVscodePath(params.textDocument.uri));
-    const symb = getDefSymbol(
-        fs.loadTextFileSync(params.textDocument.uri),
-        params.position,
-        params.textDocument.uri,
-        styl
-    );
-    if (!symb.meta) {
-        return refs;
-    }
-
-    const files: File[] = fs.loadDirectoryTreeSync(styl.projectRoot).children as File[];
-    const cont = files
-        .filter(f => f.name.endsWith('.st.css'))
-        .map(f => {
-            f.content = fs.loadTextFileSync(f.fullPath);
-            return f;
-        });
-
-    refs = newFindRefs(symb.word, symb.meta, callingMeta, cont, styl, params.position);
-    return refs;
-}
-
-export function getRenameRefs(params: ReferenceParams, fs: ExtendedFSReadSync, styl: Stylable): Location[] {
-    const refs = getRefs(params, fs, styl);
+export function getRenameRefs(
+    filePath: string,
+    pos: ProviderPosition,
+    fs: IFileSystem,
+    stylable: Stylable
+): Location[] {
+    const refs = getRefs(filePath, pos, fs, stylable);
     const newRefs: Location[] = [];
     refs.forEach(ref => {
-        if (!ref.uri.includes('node_modules') && fromVscodePath(ref.uri).startsWith(styl.projectRoot)) {
+        const FISH = URI.parse(ref.uri).path.startsWith(stylable.projectRoot);
+        const isRefInProject = ref.uri.startsWith(stylable.projectRoot);
+
+        if (!ref.uri.includes('node_modules') && (FISH || isRefInProject)) {
             newRefs.push(ref);
         }
     });
     return newRefs;
 }
 
+export function getRefs(filePath: string, position: ProviderPosition, fs: IFileSystem, stylable: Stylable): Location[] {
+    const callingMeta = stylable.process(filePath);
+
+    const symb = getDefSymbol(fs.readFileSync(filePath, 'utf8'), position, filePath, stylable);
+
+    if (!symb.meta) {
+        return [];
+    }
+
+    const stylesheets: string[] = fs.findFilesSync(stylable.projectRoot, {
+        filterFile: (fileDesc: IFileSystemDescriptor) => {
+            return fileDesc.name.endsWith('.st.css');
+        }
+    }).map(stylesheetPath => URI.file(stylesheetPath).fsPath);
+
+    return newFindRefs(symb.word, symb.meta, callingMeta, stylesheets, stylable, position);
+}
+
 export function createMeta(src: string, path: string) {
     let meta: StylableMeta;
     const fakes: postcss.Rule[] = [];
     try {
-        const ast: postcss.Root = safeParse(src, { from: fromVscodePath(path) });
+        const ast: postcss.Root = safeParse(src, { from: URI.file(path).fsPath });
         if (ast.nodes) {
             for (const node of ast.nodes) {
                 if (node.type === 'decl') {
@@ -1331,7 +1333,7 @@ export function fixAndProcess(src: string, position: ProviderPosition, filePath:
 }
 
 export class ProviderLocation {
-    constructor(public uri: string, public range: ProviderRange) { }
+    constructor(public uri: string, public range: ProviderRange) {}
 }
 
 export function extractTsSignature(
@@ -1522,7 +1524,7 @@ function findNode(nodes: any[], index: number): any {
         );
 }
 
-export function getDefSymbol(src: string, position: ProviderPosition, filePath: string, styl: Stylable) {
+export function getDefSymbol(src: string, position: ProviderPosition, filePath: string, stylable: Stylable) {
     const res = fixAndProcess(src, position, filePath);
     let meta = res.processed.meta;
     if (!meta) {
@@ -1558,12 +1560,12 @@ export function getDefSymbol(src: string, position: ProviderPosition, filePath: 
         // We're in an -st directive
         let imp;
         if (meta.mappedSymbols[word]._kind === 'import') {
-            imp = styl.resolver.resolveImport(meta.mappedSymbols[word] as ImportSymbol);
+            imp = stylable.resolver.resolveImport(meta.mappedSymbols[word] as ImportSymbol);
         } else if (meta.mappedSymbols[word]._kind === 'element' && (meta.mappedSymbols[word] as ElementSymbol).alias) {
-            imp = styl.resolver.resolveImport((meta.mappedSymbols[word] as ElementSymbol).alias as ImportSymbol);
+            imp = stylable.resolver.resolveImport((meta.mappedSymbols[word] as ElementSymbol).alias as ImportSymbol);
         } else if (meta.mappedSymbols[word]._kind === 'class') {
             if (!!(meta.mappedSymbols[word] as ClassSymbol).alias) {
-                meta = (styl.resolver.resolveImport((meta.mappedSymbols[word] as ClassSymbol).alias!) as CSSResolve)
+                meta = (stylable.resolver.resolveImport((meta.mappedSymbols[word] as ClassSymbol).alias!) as CSSResolve)
                     .meta;
             }
             return { word, meta };
@@ -1571,7 +1573,9 @@ export function getDefSymbol(src: string, position: ProviderPosition, filePath: 
         if (imp) {
             if (imp._kind === 'js') {
                 return { word, meta };
-            } else { return { word, meta: imp.meta }; }
+            } else {
+                return { word, meta: imp.meta };
+            }
         } else {
             return { word: '', meta: null };
         }
@@ -1586,7 +1590,7 @@ export function getDefSymbol(src: string, position: ProviderPosition, filePath: 
             // deepResolve doesn't do local symbols
             return { word, meta };
         }
-        const resolvedVar = styl.resolver.deepResolve(meta.mappedSymbols[word]);
+        const resolvedVar = stylable.resolver.deepResolve(meta.mappedSymbols[word]);
         if (resolvedVar) {
             return { word, meta: resolvedVar.meta };
         } else {
@@ -1596,7 +1600,7 @@ export function getDefSymbol(src: string, position: ProviderPosition, filePath: 
 
     const transformer = new StylableTransformer({
         diagnostics: new Diagnostics(),
-        fileProcessor: styl.fileProcessor,
+        fileProcessor: stylable.fileProcessor,
         requireModule: () => {
             throw new Error('Not implemented, why are we here');
         }

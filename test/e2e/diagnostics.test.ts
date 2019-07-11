@@ -1,7 +1,7 @@
+import fs from '@file-services/node';
 import vscode from 'vscode';
 import path from 'path';
 import { expect } from 'chai';
-import pkgDir from 'pkg-dir';
 
 // const fileUriToNativePath = (uri: string) => isWindows ? uri.slice(8).replace('%3A', ':') : uri.slice(7);
 
@@ -27,9 +27,9 @@ function assertDiagnosticExist(client: any, casePath: string, result: object) {
 suite('test diagnostics', function() {
     this.timeout(60000);
 
-    let rootDir: string | undefined;
+    let rootDir: string | null;
     suiteSetup(async () => {
-        rootDir = await pkgDir(__dirname);
+        rootDir = fs.dirname(fs.findClosestFileSync(__dirname, 'package.json')!);
     });
 
     test('should support single file error', async () => {

@@ -3,15 +3,18 @@ import { expect } from 'chai';
 
 import { createRange, ProviderPosition } from '../../src/lib/completion-providers';
 import * as asserters from '../../test-kit/asserters';
-import { CASES_PATH } from '../../test-kit/asserters';
+import { CASES_PATH } from '../../test-kit/stylable-fixtures-lsp';
+import { URI } from 'vscode-uri';
 
 describe('Definitions', () => {
+    const getCasePath = (innerPath: string) => URI.file(path.join(CASES_PATH, innerPath)).fsPath;
+
     describe('Local elements', () => {
         it('should return first definition of class in same file', async () => {
             const defs = await asserters.getDefinition('definitions/local-class.st.css');
             expect(defs.length).to.equal(1);
             const def = defs[0];
-            expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/local-class.st.css'));
+            expect(def.uri).to.equal(getCasePath('definitions/local-class.st.css'));
             expect(def.range).to.eql(createRange(0, 1, 0, 6));
         });
 
@@ -19,7 +22,7 @@ describe('Definitions', () => {
             const defs = await asserters.getDefinition('definitions/local-var.st.css');
             expect(defs.length).to.equal(1);
             const def = defs[0];
-            expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/local-var.st.css'));
+            expect(def.uri).to.equal(getCasePath('definitions/local-var.st.css'));
             expect(def.range).to.eql(createRange(5, 4, 5, 7));
         });
 
@@ -27,7 +30,7 @@ describe('Definitions', () => {
             const defs = await asserters.getDefinition('definitions/local-custom-selector.st.css');
             expect(defs.length).to.equal(1);
             const def = defs[0];
-            expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/local-custom-selector.st.css'));
+            expect(def.uri).to.equal(getCasePath('definitions/local-custom-selector.st.css'));
             expect(def.range).to.eql(createRange(4, 17, 4, 24));
         });
 
@@ -35,7 +38,7 @@ describe('Definitions', () => {
             const defs = await asserters.getDefinition('definitions/local-class-complex.st.css');
             expect(defs.length).to.equal(1);
             const def = defs[0];
-            expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/local-class-complex.st.css'));
+            expect(def.uri).to.equal(getCasePath('definitions/local-class-complex.st.css'));
             expect(def.range).to.eql(createRange(0, 1, 0, 6));
         });
     });
@@ -46,7 +49,7 @@ describe('Definitions', () => {
                 const defs = await asserters.getDefinition('definitions/imported-class-named.st.css');
                 expect(defs.length).to.equal(1);
                 const def = defs[0];
-                expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
+                expect(def.uri).to.equal(getCasePath('definitions/import.st.css'));
                 expect(def.range).to.eql(createRange(4, 1, 4, 5));
             });
 
@@ -54,7 +57,7 @@ describe('Definitions', () => {
                 const defs = await asserters.getDefinition('definitions/imported-class-extend.st.css');
                 expect(defs.length).to.equal(1);
                 const def = defs[0];
-                expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
+                expect(def.uri).to.equal(getCasePath('definitions/import.st.css'));
                 expect(def.range).to.eql(createRange(4, 1, 4, 5));
             });
 
@@ -62,7 +65,7 @@ describe('Definitions', () => {
                 const defs = await asserters.getDefinition('definitions/imported-class-pseudo-element.st.css');
                 expect(defs.length).to.equal(1);
                 const def = defs[0];
-                expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
+                expect(def.uri).to.equal(getCasePath('definitions/import.st.css'));
                 expect(def.range).to.eql(createRange(4, 1, 4, 5));
             });
 
@@ -71,7 +74,7 @@ describe('Definitions', () => {
                 expect(defs.length).to.equal(1);
                 const def = defs[0];
                 expect(def.uri).to.equal(
-                    path.join(CASES_PATH, '../node_modules/fake-stylable-package/stylesheet.st.css')
+                    getCasePath('../node_modules/fake-stylable-package/stylesheet.st.css')
                 );
                 expect(def.range).to.eql(createRange(9, 1, 9, 6));
             });
@@ -82,7 +85,7 @@ describe('Definitions', () => {
                 const defs = await asserters.getDefinition('definitions/imported-var-named.st.css');
                 expect(defs.length).to.equal(1);
                 const def = defs[0];
-                expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
+                expect(def.uri).to.equal(getCasePath('definitions/import.st.css'));
                 expect(def.range).to.eql(createRange(14, 4, 14, 8));
             });
 
@@ -91,7 +94,7 @@ describe('Definitions', () => {
                 expect(defs.length).to.equal(1);
                 const def = defs[0];
                 expect(def.uri).to.equal(
-                    path.join(CASES_PATH, '../node_modules/fake-stylable-package/stylesheet.st.css')
+                    getCasePath('../node_modules/fake-stylable-package/stylesheet.st.css')
                 );
                 expect(def.range).to.eql(createRange(1, 4, 1, 10));
             });
@@ -100,7 +103,7 @@ describe('Definitions', () => {
                 const defs = await asserters.getDefinition('definitions/imported-var-value.st.css');
                 expect(defs.length).to.equal(1);
                 const def = defs[0];
-                expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/import.st.css'));
+                expect(def.uri).to.equal(getCasePath('definitions/import.st.css'));
                 expect(def.range).to.eql(createRange(14, 4, 14, 8));
             });
         });
@@ -110,7 +113,7 @@ describe('Definitions', () => {
                 const defs = await asserters.getDefinition('definitions/imported-mixins-named-js.st.css');
                 expect(defs.length).to.equal(1);
                 const def = defs[0];
-                expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/js-mixins.js'));
+                expect(def.uri).to.equal(getCasePath('mixins/js-mixins.js'));
                 expect(def.range).to.eql(createRange(8, 8, 8, 14));
             });
 
@@ -118,7 +121,7 @@ describe('Definitions', () => {
                 const defs = await asserters.getDefinition('definitions/3rd-party-mixins-named-js.st.css');
                 expect(defs.length).to.equal(1);
                 const def = defs[0];
-                expect(def.uri).to.equal(path.join(CASES_PATH, '../node_modules/fake-stylable-package/js-mixins.js'));
+                expect(def.uri).to.equal(getCasePath('../node_modules/fake-stylable-package/js-mixins.js'));
                 expect(def.range).to.eql(createRange(8, 8, 8, 14));
             });
 
@@ -127,7 +130,7 @@ describe('Definitions', () => {
                 const defs = await asserters.getDefinition('definitions/imported-mixins-named-ts.st.css');
                 expect(defs.length).to.equal(1);
                 const def = defs[0];
-                expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/my-mixins.ts'));
+                expect(def.uri).to.equal(getCasePath('mixins/my-mixins.ts'));
                 expect(def.range).to.eql(createRange(2, 16, 2, 29));
             });
 
@@ -135,7 +138,7 @@ describe('Definitions', () => {
                 const defs = await asserters.getDefinition('definitions/imported-mixins-value-js.st.css');
                 expect(defs.length).to.equal(1);
                 const def = defs[0];
-                expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/js-mixins.js'));
+                expect(def.uri).to.equal(getCasePath('mixins/js-mixins.js'));
                 expect(def.range).to.eql(createRange(33, 8, 33, 18));
             });
 
@@ -143,7 +146,7 @@ describe('Definitions', () => {
                 const defs = await asserters.getDefinition('definitions/imported-mixins-value-ts.st.css');
                 expect(defs.length).to.equal(1);
                 const def = defs[0];
-                expect(def.uri).to.equal(path.join(CASES_PATH, 'mixins/my-mixins.ts'));
+                expect(def.uri).to.equal(getCasePath('mixins/my-mixins.ts'));
                 expect(def.range).to.eql(createRange(19, 16, 19, 34));
             });
         });
@@ -169,7 +172,7 @@ describe('Definitions', () => {
                         const defs = await asserters.getDefFromLoc(cl);
                         expect(defs.length).to.equal(1);
                         const def = defs[0];
-                        expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/states-import.st.css'));
+                        expect(def.uri).to.equal(getCasePath('definitions/states-import.st.css'));
                         expect(def.range).to.eql(createRange(0, 1, 0, 5));
                     }
                 );
@@ -192,7 +195,7 @@ describe('Definitions', () => {
                         const defs = await asserters.getDefFromLoc(cl);
                         expect(defs.length).to.equal(1);
                         const def = defs[0];
-                        expect(def.uri).to.equal(path.join(CASES_PATH, 'definitions/states-import.st.css'));
+                        expect(def.uri).to.equal(getCasePath('definitions/states-import.st.css'));
                         expect(def.range).to.eql(createRange(4, 1, 4, 4));
                     }
                 );

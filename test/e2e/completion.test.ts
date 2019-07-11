@@ -1,15 +1,15 @@
+import fs from '@file-services/node';
 import vscode from 'vscode';
 import assert from 'assert';
 import path from 'path';
-import pkgDir from 'pkg-dir';
 
 suite('Extension Tests', function() {
     this.timeout(60000);
 
-    let rootDir: string | undefined;
+    let rootDir: string | null;
 
     suiteSetup(async () => {
-        rootDir = await pkgDir(__dirname);
+        rootDir = fs.dirname(fs.findClosestFileSync(__dirname, 'package.json')!);
     });
 
     async function testCompletion(fileToTest: string, testCases: Array<[vscode.Position, string[]]>) {
@@ -23,19 +23,21 @@ suite('Extension Tests', function() {
             await vscode.window.showTextDocument(testDoc);
             await ext.activate();
 
-            return Promise.all(testCases.map(async ([position, expected]) => {
-                const list = await vscode.commands.executeCommand<vscode.CompletionList>(
-                    'vscode.executeCompletionItemProvider',
-                    testDoc.uri,
-                    position
-                );
-                const labels = list!.items.map(x => x.label);
-                for (const entry of expected) {
-                    if (!~labels.indexOf(entry)) {
-                        assert.fail('', entry, 'missing expected item in completion list', '');
+            return Promise.all(
+                testCases.map(async ([position, expected]) => {
+                    const list = await vscode.commands.executeCommand<vscode.CompletionList>(
+                        'vscode.executeCompletionItemProvider',
+                        testDoc.uri,
+                        position
+                    );
+                    const labels = list!.items.map(x => x.label);
+                    for (const entry of expected) {
+                        if (!~labels.indexOf(entry)) {
+                            assert.fail('', entry, 'missing expected item in completion list', '');
+                        }
                     }
-                }
-            }));
+                })
+            );
         } else {
             throw new Error('Where is my extension?!!');
         }
