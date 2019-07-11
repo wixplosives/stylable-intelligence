@@ -15,7 +15,7 @@ function createDiagnostics(files: { [filePath: string]: string }, path: string) 
     });
 
     const file = stylableLSP.getFs().readFileSync(path, 'utf8');
-    return file ? createDiagnosis(file, URI.file(path).toString(), stylableLSP.getStylable()) : null;
+    return file ? createDiagnosis(file, URI.file(path).toString(), stylableLSP.getStylable(), fs) : null;
 }
 
 describe('diagnostics', () => {

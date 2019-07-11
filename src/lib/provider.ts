@@ -1261,12 +1261,11 @@ export function getRefs(filePath: string, position: ProviderPosition, fs: IFileS
         filterFile: (fileDesc: IFileSystemDescriptor) => {
             return fileDesc.name.endsWith('.st.css');
         }
-    });
+    }).map(stylesheetPath => URI.file(stylesheetPath).fsPath);
 
     return newFindRefs(symb.word, symb.meta, callingMeta, stylesheets, stylable, position);
 }
 
-// TODO: LOOK AT ME
 export function createMeta(src: string, path: string) {
     let meta: StylableMeta;
     const fakes: postcss.Rule[] = [];

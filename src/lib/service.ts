@@ -91,8 +91,9 @@ export class StylableLanguageService {
         return this.provider.provideCompletionItemsFromSrc(src, pos, fileName, this.fs);
     }
 
-    public getDefinitionLocation(src: string, position: ProviderPosition, filePath: string) {
-        return this.provider.getDefinitionLocation(src, position, filePath, this.fs);
+    public async getDefinitionLocation(src: string, position: ProviderPosition, filePath: string) {
+        const defs = await this.provider.getDefinitionLocation(src, position, URI.file(filePath).fsPath, this.fs);
+        return defs.map(loc => Location.create(URI.file(loc.uri).fsPath, loc.range));
     }
 
     public getSignatureHelp(src: string, pos: Position, filePath: string, paramInfo: typeof ParameterInformation) {
@@ -114,9 +115,10 @@ export class StylableLanguageService {
     public diagnose(connection: IConnection) {
         const diagnoseConfig = {
             connection,
-            requireModule: this.requireModule,
             cssService: this.cssService,
             docsDispatcher: this.docsDispatcher,
+            fileSystem: this.fs,
+            requireModule: this.requireModule,
             stylable: this.stylable
         };
 
@@ -213,7 +215,7 @@ export class StylableLanguageService {
         }
 
         const refs = this.getRefs(u.fsPath, params.position);
-
+        
         if (refs.length) {
             return dedupeRefs(refs);
         } else {
@@ -293,11 +295,12 @@ export class StylableLanguageService {
 interface DiagConfig {
     connection: IConnection;
     docsDispatcher: TextDocuments;
+    fileSystem: IFileSystem;
     stylable: Stylable;
     cssService: CssService;
 }
 
-async function diagnose({ connection, docsDispatcher, stylable, cssService }: DiagConfig) {
+async function diagnose({ connection, docsDispatcher, fileSystem, stylable, cssService }: DiagConfig) {
     let res: any;
     let ignore = false;
     try {
@@ -325,7 +328,7 @@ async function diagnose({ connection, docsDispatcher, stylable, cssService }: Di
                 ) {
                     diagnostics = [];
                 } else {
-                    diagnostics = createDiagnosis(doc.getText(), doc.uri, stylable)
+                    diagnostics = createDiagnosis(doc.getText(), doc.uri, stylable, fileSystem)
                         .map(diag => {
                             diag.source = 'stylable';
                             return diag;
