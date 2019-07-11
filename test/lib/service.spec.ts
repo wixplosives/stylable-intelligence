@@ -21,7 +21,7 @@ import { TestDocuments } from './test-documents';
 import { createConnection, IConnection, TextDocuments } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 
-describe('Service component test', () => {
+xdescribe('Service component test', () => {
     let testCon: TestConnection;
 
     beforeEach(() => {
@@ -260,7 +260,7 @@ describe('Service component test', () => {
     );
 
     describe('References', () => {
-        it(
+        xit(
             'References - local file',
             plan(3, async () => {
                 const fileText = trimLiteral`
