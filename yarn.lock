@@ -2162,10 +2162,10 @@ lodash.clonedeepwith@^4.5.0:
   resolved "https://registry.yarnpkg.com/lodash.clonedeepwith/-/lodash.clonedeepwith-4.5.0.tgz#6ee30573a03a1a60d670a62ef33c10cf1afdbdd4"
   integrity sha1-buMFc6A6GmDWcKYu8zwQzxr9vdQ=
 
-lodash@^4.15.0, lodash@^4.17.10, lodash@^4.17.11:
-  version "4.17.13"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.13.tgz#0bdc3a6adc873d2f4e0c4bac285df91b64fc7b93"
-  integrity sha512-vm3/XWXfWtRua0FkUyEHBZy8kCPjErNBT9fJx8Zvs+U6zjqPbTUOpkaoum3O5uiA8sm+yNMHXfYkTUHFoMxFNA==
+lodash@^4.15.0, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.14:
+  version "4.17.14"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.14.tgz#9ce487ae66c96254fe20b599f21b6816028078ba"
+  integrity sha512-mmKYbW3GLuJeX+iGP+Y7Gp1AiGHGbXHCOh/jZmrawMmsE7MS4znI3RL2FsjbqOyMayHInjOeykW7PEajUk1/xw==
 
 log-symbols@2.2.0:
   version "2.2.0"
@@ -3780,10 +3780,10 @@ vm-browserify@^1.0.1:
   resolved "https://registry.yarnpkg.com/vm-browserify/-/vm-browserify-1.1.0.tgz#bd76d6a23323e2ca8ffa12028dc04559c75f9019"
   integrity sha512-iq+S7vZJE60yejDYM0ek6zg308+UZsdtPExWP9VZoCFCz1zkJoXFnAX7aZfd/ZwrkidzdUZL0C/ryW+JwAiIGw==
 
-vsce@^1.64.0:
-  version "1.64.0"
-  resolved "https://registry.yarnpkg.com/vsce/-/vsce-1.64.0.tgz#38e3787523dc3d4b8797c84df0aed596f3288596"
-  integrity sha512-t3R7QTe2nAXQZs2kD+nA8GjdlX8pAQlnzxaNTG2976i5cyQ8r+ZsMNa/f9PDt7bhjcQM+u/fL+LkNuw+hwoy2A==
+vsce@^1.65.0:
+  version "1.65.0"
+  resolved "https://registry.yarnpkg.com/vsce/-/vsce-1.65.0.tgz#8aa4ef92fdd7f57495e074e54caea404ed29ccb2"
+  integrity sha512-1bGyeoaxjhNVz9fVAqUzGWc1e5CxsxZFpVSnS/anRVyZju0y4DJCPi685WkBsRYU/lfp3AI1smpatuSfb2Lllg==
   dependencies:
     azure-devops-node-api "^7.2.0"
     chalk "^2.4.2"
@@ -3871,7 +3871,7 @@ vscode-uri@^1.0.6:
   resolved "https://registry.yarnpkg.com/vscode-uri/-/vscode-uri-1.0.8.tgz#9769aaececae4026fb6e22359cb38946580ded59"
   integrity sha512-obtSWTlbJ+a+TFRYGaUumtVwb+InIUVI0Lu0VBUAPmj2cU5JutEXg3xUE0c2J5Tcy7h2DEKVJBFi+Y9ZSFzzPQ==
 
-vscode-uri@^2.0.2:
+vscode-uri@^2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/vscode-uri/-/vscode-uri-2.0.3.tgz#25e5f37f552fbee3cec7e5f80cef8469cefc6543"
   integrity sha512-4D3DI3F4uRy09WNtDGD93H9q034OHImxiIcSq664Hq1Y1AScehlP3qqZyTkX/RWxeu0MRMHGkrxYqm2qlDF/aw==
