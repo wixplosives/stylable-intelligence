@@ -1,8 +1,0 @@
-:import {
-    -st-from: "fake-stylable-package/stylesheet.st.css";
-    -st-named: color1;
-}
-
-.root {
-    color: value(|);
-}

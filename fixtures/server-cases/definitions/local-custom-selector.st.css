@@ -1,9 +1,0 @@
-.local {
-    color: red;
-}
-
-@custom-selector :--lulu div > span
-
-.gaga {
-    -st-extends: lul|u;
-}

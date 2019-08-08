@@ -1,8 +1,0 @@
-:import {
-    -st-from: "./import.st.css";
-    -st-named: color1, color2;
-}
-
-.local {
-    localVar: value(|)
-}

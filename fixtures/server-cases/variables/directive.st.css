@@ -1,8 +1,0 @@
-:vars {
-    color1: red;
-    color2: blue;
-}
-
-.local {
-    -st-extends: |
-}
