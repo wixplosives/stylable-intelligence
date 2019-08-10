@@ -14,7 +14,10 @@ cache:
 before_install:
   - curl -o- -L https://yarnpkg.com/install.sh | bash -s
   - export PATH=$HOME/.yarn/bin:$PATH
-  - if [ $TRAVIS_OS_NAME == "linux" ]; then
+
+install:
+  - |
+    if [ $TRAVIS_OS_NAME == "linux" ]; then
       export DISPLAY=':99.0'
       /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
     fi
