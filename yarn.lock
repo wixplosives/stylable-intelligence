@@ -18,66 +18,66 @@
     esutils "^2.0.2"
     js-tokens "^4.0.0"
 
-"@file-services/commonjs@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/commonjs/-/commonjs-2.0.0.tgz#68287ed3325db2f789fad5d7761d7d64419b55b8"
-  integrity sha512-05bzLciPCckCXHndKkIwa5Y4JAAhdNmXbe/4oe4xCFiIfjrvYlkTsIN1tqJ5lJ15xKWRZdDuCSBJatFmwCVScQ==
+"@file-services/commonjs@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/commonjs/-/commonjs-2.0.1.tgz#42a9a7b1c7cce252755e695ed3726aa4efdc9af4"
+  integrity sha512-ftBZAolnmomVE7K0777yas+TRP9KR5mpZftktNFVfm7w/aup2G3NRmFExZ2vMf5l1T+AC5O/4vIVYQJcDDxjBQ==
   dependencies:
-    "@file-services/resolve" "^2.0.0"
-    "@file-services/types" "^2.0.0"
+    "@file-services/resolve" "^2.0.1"
+    "@file-services/types" "^2.0.1"
 
-"@file-services/memory@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-2.0.0.tgz#ab0d4f88d633f5b8f1ec59a918d6dc0b440869d1"
-  integrity sha512-GtTd1/8UMKI7W2bsJGz3gN5C3bvzEKCJFSD1EM9yAiwKYZ4dCGGYu3/A0r6nsYqy+gHkpeM0rUrs4LCtv8o+xQ==
+"@file-services/memory@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-2.0.1.tgz#639143d8743af86c6e47860f7d3cd82d1886e29e"
+  integrity sha512-SRXl/sfBV5TggE+7IwMqogHVazdNsWLQV8URbuohVWWVP16HOUCL4Nd8NDuN4e/uAQ3ECCrDiUHlVRbpuVtleg==
   dependencies:
     "@file-services/posix-path" "^1.0.3"
-    "@file-services/types" "^2.0.0"
-    "@file-services/utils" "^2.0.0"
+    "@file-services/types" "^2.0.1"
+    "@file-services/utils" "^2.0.1"
 
-"@file-services/node@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/node/-/node-2.0.0.tgz#310110963f1fcf1fcfd3b67d42722c62593cf05b"
-  integrity sha512-5DqpmJDDkJD44TPH2PDiezNHIz9eoSIMlBFJEz1pEyQKu+JQkbwULgq6kQmetu/t3ErbKAs/UeEOomMZZOYooQ==
+"@file-services/node@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/node/-/node-2.0.1.tgz#8076e2bc9c7ff78cdf71cdaf5ae053213e627629"
+  integrity sha512-T28IVnHyV8Ni9BZQiaIK3JZole6Yz36yJOSKqcbvTA7/0fgTjZ9Fjd2gl2bVmGZ2pIdMcaWHjqDkdSClNuIQuw==
   dependencies:
-    "@file-services/types" "^2.0.0"
-    "@file-services/utils" "^2.0.0"
+    "@file-services/types" "^2.0.1"
+    "@file-services/utils" "^2.0.1"
 
 "@file-services/posix-path@^1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@file-services/posix-path/-/posix-path-1.0.3.tgz#d176afbbb6fe284f055217f06fd51d5a0475bbb8"
   integrity sha512-m6WuGAyIku8jVXr2DP0TTZnaBXCjAobk1YS+EciVRUQvbjxswPqpV7L3yqmYFfYuExHLNcoA+puKYL556nbW0Q==
 
-"@file-services/resolve@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-2.0.0.tgz#113474af870be55ff34cba3aae50da7925c3e4f6"
-  integrity sha512-1jXRLmfoRcX8ShfkSudZ9QUN09OArQ/QaCEMnsRpAc8YSz6VkAzQSAoNEHeyEpqsGsvzom8hjyGRqmjRYSEQBg==
+"@file-services/resolve@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-2.0.1.tgz#2115ff58e24a90b6fed979e895ef5ed388084031"
+  integrity sha512-SO1tGve+jqJUt8pgFFAwFbdKNuaws6Y3D9/XN9Yi+NBKGBBNLjb5rq8dfbPNPoS9BVVSbl8+oA5RpcZvRCGdJA==
 
-"@file-services/types@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-2.0.0.tgz#396f375f209de5fc800b45ab12998f964471d2aa"
-  integrity sha512-FFGRaV7T2fDKCVVCa3yGOnJK2g9/PT0gvLTQvJkipoXpR41qNvlMaT4BiAKY/fy+iH6A0BQ5tzfvcUPmO+Pazw==
+"@file-services/types@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-2.0.1.tgz#32d7054d3fa3fc018c5b3a32ed0bbd4c2a75f42a"
+  integrity sha512-vppaOGzmM2OEkO9qAWLqMH4f02c+fmnYeLr7oS/8cgXH0wg8WeJ54vgwUw7lC7rPhaH9Z4hNhgCoJmUgXrCmWw==
 
-"@file-services/typescript@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/typescript/-/typescript-2.0.0.tgz#5f12cff2c0b625a24e791afe14a53d56f228e3d0"
-  integrity sha512-8SXYD74HEYLMXJaLLdFNwcImvB71b3vIpspATDGtLDDQc/+6WE9/qptiwTKsEFiBJby0/+xACUjxe1KqC1dD1A==
+"@file-services/typescript@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/typescript/-/typescript-2.0.1.tgz#43531d824bc13ad0910d5773bc3b790583e16cbf"
+  integrity sha512-skIx5zeEn3+aUBySNPdFBfu6g/SShODiB46ciyJIMYdOgzqnDh9/P/R8hLq2b0hVG1ftHRMpduZckW0vBRtI6g==
   dependencies:
-    "@file-services/types" "^2.0.0"
+    "@file-services/types" "^2.0.1"
 
-"@file-services/utils@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/utils/-/utils-2.0.0.tgz#cad3570e272108b1f49da6fc9578295816bda2a9"
-  integrity sha512-7DJ+bWs4mAFQoqy1K19qOvOQs5kX6G64oRWqjQgLY9XJgFTKqZCISzgAxPLLT24e+oIv4h504WiSgexLfAA5dw==
+"@file-services/utils@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/utils/-/utils-2.0.1.tgz#66d3f3acbd552c280ba77c1609b9775bd5ae7155"
+  integrity sha512-KsAPiGVfjyGJsR+2+SSxvYCnZIKtfwsiFfVemXuiZQIOvJC9YQ0F/B9X4ly1Wo/LWAe0aegGemfhQ6GbDxSl/g==
   dependencies:
-    "@file-services/types" "^2.0.0"
+    "@file-services/types" "^2.0.1"
 
-"@file-services/webpack@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/webpack/-/webpack-2.0.0.tgz#2e43e3422f94a68a24761558a7eb000db78b2e7e"
-  integrity sha512-weO9j/GD7XhOkX4F//63o0LaSPmKXBkt1m9RrQmAMlf9P72rjlsI9ypTFzRJCtRfyzsEsUm0Ml8XJmsjvOdiXg==
+"@file-services/webpack@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/webpack/-/webpack-2.0.1.tgz#a371d6f45b6f07a301d7a7a178072d5c2c087f06"
+  integrity sha512-r8Y8ju49hTSXJjh/iy/OPFj1809+NuIBkis1ljvlsRo/R7R6MCHKO/5ql3IEk0xtII2KYn4QYTpMv8ufyvy06A==
   dependencies:
-    "@file-services/types" "^2.0.0"
+    "@file-services/types" "^2.0.1"
 
 "@sinonjs/commons@^1", "@sinonjs/commons@^1.0.2", "@sinonjs/commons@^1.4.0":
   version "1.4.0"
