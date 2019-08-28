@@ -29,7 +29,7 @@
     "postcss-selector-parser": "^6.0.2",
     "postcss-value-parser": "^4.0.2",
     "tslib": "^1.10.0",
-    "typescript": "~3.5.3",
+    "typescript": "~3.6.2",
     "vscode-css-languageservice": "^4.0.2",
     "vscode-languageclient": "^5.2.1",
     "vscode-languageserver": "^5.2.1",
