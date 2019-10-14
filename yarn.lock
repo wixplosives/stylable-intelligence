@@ -130,18 +130,18 @@
     postcss-value-parser "^4.0.2"
     url-regex "^5.0.0"
 
-"@ts-tools/node@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@ts-tools/node/-/node-1.0.0.tgz#60d808e3f132a7f47b45658b71e7e2ba1fbe1735"
-  integrity sha512-KiVn0EweB00oztLhPOto2xyqeUtb+7FdGWsRvyVcTPh9J0+Xz31834OqBkQBXNLLHpLiva5CCKzJzbCSAoW+1w==
+"@ts-tools/node@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@ts-tools/node/-/node-1.1.1.tgz#3d126ce0478732934752a244f2371aeefcdf4ed7"
+  integrity sha512-56t4xHnVEB33eeVwkuZX90FN13XH1//aDbTVX2n6cfjEVVOZWapRcqTPYyRqR8U2lF4Hwz2ElLlXaO6g5rx6gw==
   dependencies:
-    "@ts-tools/transpile" "^1.0.0"
+    "@ts-tools/transpile" "^2.0.0"
     source-map-support "^0.5.13"
 
-"@ts-tools/transpile@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@ts-tools/transpile/-/transpile-1.0.0.tgz#5c474e0a506b584e0f91bedfaf2b5df8670e73be"
-  integrity sha512-CQ20ZArMdERjIy8JQX+Lt3Lo2CTxya/JiASQLLIXu9HhVxfQPyU/YM9F8tUrCU0aacO2d4ngTRct2OqEjY7DLw==
+"@ts-tools/transpile@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@ts-tools/transpile/-/transpile-2.0.0.tgz#619c3bad28d050d579e7d6b71016e129aad3741d"
+  integrity sha512-Vv9SlCOMPF926iXErWg63zexwkjqfz3eQrgvLnkoyT3g01LG9XPScSEnYzIKJKu2gV2l1TxBMEAXjP1nHn85AA==
 
 "@types/anymatch@*":
   version "1.3.1"
