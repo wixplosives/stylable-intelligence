@@ -66,6 +66,8 @@ export function importInternalDirective(type: keyof typeof importDirectives, rng
                 new Snippet(valueMapping.named + ': $1;'),
                 rng
             );
+        default:
+            throw new Error(`Unknown import directive type: ${type}`);
     }
 }
 
@@ -97,6 +99,8 @@ export function rulesetInternalDirective(type: keyof typeof rulesetDirectives, r
                 new Snippet('-st-states: $1;'),
                 rng
             );
+        default:
+            throw new Error(`Unknown ruleset directive type: ${type}`);
     }
 }
 
@@ -144,6 +148,8 @@ export function topLevelDirective(type: keyof typeof topLevelDirectives, rng: Pr
                 new Snippet('@st-scope $1 {\n\t$2\n}$0'),
                 rng
             );
+        default:
+            throw new Error(`Unknown toplevel directive type: ${type}`);
     }
 }
 
