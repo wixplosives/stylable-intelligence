@@ -5,7 +5,7 @@ os:
   - osx
 
 node_js:
-  - 10 # lts, and the version vscode-stable currently uses (via electron)
+  - 12 # lts, and the version vscode-stable currently uses (via electron)
 
 # Travis uses older yarn on linux, and yarn@latest on other platforms.
 before_install:
