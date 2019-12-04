@@ -20,10 +20,12 @@
   },
   "dependencies": {
     "@file-services/node": "^2.0.0",
-    "@stylable/core": "^2.5.3",
-    "@stylable/language-service": "../stylable/packages/language-service",
+    "@stylable/core": "^2.5.4",
+    "@stylable/language-service": "^2.5.4",
     "vscode-languageclient": "^5.2.1",
-    "vscode-languageserver": "^5.2.1"
+    "vscode-languageserver": "^5.2.1",
+    "vscode-languageserver-protocol": "^3.14.1",
+    "vscode-uri": "^2.0.3"
   },
   "devDependencies": {
     "@ts-tools/node": "^1.1.2",
