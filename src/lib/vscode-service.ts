@@ -1,4 +1,5 @@
-import fs from '@file-services/node';
+import { IFileSystem } from '@file-services/types';
+import { Stylable } from '@stylable/core';
 import { StylableLanguageService } from '@stylable/language-service';
 import {
     ColorInformation,
@@ -22,20 +23,16 @@ import {
 import { URI } from 'vscode-uri';
 
 import { diagnose } from './diagnose';
-import { wrapFs } from './wrap-fs';
 
 export class VscodeStylableLanguageService {
     public textDocuments: TextDocuments;
     protected languageService: StylableLanguageService;
     private connection: IConnection;
 
-    constructor(connection: IConnection, rootPath: string) {
-        const docs = new TextDocuments();
-
+    constructor(connection: IConnection, docs: TextDocuments, fs: IFileSystem, stylable: Stylable) {
         this.languageService = new StylableLanguageService({
-            rootPath,
-            fs: wrapFs(fs, docs),
-            requireModule: require
+            fs,
+            stylable
         });
         this.textDocuments = docs;
         this.connection = connection;
@@ -93,7 +90,7 @@ export class VscodeStylableLanguageService {
             connection: this.connection,
             cssService: this.languageService.cssService,
             docsDispatcher: this.textDocuments,
-            stylable: this.languageService.stylable
+            stylable: this.languageService.getStylable()
         };
         return () => diagnose(diagnoseConfig);
     }
