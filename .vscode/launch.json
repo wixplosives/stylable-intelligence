@@ -47,7 +47,7 @@
       "args": [
         "-r",
         "@ts-tools/node/r",
-        "test/lib/**/*.spec.ts"
+        "test/unit/**/*.spec.ts"
       ],
       "cwd": "${workspaceRoot}",
       "protocol": "inspector"
