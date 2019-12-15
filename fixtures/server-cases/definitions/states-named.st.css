@@ -1,8 +1,0 @@
-:import {
-    -st-from: "./states-import.st.css";
-    -st-named: one, two;
-}
-
-.root .one:topState {}
-
-.root .two:topState {}

@@ -1,9 +1,0 @@
-:import {
-    -st-from: "./import.st.css";
-    -st-named: momo;
-}
-
-.bobo {
-    -st-extends: momo;
-}
-

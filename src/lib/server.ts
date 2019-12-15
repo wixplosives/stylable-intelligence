@@ -1,3 +1,5 @@
+import fs from '@file-services/node';
+import { Stylable } from '@stylable/core';
 import {
     createConnection,
     IConnection,
@@ -7,26 +9,39 @@ import {
     TextDocuments
 } from 'vscode-languageserver';
 
-import fs from '@file-services/node';
-
-import { initializeResult } from '../capabilities';
-
-import { StylableLanguageService } from './service';
+import { initializeResult } from './capabilities';
+import { VscodeStylableLanguageService } from './vscode-service';
+import { wrapFs } from './wrap-fs';
 
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 
 connection.listen();
 connection.onInitialize(params => {
-    const rootPath = params.rootPath || '';
+    const docs = new TextDocuments();
+    const wrappedFs = wrapFs(fs, docs);
 
-    const stylableLSP = new StylableLanguageService({
-        fs,
-        rootPath,
-        requireModule: require,
-        textDocuments: new TextDocuments()
-    });
+    const vscodeStylableLSP = new VscodeStylableLanguageService(
+        connection,
+        docs,
+        wrappedFs,
+        new Stylable(params.rootPath || '', wrappedFs as any, require)
+    );
 
-    connect(stylableLSP);
+    docs.listen(connection);
+    docs.onDidChangeContent(vscodeStylableLSP.createDiagnosticsHandler());
+    docs.onDidClose(vscodeStylableLSP.onDidClose());
+
+    connection.onCompletion(vscodeStylableLSP.onCompletion.bind(vscodeStylableLSP));
+    connection.onDefinition(vscodeStylableLSP.onDefinition.bind(vscodeStylableLSP));
+    connection.onHover(vscodeStylableLSP.onHover.bind(vscodeStylableLSP));
+    connection.onReferences(vscodeStylableLSP.onReferences.bind(vscodeStylableLSP));
+    connection.onDocumentColor(vscodeStylableLSP.onDocumentColor.bind(vscodeStylableLSP));
+    connection.onColorPresentation(vscodeStylableLSP.onColorPresentation.bind(vscodeStylableLSP));
+    connection.onRenameRequest(vscodeStylableLSP.onRenameRequest.bind(vscodeStylableLSP));
+    connection.onSignatureHelp(vscodeStylableLSP.onSignatureHelp.bind(vscodeStylableLSP));
+    connection.onDidChangeConfiguration(vscodeStylableLSP.createDiagnosticsHandler());
+
+    // connection.onDocumentFormatting(stylableLSP.onDocumentFormatting.bind(stylableLSP));
 
     return initializeResult;
 });
@@ -34,22 +49,3 @@ connection.onInitialize(params => {
 connection.onInitialized(() => {
     connection.client.register(DidChangeConfigurationNotification.type, undefined);
 });
-
-export function connect(stylableLSP: StylableLanguageService, conn?: IConnection) {
-    conn = conn || connection;
-
-    const docsDispatcher = stylableLSP.getDocsDispatcher();
-    docsDispatcher.listen(connection);
-    docsDispatcher.onDidChangeContent(stylableLSP.diagnose(connection));
-
-    connection.onCompletion(stylableLSP.onCompletion.bind(stylableLSP));
-    connection.onDefinition(stylableLSP.onDefinition.bind(stylableLSP));
-    connection.onHover(stylableLSP.onHover.bind(stylableLSP));
-    connection.onReferences(stylableLSP.onReferences.bind(stylableLSP));
-    connection.onDocumentColor(stylableLSP.onDocumentColor.bind(stylableLSP));
-    connection.onColorPresentation(stylableLSP.onColorPresentation.bind(stylableLSP));
-    connection.onRenameRequest(stylableLSP.onRenameRequest.bind(stylableLSP));
-    connection.onSignatureHelp(stylableLSP.onSignatureHelp.bind(stylableLSP));
-    connection.onDocumentFormatting(stylableLSP.onDocumentFormatting.bind(stylableLSP));
-    connection.onDidChangeConfiguration(stylableLSP.diagnose(connection));
-}

@@ -3,10 +3,8 @@
 .vscode-test/**/*
 src/**/*
 test/**/*
-test-kit/**/*
 dist/test/**/*
-dist/test-kit/**/*
-run-test.js
+run-e2e-test.js
 tsconfig.json
 tsconfig.publish.json
 yarn.lock

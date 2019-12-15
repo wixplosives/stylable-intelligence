@@ -1,8 +1,0 @@
-:import {
-    -st-from: "./transpiled-mixins.js";
-    -st-named: paramlessMixin, paramfulMixin;
-}
-
-.myClass {
-    -st-mixin: paramlessMixin(|)
-}

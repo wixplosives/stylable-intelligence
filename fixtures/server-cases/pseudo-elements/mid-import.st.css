@@ -1,9 +1,0 @@
-:import {
-    -st-from: "./import.st.css";
-    -st-default: Comp;
-}
-
-.bobo {
-    -st-extends: Comp;
-}
-

@@ -1,8 +1,3 @@
-
 .root {
-    -st-states: rootState;
-}
-
-.root:rootState {
-    color: khaki;
+    color: red;
 }

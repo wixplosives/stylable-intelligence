@@ -7,7 +7,7 @@ Readme for the extension itself can be found [here](https://github.com/wix/styla
 
 * Clone this repo
 * Run `yarn` to install dependencies
-* Run `yarn test` to test and build (both server and client, note - e2e tests might fail if you have VSCode open)
+* Run `yarn test` to test and build the vscode extension
 * To launch and debug the extension:
   1. open the repo in VSCode
   2. open the 'Debug Panel' in VSCode
