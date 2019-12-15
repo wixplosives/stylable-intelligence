@@ -1,26 +1,17 @@
-import {
-    Color,
-    IPCMessageReader,
-    IPCMessageWriter,
-    TextDocument
-} from 'vscode-languageserver-protocol';
-import { Location } from 'vscode-languageserver-types';
 import { createMemoryFs } from '@file-services/memory';
 import { createCjsModuleSystem } from '@file-services/commonjs';
 import { Stylable } from '@stylable/core';
+import { Color, IPCMessageReader, IPCMessageWriter, TextDocument } from 'vscode-languageserver-protocol';
+import { Location } from 'vscode-languageserver-types';
+import { createConnection, IConnection } from 'vscode-languageserver';
+import { URI } from 'vscode-uri';
 
 import { TestConnection } from '../lsp-testkit/connection.spec';
 import { expect, plan } from '../testkit/chai.spec';
 import { VscodeStylableLanguageService } from '../../src/lib/vscode-service';
 import { getRangeAndText } from '../testkit/text.spec';
-import {} from '../../src/lib/server';
 import { createExpectedDiagnosis, trimLiteral } from '../lsp-testkit/diagnostic-test-kit';
 import { TestDocuments } from '../lsp-testkit/test-documents';
-import {
-    createConnection,
-    IConnection,
-} from 'vscode-languageserver';
-import { URI } from 'vscode-uri';
 
 // duplicate from language-service colors.spec
 export function createColor(red: number, green: number, blue: number, alpha: number): Color {
@@ -85,7 +76,7 @@ describe('Service component test', () => {
             })
         );
 
-        it(
+        xit(
             'Diagnostics - cross-file errors',
             plan(1, async () => {
                 const baseFilecContent = trimLiteral`
@@ -143,7 +134,7 @@ describe('Service component test', () => {
             })
         );
 
-        it(
+        xit(
             'Diagnostics - CSS errors',
             plan(1, async () => {
                 const baseFilecContent = trimLiteral`
@@ -206,7 +197,7 @@ describe('Service component test', () => {
         );
     });
 
-    it(
+    xit(
         'Document Colors - local, vars, imported',
         plan(2, async () => {
             const baseFilecContent = trimLiteral`
@@ -279,7 +270,7 @@ describe('Service component test', () => {
         })
     );
 
-    describe('References', () => {
+    xdescribe('References', () => {
         it(
             'References - local file',
             plan(3, async () => {
