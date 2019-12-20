@@ -20,7 +20,7 @@
     "test:e2e": "node ./run-e2e-tests"
   },
   "dependencies": {
-    "@file-services/node": "^2.1.0",
+    "@file-services/node": "^2.1.1",
     "@stylable/core": "^3.0.0",
     "@stylable/language-service": "^3.0.1",
     "vscode-languageclient": "^5.2.1",
@@ -29,14 +29,14 @@
     "vscode-uri": "^2.1.1"
   },
   "devDependencies": {
-    "@file-services/commonjs": "^2.1.0",
+    "@file-services/commonjs": "^2.1.1",
     "@file-services/memory": "^2.1.1",
     "@file-services/types": "^2.1.0",
     "@ts-tools/node": "^1.1.2",
     "@types/chai": "^4.2.7",
     "@types/glob": "^7.1.1",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.12.17",
+    "@types/node": "^12.12.21",
     "@types/sinon": "^7.5.1",
     "@types/vscode": "^1.30.0",
     "chai": "^4.2.0",
