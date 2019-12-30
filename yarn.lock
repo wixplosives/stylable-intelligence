@@ -35,7 +35,7 @@
     "@file-services/types" "^2.1.0"
     "@file-services/utils" "^2.1.0"
 
-"@file-services/node@^2.1.0", "@file-services/node@^2.1.1":
+"@file-services/node@^2.1.1":
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@file-services/node/-/node-2.1.1.tgz#fd09f45c52f1e14f70f6e40ae4089c02ee7304f0"
   integrity sha512-dtAZZYWyRXFuRIlJBeSvr1EiOSmmBzn0umX18o6W8aFpkAx9c4e2Jrc7B2MtPA0UlErAOTA4wfV6YpZAOd/H6Q==
@@ -58,7 +58,7 @@
   resolved "https://registry.yarnpkg.com/@file-services/types/-/types-2.1.0.tgz#5259d0e2cbf49c6d8367b8db3a6ac21b03e3be2c"
   integrity sha512-W+tNVGdj3t6IPFoqRUpjcEUNM/RqbdzwGtj2BlzKo+TN0eu93PV0FV1BncRQ/mBhxI/H2arj3SnigID5c+YiEQ==
 
-"@file-services/typescript@^2.1.0":
+"@file-services/typescript@^2.1.2":
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/@file-services/typescript/-/typescript-2.1.2.tgz#eb377c9e6e5c1929c1bfbd10da6d9c2ddc2af306"
   integrity sha512-MKfSCuR4GhqwB4ho0yHeSM9G8kUCdyQF7GkRxdUc5oiRAJzHYm9YnbsE6W73nf36W+XxdjgcQyTdlipN5REzJA==
@@ -87,24 +87,24 @@
     "@sinonjs/commons" "^1"
     "@sinonjs/samsam" "^4.2.0"
 
-"@sinonjs/samsam@^4.0.1", "@sinonjs/samsam@^4.2.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@sinonjs/samsam/-/samsam-4.2.0.tgz#64a9994331cc3da0a0d7cc06cae44faa09cb5f2c"
-  integrity sha512-yG7QbUz38ZPIegfuSMEcbOo0kkLGmPa8a0Qlz4dk7+cXYALDScWjIZzAm/u2+Frh+bcdZF6wZJZwwuJjY0WAjA==
+"@sinonjs/samsam@^4.2.0", "@sinonjs/samsam@^4.2.1":
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/@sinonjs/samsam/-/samsam-4.2.1.tgz#cee77dc95f8d00339633e1683e026f2d73ed1d3a"
+  integrity sha512-7+5S4C4wpug5pzHS+z/63+XUwsH7dtyYELDafoT1QnfruFh7eFjlDWwZXltUB0GLk6y5eMeAt34Bjx8wJ4KfSA==
   dependencies:
     "@sinonjs/commons" "^1.6.0"
-    array-from "^2.1.1"
     lodash.get "^4.4.2"
+    type-detect "^4.0.8"
 
 "@sinonjs/text-encoding@^0.7.1":
   version "0.7.1"
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/core@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.0.0.tgz#19215870778664092e7d8d49c707b343cbd828c2"
-  integrity sha512-th1tfscecGJgl1sLZ3pYFanCChtkK4rgsAaSarTSZBzCdJHX9a43wuWQ63GrWinoEB5Myy9dtjpoQytmQBgU3g==
+"@stylable/core@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.1.0.tgz#31fe6b834ff063231dad74974a21a627555fe405"
+  integrity sha512-KiaQPiLXCyKQXzOlXKfnpGUXhnR92LIwlNr0rPQYVBdPLY2DaEJCXuf+5BVqSQJ1Ho4tz34kHBs88Ac9BYALJQ==
   dependencies:
     css-selector-tokenizer "^0.7.1"
     deindent "^0.1.0"
@@ -114,7 +114,7 @@
     lodash.clonedeep "^4.5.0"
     lodash.clonedeepwith "^4.5.0"
     murmurhash "^0.0.2"
-    postcss "^7.0.24"
+    postcss "^7.0.25"
     postcss-js "^2.0.3"
     postcss-nested "^4.2.1"
     postcss-safe-parser "^4.0.1"
@@ -122,18 +122,18 @@
     postcss-value-parser "^4.0.2"
     url-regex "^5.0.0"
 
-"@stylable/language-service@^3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-3.0.1.tgz#06eb2e7516c7597535e3a58656279775f3713041"
-  integrity sha512-A6BdXjs70+jqbI3c8VuOiYoQmHvufzSttaayOlQgBnUEwkHxJJqkKSAgjpal+klSKkX6JFd+n+F2A8Q5bZDlvw==
+"@stylable/language-service@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-3.1.0.tgz#84dbfe4d9090beed6cf7d8dfa1769e068d4f3eca"
+  integrity sha512-MJu4XCXmQBCmwrX0ZSvpOb2gg7bAaieSkqOEVNf9nZfXsaZYCvBNO/I3vtkwSjeR0Mr3ed7CwnptO15H/m1qPQ==
   dependencies:
-    "@file-services/node" "^2.1.0"
-    "@file-services/typescript" "^2.1.0"
-    "@stylable/core" "^3.0.0"
+    "@file-services/node" "^2.1.1"
+    "@file-services/typescript" "^2.1.2"
+    "@stylable/core" "^3.1.0"
     css-selector-tokenizer "^0.7.1"
-    postcss "^7.0.24"
+    postcss "^7.0.25"
     postcss-value-parser "^4.0.2"
-    typescript "~3.7.3"
+    typescript "~3.7.4"
     vscode-css-languageservice "^4.0.2"
     vscode-languageserver "^5.2.1"
     vscode-uri "^2.1.1"
@@ -235,11 +235,6 @@ argparse@^1.0.7:
   integrity sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==
   dependencies:
     sprintf-js "~1.0.2"
-
-array-from@^2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/array-from/-/array-from-2.1.1.tgz#cfe9d8c26628b9dc5aecc62a9f5d8f1f352c1195"
-  integrity sha1-z+nYwmYoudxa7MYqn12PHzUsEZU=
 
 assertion-error@^1.1.0:
   version "1.1.0"
@@ -1003,10 +998,10 @@ mute-stream@~0.0.4:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
   integrity sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==
 
-nise@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/nise/-/nise-3.0.0.tgz#811330bf07ed3661c4b8bd72b18d9b6c6eb76f9f"
-  integrity sha512-EObFx5tioBMePHpU/gGczaY2YDqL255iwjmZwswu2CiwEW8xIGrr3E2xij+efIppS1nLQo9NyXSIUySGHUOhHQ==
+nise@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/nise/-/nise-3.0.1.tgz#0659982af515e5aac15592226246243e8da0013d"
+  integrity sha512-fYcH9y0drBGSoi88kvhpbZEsenX58Yr+wOJ4/Mi1K4cy+iGP/a73gNoyNhu5E9QxPdgTlVChfIaAlnyOy/gHUA==
   dependencies:
     "@sinonjs/commons" "^1.7.0"
     "@sinonjs/formatio" "^4.0.1"
@@ -1198,7 +1193,7 @@ postcss-value-parser@^4.0.2:
   resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.0.2.tgz#482282c09a42706d1fc9a069b73f44ec08391dc9"
   integrity sha512-LmeoohTpp/K4UiyQCwuGWlONxXamGzCMtFxLq4W1nZVGIQLYvMCJx3yAF9qyyuFpflABI9yVdtJAqbihOsCsJQ==
 
-postcss@^7.0.0, postcss@^7.0.18, postcss@^7.0.2, postcss@^7.0.21, postcss@^7.0.24:
+postcss@^7.0.0, postcss@^7.0.18, postcss@^7.0.2, postcss@^7.0.21, postcss@^7.0.25:
   version "7.0.25"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-7.0.25.tgz#dd2a2a753d50b13bed7a2009b4a18ac14d9db21e"
   integrity sha512-NXXVvWq9icrm/TgQC0O6YVFi4StfJz46M1iNd/h6B26Nvh/HKI+q4YZtFN/EjcInZliEscO/WL10BXnc1E5nwg==
@@ -1328,17 +1323,17 @@ set-blocking@^2.0.0:
   resolved "https://registry.yarnpkg.com/set-blocking/-/set-blocking-2.0.0.tgz#045f9782d011ae9a6803ddd382b24392b3d890f7"
   integrity sha1-BF+XgtARrppoA93TgrJDkrPYkPc=
 
-sinon@^8.0.1:
-  version "8.0.1"
-  resolved "https://registry.yarnpkg.com/sinon/-/sinon-8.0.1.tgz#c256376cd133dbb0c69ba4d73ed5bdd591597502"
-  integrity sha512-vbXMHBszVioyPsuRDLEiPEgvkZnbjfdCFvLYV4jONNJqZNLWTwZ/gYSNh3SuiT1w9MRXUz+S7aX0B4Ar2XI8iw==
+sinon@^8.0.2:
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/sinon/-/sinon-8.0.2.tgz#cc5f6daa9cc351b86b03faaca1e9c3650a04ae11"
+  integrity sha512-8W1S7BnCyvk7SK+Xi15B1QAVLuS81G/NGmWefPb31+ly6xI3fXaug/g5oUdfc8+7ruC4Ay51AxuLlYm8diq6kA==
   dependencies:
     "@sinonjs/commons" "^1.7.0"
     "@sinonjs/formatio" "^4.0.1"
-    "@sinonjs/samsam" "^4.0.1"
+    "@sinonjs/samsam" "^4.2.1"
     diff "^4.0.1"
     lolex "^5.1.2"
-    nise "^3.0.0"
+    nise "^3.0.1"
     supports-color "^7.1.0"
 
 source-map-support@^0.5.16:
@@ -1506,7 +1501,7 @@ tunnel@0.0.4:
   resolved "https://registry.yarnpkg.com/tunnel/-/tunnel-0.0.4.tgz#2d3785a158c174c9a16dc2c046ec5fc5f1742213"
   integrity sha1-LTeFoVjBdMmhbcLARuxfxfF0IhM=
 
-type-detect@4.0.8, type-detect@^4.0.0, type-detect@^4.0.5:
+type-detect@4.0.8, type-detect@^4.0.0, type-detect@^4.0.5, type-detect@^4.0.8:
   version "4.0.8"
   resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-4.0.8.tgz#7646fb5f18871cfbb7749e69bd39a6388eb7450c"
   integrity sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==
@@ -1519,7 +1514,7 @@ typed-rest-client@1.2.0:
     tunnel "0.0.4"
     underscore "1.8.3"
 
-typescript@~3.7.3, typescript@~3.7.4:
+typescript@~3.7.4:
   version "3.7.4"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.7.4.tgz#1743a5ec5fef6a1fa9f3e4708e33c81c73876c19"
   integrity sha512-A25xv5XCtarLwXpcDNZzCGvW2D1S3/bACratYBx2sax8PefsFhlYmkQicKHvpYflFS8if4zne5zT5kpJ7pzuvw==
