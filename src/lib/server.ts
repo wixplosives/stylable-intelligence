@@ -8,6 +8,7 @@ import {
     DidChangeConfigurationNotification,
     TextDocuments
 } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import { initializeResult } from './capabilities';
 import { VscodeStylableLanguageService } from './vscode-service';
@@ -17,7 +18,7 @@ const connection: IConnection = createConnection(new IPCMessageReader(process), 
 
 connection.listen();
 connection.onInitialize(params => {
-    const docs = new TextDocuments();
+    const docs = new TextDocuments(TextDocument);
     const wrappedFs = wrapFs(fs, docs);
 
     const vscodeStylableLSP = new VscodeStylableLanguageService(
@@ -47,5 +48,5 @@ connection.onInitialize(params => {
 });
 
 connection.onInitialized(() => {
-    connection.client.register(DidChangeConfigurationNotification.type, undefined);
+    connection.client.register(DidChangeConfigurationNotification.type, undefined).catch(console.error);
 });

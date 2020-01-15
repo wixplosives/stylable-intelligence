@@ -104,7 +104,7 @@ describe('LSP connection test driver', () => {
                     }
                 }
             });
-            connection.sendRequest(type, 'bar');
+            connection.sendRequest(type, 'bar').catch(console.error);
         })
     );
 

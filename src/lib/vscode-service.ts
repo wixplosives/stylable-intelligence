@@ -18,18 +18,19 @@ import {
     ReferenceParams,
     RenameParams,
     SignatureHelp,
-    WorkspaceEdit
+    WorkspaceEdit,
+    TextDocument
 } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 
 import { diagnose } from './diagnose';
 
 export class VscodeStylableLanguageService {
-    public textDocuments: TextDocuments;
+    public textDocuments: TextDocuments<TextDocument>;
     protected languageService: StylableLanguageService;
     private connection: IConnection;
 
-    constructor(connection: IConnection, docs: TextDocuments, fs: IFileSystem, stylable: Stylable) {
+    constructor(connection: IConnection, docs: TextDocuments<TextDocument>, fs: IFileSystem, stylable: Stylable) {
         this.languageService = new StylableLanguageService({
             fs,
             stylable
@@ -96,7 +97,7 @@ export class VscodeStylableLanguageService {
     }
 
     public onDidClose() {
-        return (event: TextDocumentChangeEvent) => {
+        return (event: TextDocumentChangeEvent<TextDocument>) => {
             this.connection.sendDiagnostics({
                 diagnostics: [],
                 uri: event.document.uri

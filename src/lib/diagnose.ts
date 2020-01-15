@@ -1,11 +1,11 @@
 import { Stylable } from '@stylable/core';
 import { CssService, createDiagnosis } from '@stylable/language-service';
-import { IConnection, TextDocuments, Diagnostic } from 'vscode-languageserver';
+import { IConnection, TextDocuments, Diagnostic, TextDocument } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 
 interface DiagConfig {
     connection: IConnection;
-    docsDispatcher: TextDocuments;
+    docsDispatcher: TextDocuments<TextDocument>;
     stylable: Stylable;
     cssService: CssService;
 }
