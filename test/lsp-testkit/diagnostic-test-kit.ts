@@ -11,7 +11,7 @@ export function createDiagnosisNotification(diagnostics: Diagnostic[], fileName:
 export function createExpectedDiagnosis(
     range: Range,
     message: string,
-    source: string = 'stylable',
+    source = 'stylable',
     code?: string
 ): Diagnostic {
     return Diagnostic.create(range, message, 2, code, source);

@@ -27,7 +27,7 @@ export async function diagnose({ connection, docsDispatcher, stylable, cssServic
     const result: Diagnostic[] = [];
     docsDispatcher.keys().forEach(key => {
         const doc = docsDispatcher.get(key);
-        if (!!doc) {
+        if (doc) {
             if (doc.languageId === 'stylable') {
                 let diagnostics: Diagnostic[];
                 if (

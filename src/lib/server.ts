@@ -40,6 +40,7 @@ connection.onInitialize(params => {
     connection.onColorPresentation(vscodeStylableLSP.onColorPresentation.bind(vscodeStylableLSP));
     connection.onRenameRequest(vscodeStylableLSP.onRenameRequest.bind(vscodeStylableLSP));
     connection.onSignatureHelp(vscodeStylableLSP.onSignatureHelp.bind(vscodeStylableLSP));
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     connection.onDidChangeConfiguration(vscodeStylableLSP.createDiagnosticsHandler());
 
     // connection.onDocumentFormatting(stylableLSP.onDocumentFormatting.bind(stylableLSP));
@@ -48,5 +49,6 @@ connection.onInitialize(params => {
 });
 
 connection.onInitialized(() => {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     connection.client.register(DidChangeConfigurationNotification.type, undefined).catch(console.error);
 });

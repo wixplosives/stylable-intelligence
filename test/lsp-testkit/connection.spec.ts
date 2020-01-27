@@ -1,5 +1,3 @@
-// tslint:disable: max-line-length
-
 // significant portions of this file were originally copied from Microsoft's vscode-languageserver-node sources
 // at commit 059dc8612d9cb72ec86c69beba3839ce02febfd9
 
@@ -48,13 +46,10 @@ class TestDuplex extends Duplex {
 }
 
 export class TestConnection {
-    // TODO: Is this still needed?
-    // tslint:disable: member-ordering
     private duplexStream1 = new TestDuplex('ds1');
     private duplexStream2 = new TestDuplex('ds2');
     public server: IConnection = createConnection(this.duplexStream2, this.duplexStream1);
     public client = new StreamConnectionClient(this.duplexStream1, this.duplexStream2);
-    // tslint:enable: member-ordering
 
     public listen() {
         this.server.listen();
@@ -89,7 +84,7 @@ describe('LSP connection test driver', () => {
             const outputStream = new TestDuplex('ds2');
             const connection: IConnection = createConnection(inputStream, outputStream);
             connection.listen();
-            let content: string = '';
+            let content = '';
             outputStream.on('data', chunk => {
                 content += chunk.toString();
                 const match = content.match(/Content-Length:\s*(\d+)\s*/);
@@ -104,6 +99,7 @@ describe('LSP connection test driver', () => {
                     }
                 }
             });
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             connection.sendRequest(type, 'bar').catch(console.error);
         })
     );
@@ -177,7 +173,7 @@ describe('LSP connection test driver', () => {
             ) {
                 it(
                     `.${clientMethod}()`,
-                    plan(1, async () => {
+                    plan(1, () => {
                         (testCon.client[clientMethod] as any)((p: any) => {
                             expect(p).to.contain(obj(1));
                         });

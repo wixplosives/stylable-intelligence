@@ -199,7 +199,7 @@ describe('Service component test', () => {
 
     xit(
         'Document Colors - local, vars, imported',
-        plan(2, async () => {
+        plan(2, () => {
             const baseFilecContent = trimLiteral`
         |:vars {
         |    myColor: rgba(0, 255, 0, 0.8);
@@ -273,7 +273,7 @@ describe('Service component test', () => {
     xdescribe('References', () => {
         it(
             'References - local file',
-            plan(3, async () => {
+            plan(3, () => {
                 const fileText = trimLiteral`
                 |  .gaga {
                 |   -st-states: active;

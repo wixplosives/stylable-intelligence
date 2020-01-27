@@ -27,13 +27,13 @@ function assertDiagnosticExist(client: any, casePath: string, result: object) {
 suite('test diagnostics', function() {
     this.timeout(60000);
 
-    let rootDir: string | null;
-    suiteSetup(async () => {
+    let rootDir: string;
+    suiteSetup(() => {
         rootDir = fs.dirname(fs.findClosestFileSync(__dirname, 'package.json')!);
     });
 
     test('should support single file error', async () => {
-        const casePath = path.join(rootDir!, 'fixtures', 'e2e-cases', 'single-file-diag.st.css');
+        const casePath = path.join(rootDir, 'fixtures', 'e2e-cases', 'single-file-diag.st.css');
         const ext = vscode.extensions.getExtension('wix.stylable-intelligence');
         let extClient: any;
 

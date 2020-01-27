@@ -68,7 +68,7 @@ describe('chai testkit', () => {
                 executed = true;
             }).bind(this);
             await thePlan();
-            await expect(executed).to.equal(true);
+            expect(executed).to.equal(true);
         });
         it(
             'succeeds when 1 assertion as planned',
@@ -92,7 +92,13 @@ describe('chai testkit', () => {
             expect((thrown as Error).message).to.equal('1 tests done but only 0 planned');
         });
         it('fails when too few assertions', async function() {
-            const thePlan = plan(1, () => { /**/ }, 10).bind(this);
+            const thePlan = plan(
+                1,
+                () => {
+                    /**/
+                },
+                10
+            ).bind(this);
             const thrown = await thePlan().catch((e: Error) => e);
             expect(thrown).to.be.instanceof(Error);
             expect((thrown as Error).message).to.equal('only 0 tests done out of 1 planned');
@@ -139,23 +145,31 @@ describe('chai testkit', () => {
         it('throws original error when exists', () => {
             try {
                 expect(3).equal(4);
-            } catch { /**/ }
+            } catch {
+                /**/
+            }
             expect(assertNoError).to.throw(chai.AssertionError, 'expected 3 to equal 4');
         });
         it('does not throw after cleanup (forgets)', () => {
             try {
                 expect(3).equal(4);
-            } catch { /**/ }
+            } catch {
+                /**/
+            }
             assertNoError.forget();
             expect(assertNoError).to.not.throw();
         });
         it('does not throw on second assertion (forgets on assertion)', () => {
             try {
                 expect(3).equal(4);
-            } catch { /**/ }
+            } catch {
+                /**/
+            }
             try {
                 assertNoError();
-            } catch { /**/ }
+            } catch {
+                /**/
+            }
             expect(assertNoError).to.not.throw();
         });
     });

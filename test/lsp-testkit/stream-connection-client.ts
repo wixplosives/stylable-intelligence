@@ -53,7 +53,7 @@ export class StreamConnectionClient {
 
     constructor(input: NodeJS.ReadableStream, output: NodeJS.WritableStream) {
         this.connection = createConnection(input, output);
-        this.sendRequest = this.connection.sendRequest.bind(this.connection) as any;
+        this.sendRequest = this.connection.sendRequest.bind(this.connection);
     }
 
     public listen(): void {
@@ -61,7 +61,7 @@ export class StreamConnectionClient {
     }
 
     // extend
-    public async initialize(params: InitializeParams = {} as any): Promise<InitializeResult> {
+    public async initialize(params: InitializeParams = {} as InitializeParams): Promise<InitializeResult> {
         if (!params.capabilities) {
             params.capabilities = {};
         }

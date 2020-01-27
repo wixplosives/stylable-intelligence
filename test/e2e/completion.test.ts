@@ -8,7 +8,7 @@ suite('Extension Tests', function() {
 
     let rootDir: string | null;
 
-    suiteSetup(async () => {
+    suiteSetup(() => {
         rootDir = fs.dirname(fs.findClosestFileSync(__dirname, 'package.json')!);
     });
 
