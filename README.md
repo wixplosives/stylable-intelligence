@@ -1,6 +1,7 @@
 # stylable-intelligence
 [![Visual Studio Marketplace](https://img.shields.io/vscode-marketplace/v/wix.stylable-intelligence.svg)](https://marketplace.visualstudio.com/items?itemName=wix.stylable-intelligence)
 [![Build Status](https://travis-ci.com/wix/stylable-intelligence.svg?branch=master)](https://travis-ci.com/wix/stylable-intelligence)
+[![Build status](https://ci.appveyor.com/api/projects/status/7dk4trpid93fa56b/branch/master?svg=true)](https://ci.appveyor.com/project/AlexShemeshWix/stylable-intelligence/branch/master)
 [![Visual Studio Marketplace](https://img.shields.io/vscode-marketplace/d/wix.stylable-intelligence.svg)](https://marketplace.visualstudio.com/items?itemName=wix.stylable-intelligence)
 [![npm version](https://badge.fury.io/js/stylable-intelligence.svg)](https://badge.fury.io/js/stylable-intelligence)
 
