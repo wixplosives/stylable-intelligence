@@ -1,6 +1,7 @@
 import { IFileSystem } from '@file-services/types';
 import { Stylable } from '@stylable/core';
 import { StylableLanguageService } from '@stylable/language-service';
+import path from 'path';
 import {
     ColorInformation,
     ColorPresentation,
@@ -104,7 +105,17 @@ export class VscodeStylableLanguageService {
             const doc = this.textDocuments.get(key);
             if (doc) {
                 if (doc.languageId === 'stylable') {
-                    const fsPath = URI.parse(doc.uri).fsPath;
+                    const uri = URI.parse(doc.uri);
+                    // on windows, uri.fsPath replaces separators with '\'
+                    // this breaks posix paths in-memory when running on windows
+                    // take raw posix path instead
+                    const fsPath =
+                        uri.scheme === 'file' &&
+                        !uri.authority && // not UNC
+                        uri.path.charCodeAt(2) !== 58 && // the colon in "c:"
+                        path.isAbsolute(uri.path)
+                            ? uri.path
+                            : uri.fsPath;
                     let diagnostics: Diagnostic[];
                     if (
                         ignore &&
