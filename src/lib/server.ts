@@ -29,8 +29,8 @@ connection.onInitialize(params => {
     );
 
     docs.listen(connection);
-    docs.onDidChangeContent(vscodeStylableLSP.createDiagnosticsHandler());
-    docs.onDidClose(vscodeStylableLSP.onDidClose());
+    docs.onDidChangeContent(vscodeStylableLSP.diagnoseWithVsCodeConfig.bind(vscodeStylableLSP));
+    docs.onDidClose(vscodeStylableLSP.onDidClose.bind(vscodeStylableLSP));
 
     connection.onCompletion(vscodeStylableLSP.onCompletion.bind(vscodeStylableLSP));
     connection.onDefinition(vscodeStylableLSP.onDefinition.bind(vscodeStylableLSP));
@@ -41,7 +41,7 @@ connection.onInitialize(params => {
     connection.onRenameRequest(vscodeStylableLSP.onRenameRequest.bind(vscodeStylableLSP));
     connection.onSignatureHelp(vscodeStylableLSP.onSignatureHelp.bind(vscodeStylableLSP));
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    connection.onDidChangeConfiguration(vscodeStylableLSP.createDiagnosticsHandler());
+    connection.onDidChangeConfiguration(vscodeStylableLSP.diagnoseWithVsCodeConfig.bind(vscodeStylableLSP));
 
     // connection.onDocumentFormatting(stylableLSP.onDocumentFormatting.bind(stylableLSP));
 

@@ -7,7 +7,7 @@
     ".st.css"
   ],
   "patterns": [{
-      "match": ":vars|:import|@custom-selector",
+      "match": ":vars|:import|@custom-selector|@st-scope|@st-global-custom-property",
       "name": "keyword.control.top-level.stylable"
     },
     {

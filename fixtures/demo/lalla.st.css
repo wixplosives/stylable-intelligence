@@ -3,3 +3,66 @@
     -st-named: Comp;
 }
 
+:vars {
+    blah: "screen and (min-width: 300px)";
+    color: rgb(176, 202, 176);
+}
+
+.root {
+    -st-states: blah(enum(meh, beh));
+    colorrr: blah;
+}
+
+.root:blah(beh) {}
+
+.root:hover {}
+
+.root:shmover {}
+
+.part {}
+
+.root {
+    merrrr: balhvdsss;
+}
+
+@st-scope .root {
+    .root:blah(beh) > div:not(:hover) {
+        colorrsda: blah;
+        align-items: value(color);
+    }
+
+    .root::part ~ div > span {}
+
+    Comp {
+        color: rgb(2, 3, 3);
+        background-color: value(color);
+    }
+
+    .root::part {}
+
+    .part {
+        -st-mixin: part;
+    }
+}
+
+@media value(blah) {
+    .root:blah(beh) > div:not(:hover) {}
+
+    .root:blah(beh) {}
+
+    .root::part ~ div > span {}
+
+    .root:hover {}
+
+    @media Blah {
+        .root {
+            color: rgb(23, 45, 12);
+        }
+    }
+
+    .root {}
+
+    .root::part {}
+}
+
+.root {}
