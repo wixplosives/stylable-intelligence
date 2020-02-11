@@ -71,7 +71,7 @@ describe('Service component test', () => {
                     new Stylable('/', memFs as any, requireModule)
                 );
 
-                const diagnostics = await stylableLSP.createDiagnosticsHandler()();
+                const diagnostics = await stylableLSP.diagnoseWithVsCodeConfig();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
             })
         );
@@ -129,12 +129,12 @@ describe('Service component test', () => {
                     new Stylable('/', memFs as any, requireModule)
                 );
 
-                const diagnostics = await stylableLSP.createDiagnosticsHandler()();
+                const diagnostics = await stylableLSP.diagnoseWithVsCodeConfig();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
             })
         );
 
-        xit(
+        it(
             'Diagnostics - CSS errors',
             plan(1, async () => {
                 const baseFilecContent = trimLiteral`
@@ -191,7 +191,7 @@ describe('Service component test', () => {
                     new Stylable('/', memFs as any, requireModule)
                 );
 
-                const diagnostics = await stylableLSP.createDiagnosticsHandler()();
+                const diagnostics = await stylableLSP.diagnoseWithVsCodeConfig();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
             })
         );

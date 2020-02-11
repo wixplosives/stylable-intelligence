@@ -1,6 +1,7 @@
 import { IFileSystem } from '@file-services/types';
 import { Stylable } from '@stylable/core';
 import { StylableLanguageService } from '@stylable/language-service';
+import path from 'path';
 import {
     ColorInformation,
     ColorPresentation,
@@ -8,6 +9,7 @@ import {
     CompletionParams,
     CompletionItem,
     Definition,
+    Diagnostic,
     DocumentColorParams,
     Hover,
     IConnection,
@@ -23,11 +25,9 @@ import {
 } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 
-import { diagnose } from './diagnose';
-
 export class VscodeStylableLanguageService {
     public textDocuments: TextDocuments<TextDocument>;
-    protected languageService: StylableLanguageService;
+    public languageService: StylableLanguageService;
     private connection: IConnection;
 
     constructor(connection: IConnection, docs: TextDocuments<TextDocument>, fs: IFileSystem, stylable: Stylable) {
@@ -86,23 +86,61 @@ export class VscodeStylableLanguageService {
             : [];
     }
 
-    public createDiagnosticsHandler() {
-        const diagnoseConfig = {
-            connection: this.connection,
-            cssService: this.languageService.cssService,
-            docsDispatcher: this.textDocuments,
-            stylable: this.languageService.getStylable()
-        };
-        return () => diagnose(diagnoseConfig);
+    public async diagnoseWithVsCodeConfig() {
+        let res: any;
+        let ignore = false;
+        try {
+            res = await this.connection.workspace.getConfiguration({
+                section: 'stylable'
+            });
+            if (!!res && !!res.diagnostics && !!res.diagnostics.ignore && !!res.diagnostics.ignore.length) {
+                ignore = true;
+            }
+        } catch (e) {
+            /*Client has no workspace/configuration method, ignore silently */
+        }
+
+        const result: Diagnostic[] = [];
+        this.textDocuments.keys().forEach(key => {
+            const doc = this.textDocuments.get(key);
+            if (doc) {
+                if (doc.languageId === 'stylable') {
+                    const uri = URI.parse(doc.uri);
+                    // on windows, uri.fsPath replaces separators with '\'
+                    // this breaks posix paths in-memory when running on windows
+                    // take raw posix path instead
+                    const fsPath =
+                        uri.scheme === 'file' &&
+                        !uri.authority && // not UNC
+                        uri.path.charCodeAt(2) !== 58 && // the colon in "c:"
+                        path.isAbsolute(uri.path)
+                            ? uri.path
+                            : uri.fsPath;
+                    let diagnostics: Diagnostic[];
+                    if (
+                        ignore &&
+                        (res.diagnostics.ignore as string[]).some(p => {
+                            return fsPath.startsWith(p);
+                        })
+                    ) {
+                        diagnostics = [];
+                    } else {
+                        diagnostics = this.languageService.diagnose(fsPath);
+                        result.push(...diagnostics);
+                    }
+                    this.connection.sendDiagnostics({ uri: doc.uri, diagnostics });
+                }
+            }
+        });
+
+        return result;
     }
 
-    public onDidClose() {
-        return (event: TextDocumentChangeEvent<TextDocument>) => {
-            this.connection.sendDiagnostics({
-                diagnostics: [],
-                uri: event.document.uri
-            });
-        };
+    public onDidClose(event: TextDocumentChangeEvent<TextDocument>) {
+        return this.connection.sendDiagnostics({
+            diagnostics: [],
+            uri: event.document.uri
+        });
     }
 
     private getDocAndPath(uri: string) {
