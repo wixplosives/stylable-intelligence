@@ -108,12 +108,12 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/core@^3.2.1":
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.2.1.tgz#8a8f54295b3a9a50edc492cb2b96c8f58ed608e9"
-  integrity sha512-ahvtoRwS+asEq2nvcOI69+WEga2shCAIx1+Q/KlggWdP6LcXkZVpidga51H/eetRXhkFJ9n6RUzLXsSvNNnHUw==
+"@stylable/core@^3.2.1", "@stylable/core@^3.3.0":
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.3.0.tgz#e720698c1cd0df7db12c49f790716c3cdd2bf98f"
+  integrity sha512-3UCLNLvRBmSy98QLeRrSBnUpGZOwG9517wUsTOEkDzUWrf5/U8y9yAp+JCXq6OEcbHZzgSW+QbeusnH+IPUR+w==
   dependencies:
-    css-selector-tokenizer "^0.7.1"
+    css-selector-tokenizer "^0.7.2"
     deindent "^0.1.0"
     enhanced-resolve "^4.1.1"
     is-vendor-prefixed "^3.3.1"
@@ -130,17 +130,17 @@
     url-regex "^5.0.0"
 
 "@stylable/language-service@^3.2.1":
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-3.2.1.tgz#33904becb140e8f91dd4b11706e82573d65ade99"
-  integrity sha512-mLj18NtpB5EVQppQcLbLxbuzZmmGozCJNTXQax+b47QuzrGVRQpo0p2k2qNVeWHkutDTS+enFHBtF3R1eoo9dQ==
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-3.3.0.tgz#30697445137b33c6c141cf1e24ef34bd299947f7"
+  integrity sha512-uvdgdAnLo/zHwoE81qCkKdUys7RDgpg5SGBCUzCiwAMlKge5RVTOAQNdK9jwtkVOrgSti9BpBwT8fPXvIuU4fg==
   dependencies:
     "@file-services/node" "^2.1.1"
     "@file-services/typescript" "^2.1.2"
-    "@stylable/core" "^3.2.1"
-    css-selector-tokenizer "^0.7.1"
+    "@stylable/core" "^3.3.0"
+    css-selector-tokenizer "^0.7.2"
     postcss "^7.0.27"
     postcss-value-parser "^4.0.3"
-    vscode-css-languageservice "^4.0.2"
+    vscode-css-languageservice "^4.1.0"
     vscode-languageserver "^6.1.1"
     vscode-uri "^2.1.1"
 
@@ -216,10 +216,10 @@
   resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-7.5.2.tgz#5e2f1d120f07b9cda07e5dedd4f3bf8888fccdb9"
   integrity sha512-T+m89VdXj/eidZyejvmoP9jivXgBDdkOSBVQjU9kF349NEx10QdPNGxHeZUaj1IlJ32/ewdyXJjnJxyxJroYwg==
 
-"@types/vscode@^1.42.0":
-  version "1.42.0"
-  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.42.0.tgz#0ad891a9487e91e34be7c56985058a179031eb76"
-  integrity sha512-ds6TceMsh77Fs0Mq0Vap6Y72JbGWB8Bay4DrnJlf5d9ui2RSe1wis13oQm+XhguOeH1HUfLGzaDAoupTUtgabw==
+"@types/vscode@1.40.0":
+  version "1.40.0"
+  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.40.0.tgz#47d19e9e32da512c986f579fe6afbc8d3e6e0c55"
+  integrity sha512-5kEIxL3qVRkwhlMerxO7XuMffa+0LBl+iG2TcRa0NsdoeSFLkt/9hJ02jsi/Kvc6y8OVF2N2P2IHP5S4lWf/5w==
 
 "@typescript-eslint/eslint-plugin@^2.22.0":
   version "2.22.0"
@@ -575,7 +575,7 @@ css-select@~1.2.0:
     domutils "1.5.1"
     nth-check "~1.0.1"
 
-css-selector-tokenizer@^0.7.1:
+css-selector-tokenizer@^0.7.2:
   version "0.7.2"
   resolved "https://registry.yarnpkg.com/css-selector-tokenizer/-/css-selector-tokenizer-0.7.2.tgz#11e5e27c9a48d90284f22d45061c303d7a25ad87"
   integrity sha512-yj856NGuAymN6r8bn8/Jl46pR+OC3eEvAhfGYDUe7YPtTPAYrSSw4oAniZ9Y8T5B92hjhwTBLUen0/vKPxf6pw==
@@ -2308,7 +2308,7 @@ vsce@^1.74.0:
     yauzl "^2.3.1"
     yazl "^2.2.2"
 
-vscode-css-languageservice@^4.0.2:
+vscode-css-languageservice@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/vscode-css-languageservice/-/vscode-css-languageservice-4.1.0.tgz#144c8274e0bf1719fa6f773ca684bd1c7ffd634f"
   integrity sha512-iTX3dTp0Y0RFWhIux5jasI8r9swdiWVB1Z3OrZ10iDHxzkETjVPxAQ5BEQU4ag0Awc8TTg1C7sJriHQY2LO14g==
