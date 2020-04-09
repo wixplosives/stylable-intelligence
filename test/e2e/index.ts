@@ -8,16 +8,16 @@ const testsRoot = __dirname;
 
 export async function run() {
     const mocha = new Mocha({
-        ui: 'tdd'
+        ui: 'tdd',
+        color: true,
     });
-    mocha.useColors(true);
     const testFilePaths = await glob('**/**.test.js', { cwd: testsRoot, absolute: true });
     for (const filePath of testFilePaths) {
         mocha.addFile(normalize(filePath));
     }
     await new Promise((resolve, reject) => {
         try {
-            mocha.run(failures => {
+            mocha.run((failures) => {
                 if (failures > 0) {
                     reject(new Error(`${failures} tests failed.`));
                 } else {
