@@ -115,10 +115,10 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/core@^3.4.2":
-  version "3.4.2"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.4.2.tgz#426574c206230ae12a9110ce7fc83d3ef186724a"
-  integrity sha512-6nk7J2zI8fZPS3oCKVsJBeuwjvA0PuxHZ8aMJ/lWgy6mNfS+GtURoOMtKlY7ZMp62MZ6lP5iHz5MmSxFubPG8g==
+"@stylable/core@^3.4.3":
+  version "3.4.3"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.4.3.tgz#ff0ce9211f555cdcd4c069d0cd4ecc9506b323fb"
+  integrity sha512-zcbXREQIdO5HN+Qrf5imsOCnnZpJz0rizFAe3WIpu3CSRoIgHWDiCHBKG9b/suEAAS1W7kXLghyKNxF5sa6hng==
   dependencies:
     css-selector-tokenizer "^0.7.2"
     deindent "^0.1.0"
@@ -136,14 +136,14 @@
     postcss-value-parser "^4.0.3"
     url-regex "^5.0.0"
 
-"@stylable/language-service@^3.4.2":
-  version "3.4.2"
-  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-3.4.2.tgz#be41fd1b0ddc03a9ba65f7dbd048325b75958294"
-  integrity sha512-8dCkX+Nu9f+7xIXL3ap9HcWERGLZRp5JgCuGB0evW56pqd1FInml3Q9k03E02HjDOIt0SwAMW5ucFbYA2YyHFg==
+"@stylable/language-service@^3.4.3":
+  version "3.4.3"
+  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-3.4.3.tgz#c225d2f1935f806c86d617243a62ae2c648177ff"
+  integrity sha512-nhF6R2K6zVmC9CMArqJLDaBdpU2eb8BO4q3vQulUaarZ7kHW5Om0u4msQgITiKjvOWV+ROQY9h9JO86bOLsY7A==
   dependencies:
     "@file-services/node" "^2.2.0"
     "@file-services/typescript" "^2.2.0"
-    "@stylable/core" "^3.4.2"
+    "@stylable/core" "^3.4.3"
     css-selector-tokenizer "^0.7.2"
     postcss "^7.0.27"
     postcss-value-parser "^4.0.3"
@@ -210,14 +210,14 @@
   integrity sha512-ZvO2tAcjmMi8V/5Z3JsyofMe3hasRcaw88cto5etSVMwVQfeivGAlEYmaQgceUSVYFofVjT+ioHsATjdWcFt1w==
 
 "@types/node@*":
-  version "13.13.1"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-13.13.1.tgz#1ba94c5a177a1692518bfc7b41aec0aa1a14354e"
-  integrity sha512-uysqysLJ+As9jqI5yqjwP3QJrhOcUwBjHUlUxPxjbplwKoILvXVsmYWEhfmAQlrPfbRZmhJB007o4L9sKqtHqQ==
+  version "13.13.2"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-13.13.2.tgz#160d82623610db590a64e8ca81784e11117e5a54"
+  integrity sha512-LB2R1Oyhpg8gu4SON/mfforE525+Hi/M1ineICEDftqNVTyFg1aRIeGuTvXAoWHc4nbrFncWtJgMmoyRvuGh7A==
 
 "@types/node@12":
-  version "12.12.36"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.36.tgz#162c8c2a2e659da480049df0e19ae128ad3a1527"
-  integrity sha512-hmmypvyO/uTLFYCYu6Hlb3ydeJ11vXRxg8/WJ0E3wvwmPO0y47VqnfmXFVuWlysO0Zyj+je1Y33rQeuYkZ51GQ==
+  version "12.12.37"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.37.tgz#cb4782d847f801fa58316da5b4801ca3a59ae790"
+  integrity sha512-4mXKoDptrXAwZErQHrLzpe0FN/0Wmf5JRniSVIdwUrtDf9wnmEV1teCNLBo/TwuXhkK/bVegoEn/wmb+x0AuPg==
 
 "@types/sinon@^9.0.0":
   version "9.0.0"
@@ -1025,9 +1025,9 @@ fs.realpath@^1.0.0:
   integrity sha1-FQStJSMVjKpA20onh8sBQRmU6k8=
 
 fsevents@~2.1.1:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.1.2.tgz#4c0a1fb34bc68e543b4b82a9ec392bfbda840805"
-  integrity sha512-R4wDiBwZ0KzpgOWetKDug1FZcYhqYnUYKtfZYt4mD5SBz76q0KR4Q9o7GIPamsVPGmW3EYPPJ0dOOjvx32ldZA==
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.1.3.tgz#fb738703ae8d2f9fe900c33836ddebee8b97f23e"
+  integrity sha512-Auw9a4AxqWpa9GUfj370BMPzzyncfBABW8Mab7BGWBYDj4Isgq+cDKtx0i6u9jcX9pQDnswsaaOTgTmA5pEjuQ==
 
 function-bind@^1.1.1:
   version "1.1.1"
@@ -2008,9 +2008,9 @@ slice-ansi@^2.1.0:
     is-fullwidth-code-point "^2.0.0"
 
 source-map-support@^0.5.16:
-  version "0.5.17"
-  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.17.tgz#29fe1b3c98b9dbd5064ada89052ee8ff070cb46c"
-  integrity sha512-bwdKOBZ5L0gFRh4KOxNap/J/MpvX9Yxsq9lFDx65s3o7F/NiHy7JRaGIS8MwW6tZPAq9UXE207Il0cfcb5yu/Q==
+  version "0.5.18"
+  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.18.tgz#f5f33489e270bd7f7d7e7b8debf283f3a4066960"
+  integrity sha512-9luZr/BZ2QeU6tO2uG8N2aZpVSli4TSAOAqFOyTO51AJcD9P99c0K1h6dD6r6qo5dyT44BR5exweOaLLeldTkQ==
   dependencies:
     buffer-from "^1.0.0"
     source-map "^0.6.0"
