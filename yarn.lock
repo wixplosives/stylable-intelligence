@@ -115,7 +115,7 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/core@^3.4.3", "@stylable/core@^3.4.4":
+"@stylable/core@^3.4.4":
   version "3.4.4"
   resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.4.4.tgz#4924d0499bea35c88416d662555bc8bf3f484e11"
   integrity sha512-0ciF1gViSsWrcPC06eTtzKgwJuAU6v6w9u2utvq6AVEKzJKCZ62nFP0RfrZlH+bfwm+Jd2WQf8AXjx3IpFCgsw==
@@ -136,14 +136,14 @@
     postcss-value-parser "^4.0.3"
     url-regex "^5.0.0"
 
-"@stylable/language-service@^3.4.3":
-  version "3.4.3"
-  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-3.4.3.tgz#c225d2f1935f806c86d617243a62ae2c648177ff"
-  integrity sha512-nhF6R2K6zVmC9CMArqJLDaBdpU2eb8BO4q3vQulUaarZ7kHW5Om0u4msQgITiKjvOWV+ROQY9h9JO86bOLsY7A==
+"@stylable/language-service@^3.4.4":
+  version "3.4.4"
+  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-3.4.4.tgz#8c9eb98a4344394fa5b4ba4e49a53a7a3cf63fec"
+  integrity sha512-ZfLUIVo7Gxjzu5wY+9wWLI05y7UChvgdjB3KAzxgz042I76b4U19PC4JqEm28WUJpLTDHgXcLGVqO4DrL3tAmQ==
   dependencies:
     "@file-services/node" "^2.2.0"
     "@file-services/typescript" "^2.2.0"
-    "@stylable/core" "^3.4.3"
+    "@stylable/core" "^3.4.4"
     css-selector-tokenizer "^0.7.2"
     postcss "^7.0.27"
     postcss-value-parser "^4.0.3"
