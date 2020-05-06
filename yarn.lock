@@ -115,7 +115,7 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/core@^3.4.4", "@stylable/core@^3.4.5":
+"@stylable/core@^3.4.5":
   version "3.4.5"
   resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.4.5.tgz#e7d3e9c35d5ff33d218e88704118d92c86429f22"
   integrity sha512-PE+r6i8+xMzD7VaxLIDFFq2fOs93OgcQdO3kcM6huOtDyS5QrXG3JmCg1q+KovLwPGCs+uMSMdli+PWPUhflVQ==
@@ -136,18 +136,18 @@
     postcss-value-parser "^4.1.0"
     url-regex "^5.0.0"
 
-"@stylable/language-service@^3.4.4":
-  version "3.4.4"
-  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-3.4.4.tgz#8c9eb98a4344394fa5b4ba4e49a53a7a3cf63fec"
-  integrity sha512-ZfLUIVo7Gxjzu5wY+9wWLI05y7UChvgdjB3KAzxgz042I76b4U19PC4JqEm28WUJpLTDHgXcLGVqO4DrL3tAmQ==
+"@stylable/language-service@^3.4.5":
+  version "3.4.5"
+  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-3.4.5.tgz#cb632e1271720ac6f601bfc72f5a0a1e793411d1"
+  integrity sha512-5lzYjpMoZDUW7HtyPoYxQ8LWCAuNhgdfz4Y2KR5ONFLbCfoO/kzLW5iSu5JEilNcArBPPvtQpyoflJ9jmi4BKg==
   dependencies:
     "@file-services/node" "^2.2.0"
     "@file-services/typescript" "^2.2.0"
-    "@stylable/core" "^3.4.4"
+    "@stylable/core" "^3.4.5"
     css-selector-tokenizer "^0.7.2"
-    postcss "^7.0.27"
-    postcss-value-parser "^4.0.3"
-    vscode-css-languageservice "^4.1.1"
+    postcss "^7.0.29"
+    postcss-value-parser "^4.1.0"
+    vscode-css-languageservice "^4.1.2"
     vscode-languageserver "^6.1.1"
     vscode-languageserver-textdocument "^1.0.1"
     vscode-uri "^2.1.1"
@@ -1747,12 +1747,12 @@ postcss-selector-parser@^6.0.2:
     indexes-of "^1.0.1"
     uniq "^1.0.1"
 
-postcss-value-parser@^4.0.3, postcss-value-parser@^4.1.0:
+postcss-value-parser@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.1.0.tgz#443f6a20ced6481a2bda4fa8532a6e55d789a2cb"
   integrity sha512-97DXOFbQJhk71ne5/Mt6cOu6yxsSfM0QGQyl0L25Gca4yGWEGJaig7l7gbCX623VqTBNGLRLaVUCnNkcedlRSQ==
 
-postcss@^7.0.18, postcss@^7.0.2, postcss@^7.0.21, postcss@^7.0.26, postcss@^7.0.27, postcss@^7.0.29:
+postcss@^7.0.18, postcss@^7.0.2, postcss@^7.0.21, postcss@^7.0.26, postcss@^7.0.29:
   version "7.0.29"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-7.0.29.tgz#d3a903872bd52280b83bce38cdc83ce55c06129e"
   integrity sha512-ba0ApvR3LxGvRMMiUa9n0WR4HjzcYm7tS+ht4/2Nd0NLtHpPIH77fuB9Xh1/yJVz9O/E/95Y/dn8ygWsyffXtw==
@@ -2346,7 +2346,7 @@ vsce@^1.75.0:
     yauzl "^2.3.1"
     yazl "^2.2.2"
 
-vscode-css-languageservice@^4.1.1:
+vscode-css-languageservice@^4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/vscode-css-languageservice/-/vscode-css-languageservice-4.1.2.tgz#533bfeb79b38e8add07230dc67001cceb80253e8"
   integrity sha512-clIjSS940NPBvtfubZokKT/YDNfE5ST9VDwsuwdCbQSkJAVZPAbmIgfmgrz/f/o8PawYQU/ooUBEuRIvIYq3ag==
