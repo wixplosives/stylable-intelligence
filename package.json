@@ -42,7 +42,7 @@
     "@types/glob": "^7.1.1",
     "@types/mocha": "^7.0.2",
     "@types/node": "12",
-    "@types/sinon": "^9.0.1",
+    "@types/sinon": "^9.0.3",
     "@types/vscode": "1.40.0",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
