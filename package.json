@@ -3,7 +3,7 @@
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "license": "BSD-3-Clause",
-  "version": "0.5.6",
+  "version": "0.6.0",
   "description": "Stylable Language Services - syntax highlighting, completions, hinting and more for the Stylable CSS preprocessor.",
   "icon": "images/icon.png",
   "galleryBanner": {
@@ -109,7 +109,12 @@
         "stylable.formatting.endOfLine": {
           "type": "string",
           "default": "\\n",
-          "enum": ["\\n", "\\r", "\\n\\r", "\\r\\n"],
+          "enum": [
+            "\\n",
+            "\\r",
+            "\\n\\r",
+            "\\r\\n"
+          ],
           "description": "End of Line control character to use"
         },
         "stylable.formatting.endWithNewLine": {
