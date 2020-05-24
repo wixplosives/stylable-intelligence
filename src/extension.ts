@@ -13,12 +13,15 @@ export async function activate(context: ExtensionContext) {
 
     const serverOptions: ServerOptions = {
         run: { module: serverModule, transport: TransportKind.ipc },
-        debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions, runtime: 'node' }
+        debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions, runtime: 'node' },
     };
 
     const clientOptions: LanguageClientOptions = {
-        documentSelector: [{ language: 'stylable', scheme: 'file' }],
-        diagnosticCollectionName: 'stylable'
+        documentSelector: [
+            { language: 'stylable', scheme: 'untitled' },
+            { language: 'stylable', scheme: 'file' },
+        ],
+        diagnosticCollectionName: 'stylable',
     };
 
     const client = new LanguageClient('stylable', serverOptions, clientOptions);

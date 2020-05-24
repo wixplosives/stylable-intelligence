@@ -1,6 +1,10 @@
 import { IFileSystem } from '@file-services/types';
 import { Stylable } from '@stylable/core';
-import { StylableLanguageService } from '@stylable/language-service';
+import {
+    JSBeautifyFormatCSSOptions,
+    StylableLanguageService,
+    lspFormattingOptionsToJsBeautifyOptions,
+} from '@stylable/language-service';
 import path from 'path';
 import {
     ColorInformation,
@@ -14,6 +18,7 @@ import {
     Hover,
     IConnection,
     Location,
+    TextEdit,
     TextDocumentChangeEvent,
     TextDocumentPositionParams,
     TextDocuments,
@@ -21,87 +26,115 @@ import {
     RenameParams,
     SignatureHelp,
     WorkspaceEdit,
-    TextDocument
+    TextDocument,
+    DocumentFormattingParams,
+    DocumentRangeFormattingParams,
 } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
+
+export interface ExtensionConfiguration {
+    diagnostics: {
+        ignore: string[];
+    };
+    formatting: JSBeautifyFormatCSSOptions;
+}
 
 export class VscodeStylableLanguageService {
     public textDocuments: TextDocuments<TextDocument>;
     public languageService: StylableLanguageService;
     private connection: IConnection;
+    private clientConfig: ExtensionConfiguration = { diagnostics: { ignore: [] }, formatting: {} };
 
     constructor(connection: IConnection, docs: TextDocuments<TextDocument>, fs: IFileSystem, stylable: Stylable) {
         this.languageService = new StylableLanguageService({
             fs,
-            stylable
+            stylable,
         });
         this.textDocuments = docs;
         this.connection = connection;
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this.getClientConfiguration();
     }
 
-    public onCompletion(params: CompletionParams): CompletionItem[] {
-        const { fsPath, doc } = this.getDocAndPath(params.textDocument.uri);
-        return doc ? this.languageService.onCompletion(fsPath, doc.offsetAt(params.position)) : [];
+    public onCompletion({ textDocument, position }: CompletionParams): CompletionItem[] {
+        const { fsPath, doc } = this.getDocAndPath(textDocument.uri);
+        return doc ? this.languageService.onCompletion(fsPath, doc.offsetAt(position)) : [];
     }
 
-    public onDefinition(params: TextDocumentPositionParams): Definition {
-        const { fsPath, doc } = this.getDocAndPath(params.textDocument.uri);
-        return doc ? this.languageService.onDefinition(fsPath, doc.offsetAt(params.position)) : [];
+    public onDefinition({ textDocument, position }: TextDocumentPositionParams): Definition {
+        const { fsPath, doc } = this.getDocAndPath(textDocument.uri);
+        return doc ? this.languageService.onDefinition(fsPath, doc.offsetAt(position)) : [];
     }
 
-    public onHover(params: TextDocumentPositionParams): Hover | null {
-        const { fsPath, doc } = this.getDocAndPath(params.textDocument.uri);
-        return doc ? this.languageService.onHover(fsPath, doc.offsetAt(params.position)) : null;
+    public onHover({ textDocument, position }: TextDocumentPositionParams): Hover | null {
+        const { fsPath, doc } = this.getDocAndPath(textDocument.uri);
+        return doc ? this.languageService.onHover(fsPath, doc.offsetAt(position)) : null;
     }
 
-    public onReferences(params: ReferenceParams): Location[] {
-        const { fsPath, doc } = this.getDocAndPath(params.textDocument.uri);
-        return doc ? this.languageService.onReferences(fsPath, doc.offsetAt(params.position)) : [];
+    public onReferences({ textDocument, position }: ReferenceParams): Location[] {
+        const { fsPath, doc } = this.getDocAndPath(textDocument.uri);
+        return doc ? this.languageService.onReferences(fsPath, doc.offsetAt(position)) : [];
     }
 
-    public onRenameRequest(params: RenameParams): WorkspaceEdit {
-        const { fsPath, doc } = this.getDocAndPath(params.textDocument.uri);
-        return doc ? this.languageService.onRenameRequest(fsPath, doc.offsetAt(params.position), params.newName) : {};
+    public onRenameRequest({ textDocument, position, newName }: RenameParams): WorkspaceEdit {
+        const { fsPath, doc } = this.getDocAndPath(textDocument.uri);
+        return doc ? this.languageService.onRenameRequest(fsPath, doc.offsetAt(position), newName) : {};
     }
 
-    public onSignatureHelp(params: TextDocumentPositionParams): SignatureHelp | null {
-        const { fsPath, doc } = this.getDocAndPath(params.textDocument.uri);
-        return doc ? this.languageService.onSignatureHelp(fsPath, doc.offsetAt(params.position)) : null;
+    public onSignatureHelp({ textDocument, position }: TextDocumentPositionParams): SignatureHelp | null {
+        const { fsPath, doc } = this.getDocAndPath(textDocument.uri);
+        return doc ? this.languageService.onSignatureHelp(fsPath, doc.offsetAt(position)) : null;
     }
 
-    public onDocumentColor(params: DocumentColorParams): ColorInformation[] {
-        const { fsPath } = URI.parse(params.textDocument.uri);
+    public onDocumentColor({ textDocument }: DocumentColorParams): ColorInformation[] {
+        const { fsPath } = URI.parse(textDocument.uri);
         return this.languageService.onDocumentColor(fsPath);
     }
 
-    public onColorPresentation(params: ColorPresentationParams): ColorPresentation[] {
-        const { fsPath, doc } = this.getDocAndPath(params.textDocument.uri);
+    public onColorPresentation({ color, textDocument, range }: ColorPresentationParams): ColorPresentation[] {
+        const { fsPath, doc } = this.getDocAndPath(textDocument.uri);
 
         return doc
             ? this.languageService.onColorPresentation(
                   fsPath,
-                  { start: doc.offsetAt(params.range.start), end: doc.offsetAt(params.range.end) },
-                  params.color
+                  { start: doc.offsetAt(range.start), end: doc.offsetAt(range.end) },
+                  color
               )
             : [];
     }
 
-    public async diagnoseWithVsCodeConfig() {
-        let res: any;
-        let ignore = false;
-        try {
-            res = await this.connection.workspace.getConfiguration({
-                section: 'stylable'
-            });
-            if (!!res && !!res.diagnostics && !!res.diagnostics.ignore && !!res.diagnostics.ignore.length) {
-                ignore = true;
-            }
-        } catch (e) {
-            /*Client has no workspace/configuration method, ignore silently */
+    public onDocumentFormatting({ textDocument, options }: DocumentFormattingParams): TextEdit[] {
+        const { doc } = this.getDocAndPath(textDocument.uri);
+
+        if (doc) {
+            return this.languageService.getDocumentFormatting(
+                doc,
+                { start: 0, end: doc.getText().length },
+                { ...this.clientConfig.formatting, ...lspFormattingOptionsToJsBeautifyOptions(options) }
+            );
         }
 
+        return [];
+    }
+
+    public onDocumentRangeFormatting({ textDocument, range, options }: DocumentRangeFormattingParams): TextEdit[] {
+        const { doc } = this.getDocAndPath(textDocument.uri);
+
+        if (doc) {
+            return this.languageService.getDocumentFormatting(
+                doc,
+                { start: doc.offsetAt(range.start), end: doc.offsetAt(range.end) },
+                lspFormattingOptionsToJsBeautifyOptions(options)
+            );
+        }
+
+        return [];
+    }
+
+    public diagnoseWithVsCodeConfig() {
         const result: Diagnostic[] = [];
-        this.textDocuments.keys().forEach(key => {
+        this.textDocuments.keys().forEach((key) => {
             const doc = this.textDocuments.get(key);
             if (doc) {
                 if (doc.languageId === 'stylable') {
@@ -118,8 +151,7 @@ export class VscodeStylableLanguageService {
                             : uri.fsPath;
                     let diagnostics: Diagnostic[];
                     if (
-                        ignore &&
-                        (res.diagnostics.ignore as string[]).some(p => {
+                        this.clientConfig.diagnostics.ignore.some((p) => {
                             return fsPath.startsWith(p);
                         })
                     ) {
@@ -136,11 +168,29 @@ export class VscodeStylableLanguageService {
         return result;
     }
 
+    public async onChangeConfig() {
+        this.clientConfig = await this.getClientConfiguration();
+        this.diagnoseWithVsCodeConfig();
+    }
+
     public onDidClose(event: TextDocumentChangeEvent<TextDocument>) {
         return this.connection.sendDiagnostics({
             diagnostics: [],
-            uri: event.document.uri
+            uri: event.document.uri,
         });
+    }
+
+    private async getClientConfiguration() {
+        let res: any;
+        try {
+            res = await this.connection.workspace.getConfiguration({
+                section: 'stylable',
+            });
+        } catch (e) {
+            /*Client has no workspace/configuration method, ignore silently */
+        }
+
+        return res;
     }
 
     private getDocAndPath(uri: string) {
