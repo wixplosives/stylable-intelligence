@@ -1,8 +1,9 @@
 import { createMemoryFs } from '@file-services/memory';
 import { createCjsModuleSystem } from '@file-services/commonjs';
 import { Stylable } from '@stylable/core';
-import { Color, IPCMessageReader, IPCMessageWriter, TextDocument } from 'vscode-languageserver-protocol';
+import { Color, IPCMessageReader, IPCMessageWriter } from 'vscode-languageserver-protocol';
 import { Location } from 'vscode-languageserver-types';
+import { TextDocument, TextEdit } from 'vscode-languageserver-textdocument';
 import { createConnection, IConnection } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 
@@ -40,7 +41,7 @@ describe('Service component test', () => {
     describe('Diagnostics', () => {
         it(
             'Diagnostics - single file error',
-            plan(1, async () => {
+            plan(1, () => {
                 const rangeAndText = getRangeAndText('|.gaga .root{}|');
                 const connection: IConnection = createConnection(
                     new IPCMessageReader(process),
@@ -57,7 +58,7 @@ describe('Service component test', () => {
                     createExpectedDiagnosis(
                         rangeAndText.range,
                         '".root" class cannot be used after native elements or selectors external to the stylesheet'
-                    )
+                    ),
                 ];
 
                 const memFs = createMemoryFs({ [baseFileName]: rangeAndText.text });
@@ -65,20 +66,20 @@ describe('Service component test', () => {
                 const stylableLSP = new VscodeStylableLanguageService(
                     connection,
                     new TestDocuments({
-                        [baseTextDocument.uri]: baseTextDocument
+                        [baseTextDocument.uri]: baseTextDocument,
                     }),
                     memFs,
                     new Stylable('/', memFs as any, requireModule)
                 );
 
-                const diagnostics = await stylableLSP.diagnoseWithVsCodeConfig();
+                const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
             })
         );
 
         xit(
             'Diagnostics - cross-file errors',
-            plan(1, async () => {
+            plan(1, () => {
                 const baseFilecContent = trimLiteral`
             |.gaga {
             |    -st-states: aState
@@ -113,7 +114,7 @@ describe('Service component test', () => {
                     topFileContent
                 );
                 const expectedDiagnostics = [
-                    createExpectedDiagnosis(createRange(5, 19, 5, 25), 'unknown pseudo-state "bState"')
+                    createExpectedDiagnosis(createRange(5, 19, 5, 25), 'unknown pseudo-state "bState"'),
                 ];
 
                 const memFs = createMemoryFs({ [baseFileName]: baseFilecContent, [topFileName]: topFileContent });
@@ -123,20 +124,20 @@ describe('Service component test', () => {
                     connection,
                     new TestDocuments({
                         [baseTextDocument.uri]: baseTextDocument,
-                        [topTextDocument.uri]: topTextDocument
+                        [topTextDocument.uri]: topTextDocument,
                     }),
                     memFs,
                     new Stylable('/', memFs as any, requireModule)
                 );
 
-                const diagnostics = await stylableLSP.diagnoseWithVsCodeConfig();
+                const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
             })
         );
 
         it(
             'Diagnostics - CSS errors',
-            plan(1, async () => {
+            plan(1, () => {
                 const baseFilecContent = trimLiteral`
             |:vars {
             |  varvar: binks;
@@ -176,7 +177,7 @@ describe('Service component test', () => {
                         "Unknown property: 'colorr'",
                         'css',
                         'unknownProperties'
-                    )
+                    ),
                 ];
 
                 const memFs = createMemoryFs({ [baseFileName]: baseFilecContent });
@@ -185,14 +186,90 @@ describe('Service component test', () => {
                 const stylableLSP = new VscodeStylableLanguageService(
                     connection,
                     new TestDocuments({
-                        [baseTextDocument.uri]: baseTextDocument
+                        [baseTextDocument.uri]: baseTextDocument,
                     }),
                     memFs,
                     new Stylable('/', memFs as any, requireModule)
                 );
 
-                const diagnostics = await stylableLSP.diagnoseWithVsCodeConfig();
+                const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
+            })
+        );
+    });
+
+    describe('Formatting', () => {
+        it(
+            'entire file',
+            plan(1, () => {
+                const { range, text } = getRangeAndText('|.root{color:red}|');
+                const connection: IConnection = createConnection(
+                    new IPCMessageReader(process),
+                    new IPCMessageWriter(process)
+                );
+                const baseFileName = '/base-file.st.css';
+                const textDocument = TextDocument.create(URI.file(baseFileName).toString(), 'stylable', 0, text);
+
+                const memFs = createMemoryFs({ [baseFileName]: text });
+                const { requireModule } = createCjsModuleSystem({ fs: memFs });
+                const stylableLSP = new VscodeStylableLanguageService(
+                    connection,
+                    new TestDocuments({
+                        [textDocument.uri]: textDocument,
+                    }),
+                    memFs,
+                    new Stylable('/', memFs as any, requireModule)
+                );
+                const expectedFormatting: TextEdit[] = [
+                    {
+                        newText: '.root {\n  color: red\n}',
+                        range: range,
+                    },
+                ];
+
+                const formatting = stylableLSP.onDocumentFormatting({
+                    textDocument,
+                    options: { insertSpaces: true, tabSize: 2 },
+                });
+
+                expect(formatting).to.deep.equal(expectedFormatting);
+            })
+        );
+        it(
+            'specific range',
+            plan(1, () => {
+                const { range, text } = getRangeAndText('.root{color|:        red|}');
+                const connection: IConnection = createConnection(
+                    new IPCMessageReader(process),
+                    new IPCMessageWriter(process)
+                );
+                const baseFileName = '/base-file.st.css';
+                const textDocument = TextDocument.create(URI.file(baseFileName).toString(), 'stylable', 0, text);
+
+                const memFs = createMemoryFs({ [baseFileName]: text });
+                const { requireModule } = createCjsModuleSystem({ fs: memFs });
+                const stylableLSP = new VscodeStylableLanguageService(
+                    connection,
+                    new TestDocuments({
+                        [textDocument.uri]: textDocument,
+                    }),
+                    memFs,
+                    new Stylable('/', memFs as any, requireModule)
+                );
+                const expectedFormatting: TextEdit[] = [
+                    {
+                        newText: ': red',
+                        range,
+                    },
+                ];
+
+                const formatting = stylableLSP.onDocumentRangeFormatting({
+                    textDocument,
+                    range,
+                    options: { insertSpaces: true, tabSize: 2 },
+                });
+
+                expect(formatting).to.deep.equal(expectedFormatting);
             })
         );
     });
@@ -241,7 +318,7 @@ describe('Service component test', () => {
                 connection,
                 new TestDocuments({
                     [baseTextDocument.uri]: baseTextDocument,
-                    [importTextDocument.uri]: importTextDocument
+                    [importTextDocument.uri]: importTextDocument,
                 }),
                 memFs,
                 new Stylable('/', memFs as any, requireModule)
@@ -253,19 +330,19 @@ describe('Service component test', () => {
             expect(docColors).to.eql([
                 {
                     range: range1,
-                    color
+                    color,
                 },
                 {
                     range: range2,
-                    color
-                }
+                    color,
+                },
             ]);
 
             expect(importDocColors).to.eql([
                 {
                     range: range3,
-                    color
-                }
+                    color,
+                },
             ]);
         })
     );
@@ -306,7 +383,7 @@ describe('Service component test', () => {
                 const stylableLSP = new VscodeStylableLanguageService(
                     connection,
                     new TestDocuments({
-                        [textDocument.uri]: textDocument
+                        [textDocument.uri]: textDocument,
                     }),
                     memFs,
                     new Stylable('/', memFs as any, requireModule)
@@ -316,17 +393,17 @@ describe('Service component test', () => {
                 const refsInSelector = stylableLSP.onReferences({
                     context,
                     position: { line: 5, character: 16 },
-                    textDocument
+                    textDocument,
                 });
                 const refsInMixin = stylableLSP.onReferences({
                     context,
                     position: { line: 10, character: 25 },
-                    textDocument
+                    textDocument,
                 });
                 const refsInExtends = stylableLSP.onReferences({
                     context,
                     position: { line: 15, character: 6 },
-                    textDocument
+                    textDocument,
                 });
 
                 const expectedRefs = [
@@ -336,7 +413,7 @@ describe('Service component test', () => {
                     Location.create(textDocument.uri, createRange(5, 14, 5, 18)),
                     Location.create(textDocument.uri, createRange(10, 22, 10, 26)),
                     Location.create(textDocument.uri, createRange(15, 4, 15, 8)),
-                    Location.create(textDocument.uri, createRange(16, 4, 16, 8))
+                    Location.create(textDocument.uri, createRange(16, 4, 16, 8)),
                 ];
 
                 expect(refsInSelector).to.eql(expectedRefs);

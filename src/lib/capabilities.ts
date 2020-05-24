@@ -13,6 +13,8 @@ export const initializeResult: InitializeResult = {
         colorProvider: true,
         signatureHelpProvider: {
             triggerCharacters: ['(', ',']
-        }
+        },
+        documentFormattingProvider: true,
+        documentRangeFormattingProvider: true
     }
 };

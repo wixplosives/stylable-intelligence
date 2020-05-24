@@ -24,8 +24,8 @@
   },
   "dependencies": {
     "@file-services/node": "^2.2.0",
-    "@stylable/core": "^3.5.0",
-    "@stylable/language-service": "^3.5.0",
+    "@stylable/core": "^3.6.0",
+    "@stylable/language-service": "^3.6.0",
     "typescript": "~3.9.3",
     "vscode-languageclient": "^6.1.3",
     "vscode-languageserver": "^6.1.1",
@@ -94,8 +94,29 @@
       }
     ],
     "configuration": {
-      "title": "Stylable Settings",
+      "title": "Stylable Intelligence",
       "properties": {
+        "stylable.formatting.newLineBetweenSelectors": {
+          "type": "boolean",
+          "default": true,
+          "description": "Add a newline between multiple selectors in a ruleset"
+        },
+        "stylable.formatting.newLineBetweenRulesets": {
+          "type": "boolean",
+          "default": true,
+          "description": "Add a newline between CSS rulesets"
+        },
+        "stylable.formatting.endOfLine": {
+          "type": "string",
+          "default": "\\n",
+          "enum": ["\\n", "\\r", "\\n\\r", "\\r\\n"],
+          "description": "End of Line control character to use"
+        },
+        "stylable.formatting.endWithNewLine": {
+          "type": "boolean",
+          "default": true,
+          "description": "End Stylable files with a new line"
+        },
         "stylable.diagnostics.ignore": {
           "type": "array",
           "scope": "window",
