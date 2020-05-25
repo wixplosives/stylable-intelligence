@@ -6,7 +6,7 @@ import {
     IPCMessageReader,
     IPCMessageWriter,
     DidChangeConfigurationNotification,
-    TextDocuments
+    TextDocuments,
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
@@ -15,13 +15,14 @@ import { VscodeStylableLanguageService } from './vscode-service';
 import { wrapFs } from './wrap-fs';
 
 const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
+let vscodeStylableLSP: VscodeStylableLanguageService;
 
 connection.listen();
-connection.onInitialize(params => {
+connection.onInitialize((params) => {
     const docs = new TextDocuments(TextDocument);
     const wrappedFs = wrapFs(fs, docs);
 
-    const vscodeStylableLSP = new VscodeStylableLanguageService(
+    vscodeStylableLSP = new VscodeStylableLanguageService(
         connection,
         docs,
         wrappedFs,
@@ -50,4 +51,5 @@ connection.onInitialize(params => {
 
 connection.onInitialized(() => {
     connection.client.register(DidChangeConfigurationNotification.type, undefined).catch(console.error);
+    vscodeStylableLSP.loadClientConfiguration().then(console.log).catch(console.error);
 });

@@ -31,6 +31,7 @@ import {
     DocumentRangeFormattingParams,
 } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
+import { normalizeConfig } from './normalize-config';
 
 export interface ExtensionConfiguration {
     diagnostics: {
@@ -52,9 +53,6 @@ export class VscodeStylableLanguageService {
         });
         this.textDocuments = docs;
         this.connection = connection;
-
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.getClientConfiguration();
     }
 
     public onCompletion({ textDocument, position }: CompletionParams): CompletionItem[] {
@@ -111,7 +109,7 @@ export class VscodeStylableLanguageService {
             return this.languageService.getDocumentFormatting(
                 doc,
                 { start: 0, end: doc.getText().length },
-                { ...this.clientConfig.formatting, ...lspFormattingOptionsToJsBeautifyOptions(options) }
+                { ...lspFormattingOptionsToJsBeautifyOptions(options), ...this.clientConfig.formatting }
             );
         }
 
@@ -169,7 +167,7 @@ export class VscodeStylableLanguageService {
     }
 
     public async onChangeConfig() {
-        this.clientConfig = await this.getClientConfiguration();
+        await this.loadClientConfiguration();
         this.diagnoseWithVsCodeConfig();
     }
 
@@ -180,17 +178,17 @@ export class VscodeStylableLanguageService {
         });
     }
 
-    private async getClientConfiguration() {
+    public async loadClientConfiguration() {
         let res: any;
         try {
             res = await this.connection.workspace.getConfiguration({
                 section: 'stylable',
             });
+
+            this.clientConfig = normalizeConfig(res);
         } catch (e) {
             /*Client has no workspace/configuration method, ignore silently */
         }
-
-        return res;
     }
 
     private getDocAndPath(uri: string) {
