@@ -29,8 +29,6 @@ export async function activate(context: ExtensionContext) {
 
     context.subscriptions.push(client.start());
     await client.onReady();
-    // const files = await workspace.findFiles('**/*.st.css');
-    // await Promise.all(files.map((file: any) => workspace.openTextDocument(file.fsPath)));
     return client;
 }
 
