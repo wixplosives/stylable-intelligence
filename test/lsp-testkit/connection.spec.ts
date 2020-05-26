@@ -51,7 +51,7 @@ export class TestConnection {
     public server: IConnection = createConnection(this.duplexStream2, this.duplexStream1);
     public client = new StreamConnectionClient(this.duplexStream1, this.duplexStream2);
 
-    public listen() {
+    public listen(): void {
         this.server.listen();
         this.client.listen();
     }
@@ -69,7 +69,8 @@ describe('LSP connection test driver', () => {
         'Test Duplex Stream',
         plan(1, () => {
             const stream = new TestDuplex('ds1');
-            stream.on('data', chunk => {
+            stream.on('data', (chunk) => {
+                // eslint-disable-next-line
                 expect(chunk.toString()).to.eql('Hello World');
             });
             stream.write('Hello World');
@@ -85,16 +86,18 @@ describe('LSP connection test driver', () => {
             const connection: IConnection = createConnection(inputStream, outputStream);
             connection.listen();
             let content = '';
-            outputStream.on('data', chunk => {
-                content += chunk.toString();
+            outputStream.on('data', (chunk) => {
+                // eslint-disable-next-line
+                content += chunk.toString() as string;
                 const match = content.match(/Content-Length:\s*(\d+)\s*/);
                 if (match) {
                     const contentLength = Number(match[1]);
                     if (content.length === match[0].length + contentLength) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         const message = JSON.parse(content.substr(contentLength * -1));
                         expect(message).to.contain({
                             method: 'test/foo',
-                            params: 'bar'
+                            params: 'bar',
                         });
                     }
                 }
@@ -115,7 +118,7 @@ describe('LSP connection test driver', () => {
             it(
                 'Handle Single Request',
                 plan(2, async () => {
-                    testCon.server.onRequest(testRequest, p1 => {
+                    testCon.server.onRequest(testRequest, (p1) => {
                         expect(p1).to.equal('argument');
                         return 'result';
                     });
@@ -127,7 +130,7 @@ describe('LSP connection test driver', () => {
             it(
                 'Handle Multiple Requests',
                 plan(1, async () => {
-                    testCon.server.onRequest(testRequest, p1 => {
+                    testCon.server.onRequest(testRequest, (p1) => {
                         return p1 + '1';
                     });
                     const promises: Array<Thenable<string>> = [];
@@ -145,7 +148,7 @@ describe('LSP connection test driver', () => {
                     try {
                         await testCon.client.sendRequest(testRequest, 'foo');
                     } catch (error) {
-                        expect(error.code).to.eql(ErrorCodes.MethodNotFound);
+                        expect((error as NodeJS.ErrnoException)?.code).to.eql(ErrorCodes.MethodNotFound);
                     }
                 })
             );
@@ -158,10 +161,12 @@ describe('LSP connection test driver', () => {
                 it(
                     `.${clientMethod}()`,
                     plan(2, async () => {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                         (testCon.server[serverMethod] as any)((p: any) => {
                             expect(p).to.contain(obj(1));
                             return obj(2);
                         });
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                         const response = await (testCon.client[clientMethod] as any)(obj(1));
                         expect(response).to.contain(obj(2));
                     })
@@ -174,9 +179,11 @@ describe('LSP connection test driver', () => {
                 it(
                     `.${clientMethod}()`,
                     plan(1, () => {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                         (testCon.client[clientMethod] as any)((p: any) => {
                             expect(p).to.contain(obj(1));
                         });
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                         (testCon.server[serverMethod] as any)(obj(1));
                     })
                 );

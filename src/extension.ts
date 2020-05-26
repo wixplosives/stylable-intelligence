@@ -7,7 +7,7 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } f
  * this is the main entry point for the vs studio code extension API
  * see https://code.visualstudio.com/docs/extensionAPI/activation-events
  */
-export async function activate(context: ExtensionContext) {
+export async function activate(context: ExtensionContext): Promise<LanguageClient> {
     const serverModule = require.resolve('./lib/server');
     const debugOptions = { execArgv: ['--inspect'] }; // Turn on debugging messages in output
 
@@ -36,6 +36,6 @@ export async function activate(context: ExtensionContext) {
  * vs-code plugin API implementation
  * deactivation cleanup
  */
-export async function deactivate() {
+export async function deactivate(): Promise<void> {
     /**/
 }

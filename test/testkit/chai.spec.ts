@@ -1,12 +1,13 @@
 import chai from 'chai';
 import sinon from 'sinon';
 
-const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 const NO_TESTS_GRACE = 20;
 const DEFAULT_TIMEOUT = 2 * 1000;
-const _expect: sinon.SinonSpy & typeof chai.expect = sinon.spy(chai.expect) as any;
-const assert = ((chai as any).Assertion.prototype.assert = sinon.spy((chai as any).Assertion.prototype.assert));
+const _expect = sinon.spy(chai.expect);
+// eslint-disable-next-line @typescript-eslint/unbound-method
+const assert = (chai.Assertion.prototype.assert = sinon.spy(chai.Assertion.prototype.assert));
 
 function assertNoError() {
     // sometimes (like when running inside expect()) the last array element is undefined
@@ -21,7 +22,7 @@ assertNoError.forget = function forget() {
 };
 
 export function plan(count: number, testCase: () => void | Promise<any>, timeout = DEFAULT_TIMEOUT) {
-    return async function(this: Mocha.ITestCallbackContext) {
+    return async function (this: Mocha.ITestCallbackContext): Promise<void> {
         _expect.resetHistory();
         if (this) {
             this.timeout(timeout * 1000);
@@ -51,10 +52,10 @@ export function plan(count: number, testCase: () => void | Promise<any>, timeout
     };
 }
 
-export const expect: typeof chai.expect = _expect;
+export const expect = (_expect as unknown) as Chai.ExpectStatic;
 
-export function obj(seed: any) {
-    return { foo: seed } as any;
+export function obj<T>(seed: T): { foo: T } {
+    return { foo: seed };
 }
 
 describe('chai testkit', () => {
@@ -62,7 +63,7 @@ describe('chai testkit', () => {
         assert.resetHistory();
     });
     describe('plan', () => {
-        it('runs the test (and succeeds when 0 assertions as planned)', async function() {
+        it('runs the test (and succeeds when 0 assertions as planned)', async function () {
             let executed = false;
             const thePlan = plan(0, () => {
                 executed = true;
@@ -83,7 +84,7 @@ describe('chai testkit', () => {
                 setTimeout(() => expect(3).to.equal(3), DEFAULT_TIMEOUT / 2);
             })
         );
-        it('fails when too many assertions', async function() {
+        it('fails when too many assertions', async function () {
             const thePlan = plan(0, () => {
                 expect(3).to.equal(3); // the plan was for 0 tests, this should fail
             }).bind(this);
@@ -91,7 +92,7 @@ describe('chai testkit', () => {
             expect(thrown).to.be.instanceof(Error);
             expect((thrown as Error).message).to.equal('1 tests done but only 0 planned');
         });
-        it('fails when too few assertions', async function() {
+        it('fails when too few assertions', async function () {
             const thePlan = plan(
                 1,
                 () => {
@@ -103,7 +104,7 @@ describe('chai testkit', () => {
             expect(thrown).to.be.instanceof(Error);
             expect((thrown as Error).message).to.equal('only 0 tests done out of 1 planned');
         });
-        it('waits for too many assertions and fails even if assertion is after promise', async function() {
+        it('waits for too many assertions and fails even if assertion is after promise', async function () {
             const thePlan = plan(
                 0,
                 () => {
@@ -116,7 +117,7 @@ describe('chai testkit', () => {
             expect(thrown).to.be.instanceof(Error);
             expect((thrown as Error).message).to.equal('1 tests done but only 0 planned');
         });
-        it('throws original error if assertion failed', async function() {
+        it('throws original error if assertion failed', async function () {
             const error = new Error('foo');
             const thePlan = plan(0, () => {
                 throw error;
@@ -124,7 +125,7 @@ describe('chai testkit', () => {
             const thrown = await thePlan().catch((e: Error) => e);
             expect(thrown).to.equal(error);
         });
-        it('assertion error has priority over plan error', async function() {
+        it('assertion error has priority over plan error', async function () {
             const error = new Error('foo');
             const thePlan = plan(0, () => {
                 expect(3).to.equal(3); // the plan was for 0 tests, this should fail

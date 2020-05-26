@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/camelcase */
+import { ExtensionConfiguration } from './vscode-service';
+
 export interface VSCodeStylableExtensionConfig {
     diagnostics: {
         ignore: string[];
@@ -11,7 +12,7 @@ export interface VSCodeStylableExtensionConfig {
     };
 }
 
-export function normalizeConfig(config: VSCodeStylableExtensionConfig) {
+export function normalizeConfig(config: VSCodeStylableExtensionConfig): ExtensionConfiguration {
     const { diagnostics, formatting } = config;
     const { endOfLine, endWithNewLine, newLineBetweenRulesets, newLineBetweenSelectors } = formatting;
 

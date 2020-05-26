@@ -8,10 +8,10 @@ export class TestDocuments extends TextDocuments<TextDocument> {
     constructor(private _docs: Record<string, TextDocument>) {
         super(TextDocument);
     }
-    public keys() {
+    public keys(): string[] {
         return Object.keys(this._docs);
     }
-    public get(uri: string) {
+    public get(uri: string): TextDocument | undefined {
         return this._docs[uri];
     }
 }

@@ -1,3 +1,4 @@
+import path from 'path';
 import { IFileSystem } from '@file-services/types';
 import { Stylable } from '@stylable/core';
 import {
@@ -5,7 +6,6 @@ import {
     StylableLanguageService,
     lspFormattingOptionsToJsBeautifyOptions,
 } from '@stylable/language-service';
-import path from 'path';
 import {
     ColorInformation,
     ColorPresentation,
@@ -31,7 +31,7 @@ import {
     DocumentRangeFormattingParams,
 } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
-import { normalizeConfig } from './normalize-config';
+import { normalizeConfig, VSCodeStylableExtensionConfig } from './normalize-config';
 
 export interface ExtensionConfiguration {
     diagnostics: {
@@ -130,7 +130,7 @@ export class VscodeStylableLanguageService {
         return [];
     }
 
-    public diagnoseWithVsCodeConfig() {
+    public diagnoseWithVsCodeConfig(): Diagnostic[] {
         const result: Diagnostic[] = [];
         this.textDocuments.keys().forEach((key) => {
             const doc = this.textDocuments.get(key);
@@ -166,24 +166,23 @@ export class VscodeStylableLanguageService {
         return result;
     }
 
-    public async onChangeConfig() {
+    public async onChangeConfig(): Promise<void> {
         await this.loadClientConfiguration();
         this.diagnoseWithVsCodeConfig();
     }
 
-    public onDidClose(event: TextDocumentChangeEvent<TextDocument>) {
-        return this.connection.sendDiagnostics({
+    public onDidClose(event: TextDocumentChangeEvent<TextDocument>): void {
+        this.connection.sendDiagnostics({
             diagnostics: [],
             uri: event.document.uri,
         });
     }
 
-    public async loadClientConfiguration() {
-        let res: any;
+    public async loadClientConfiguration(): Promise<void> {
         try {
-            res = await this.connection.workspace.getConfiguration({
+            const res = (await this.connection.workspace.getConfiguration({
                 section: 'stylable',
-            });
+            })) as VSCodeStylableExtensionConfig;
 
             this.clientConfig = normalizeConfig(res);
         } catch (e) {

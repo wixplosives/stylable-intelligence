@@ -18,13 +18,16 @@ function getPathToDiagnostics(casePath: string) {
     return pathToFile;
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 function assertDiagnosticExist(client: any, casePath: string, result: object) {
+    // eslint-disable-next-line
     const diagnostic = client._diagnostics._data.get(getPathToDiagnostics(casePath));
     expect(diagnostic).to.have.length.greaterThan(0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     return expect(diagnostic[0]).to.contain.keys(result);
 }
 
-suite('test diagnostics', function() {
+suite('test diagnostics', function () {
     this.timeout(60000);
 
     let rootDir: string;
@@ -35,20 +38,19 @@ suite('test diagnostics', function() {
     test('should support single file error', async () => {
         const casePath = path.join(rootDir, 'fixtures', 'e2e-cases', 'single-file-diag.st.css');
         const ext = vscode.extensions.getExtension('wix.stylable-intelligence');
-        let extClient: any;
 
         if (ext) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const client = await ext.activate();
-            extClient = client;
             const doc = await vscode.workspace.openTextDocument(casePath);
             await vscode.window.showTextDocument(doc);
-            return assertDiagnosticExist(extClient, casePath, {
+            return assertDiagnosticExist(client, casePath, {
                 range: {
                     _start: { _line: 1, _character: 1 },
-                    _end: { _line: 1, _character: 13 }
+                    _end: { _line: 1, _character: 13 },
                 },
                 message: '.root class cannot be used after spacing',
-                severity: 0
+                severity: 0,
             });
         } else {
             throw new Error('Where is my extension?!!');

@@ -6,7 +6,7 @@ import globCb from 'glob';
 const glob = promisify(globCb);
 const testsRoot = __dirname;
 
-export async function run() {
+export async function run(): Promise<void> {
     const mocha = new Mocha({
         ui: 'tdd',
         color: true,
