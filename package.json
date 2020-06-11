@@ -50,10 +50,10 @@
     "eslint": "^7.2.0",
     "eslint-config-prettier": "^6.11.0",
     "glob": "^7.1.6",
-    "mocha": "^7.2.0",
+    "mocha": "^8.0.1",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
-    "vsce": "^1.76.0",
+    "vsce": "^1.76.1",
     "vscode-test": "^1.4.0"
   },
   "author": "Tom Raviv",
