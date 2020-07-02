@@ -3,23 +3,23 @@
 
 
 "@babel/code-frame@^7.0.0":
-  version "7.10.3"
-  resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.10.3.tgz#324bcfd8d35cd3d47dae18cde63d752086435e9a"
-  integrity sha512-fDx9eNW0qz0WkUeqL6tXEXzVlPh6Y5aCDEZesl0xBGA8ndRukX91Uk44ZqnkECp01NAZUdCAl+aiQNGi0k88Eg==
+  version "7.10.4"
+  resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.10.4.tgz#168da1a36e90da68ae8d49c0f1b48c7c6249213a"
+  integrity sha512-vG6SvB6oYEhvgisZNFRmRCUkLz11c7rp+tbNTynGqc6mS1d5ATd/sGyV6W0KZZnXRKMTzZDRgQT3Ou9jhpAfUg==
   dependencies:
-    "@babel/highlight" "^7.10.3"
+    "@babel/highlight" "^7.10.4"
 
-"@babel/helper-validator-identifier@^7.10.3":
-  version "7.10.3"
-  resolved "https://registry.yarnpkg.com/@babel/helper-validator-identifier/-/helper-validator-identifier-7.10.3.tgz#60d9847f98c4cea1b279e005fdb7c28be5412d15"
-  integrity sha512-bU8JvtlYpJSBPuj1VUmKpFGaDZuLxASky3LhaKj3bmpSTY6VWooSM8msk+Z0CZoErFye2tlABF6yDkT3FOPAXw==
+"@babel/helper-validator-identifier@^7.10.4":
+  version "7.10.4"
+  resolved "https://registry.yarnpkg.com/@babel/helper-validator-identifier/-/helper-validator-identifier-7.10.4.tgz#a78c7a7251e01f616512d31b10adcf52ada5e0d2"
+  integrity sha512-3U9y+43hz7ZM+rzG24Qe2mufW5KhvFg/NhnNph+i9mgCtdTCtMJuI1TMkrIUiK7Ix4PYlRF9I5dhqaLYA/ADXw==
 
-"@babel/highlight@^7.10.3":
-  version "7.10.3"
-  resolved "https://registry.yarnpkg.com/@babel/highlight/-/highlight-7.10.3.tgz#c633bb34adf07c5c13156692f5922c81ec53f28d"
-  integrity sha512-Ih9B/u7AtgEnySE2L2F0Xm0GaM729XqqLfHkalTsbjXGyqmf/6M0Cu0WpvqueUlW+xk88BHw9Nkpj49naU+vWw==
+"@babel/highlight@^7.10.4":
+  version "7.10.4"
+  resolved "https://registry.yarnpkg.com/@babel/highlight/-/highlight-7.10.4.tgz#7d1bdfd65753538fabe6c38596cdb76d9ac60143"
+  integrity sha512-i6rgnR/YgPEQzZZnbTHHuZdlE8qyoBNalD6F+q4vAFlcMEcqmkoG+mPqJYJCo63qPf74+Y1UZsl3l6f7/RIkmA==
   dependencies:
-    "@babel/helper-validator-identifier" "^7.10.3"
+    "@babel/helper-validator-identifier" "^7.10.4"
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
@@ -136,10 +136,10 @@
     postcss-selector-matches "^4.0.0"
     postcss-value-parser "^4.1.0"
 
-"@stylable/language-service@^3.7.0":
-  version "3.7.0"
-  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-3.7.0.tgz#259041993737c8550022ebf1e60478200d34ec6f"
-  integrity sha512-o5r6dWszKs1SUrvPqi6z0/7LtaBgUO16brauMsrPbT1lSmyIfe1XMgDpTWaeBJGz88MTc3MOI9z+LqCrvWwl2w==
+"@stylable/language-service@^3.7.1":
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-3.7.1.tgz#953ddacb7104332d02f9a5c66cf8adf21a5da2aa"
+  integrity sha512-YpUOnqCM8fSMihKri250jO+ObJnhD177R19KRKjuYtFsZrQNIyUD0wMiUQMPBXHEHzyOqml2yGzOL7TVEtR+qQ==
   dependencies:
     "@file-services/node" "^2.2.0"
     "@file-services/typescript" "^2.2.0"
@@ -148,7 +148,7 @@
     js-beautify "^1.11.0"
     postcss "^7.0.32"
     postcss-value-parser "^4.1.0"
-    vscode-css-languageservice "^4.2.0"
+    vscode-css-languageservice "^4.3.0"
     vscode-languageserver "^6.1.1"
     vscode-languageserver-textdocument "^1.0.1"
     vscode-uri "^2.1.2"
@@ -2232,10 +2232,10 @@ typed-rest-client@1.2.0:
     tunnel "0.0.4"
     underscore "1.8.3"
 
-typescript@~3.9.5:
-  version "3.9.5"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.5.tgz#586f0dba300cde8be52dd1ac4f7e1009c1b13f36"
-  integrity sha512-hSAifV3k+i6lEoCJ2k6R2Z/rp/H3+8sdmcn5NrS3/3kE7+RyZXm9aqvxWqjEXHAd8b0pShatpcdMTvEdvAJltQ==
+typescript@~3.9.6:
+  version "3.9.6"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.6.tgz#8f3e0198a34c3ae17091b35571d3afd31999365a"
+  integrity sha512-Pspx3oKAPJtjNwE92YS05HQoY7z2SFyOpHo9MqJor3BXAGNaPUs83CuVp9VISFkSjyRfiTpmKuAYGJB7S7hOxw==
 
 uc.micro@^1.0.1, uc.micro@^1.0.5:
   version "1.0.6"
@@ -2328,7 +2328,7 @@ vsce@^1.77.0:
     yauzl "^2.3.1"
     yazl "^2.2.2"
 
-vscode-css-languageservice@^4.2.0:
+vscode-css-languageservice@^4.3.0:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/vscode-css-languageservice/-/vscode-css-languageservice-4.3.0.tgz#40c797d664ab6188cace33cfbb19b037580a9318"
   integrity sha512-BkQAMz4oVHjr0oOAz5PdeE72txlLQK7NIwzmclfr+b6fj6I8POwB+VoXvrZLTbWt9hWRgfvgiQRkh5JwrjPJ5A==
