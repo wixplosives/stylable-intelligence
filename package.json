@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@file-services/node": "^2.2.0",
-    "@stylable/core": "^3.7.0",
+    "@stylable/core": "^3.7.2",
     "@stylable/language-service": "^3.7.1",
     "typescript": "~3.9.6",
     "vscode-languageclient": "^6.1.3",
