@@ -22,7 +22,7 @@ assertNoError.forget = function forget() {
 };
 
 export function plan(count: number, testCase: () => void | Promise<any>, timeout = DEFAULT_TIMEOUT) {
-    return async function (this: Mocha.ITestCallbackContext): Promise<void> {
+    return async function (this: Mocha.Context): Promise<void> {
         _expect.resetHistory();
         if (this) {
             this.timeout(timeout * 1000);
