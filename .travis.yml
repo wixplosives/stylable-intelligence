@@ -4,6 +4,7 @@ services: xvfb
 os:
   - linux
   - osx
+  - windows
 
 node_js:
   - 12 # lts, and the version vscode-stable currently uses (via electron)
