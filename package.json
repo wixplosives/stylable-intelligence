@@ -23,9 +23,9 @@
     "prepack": "yarn build"
   },
   "dependencies": {
-    "@file-services/node": "^3.0.0",
-    "@stylable/core": "^3.8.1",
-    "@stylable/language-service": "^3.8.1",
+    "@file-services/node": "^3.1.1",
+    "@stylable/core": "^3.8.4",
+    "@stylable/language-service": "^3.8.4",
     "typescript": "~3.9.7",
     "vscode-languageclient": "^6.1.3",
     "vscode-languageserver": "^6.1.1",
@@ -34,9 +34,9 @@
     "vscode-uri": "^2.1.2"
   },
   "devDependencies": {
-    "@file-services/commonjs": "^3.0.0",
-    "@file-services/memory": "^3.0.0",
-    "@file-services/types": "^3.0.0",
+    "@file-services/commonjs": "^3.1.1",
+    "@file-services/memory": "^3.1.2",
+    "@file-services/types": "^3.1.1",
     "@ts-tools/node": "^2.0.0",
     "@types/chai": "^4.2.12",
     "@types/glob": "^7.1.3",
@@ -44,8 +44,8 @@
     "@types/node": "12",
     "@types/sinon": "^9.0.4",
     "@types/vscode": "1.40.0",
-    "@typescript-eslint/eslint-plugin": "^3.7.0",
-    "@typescript-eslint/parser": "^3.7.0",
+    "@typescript-eslint/eslint-plugin": "^3.7.1",
+    "@typescript-eslint/parser": "^3.7.1",
     "chai": "^4.2.0",
     "eslint": "^7.5.0",
     "eslint-config-prettier": "^6.11.0",
