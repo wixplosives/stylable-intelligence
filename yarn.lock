@@ -23,13 +23,13 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@file-services/commonjs@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/commonjs/-/commonjs-3.0.0.tgz#4e3a686bd63506a85288a7ae8cd315d7ee1e97e8"
-  integrity sha512-EWnRZ3M4iNJ+t/zKHMFcRwk9iGDGyvw23zoSfV3JUipik2ZKq2+27BJZOVneIipwYsq5aTcLQUqgb0R4VnUIZw==
+"@file-services/commonjs@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@file-services/commonjs/-/commonjs-3.1.1.tgz#e197170e70dcb3d3800a55db2386e7312700981a"
+  integrity sha512-y0/J0LWZzmI0Ejxng8lT/+kK8zA013Pnk6MpBXiJZ+fauQtI5Vr+VSu7IR3l6uKqb6Te6t78m94zNAsPJlxZIA==
   dependencies:
-    "@file-services/resolve" "^3.0.0"
-    "@file-services/types" "^3.0.0"
+    "@file-services/resolve" "^3.1.1"
+    "@file-services/types" "^3.1.1"
 
 "@file-services/memory@^3.0.0":
   version "3.0.0"
@@ -55,15 +55,15 @@
   dependencies:
     "@file-services/types" "^3.0.0"
 
-"@file-services/resolve@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-3.0.0.tgz#8839b28e3e9b702e1e43072d4831ef6ec010bc85"
-  integrity sha512-mEvbiwin50K8+mmbGxysfi88wwNwqvolBPqT3fg2ToV5bsTNPfOMbUdW8Tp+Blhi48YC/iPBPrv7orqm8hgWDQ==
+"@file-services/resolve@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-3.1.1.tgz#de0770fe3258ee68a0c91f8707ec86e87d9ff7da"
+  integrity sha512-TT6Nf17BuFL5PLy5zTQ9Npw9rg1hXuCbBPSYaMVrI+9nWJvzFX8J1TpY6fIEYw2SuLqg5VsvRNtpOTi4J0r8hQ==
 
-"@file-services/types@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-3.0.0.tgz#ac4ce1ef2e2331dabfbf65baf5d74a7058b4b9ae"
-  integrity sha512-8chbWzWWgpM1k7mUHErw2XqvOgPrsmG/yYxzkBHitm5363jxF/ChWBpsQuhJWe5MQxXVUL59ZM8hqbrQ3VNO7w==
+"@file-services/types@^3.0.0", "@file-services/types@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-3.1.1.tgz#58431f309fc1a1b2354cf55ef06dc02d844b8062"
+  integrity sha512-N2yMnmEsh3gvzCNmVPfM4f7MYwrbf1HBCjyCOqqjxn6FRVKs5RQlSO9e63M1Wq+mdO3rAZhUQlEIICFJpIPvNQ==
 
 "@file-services/typescript@^3.0.0":
   version "3.0.0"
