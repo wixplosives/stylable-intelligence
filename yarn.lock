@@ -115,10 +115,10 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/core@^3.8.4":
-  version "3.8.4"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.8.4.tgz#636f44a46a29b51e731d5f95d7655649c905877c"
-  integrity sha512-/VxSX6ujKzGw0t1NBfSal26YghKBz/DBZCigHPs4m4fbJNnJ3c21MYM/A5S7G7NXrqjBSwLf4R89SBrLYbBdfw==
+"@stylable/core@^3.8.4", "@stylable/core@^3.9.0":
+  version "3.9.0"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.9.0.tgz#86cc0853cd224824760d4868f11c0e7563882b1e"
+  integrity sha512-PAuNf3T53w6ewEW/9p9Kpaet6NnQgDMGxxhGHpXJMpP41XjXzhDrCrBnazwg32cCedtPFsJO3Gn3oQ+K1ZL0LA==
   dependencies:
     css-selector-tokenizer "^0.7.3"
     deindent "^0.1.0"
