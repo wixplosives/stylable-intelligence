@@ -2267,10 +2267,10 @@ vendor-prefixes@1.0.0:
   resolved "https://registry.yarnpkg.com/vendor-prefixes/-/vendor-prefixes-1.0.0.tgz#1c7b92ece46e2f1a06c5a907613f5d50045df531"
   integrity sha1-HHuS7ORuLxoGxakHYT9dUARd9TE=
 
-vsce@^1.79.4:
-  version "1.79.4"
-  resolved "https://registry.yarnpkg.com/vsce/-/vsce-1.79.4.tgz#e788310cba08d918adcc216f3f95705e4ba52a02"
-  integrity sha512-RMzOcaf8EBqe6tUWuS+vxH4ta3FtEusRD48uM0tbSl5zmMjjASfLARJEzRfUgIebNIosSKcDKrpGk2kKgCQSdg==
+vsce@^1.79.5:
+  version "1.79.5"
+  resolved "https://registry.yarnpkg.com/vsce/-/vsce-1.79.5.tgz#622d947aed97632d460e68ec774eac41f550102d"
+  integrity sha512-KZFOthGwxWFwoGqwrkzfTfyCZGuniTofnJ1a/dCzQ2HP93u1UuCKrTQyGT+SuGHu8sNqdBYNe0hb9GC3qCN7fg==
   dependencies:
     azure-devops-node-api "^7.2.0"
     chalk "^2.4.2"
