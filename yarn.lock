@@ -190,18 +190,18 @@
     vscode-languageserver-textdocument "^1.0.1"
     vscode-uri "^2.1.2"
 
-"@ts-tools/node@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@ts-tools/node/-/node-2.1.0.tgz#0ce281af3a9de6372c284d456f21cb847a6d9c22"
-  integrity sha512-di8T8SCHM4WUnqFaNwLb9ZSq4Ycl9DmXQmVhvW0DhZfyzNd/1oIs8xUQNlCUyqFdHZg14409YYlqtz7BZey3pA==
+"@ts-tools/node@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@ts-tools/node/-/node-2.1.1.tgz#2923b4386e543bd20d534824429440b46ac87e95"
+  integrity sha512-+pcRdNZIz32c8lxZrKJAoXxD/X9UgdioV7ccqfXL0h1Yyt+VeGdSUknxJ3WyKWiDKiS4RacL4LqHztaSUmBiLA==
   dependencies:
-    "@ts-tools/transpile" "^2.1.0"
+    "@ts-tools/transpile" "^2.1.1"
     source-map-support "^0.5.19"
 
-"@ts-tools/transpile@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@ts-tools/transpile/-/transpile-2.1.0.tgz#e4204340f1f6ed786711a26b7222d38d7ac260c7"
-  integrity sha512-sr5QQhb0BbcnzDfFWAq8XwJRm/N1VcZQ0rbKi+aZLtFffg0SHtLP2guTeupAVDsRki6sYKC/M+jVh6JqhaWomw==
+"@ts-tools/transpile@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@ts-tools/transpile/-/transpile-2.1.1.tgz#f2448013cdfc2944055d0446a568da97b93c6a3e"
+  integrity sha512-kuhuOlvexcF2UBkmnr+Ir8yhInzJtItiuUxLEgYKQ6odVsD1w7N1n9B0Eqxj9ZT53rhYWUzZEzMWalh9l34EPQ==
 
 "@types/chai@^4.2.12":
   version "4.2.12"
@@ -237,9 +237,9 @@
   integrity sha512-vyxR57nv8NfcU0GZu8EUXZLTbCMupIUwy95LJ6lllN+JRPG25CwMHoB1q5xKh8YKhQnHYRAn4yW2yuHbf/5xgg==
 
 "@types/node@*":
-  version "14.6.3"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.6.3.tgz#cc4f979548ca4d8e7b90bc0180052ab99ee64224"
-  integrity sha512-pC/hkcREG6YfDfui1FBmj8e20jFU5Exjw4NYDm8kEdrW+mOh0T1Zve8DWKnS7ZIZvgncrctcNCXF4Q2I+loyww==
+  version "14.6.4"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.6.4.tgz#a145cc0bb14ef9c4777361b7bbafa5cf8e3acb5a"
+  integrity sha512-Wk7nG1JSaMfMpoMJDKUsWYugliB2Vy55pdjLpmLixeyMi7HizW2I/9QoxsPCkXl3dO+ZOVqPumKaDUv5zJu2uQ==
 
 "@types/node@12":
   version "12.12.55"
