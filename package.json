@@ -36,7 +36,7 @@
   "devDependencies": {
     "@file-services/commonjs": "^4.0.1",
     "@file-services/memory": "^4.0.2",
-    "@file-services/types": "^4.0.0",
+    "@file-services/types": "^4.1.0",
     "@ts-tools/node": "^2.1.1",
     "@types/chai": "^4.2.12",
     "@types/glob": "^7.1.3",
