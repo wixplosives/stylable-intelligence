@@ -47,10 +47,10 @@
     "@file-services/resolve" "^4.1.0"
     "@file-services/types" "^4.1.0"
 
-"@file-services/memory@^4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-4.1.0.tgz#da136c9ade8b251c177d91f45c887b39a898a6fe"
-  integrity sha512-H31J2h+qRkjxhJnmUZaYt4iyHo2OlclV2khjMPVd28B2N4ar1SGLN4fsjcX061+ATBkx037NrBqQLnt41W3E6g==
+"@file-services/memory@^4.1.1":
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-4.1.1.tgz#b3993791822f79dc23b20a8a27566816325db5e5"
+  integrity sha512-Ib3pXlITF7XyniUq/Lo+c4pz+uccJzZ7+epJ4Qk+L6ytETh9LcFhMfFPXPHJRFqbFnwnRcF+Hlih9XSkWlMwXg==
   dependencies:
     "@file-services/path" "^4.1.0"
     "@file-services/types" "^4.1.0"
@@ -246,17 +246,17 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.62.tgz#733923d73669188d35950253dd18a21570085d2b"
   integrity sha512-qAfo81CsD7yQIM9mVyh6B/U47li5g7cfpVQEDMfQeF8pSZVwzbhwU3crc0qG4DmpsebpJPR49AKOExQyJ05Cpg==
 
-"@types/sinon@^9.0.5":
-  version "9.0.5"
-  resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-9.0.5.tgz#56b2a12662dd8c7d081cdc511af5f872cb37377f"
-  integrity sha512-4CnkGdM/5/FXDGqL32JQ1ttVrGvhOoesLLF7VnTh4KdjK5N5VQOtxaylFqqTjnHx55MnD9O02Nbk5c1ELC8wlQ==
+"@types/sinon@^9.0.6":
+  version "9.0.6"
+  resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-9.0.6.tgz#fb4b6883fe0417e6a1ac5d9753bdcb7016dd4dd0"
+  integrity sha512-j3GK0fiHgn8fe7sqOpInMjm0A2Tary1NBZ8gbI/sZ0C0JxYeO+nh8H0/pW/0l94vNWcH1FnZOZu/cOvIfNZTrg==
   dependencies:
     "@types/sinonjs__fake-timers" "*"
 
 "@types/sinonjs__fake-timers@*":
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/@types/sinonjs__fake-timers/-/sinonjs__fake-timers-6.0.1.tgz#681df970358c82836b42f989188d133e218c458e"
-  integrity sha512-yYezQwGWty8ziyYLdZjwxyMb0CZR49h8JALHGrxjQHWlqGgc8kLdHEgWrgL0uZ29DMvEVBDnHU2Wg36zKSIUtA==
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/@types/sinonjs__fake-timers/-/sinonjs__fake-timers-6.0.2.tgz#3a84cf5ec3249439015e14049bd3161419bf9eae"
+  integrity sha512-dIPoZ3g5gcx9zZEszaxLSVTvMReD3xxyyDnQUjA6IYDG9Ba2AV0otMPs+77sG9ojB4Qr2N2Vk5RnKeuA0X/0bg==
 
 "@types/vscode@1.40.0":
   version "1.40.0"
@@ -936,10 +936,10 @@ escape-string-regexp@^1.0.5:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
   integrity sha1-G2HAViGQqN/2rjuyzwIAyhMLhtQ=
 
-eslint-config-prettier@^6.11.0:
-  version "6.11.0"
-  resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-6.11.0.tgz#f6d2238c1290d01c859a8b5c1f7d352a0b0da8b1"
-  integrity sha512-oB8cpLWSAjOVFEJhhyMZh6NOEOtBVziaqdDQ86+qhDHFbZXoRTM7pNSvFRfW/W/L/LrQ38C99J5CGuRBBzBsdA==
+eslint-config-prettier@^6.12.0:
+  version "6.12.0"
+  resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-6.12.0.tgz#9eb2bccff727db1c52104f0b49e87ea46605a0d2"
+  integrity sha512-9jWPlFlgNwRUYVoujvWTQ1aMO8o6648r+K7qU7K5Jmkbyqav1fuEZC0COYpGBxyiAJb65Ra9hrmFx19xRGwXWw==
   dependencies:
     get-stdin "^6.0.0"
 
@@ -1959,9 +1959,9 @@ postcss-selector-matches@^4.0.0:
     postcss "^7.0.2"
 
 postcss-selector-parser@^6.0.2:
-  version "6.0.3"
-  resolved "https://registry.yarnpkg.com/postcss-selector-parser/-/postcss-selector-parser-6.0.3.tgz#766d77728728817cc140fa1ac6da5e77f9fada98"
-  integrity sha512-0ClFaY4X1ra21LRqbW6y3rUbWcxnSVkDFG57R7Nxus9J9myPFlv+jYDMohzpkBx0RrjjiqjtycpchQ+PLGmZ9w==
+  version "6.0.4"
+  resolved "https://registry.yarnpkg.com/postcss-selector-parser/-/postcss-selector-parser-6.0.4.tgz#56075a1380a04604c38b063ea7767a129af5c2b3"
+  integrity sha512-gjMeXBempyInaBqpp8gODmwZ52WaYsVOsfr4L4lDQ7n3ncD6mEyySiDtgzCT+NYC0mmeOLvtsF8iaEf0YT6dBw==
   dependencies:
     cssesc "^3.0.0"
     indexes-of "^1.0.1"
@@ -2460,10 +2460,10 @@ vendor-prefixes@1.0.0:
   resolved "https://registry.yarnpkg.com/vendor-prefixes/-/vendor-prefixes-1.0.0.tgz#1c7b92ece46e2f1a06c5a907613f5d50045df531"
   integrity sha1-HHuS7ORuLxoGxakHYT9dUARd9TE=
 
-vsce@^1.79.5:
-  version "1.79.5"
-  resolved "https://registry.yarnpkg.com/vsce/-/vsce-1.79.5.tgz#622d947aed97632d460e68ec774eac41f550102d"
-  integrity sha512-KZFOthGwxWFwoGqwrkzfTfyCZGuniTofnJ1a/dCzQ2HP93u1UuCKrTQyGT+SuGHu8sNqdBYNe0hb9GC3qCN7fg==
+vsce@^1.80.0:
+  version "1.80.0"
+  resolved "https://registry.yarnpkg.com/vsce/-/vsce-1.80.0.tgz#2d1557a9e777429eadb630e16534a7a53f218fc8"
+  integrity sha512-pnJT0LttCd5k1fJRsTOer8NvgesMYxLZYTUwuVWVOgONK9w+U5Yf32rtm4cX374TsHZbBwUr6ZFLP36wyDD8/g==
   dependencies:
     azure-devops-node-api "^7.2.0"
     chalk "^2.4.2"
