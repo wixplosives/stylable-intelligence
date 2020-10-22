@@ -152,7 +152,7 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/core@^3.11.2", "@stylable/core@^3.11.5":
+"@stylable/core@^3.11.5":
   version "3.11.5"
   resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.11.5.tgz#007075ded03d77ea579ccefe82ad429c9483cce1"
   integrity sha512-a3A+1B7yQlmXL1uEZyKVWrxBrWgY6yzBiyMqi3Ik+AEePHl40ibADYq+ttlmQaqik5QJYor2lbPzwYAoL5dLwQ==
@@ -173,19 +173,19 @@
     postcss-selector-matches "^4.0.0"
     postcss-value-parser "^4.1.0"
 
-"@stylable/language-service@^3.11.2":
-  version "3.11.2"
-  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-3.11.2.tgz#60467796055cacf8ce7f31e9902946c15d8d2981"
-  integrity sha512-tvy7KjtPqUW6x+1TOES7I+zss3Yyu0+SIJxl+CCVjt0URkPYzv6viIF8KlEkgcfU0bTN5TRb8WFVp1EjY0k6jg==
+"@stylable/language-service@^3.11.5":
+  version "3.11.5"
+  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-3.11.5.tgz#5e54ebe1d0e7fc693a90c17bde8e4ebdc17f48ce"
+  integrity sha512-Moiuahz8ywr7fQ6i7260ZYGI+ZH3o4cwji2VEoQNnYXWQYwd3hELLUlM5AKMMYZ/kURE2kn9cRQKY6v2ZKNeLA==
   dependencies:
     "@file-services/types" "^4.1.0"
     "@file-services/typescript" "^4.1.0"
-    "@stylable/core" "^3.11.2"
+    "@stylable/core" "^3.11.5"
     css-selector-tokenizer "^0.7.3"
     js-beautify "^1.13.0"
-    postcss "^8.1.1"
+    postcss "^8.1.2"
     postcss-value-parser "^4.1.0"
-    vscode-css-languageservice "^4.3.4"
+    vscode-css-languageservice "^4.3.5"
     vscode-languageserver "^6.1.1"
     vscode-languageserver-textdocument "^1.0.1"
     vscode-uri "^2.1.2"
@@ -1794,7 +1794,7 @@ postcss@^7.0.2:
     source-map "^0.6.1"
     supports-color "^6.1.0"
 
-postcss@^8.1.0, postcss@^8.1.1, postcss@^8.1.2:
+postcss@^8.1.0, postcss@^8.1.2:
   version "8.1.2"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.1.2.tgz#9731fcaa4f7b0bef47121821bdae9eeb609a324c"
   integrity sha512-mToqEVFq8jF9TFhlIK4HhE34zknFJuNTgqtsr60vUvrWn+9TIYugCwiV1JZRxCuOrej2jjstun1bn4Bc7/1HkA==
@@ -2259,7 +2259,7 @@ vsce@^1.81.1:
     yauzl "^2.3.1"
     yazl "^2.2.2"
 
-vscode-css-languageservice@^4.3.4:
+vscode-css-languageservice@^4.3.5:
   version "4.3.5"
   resolved "https://registry.yarnpkg.com/vscode-css-languageservice/-/vscode-css-languageservice-4.3.5.tgz#92f8817057dee7c381df2289aad539c7b553548a"
   integrity sha512-g9Pjxt9T32jhY0nTOo7WRFm0As27IfdaAxcFa8c7Rml1ZqBn3XXbkExjzxY7sBWYm7I1Tp4dK6UHXHoUQHGwig==
