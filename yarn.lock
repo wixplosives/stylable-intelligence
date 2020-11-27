@@ -152,10 +152,10 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/core@^3.11.7":
-  version "3.11.7"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.11.7.tgz#ccf7e83f95ca126b6fdb83a3697d8cf29034b541"
-  integrity sha512-klUzdAc9ikS39cgfuFZ1FXmjE2ZSp6vdurXz5J1DGCEVJWnV9l/MHGvOuF9pI6d9juZJvY2bAF6uboKgips4Hg==
+"@stylable/core@^3.11.7", "@stylable/core@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.11.8.tgz#7ff458a33af23bf60bd5f0a59ba1821bf9b565f1"
+  integrity sha512-PWOa0EJgA9ksqA1rmtcY4Rf5nN/C1SQfNKkH6ipsOMIiBUdZcMRboO05d87OUA3cmxJ+xpUZc+rfdUVkYBiaMg==
   dependencies:
     css-selector-tokenizer "^0.7.3"
     deindent "^0.1.0"
@@ -166,7 +166,7 @@
     lodash.clonedeep "^4.5.0"
     lodash.clonedeepwith "^4.5.0"
     murmurhash "^1.0.0"
-    postcss "^8.1.9"
+    postcss "^8.1.10"
     postcss-js "^3.0.3"
     postcss-nested "^5.0.1"
     postcss-safe-parser "^5.0.2"
@@ -1791,10 +1791,10 @@ postcss@^7.0.2:
     source-map "^0.6.1"
     supports-color "^6.1.0"
 
-postcss@^8.1.0, postcss@^8.1.6, postcss@^8.1.9:
-  version "8.1.9"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.1.9.tgz#20ff4b598a6f5015c5f7fe524b8ed5313d7ecade"
-  integrity sha512-oWuBpEl1meaMKkQXn0ic78TUrgsMvrAZLE/6ZY0H3LTteq2O3L8PGWwMbPLctpksTJIHjQeossMUMNQW7qRIHQ==
+postcss@^8.1.0, postcss@^8.1.10, postcss@^8.1.6, postcss@^8.1.9:
+  version "8.1.10"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.1.10.tgz#129834f94c720554d2cfdaeb27d5542ac4a026ea"
+  integrity sha512-iBXEV5VTTYaRRdxiFYzTtuv2lGMQBExqkZKSzkJe+Fl6rvQrA/49UVGKqB+LG54hpW/TtDBMGds8j33GFNW7pg==
   dependencies:
     colorette "^1.2.1"
     nanoid "^3.1.18"
