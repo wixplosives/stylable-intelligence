@@ -23,7 +23,7 @@
     "prepack": "yarn build"
   },
   "dependencies": {
-    "@file-services/node": "^5.0.0",
+    "@file-services/node": "^5.1.0",
     "@stylable/core": "^3.11.8",
     "@stylable/language-service": "^3.11.8",
     "typescript": "~4.1.2",
