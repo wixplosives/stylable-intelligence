@@ -39,13 +39,13 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@file-services/commonjs@^5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@file-services/commonjs/-/commonjs-5.1.0.tgz#2a9386267bbbe35b9b0407933ea7238f0bff8f2b"
-  integrity sha512-xqwleRTOwxt8MGiITDUPN15EW0yu8eVmu8612knp/yn6k/jFR7qebNNERyH5kG/hXw66sMSNjlNUwyypFBXaiw==
+"@file-services/commonjs@^5.2.0":
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/@file-services/commonjs/-/commonjs-5.2.0.tgz#60dd780991302afe597f4165e9b7f6945911c41a"
+  integrity sha512-r3AkX4ntziX8FckZ9Ym+F8/RUGogkcbhbFs4SN+Q6ajrjnbLMagvwSwKnodZfpx10iW4kaRzaKqExhMyuKZR4g==
   dependencies:
-    "@file-services/resolve" "^5.1.0"
-    "@file-services/types" "^5.0.0"
+    "@file-services/resolve" "^5.2.0"
+    "@file-services/types" "^5.2.0"
 
 "@file-services/memory@^5.1.0":
   version "5.1.0"
@@ -71,15 +71,15 @@
   dependencies:
     "@file-services/types" "^5.0.0"
 
-"@file-services/resolve@^5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-5.1.0.tgz#779dbfc337a3781bc25fe5dda64de08b95a2b8e3"
-  integrity sha512-+o8KtdXa1C69Ic3J3/VJZmhpqZK9O2mJmZdgu7oXC2kZ7owwWW2wOCO01Gg9NJf/jkijE0Ts7R2VJZeuCFxjUg==
+"@file-services/resolve@^5.2.0":
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-5.2.0.tgz#96f66efa15062daf39e7d14bb2647274d5fbb7ec"
+  integrity sha512-dTARwqDlzwLFHzbblsFjTGcKUkYMfFriQHUFlRyMTjf9qYW94d1GV0+DM8d5Qfc73gKOV9Whm6BN/I5HaVKpow==
 
-"@file-services/types@^5.0.0":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-5.0.0.tgz#089dc86f34da198a5eebaf5fc15dbfb1c324b572"
-  integrity sha512-0q1dZnXPgC6ph1aRmKx2BGqfCWIgwyhIph+jjUpzHzIH4b+jHV+uPHqucPs3HpjwcGNLWibkMeZAI/gj+/+DTw==
+"@file-services/types@^5.0.0", "@file-services/types@^5.2.0":
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-5.2.0.tgz#af0602e8deb060bfce55ded5aec441b1ac6c04ff"
+  integrity sha512-EWVOIXN8lIUHsDN870+Xmx74xXdPuAZ6X9gL7n9DpDqNVPzQLj7XzwVWhk91wCmcrJvu3OLbQhEQOTv77q7LAA==
 
 "@file-services/typescript@^5.0.0":
   version "5.0.0"
