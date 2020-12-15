@@ -2,19 +2,18 @@ import fs from '@file-services/node';
 import { Stylable } from '@stylable/core';
 import {
     createConnection,
-    IConnection,
     IPCMessageReader,
     IPCMessageWriter,
     DidChangeConfigurationNotification,
     TextDocuments,
-} from 'vscode-languageserver';
+} from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import { initializeResult } from './capabilities';
 import { VscodeStylableLanguageService } from './vscode-service';
 import { wrapFs } from './wrap-fs';
 
-const connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
+const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 let vscodeStylableLSP: VscodeStylableLanguageService;
 
 connection.listen();

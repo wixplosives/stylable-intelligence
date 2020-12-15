@@ -1,6 +1,6 @@
 import { Trace } from 'vscode-jsonrpc';
 import { ExtensionContext } from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 
 /**
  * vs-code plugin API implementation
