@@ -1,4 +1,4 @@
-import { CompletionParams, createConnection, IConnection, InitializeResult } from 'vscode-languageserver';
+import { CompletionParams, createConnection, Connection, InitializeResult } from 'vscode-languageserver/node';
 import {
     CompletionItem,
     CompletionList,
@@ -49,8 +49,8 @@ import {
 } from 'vscode-languageserver-protocol';
 // adapted from https://github.com/Microsoft/vscode-languageserver-node/blob/master/client/src/client.ts
 export class StreamConnectionClient {
-    public sendRequest: IConnection['sendRequest'];
-    private readonly connection: IConnection;
+    public sendRequest: Connection['sendRequest'];
+    private readonly connection: Connection;
 
     constructor(input: NodeJS.ReadableStream, output: NodeJS.WritableStream) {
         this.connection = createConnection(input, output);

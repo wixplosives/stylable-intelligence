@@ -1,22 +1,29 @@
 import { createMemoryFs } from '@file-services/memory';
 import { createCjsModuleSystem } from '@file-services/commonjs';
 import { Stylable } from '@stylable/core';
-import { Color, IPCMessageReader, IPCMessageWriter } from 'vscode-languageserver-protocol';
-import { Location } from 'vscode-languageserver-types';
 import { TextDocument, TextEdit } from 'vscode-languageserver-textdocument';
-import { createConnection, IConnection } from 'vscode-languageserver';
+import { Diagnostic, Range, Location, Color } from 'vscode-languageserver';
+import { IPCMessageReader, IPCMessageWriter, createConnection } from 'vscode-languageserver/node';
 import { URI } from 'vscode-uri';
 
 import { TestConnection } from '../lsp-testkit/connection.spec';
 import { expect, plan } from '../testkit/chai.spec';
 import { VscodeStylableLanguageService } from '../../src/lib/vscode-service';
 import { getRangeAndText } from '../testkit/text.spec';
-import { createExpectedDiagnosis, trimLiteral } from '../lsp-testkit/diagnostic-test-kit';
 import { TestDocuments } from '../lsp-testkit/test-documents';
 
-// duplicate from language-service colors.spec
-export function createColor(red: number, green: number, blue: number, alpha: number): Color {
-    return { red, green, blue, alpha } as Color;
+function createExpectedDiagnosis(range: Range, message: string, source = 'stylable', code?: string): Diagnostic {
+    return Diagnostic.create(range, message, 2, code, source);
+}
+
+function trimLiteral(content: TemplateStringsArray, ...keys: string[]): string {
+    if (keys.length) {
+        throw new Error('No support for expressions in pipe-delimited test files yet');
+    }
+    return content
+        .join('\n')
+        .replace(/^\s*\|/gm, '')
+        .replace(/^\n/, '');
 }
 
 // duplicate from language-service completion-providers
@@ -43,10 +50,7 @@ describe('Service component test', () => {
             'Diagnostics - single file error',
             plan(1, () => {
                 const rangeAndText = getRangeAndText('|.gaga .root{}|');
-                const connection: IConnection = createConnection(
-                    new IPCMessageReader(process),
-                    new IPCMessageWriter(process)
-                );
+                const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
                 const baseFileName = '/base-file.st.css';
                 const baseTextDocument = TextDocument.create(
                     URI.file(baseFileName).toString(),
@@ -95,10 +99,7 @@ describe('Service component test', () => {
             |    color: red;
             |}
             `;
-                const connection: IConnection = createConnection(
-                    new IPCMessageReader(process),
-                    new IPCMessageWriter(process)
-                );
+                const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
                 const baseFileName = '/base-file.st.css';
                 const topFileName = '/top-file.st.css';
                 const baseTextDocument = TextDocument.create(
@@ -157,10 +158,7 @@ describe('Service component test', () => {
             |}
             `;
 
-                const connection: IConnection = createConnection(
-                    new IPCMessageReader(process),
-                    new IPCMessageWriter(process)
-                );
+                const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
                 const baseFileName = '/base-file.st.css';
                 const baseTextDocument = TextDocument.create(
                     URI.file(baseFileName).toString(),
@@ -203,10 +201,7 @@ describe('Service component test', () => {
             'entire file',
             plan(1, () => {
                 const { range, text } = getRangeAndText('|.root{color:red}|');
-                const connection: IConnection = createConnection(
-                    new IPCMessageReader(process),
-                    new IPCMessageWriter(process)
-                );
+                const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
                 const baseFileName = '/base-file.st.css';
                 const textDocument = TextDocument.create(URI.file(baseFileName).toString(), 'stylable', 0, text);
 
@@ -239,10 +234,7 @@ describe('Service component test', () => {
             'specific range',
             plan(1, () => {
                 const { range, text } = getRangeAndText('.root{color|:        red|}');
-                const connection: IConnection = createConnection(
-                    new IPCMessageReader(process),
-                    new IPCMessageWriter(process)
-                );
+                const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
                 const baseFileName = '/base-file.st.css';
                 const textDocument = TextDocument.create(URI.file(baseFileName).toString(), 'stylable', 0, text);
 
@@ -294,10 +286,7 @@ describe('Service component test', () => {
         |}
         `;
 
-            const connection: IConnection = createConnection(
-                new IPCMessageReader(process),
-                new IPCMessageWriter(process)
-            );
+            const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
             const baseFileName = '/single-file-color.st.css';
             const importFileName = '/import-color.st.css';
             const baseFileUri = URI.file(baseFileName).toString();
@@ -309,7 +298,7 @@ describe('Service component test', () => {
             const range1 = createRange(5, 11, 5, 24);
             const range2 = createRange(1, 13, 1, 33);
             const range3 = createRange(2, 15, 2, 22);
-            const color = createColor(0, 1, 0, 0.8);
+            const color: Color = { red: 0, green: 1, blue: 0, alpha: 0.8 };
 
             const memFs = createMemoryFs({ [baseFileName]: baseFilecContent, [importFileName]: importFileContent });
             const { requireModule } = createCjsModuleSystem({ fs: memFs });
@@ -371,10 +360,7 @@ describe('Service component test', () => {
                 |    gaga;
                 |}`;
 
-                const connection: IConnection = createConnection(
-                    new IPCMessageReader(process),
-                    new IPCMessageWriter(process)
-                );
+                const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
                 const filePath = '/references.st.css';
                 const textDocument = TextDocument.create(URI.file(filePath).toString(), 'stylable', 0, fileText);
                 const memFs = createMemoryFs({ [filePath]: fileText });
@@ -448,7 +434,7 @@ describe('Service component test', () => {
         //     |}
         //     `;
 
-        //         const connection: IConnection = createConnection(
+        //         const connection = createConnection(
         //             new IPCMessageReader(process),
         //             new IPCMessageWriter(process)
         //         );

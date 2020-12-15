@@ -20,7 +20,7 @@
 
 import { Duplex } from 'stream';
 
-import { createConnection, IConnection } from 'vscode-languageserver';
+import { Connection, createConnection } from 'vscode-languageserver/node';
 import { expect, plan, obj } from '../testkit/chai.spec';
 import { ErrorCodes, RequestType } from 'vscode-languageserver-protocol';
 import { StreamConnectionClient } from './stream-connection-client';
@@ -48,7 +48,7 @@ class TestDuplex extends Duplex {
 export class TestConnection {
     private duplexStream1 = new TestDuplex('ds1');
     private duplexStream2 = new TestDuplex('ds2');
-    public server: IConnection = createConnection(this.duplexStream2, this.duplexStream1);
+    public server = createConnection(this.duplexStream2, this.duplexStream1);
     public client = new StreamConnectionClient(this.duplexStream1, this.duplexStream2);
 
     public listen(): void {
@@ -80,10 +80,10 @@ describe('LSP connection test driver', () => {
     it(
         'Test Duplex Stream Connection',
         plan(1, () => {
-            const type = new RequestType<string, string, void, void>('test/foo');
+            const type = new RequestType<string, string, void>('test/foo');
             const inputStream = new TestDuplex('ds1');
             const outputStream = new TestDuplex('ds2');
-            const connection: IConnection = createConnection(inputStream, outputStream);
+            const connection = createConnection(inputStream, outputStream);
             connection.listen();
             let content = '';
             outputStream.on('data', (chunk) => {
@@ -95,9 +95,9 @@ describe('LSP connection test driver', () => {
                     if (content.length === match[0].length + contentLength) {
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         const message = JSON.parse(content.substr(contentLength * -1));
-                        expect(message).to.contain({
+                        expect(message).to.deep.contain({
                             method: 'test/foo',
-                            params: 'bar',
+                            params: ['bar'],
                         });
                     }
                 }
@@ -114,7 +114,7 @@ describe('LSP connection test driver', () => {
             testCon.listen();
         });
         describe('onRequest', () => {
-            const testRequest = new RequestType<string, string, void, void>('test/foo');
+            const testRequest = new RequestType<string, string, void>('test/foo');
             it(
                 'Handle Single Request',
                 plan(2, async () => {
@@ -154,10 +154,7 @@ describe('LSP connection test driver', () => {
             );
         });
         describe('connection client', () => {
-            function testRequestFromClient(
-                clientMethod: keyof StreamConnectionClient,
-                serverMethod: keyof IConnection
-            ) {
+            function testRequestFromClient(clientMethod: keyof StreamConnectionClient, serverMethod: keyof Connection) {
                 it(
                     `.${clientMethod}()`,
                     plan(2, async () => {
@@ -174,7 +171,7 @@ describe('LSP connection test driver', () => {
             }
             function testNotificationToClient(
                 clientMethod: keyof StreamConnectionClient,
-                serverMethod: keyof IConnection
+                serverMethod: keyof Connection
             ) {
                 it(
                     `.${clientMethod}()`,
