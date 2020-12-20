@@ -31,7 +31,7 @@
     "vscode-languageserver": "^7.0.0",
     "vscode-languageserver-protocol": "^3.16.0",
     "vscode-languageserver-textdocument": "^1.0.1",
-    "vscode-uri": "^3.0.0"
+    "vscode-uri": "^3.0.1"
   },
   "devDependencies": {
     "@file-services/commonjs": "^5.2.0",
@@ -47,8 +47,8 @@
     "@typescript-eslint/eslint-plugin": "^4.10.0",
     "@typescript-eslint/parser": "^4.10.0",
     "chai": "^4.2.0",
-    "eslint": "^7.15.0",
-    "eslint-config-prettier": "^7.0.0",
+    "eslint": "^7.16.0",
+    "eslint-config-prettier": "^7.1.0",
     "glob": "^7.1.6",
     "mocha": "^8.2.1",
     "rimraf": "^3.0.2",
