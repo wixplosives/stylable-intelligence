@@ -16,7 +16,7 @@ import {
     Diagnostic,
     DocumentColorParams,
     Hover,
-    IConnection,
+    Connection,
     Location,
     TextEdit,
     TextDocumentChangeEvent,
@@ -26,10 +26,10 @@ import {
     RenameParams,
     SignatureHelp,
     WorkspaceEdit,
-    TextDocument,
     DocumentFormattingParams,
     DocumentRangeFormattingParams,
 } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { normalizeConfig, VSCodeStylableExtensionConfig } from './normalize-config';
 
@@ -43,10 +43,10 @@ export interface ExtensionConfiguration {
 export class VscodeStylableLanguageService {
     public textDocuments: TextDocuments<TextDocument>;
     public languageService: StylableLanguageService;
-    private connection: IConnection;
+    private connection: Connection;
     private clientConfig: ExtensionConfiguration = { diagnostics: { ignore: [] }, formatting: {} };
 
-    constructor(connection: IConnection, docs: TextDocuments<TextDocument>, fs: IFileSystem, stylable: Stylable) {
+    constructor(connection: Connection, docs: TextDocuments<TextDocument>, fs: IFileSystem, stylable: Stylable) {
         this.languageService = new StylableLanguageService({
             fs,
             stylable,

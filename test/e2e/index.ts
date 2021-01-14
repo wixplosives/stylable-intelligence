@@ -15,7 +15,7 @@ export async function run(): Promise<void> {
     for (const filePath of testFilePaths) {
         mocha.addFile(normalize(filePath));
     }
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
         try {
             mocha.run((failures) => {
                 if (failures > 0) {
