@@ -44,7 +44,7 @@
     "@types/node": "12",
     "@types/sinon": "^9.0.10",
     "@types/vscode": "^1.52.0",
-    "@typescript-eslint/eslint-plugin": "^4.14.0",
+    "@typescript-eslint/eslint-plugin": "^4.14.1",
     "@typescript-eslint/parser": "^4.14.1",
     "chai": "^4.2.0",
     "eslint": "^7.18.0",
