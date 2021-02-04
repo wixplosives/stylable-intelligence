@@ -144,21 +144,21 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/core@^3.11.13":
-  version "3.11.13"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.11.13.tgz#8aa9d7101c947d4aed923b774f2ffc5a26041d57"
-  integrity sha512-IPDKWtgF9BR9tnTjmuv6I/sp1v49GiawfbiQsegEYgoYaAV0B2q6AkQ2l3XnKxTYTcgUla927txsn/f16WkUDg==
+"@stylable/core@^3.11.13", "@stylable/core@^3.11.14":
+  version "3.11.14"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.11.14.tgz#c13bab7490ff59ebeed7b31c64397ee83718285f"
+  integrity sha512-tmcAz0myGLCbWTvRDnro6j4z602VtL+qPIvGzXsUX65Ku3UhPO1rz+khQs0ksCz1/iMIBENSDTWuA8OJjIsZbg==
   dependencies:
     css-selector-tokenizer "^0.7.3"
     deindent "^0.1.0"
-    enhanced-resolve "^4.3.0"
+    enhanced-resolve "^4.5.0"
     is-url-superb "^5.0.0"
     is-vendor-prefixed "^4.0.0"
     jest-docblock "^26.0.0"
     lodash.clonedeep "^4.5.0"
     lodash.clonedeepwith "^4.5.0"
     murmurhash "^1.0.0"
-    postcss "^8.2.2"
+    postcss "^8.2.4"
     postcss-js "^3.0.3"
     postcss-nested "^5.0.3"
     postcss-safe-parser "^5.0.2"
@@ -851,7 +851,7 @@ emoji-regex@^8.0.0:
   resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-8.0.0.tgz#e818fd69ce5ccfcb404594f842963bf53164cc37"
   integrity sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==
 
-enhanced-resolve@^4.3.0:
+enhanced-resolve@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-4.5.0.tgz#2f3cfd84dbe3b487f18f2db2ef1e064a571ca5ec"
   integrity sha512-Nv9m36S/vxpsI+Hc4/ZGRs0n9mXqSWGGq49zxb/cJfPAQMbUtttJAlNPS4AQzaBdw/pKskw5bMbekT/Y7W/Wlg==
@@ -1840,7 +1840,7 @@ postcss@^7.0.2:
     source-map "^0.6.1"
     supports-color "^6.1.0"
 
-postcss@^8.1.0, postcss@^8.1.6, postcss@^8.2.2:
+postcss@^8.1.0, postcss@^8.1.6, postcss@^8.2.2, postcss@^8.2.4:
   version "8.2.4"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.2.4.tgz#20a98a39cf303d15129c2865a9ec37eda0031d04"
   integrity sha512-kRFftRoExRVXZlwUuay9iC824qmXPcQQVzAjbCCgjpXnkdMCJYBu2gTwAaFBzv8ewND6O8xFb3aELmEkh9zTzg==
