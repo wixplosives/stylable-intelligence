@@ -100,6 +100,43 @@
           ]
         },
         {
+          "begin": "(?i)((@)st-import)(?:\\s+|$|(?=['\"]|/\\*))",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.control.at-rule.st-import.css"
+            },
+            "2": {
+              "name": "punctuation.definition.keyword.css"
+            }
+          },
+          "end": ";",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.terminator.rule.css"
+            }
+          },
+          "name": "meta.at-rule.st-import.css",
+          "patterns": [{
+              "begin": "\\G\\s*(?=/\\*)",
+              "end": "(?<=\\*/)\\s*",
+              "patterns": [{
+                "include": "#comment-block"
+              }]
+            },
+            {
+              "patterns": [
+                {
+                  "match": "\\s+from\\s*",
+                  "name": "punctuation.definition.keyword.css"
+                },
+                {
+                  "include": "#string"
+                }
+              ]
+            }
+          ]
+        },
+        {
           "begin": "(?i)((@)import)(?:\\s+|$|(?=['\"]|/\\*))",
           "beginCaptures": {
             "1": {
