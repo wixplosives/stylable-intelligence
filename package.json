@@ -146,14 +146,9 @@
       "description": "Stylable Intelligence on the VSCode marketplace"
     },
     {
-      "url": "https://travis-ci.org/wix/stylable-intelligence.svg?branch=master",
+      "url": "https://github.com/wix/stylable-intelligence/workflows/tests/badge.svg",
       "href": "https://travis-ci.org/wix/stylable-intelligence",
-      "description": "Stylable Intelligence build on Travis CI"
-    },
-    {
-      "url": "https://ci.appveyor.com/api/projects/status/github/wix/stylable-intelligence?branch=master&svg=true",
-      "href": "https://ci.appveyor.com/project/qballer/stylable-intelligence",
-      "description": "Stylable Intelligence build on AppVoyer"
+      "description": "Stylable Intelligence build on GitHub Actions"
     },
     {
       "url": "https://badge.fury.io/js/stylable-intelligence.svg",
