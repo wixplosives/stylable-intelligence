@@ -76,12 +76,12 @@
   resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-5.3.1.tgz#3455cd4fd49edcf24dc5b2553eab4b12dcd1ebe2"
   integrity sha512-nwyZj3HC7W+H8Ft+8Q0GWoRhl8tFaLkvlTZEOAQLqb0Tbi3bt+LDDxdz0Vf0nD6tDfq54CoGcO7OoMaisE/xbA==
 
-"@file-services/types@^5.3.0", "@file-services/types@^5.3.1":
+"@file-services/types@^5.3.1":
   version "5.3.1"
   resolved "https://registry.yarnpkg.com/@file-services/types/-/types-5.3.1.tgz#5d350f20f99e9fdf08ece470ecbfacd8e11c5844"
   integrity sha512-aosWw8NFPWNuY9p/yZVLXwM9OYG3NRahG432IhgpulcmbJkGlA+odj3zj6DPq+/FTyqOFf5vldIg25jBTEm+CA==
 
-"@file-services/typescript@^5.3.0":
+"@file-services/typescript@^5.3.1":
   version "5.3.1"
   resolved "https://registry.yarnpkg.com/@file-services/typescript/-/typescript-5.3.1.tgz#7b0b410c8071d5a1d4ae9e996ff1b35cccbcf95c"
   integrity sha512-JvqxSot3eViwFTzDDrn+wSpylC2TVPMblZY+MXYDunYLff7hde+wFHCQjzs6UDMVNCxOKFRZkzjklU6NiUXf1w==
@@ -144,10 +144,10 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/core@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.0.0.tgz#64807551a6dba404536dbebf2223c3b2d3f65ca8"
-  integrity sha512-NOhyjwoOsYjYkF4wcfPmiU7nNQU3S4xCQ40LyH/NjHLytR45BJBkRADogisU+bzpyrne7EZVk4U4vq/rOccimA==
+"@stylable/core@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.0.1.tgz#375035a7477d28dca287e73de2c928b8c4f475e5"
+  integrity sha512-x8vPIDU54uaXqhtRqK55fjYn0gnImZshSJ9aRvN7yAbKNMnmjIqJbVUxUMvORmJBOrCiG7D7Mn7h7ihyP4vIVw==
   dependencies:
     css-selector-tokenizer "^0.7.3"
     deindent "^0.1.0"
@@ -165,14 +165,14 @@
     postcss-value-parser "^4.1.0"
     toky "^0.1.0"
 
-"@stylable/language-service@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-4.0.0.tgz#a1e11fb1b8e94393452bd0331c8e92cceac449bb"
-  integrity sha512-CcfsR5EWDyElStrwDrA3ZaZUE/hL9bTOp0jIE475FVlvchGGtqy8q7bQL1YFBK/EYtRQwdfNuwNHiGvTPVOquw==
+"@stylable/language-service@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-4.0.1.tgz#f7391f95ee2475e228faba2b4c7b74eef5643253"
+  integrity sha512-wUZEx5u4x5jhJGCLLW7LBOewgpw0uiFeGqkD64JSg4wSmdaB1M9bKfL3RwQwlsDSTui7j4IXvU7xgWxwYZK4cw==
   dependencies:
-    "@file-services/types" "^5.3.0"
-    "@file-services/typescript" "^5.3.0"
-    "@stylable/core" "^4.0.0"
+    "@file-services/types" "^5.3.1"
+    "@file-services/typescript" "^5.3.1"
+    "@stylable/core" "^4.0.1"
     css-selector-tokenizer "^0.7.3"
     js-beautify "^1.13.5"
     postcss "^8.2.6"
@@ -1027,9 +1027,9 @@ fastparse@^1.1.2:
   integrity sha512-483XLLxTVIwWK3QTrMGRqUfUpoOs/0hbQrl2oz4J0pAcm3A3bu84wxTFqGqkJzewCLdME38xJLJAxBABfQT8sQ==
 
 fastq@^1.6.0:
-  version "1.10.1"
-  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.10.1.tgz#8b8f2ac8bf3632d67afcd65dac248d5fdc45385e"
-  integrity sha512-AWuv6Ery3pM+dY7LYS8YIaCiQvUaos9OB1RyNgaOWnaX+Tik7Onvcsf8x8c+YtDeT0maYLniBip2hox5KtEXXA==
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.11.0.tgz#bb9fb955a07130a918eb63c1f5161cc32a5d0858"
+  integrity sha512-7Eczs8gIPDrVzT+EksYBcupqMyxSHXXrHOLRRxU2/DicV8789MRBRR8+Hc2uWzUupOs4YS4JzBmBxjjCVBxD/g==
   dependencies:
     reusify "^1.0.4"
 
