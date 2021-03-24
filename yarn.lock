@@ -143,10 +143,10 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/core@^4.0.2":
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.0.2.tgz#406c6dac5b545e77c9458810ffaf40cb086ca79f"
-  integrity sha512-GHIhhDXuViuH7FSH7vV1nHEO4sn9GyXSsGloxFfyT0+qKjSM2lBCh9m5dPZ3v8ByLhUOBf6mVjDRsD7qoxDqkw==
+"@stylable/core@^4.0.4":
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.0.4.tgz#5495d12fe688d26de707503605e245fc633108d4"
+  integrity sha512-BGYvS+dSaNE2Y/3Baao7t7VC0woIctAkeynpX7tG4KgNwtsF8TJk4XRO5DGrROlxv7armrfDQyvAo51L8jPY0Q==
   dependencies:
     css-selector-tokenizer "^0.7.3"
     deindent "^0.1.0"
@@ -164,14 +164,14 @@
     postcss-value-parser "^4.1.0"
     toky "^0.1.0"
 
-"@stylable/language-service@^4.0.2":
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-4.0.2.tgz#5162506ba333edf54dd167dd644f325e33978c99"
-  integrity sha512-9Z4256bOJbUm1U3ZqlTyB2Um3VyQIVaEZwB1/GZotqVZkzERSlb5a8Fxr+BtznaFe11Thb6OvsByHbYMOdC9rQ==
+"@stylable/language-service@^4.0.4":
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-4.0.4.tgz#b785c28d023ee6222e2f9d5ca045333bffd9ecb5"
+  integrity sha512-59z0UgGqkEl2FXT29DIprYBorRVbjLgLLCi52D7ZrhbBXCP6CE/KRkhrOAZr7pJDgJ4dPdgYBJfv/34XyXOtig==
   dependencies:
     "@file-services/types" "^5.3.1"
     "@file-services/typescript" "^5.3.1"
-    "@stylable/core" "^4.0.2"
+    "@stylable/core" "^4.0.4"
     css-selector-tokenizer "^0.7.3"
     js-beautify "^1.13.5"
     postcss "^8.2.8"
