@@ -1,5 +1,5 @@
 import fs from '@file-services/node';
-import { Stylable } from '@stylable/core';
+import { MinimalFS, safeParse, Stylable } from '@stylable/core';
 import {
     createConnection,
     IPCMessageReader,
@@ -25,7 +25,12 @@ connection.onInitialize((params) => {
         connection,
         docs,
         wrappedFs,
-        new Stylable(params.rootPath || '', wrappedFs as any, require)
+        Stylable.create({
+            projectRoot: params.rootPath || '',
+            fileSystem: wrappedFs as MinimalFS,
+            requireModule: require,
+            cssParser: safeParse
+        })
     );
 
     docs.listen(connection);

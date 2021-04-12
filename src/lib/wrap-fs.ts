@@ -1,6 +1,7 @@
 import { IBaseFileSystemSyncActions, IFileSystem, ReadFileOptions } from '@file-services/types';
-import { TextDocuments, TextDocument } from 'vscode-languageserver';
+import { TextDocuments } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
+import type { TextDocument } from 'vscode-languageserver-textdocument';
 
 export function wrapFs(fs: IFileSystem, docs: TextDocuments<TextDocument>): IFileSystem {
     const readFileSync = ((path: string, ...args: [ReadFileOptions]) => {
