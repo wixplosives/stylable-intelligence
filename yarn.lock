@@ -150,19 +150,19 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/core@^4.2.1":
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.2.1.tgz#4bfad63b7fd82ec6f4b985f3f5908191972769df"
-  integrity sha512-wEWC+9XLuPv0xBSe7B3FI/Lx7zbKmOvziMU/wHvU41+0zWutyD0zq8omrsurRfZFbIytZz8HSeU/z4PiWHaNTg==
+"@stylable/core@^4.2.2":
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.2.2.tgz#b22ef5becdaab008e6068ace7a98d7977ed27dc8"
+  integrity sha512-JKkJLGuZhCOoEdMQRphxgB0ahFlPCGg5a+FT9G+2J2YFAb427nks7gRwOXWGy7RdT+kbmx1cIdbkzCotJ9pZCw==
   dependencies:
     css-selector-tokenizer "^0.7.3"
     deindent "^0.1.0"
-    enhanced-resolve "^5.8.0"
+    enhanced-resolve "^5.8.2"
     is-vendor-prefixed "^4.0.0"
     jest-docblock "^26.0.0"
     lodash.clonedeep "^4.5.0"
     lodash.clonedeepwith "^4.5.0"
-    postcss "^8.2.13"
+    postcss "^8.2.15"
     postcss-js "^3.0.3"
     postcss-nested "^5.0.5"
     postcss-safe-parser "^5.0.2"
@@ -170,17 +170,17 @@
     postcss-value-parser "^4.1.0"
     toky "^0.1.0"
 
-"@stylable/language-service@^4.2.1":
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-4.2.1.tgz#bc1ae8a55df63796f8f3996e7cb740f527a789be"
-  integrity sha512-mcqZode5N2hbyiP0lyxrVg+afS8EEY55oliW5KfNfP4dnulOK7Yn74XSdQeHgtCAZgsM9b3mfffeJ1QfhWq6ig==
+"@stylable/language-service@^4.2.2":
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-4.2.2.tgz#03ef5526b009c34f92d8ec0951f71be1e0a1e65c"
+  integrity sha512-IOZXKaa0WBQDR5xE/GYNiJKXj7J649tA1I8I1GR/gfgFpJ1FXEP5wUTJ/EBrAGL9Cm8QZHjQNgtXgjd+bRTCkQ==
   dependencies:
     "@file-services/types" "^5.3.1"
     "@file-services/typescript" "^5.3.1"
-    "@stylable/core" "^4.2.1"
+    "@stylable/core" "^4.2.2"
     css-selector-tokenizer "^0.7.3"
     js-beautify "^1.13.13"
-    postcss "^8.2.13"
+    postcss "^8.2.15"
     postcss-value-parser "^4.1.0"
     vscode-css-languageservice "^5.1.1"
     vscode-languageserver "^7.0.0"
@@ -839,7 +839,7 @@ emoji-regex@^8.0.0:
   resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-8.0.0.tgz#e818fd69ce5ccfcb404594f842963bf53164cc37"
   integrity sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==
 
-enhanced-resolve@^5.8.0:
+enhanced-resolve@^5.8.2:
   version "5.8.2"
   resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-5.8.2.tgz#15ddc779345cbb73e97c611cd00c01c1e7bf4d8b"
   integrity sha512-F27oB3WuHDzvR2DOGNTaYy0D5o0cnrv8TeI482VM4kYgQd/FT9lUQwuNsJ0oOHtBUq7eiW5ytqzp7nBFknL+GA==
@@ -1815,7 +1815,7 @@ postcss@^7.0.2:
     source-map "^0.6.1"
     supports-color "^6.1.0"
 
-postcss@^8.1.0, postcss@^8.1.6, postcss@^8.2.13:
+postcss@^8.1.0, postcss@^8.1.6, postcss@^8.2.15:
   version "8.2.15"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.2.15.tgz#9e66ccf07292817d226fc315cbbf9bc148fbca65"
   integrity sha512-2zO3b26eJD/8rb106Qu2o7Qgg52ND5HPjcyQiK2B98O388h43A448LCslC0dI2P97wCAQRJsFvwTRcXxTKds+Q==
