@@ -53,7 +53,7 @@
     "mocha": "^8.4.0",
     "rimraf": "^3.0.2",
     "sinon": "^11.1.1",
-    "vsce": "^1.88.0",
+    "vsce": "^1.91.0",
     "vscode-test": "^1.5.2"
   },
   "author": "Tom Raviv",
