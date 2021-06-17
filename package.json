@@ -26,7 +26,7 @@
     "@file-services/node": "^5.3.1",
     "@stylable/core": "^4.2.5",
     "@stylable/language-service": "^4.2.5",
-    "typescript": "~4.3.2",
+    "typescript": "~4.3.3",
     "vscode-languageclient": "^7.0.0",
     "vscode-languageserver": "^7.0.0",
     "vscode-languageserver-protocol": "^3.16.0",
