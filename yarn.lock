@@ -157,10 +157,18 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/core@^4.3.3":
-  version "4.3.3"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.3.3.tgz#49abb8eb38b3012eb28361d51079f65307ce27dd"
-  integrity sha512-gQH+FKh4egvJJ9UDxqdLW1QLU3xEwQqL2818alEsHNZ/dLF1itHfwsY61BIjLQb47GLau5zzCUDuuIGvTVx7Bg==
+"@stylable/code-formatter@^4.4.0":
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/@stylable/code-formatter/-/code-formatter-4.4.0.tgz#deb5fabcab4ffc1cfe4315d829b1112a90684de5"
+  integrity sha512-K/1So/rvzBxz5OX3WHTXNiPMQu2OohjE13ND+MKR5nIUSnQSYRR6EJovqCBFIjPUROjYlIoAN6bR4Af8uG2r6w==
+  dependencies:
+    "@stylable/core" "^4.4.0"
+    js-beautify "^1.14.0"
+
+"@stylable/core@^4.3.3", "@stylable/core@^4.4.0":
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.4.0.tgz#7ddef831272083f2a3a53d4d059a35d2bb2ec160"
+  integrity sha512-e2vdd2rWh6X7sfyKg6k2j58/bp3ST8KmUmw8zjdAjAOZ/xRTcf3pCR70hPf0SKnRRqZFths9o+CH1rxGnzTgZg==
   dependencies:
     balanced-match "^2.0.0"
     css-selector-tokenizer "^0.8.0"
@@ -176,16 +184,16 @@
     postcss-value-parser "^4.1.0"
     toky "^0.1.0"
 
-"@stylable/language-service@^4.3.3":
-  version "4.3.3"
-  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-4.3.3.tgz#41b22ea28b1a828ffeaf5e86668036e3deed9743"
-  integrity sha512-zrVQ2Qu8O0AsO9er8W5HHYrXg2dpaWtw7j8qDLMYWz3fQKz3xnz96FjKDXGR6oA00SVSjQg8M3oejhaYF6frFg==
+"@stylable/language-service@^4.4.0":
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-4.4.0.tgz#cf75fa1616ecf475d7e109b8e41483a7068931c3"
+  integrity sha512-uoune8IfDU5ysYSDtFOAiB65OhExYhjQwh01EQxkMoo7xSu+/VLOz9ZWYH9QpH7bAhkBmp+gLZW/YPFt52pQ9Q==
   dependencies:
     "@file-services/types" "^5.3.1"
     "@file-services/typescript" "^5.3.1"
-    "@stylable/core" "^4.3.3"
+    "@stylable/code-formatter" "^4.4.0"
+    "@stylable/core" "^4.4.0"
     css-selector-tokenizer "^0.8.0"
-    js-beautify "^1.14.0"
     postcss "^8.3.5"
     postcss-value-parser "^4.1.0"
     vscode-css-languageservice "^5.1.4"
