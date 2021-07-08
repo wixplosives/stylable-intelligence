@@ -1,11 +1,7 @@
 import path from 'path';
 import { IFileSystem } from '@file-services/types';
 import { Stylable } from '@stylable/core';
-import {
-    JSBeautifyFormatCSSOptions,
-    StylableLanguageService,
-    lspFormattingOptionsToJsBeautifyOptions,
-} from '@stylable/language-service';
+import { lspFormattingOptionsToJsBeautifyOptions, StylableLanguageService } from '@stylable/language-service';
 import {
     ColorInformation,
     ColorPresentation,
@@ -32,12 +28,13 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { normalizeConfig, VSCodeStylableExtensionConfig } from './normalize-config';
+import type { CSSBeautifyOptions } from 'js-beautify';
 
 export interface ExtensionConfiguration {
     diagnostics: {
         ignore: string[];
     };
-    formatting: JSBeautifyFormatCSSOptions;
+    formatting: CSSBeautifyOptions;
 }
 
 export class VscodeStylableLanguageService {
@@ -123,7 +120,7 @@ export class VscodeStylableLanguageService {
             return this.languageService.getDocumentFormatting(
                 doc,
                 { start: doc.offsetAt(range.start), end: doc.offsetAt(range.end) },
-                lspFormattingOptionsToJsBeautifyOptions(options)
+                { ...lspFormattingOptionsToJsBeautifyOptions(options), ...this.clientConfig.formatting }
             );
         }
 
