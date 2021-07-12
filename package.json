@@ -44,9 +44,9 @@
     "@types/mocha": "^8.2.3",
     "@types/node": "14",
     "@types/sinon": "^10.0.2",
-    "@types/vscode": "1.56.0",
-    "@typescript-eslint/eslint-plugin": "^4.28.2",
-    "@typescript-eslint/parser": "^4.28.2",
+    "@types/vscode": "1.57.0",
+    "@typescript-eslint/eslint-plugin": "^4.28.3",
+    "@typescript-eslint/parser": "^4.28.3",
     "chai": "^4.3.4",
     "eslint": "^7.30.0",
     "eslint-config-prettier": "^8.3.0",
@@ -67,7 +67,7 @@
     "url": "https://github.com/wix/stylable-intelligence/issues"
   },
   "engines": {
-    "vscode": "^1.56.0"
+    "vscode": "^1.57.0"
   },
   "categories": [
     "Programming Languages",
