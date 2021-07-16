@@ -55,7 +55,7 @@
     "rimraf": "^3.0.2",
     "sinon": "^11.1.1",
     "vsce": "^1.95.1",
-    "vscode-test": "^1.5.2"
+    "vscode-test": "^1.6.1"
   },
   "author": "Tom Raviv",
   "publisher": "wix",
