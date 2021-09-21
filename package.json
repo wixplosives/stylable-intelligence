@@ -38,7 +38,7 @@
     "@file-services/memory": "^5.4.1",
     "@file-services/types": "^5.4.0",
     "@ts-tools/node": "^3.0.1",
-    "@types/chai": "^4.2.21",
+    "@types/chai": "^4.2.22",
     "@types/glob": "^7.1.4",
     "@types/js-beautify": "^1.13.3",
     "@types/mocha": "^9.0.0",
