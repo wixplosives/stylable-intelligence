@@ -219,10 +219,10 @@
   resolved "https://registry.yarnpkg.com/@ts-tools/transpile/-/transpile-3.0.1.tgz#b9e7462a8e42685c5852640faf51de4b0e6a1b41"
   integrity sha512-PxM/8aIPN9IEJxu0RI9F7M1lUGVRC+ZW/TBnL73U3oQiGeyNsk6EfvzDP4bvCPSUUVByXYCpaofFQAHvlLRwAQ==
 
-"@types/chai@^4.2.21":
-  version "4.2.21"
-  resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.2.21.tgz#9f35a5643129df132cf3b5c1ec64046ea1af0650"
-  integrity sha512-yd+9qKmJxm496BOV9CMNaey8TWsikaZOwMRwPHQIjcOJM9oV+fi9ZMNw3JsVnbEEbo2gRTDnGEBv8pjyn67hNg==
+"@types/chai@^4.2.22":
+  version "4.2.22"
+  resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.2.22.tgz#47020d7e4cf19194d43b5202f35f75bd2ad35ce7"
+  integrity sha512-tFfcE+DSTzWAgifkjik9AySNqIyNoYwmR+uecPwwD/XRNfvOjmC/FjCxpiUGDkDVDphPfCUecSQVFw+lN3M3kQ==
 
 "@types/glob@^7.1.4":
   version "7.1.4"
