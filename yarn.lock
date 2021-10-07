@@ -157,18 +157,18 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/code-formatter@^4.7.1":
-  version "4.7.1"
-  resolved "https://registry.yarnpkg.com/@stylable/code-formatter/-/code-formatter-4.7.1.tgz#363ea48ca8102b7920a529b9a0cb2d71df63e641"
-  integrity sha512-AluRpN3t865m2ZosAl1RbPt4Uu50aW2WhqabYGD3EDHqqXZ9yAIajDFj8ngNqJV6lBq8qUIGF72KU/hrBtEFSw==
+"@stylable/code-formatter@^4.7.2":
+  version "4.7.2"
+  resolved "https://registry.yarnpkg.com/@stylable/code-formatter/-/code-formatter-4.7.2.tgz#9ae557d672cb7996457a906a380df8d7d74ecbef"
+  integrity sha512-lyX+JuSq/iLALYtXyBiVzJulS5Ipi+lfn49whMTJ0uogRuWmEc8rp0T8lzIMAoGLQJYAWzafrCxdDrjK6sKZbA==
   dependencies:
-    "@stylable/core" "^4.7.1"
+    "@stylable/core" "^4.7.2"
     js-beautify "^1.14.0"
 
-"@stylable/core@^4.7.1":
-  version "4.7.1"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.7.1.tgz#8eacb3b4264053f487577158f662e39b8d5a5ef8"
-  integrity sha512-1igVs7sBZ8nL2oYgWMfvfvCUCAvYNx8axmAEwLWRtTc2ctf8PtYU+B3OpAAp/TmdZe1qkWXa78xh4P2HQ6LmQQ==
+"@stylable/core@^4.7.1", "@stylable/core@^4.7.2":
+  version "4.7.2"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.7.2.tgz#383727f382f7c658011befa693865e829ac919e4"
+  integrity sha512-/u7Q4Lu0oH7qCPvKcrcWORNgQXasxHN8v1MQ2Ew09c5UeYpuqlOs4bTzD4McHvnbKGqAFtBu5tblhsEqB5HWLw==
   dependencies:
     balanced-match "^2.0.0"
     css-selector-tokenizer "^0.8.0"
@@ -177,24 +177,24 @@
     is-vendor-prefixed "^4.0.0"
     lodash.clonedeep "^4.5.0"
     lodash.clonedeepwith "^4.5.0"
-    postcss "^8.3.8"
+    postcss "^8.3.9"
     postcss-js "^3.0.3"
     postcss-nested "^5.0.6"
     postcss-safe-parser "^6.0.0"
     postcss-value-parser "^4.1.0"
     toky "^0.1.0"
 
-"@stylable/language-service@^4.7.1":
-  version "4.7.1"
-  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-4.7.1.tgz#ac371736a110a1d214b75ed2f17ee1a39edf636f"
-  integrity sha512-fwaKONY9kGuwR2S+zbdZOmwRiCrjvNOLCf81cvOE3ppS5r6oK68t33fcfkTXaacoPltSOSSU7uoRR0hiJuzKjA==
+"@stylable/language-service@^4.7.2":
+  version "4.7.2"
+  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-4.7.2.tgz#e11e4be21d3fccbef00d085922af5dc5f047308d"
+  integrity sha512-RugHNC4we79AOcVut1NE2j61GinTE9qj9KtbSFkE9SXXCVJ9lI4zNXu0WTr85YwzELbIoZI5OLDf2VtNbRYNjw==
   dependencies:
     "@file-services/types" "^5.4.0"
     "@file-services/typescript" "^5.4.0"
-    "@stylable/code-formatter" "^4.7.1"
-    "@stylable/core" "^4.7.1"
+    "@stylable/code-formatter" "^4.7.2"
+    "@stylable/core" "^4.7.2"
     css-selector-tokenizer "^0.8.0"
-    postcss "^8.3.8"
+    postcss "^8.3.9"
     postcss-value-parser "^4.1.0"
     vscode-css-languageservice "^5.1.7"
     vscode-languageserver "^7.0.0"
@@ -1599,20 +1599,15 @@ mute-stream@~0.0.4:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
   integrity sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==
 
-nanocolors@^0.2.2:
-  version "0.2.12"
-  resolved "https://registry.yarnpkg.com/nanocolors/-/nanocolors-0.2.12.tgz#4d05932e70116078673ea4cc6699a1c56cc77777"
-  integrity sha512-SFNdALvzW+rVlzqexid6epYdt8H9Zol7xDoQarioEFcFN0JHo4CYNztAxmtfgGTVRCmFlEOqqhBpoFGKqSAMug==
-
 nanoid@3.1.25:
   version "3.1.25"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.25.tgz#09ca32747c0e543f0e1814b7d3793477f9c8e152"
   integrity sha512-rdwtIXaXCLFAQbnfqDRnI6jaRHp9fTcYBjtFKE8eezcZ7LuLjhUaQGNeMXf1HmRoCH32CLz6XwX0TtxEOS/A3Q==
 
-nanoid@^3.1.25:
-  version "3.1.28"
-  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.28.tgz#3c01bac14cb6c5680569014cc65a2f26424c6bd4"
-  integrity sha512-gSu9VZ2HtmoKYe/lmyPFES5nknFrHa+/DT9muUFWFMi6Jh9E1I7bkvlQ8xxf1Kos9pi9o8lBnIOkatMhKX/YUw==
+nanoid@^3.1.28:
+  version "3.1.29"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.29.tgz#214fb2d7a33e1a5bef4757b779dfaeb6a4e5aeb4"
+  integrity sha512-dW2pUSGZ8ZnCFIlBIA31SV8huOGCHb6OwzVCc7A69rb/a+SgPBwfmLvK5TKQ3INPbRkcI8a/Owo0XbiTNH19wg==
 
 natural-compare@^1.4.0:
   version "1.4.0"
@@ -1768,6 +1763,11 @@ pend@~1.2.0:
   resolved "https://registry.yarnpkg.com/pend/-/pend-1.2.0.tgz#7a57eb550a6783f9115331fcf4663d5c8e007a50"
   integrity sha1-elfrVQpng/kRUzH89GY9XI4AelA=
 
+picocolors@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/picocolors/-/picocolors-0.2.1.tgz#570670f793646851d1ba135996962abad587859f"
+  integrity sha512-cMlDqaLEqfSaW8Z7N5Jw+lyIW869EzT73/F5lhtY9cLGoVxSXznfgfXMO0Z5K0o0Q2TkTXq+0KFsdnSe3jDViA==
+
 picomatch@^2.0.4, picomatch@^2.2.1, picomatch@^2.2.3:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-2.3.0.tgz#f1f061de8f6a4bf022892e2d128234fb98302972"
@@ -1806,13 +1806,13 @@ postcss-value-parser@^4.1.0:
   resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.1.0.tgz#443f6a20ced6481a2bda4fa8532a6e55d789a2cb"
   integrity sha512-97DXOFbQJhk71ne5/Mt6cOu6yxsSfM0QGQyl0L25Gca4yGWEGJaig7l7gbCX623VqTBNGLRLaVUCnNkcedlRSQ==
 
-postcss@^8.1.6, postcss@^8.3.8:
-  version "8.3.8"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.3.8.tgz#9ebe2a127396b4b4570ae9f7770e7fb83db2bac1"
-  integrity sha512-GT5bTjjZnwDifajzczOC+r3FI3Cu+PgPvrsjhQdRqa2kTJ4968/X9CUce9xttIB0xOs5c6xf0TCWZo/y9lF6bA==
+postcss@^8.1.6, postcss@^8.3.9:
+  version "8.3.9"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.3.9.tgz#98754caa06c4ee9eb59cc48bd073bb6bd3437c31"
+  integrity sha512-f/ZFyAKh9Dnqytx5X62jgjhhzttjZS7hMsohcI7HEI5tjELX/HxCy3EFhsRxyzGvrzFF+82XPvCS8T9TFleVJw==
   dependencies:
-    nanocolors "^0.2.2"
-    nanoid "^3.1.25"
+    nanoid "^3.1.28"
+    picocolors "^0.2.1"
     source-map-js "^0.6.2"
 
 prelude-ls@^1.2.1:
