@@ -73,7 +73,7 @@ describe('Service component test', () => {
                         [baseTextDocument.uri]: baseTextDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs as any, requireModule)
+                    new Stylable('/', memFs, requireModule)
                 );
 
                 const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
@@ -128,7 +128,7 @@ describe('Service component test', () => {
                         [topTextDocument.uri]: topTextDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs as any, requireModule)
+                    new Stylable('/', memFs, requireModule)
                 );
 
                 const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
@@ -187,7 +187,7 @@ describe('Service component test', () => {
                         [baseTextDocument.uri]: baseTextDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs as any, requireModule)
+                    new Stylable('/', memFs, requireModule)
                 );
 
                 const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
@@ -213,7 +213,7 @@ describe('Service component test', () => {
                         [textDocument.uri]: textDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs as any, requireModule)
+                    new Stylable('/', memFs, requireModule)
                 );
                 const expectedFormatting: TextEdit[] = [
                     {
@@ -246,7 +246,7 @@ describe('Service component test', () => {
                         [textDocument.uri]: textDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs as any, requireModule)
+                    new Stylable('/', memFs, requireModule)
                 );
                 const expectedFormatting: TextEdit[] = [
                     {
@@ -310,7 +310,7 @@ describe('Service component test', () => {
                     [importTextDocument.uri]: importTextDocument,
                 }),
                 memFs,
-                new Stylable('/', memFs as any, requireModule)
+                new Stylable('/', memFs, requireModule)
             );
 
             const docColors = stylableLSP.onDocumentColor({ textDocument: { uri: baseFileUri } });
@@ -372,7 +372,7 @@ describe('Service component test', () => {
                         [textDocument.uri]: textDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs as any, requireModule)
+                    new Stylable('/', memFs, requireModule)
                 );
 
                 const context = { includeDeclaration: true };
@@ -447,7 +447,7 @@ describe('Service component test', () => {
         //             connection,
         //             new TextDocuments(),
         //             memFs,
-        //             new Stylable('/', memFs as any, requireModule)
+        //             new Stylable('/', memFs, requireModule)
         //         );
 
         //         // const stylableLSP = new StylableLanguageService({
