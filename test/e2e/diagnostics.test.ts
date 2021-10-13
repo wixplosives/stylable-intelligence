@@ -1,30 +1,14 @@
 import fs from '@file-services/node';
-import vscode from 'vscode';
+import vscode, { Diagnostic, Range, TextDocument } from 'vscode';
 import path from 'path';
 import { expect } from 'chai';
+import { LanguageClient } from 'vscode-languageclient/node';
 
-// const fileUriToNativePath = (uri: string) => isWindows ? uri.slice(8).replace('%3A', ':') : uri.slice(7);
+function assertDiagnosticExist(client: LanguageClient, doc: TextDocument, result: Diagnostic) {
+    const diagnostics = client.diagnostics!.get(doc.uri);
 
-function getPathToDiagnostics(casePath: string) {
-    let pathToFile = '';
-    if (process.platform === 'win32') {
-        pathToFile = casePath.split('\\').join('/');
-        pathToFile = pathToFile.split(':').join('%3A');
-        pathToFile = pathToFile.charAt(0).toLowerCase() + pathToFile.slice(1);
-        pathToFile = 'file:///' + pathToFile;
-    } else {
-        pathToFile = 'file://' + casePath;
-    }
-    return pathToFile;
-}
-
-// eslint-disable-next-line @typescript-eslint/ban-types
-function assertDiagnosticExist(client: any, casePath: string, result: object) {
-    // eslint-disable-next-line
-    const diagnostic = client._diagnostics._data.get(getPathToDiagnostics(casePath));
-    expect(diagnostic).to.have.length.greaterThan(0);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return expect(diagnostic[0]).to.contain.keys(result);
+    expect(diagnostics).to.have.length.greaterThan(0);
+    return expect(diagnostics![0]).to.contain.keys(result);
 }
 
 suite('test diagnostics', function () {
@@ -37,18 +21,14 @@ suite('test diagnostics', function () {
 
     test('should support single file error', async () => {
         const casePath = path.join(rootDir, 'fixtures', 'e2e-cases', 'single-file-diag.st.css');
-        const ext = vscode.extensions.getExtension('wix.stylable-intelligence');
+        const ext = vscode.extensions.getExtension<LanguageClient>('wix.stylable-intelligence');
 
         if (ext) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const client = await ext.activate();
             const doc = await vscode.workspace.openTextDocument(casePath);
             await vscode.window.showTextDocument(doc);
-            return assertDiagnosticExist(client, casePath, {
-                range: {
-                    _start: { _line: 1, _character: 1 },
-                    _end: { _line: 1, _character: 13 },
-                },
+            return assertDiagnosticExist(client, doc, {
+                range: new Range(1, 1, 1, 13),
                 message: '.root class cannot be used after spacing',
                 severity: 0,
             });
