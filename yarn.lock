@@ -136,18 +136,18 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/code-formatter@^4.7.2":
-  version "4.7.2"
-  resolved "https://registry.yarnpkg.com/@stylable/code-formatter/-/code-formatter-4.7.2.tgz#9ae557d672cb7996457a906a380df8d7d74ecbef"
-  integrity sha512-lyX+JuSq/iLALYtXyBiVzJulS5Ipi+lfn49whMTJ0uogRuWmEc8rp0T8lzIMAoGLQJYAWzafrCxdDrjK6sKZbA==
+"@stylable/code-formatter@^4.7.3":
+  version "4.7.3"
+  resolved "https://registry.yarnpkg.com/@stylable/code-formatter/-/code-formatter-4.7.3.tgz#b94420e909ef900efaf07b1ce1ea311161e61a09"
+  integrity sha512-RWhUVW0/11mp7FK0jImpGe7Lm7xtIvCGlTvwCxJBtjehRDTBq3DlOmullNcaOVl2blpUmGjz5TMCO8g1e734GA==
   dependencies:
-    "@stylable/core" "^4.7.2"
+    "@stylable/core" "^4.7.3"
     js-beautify "^1.14.0"
 
-"@stylable/core@^4.7.2":
-  version "4.7.2"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.7.2.tgz#383727f382f7c658011befa693865e829ac919e4"
-  integrity sha512-/u7Q4Lu0oH7qCPvKcrcWORNgQXasxHN8v1MQ2Ew09c5UeYpuqlOs4bTzD4McHvnbKGqAFtBu5tblhsEqB5HWLw==
+"@stylable/core@^4.7.3":
+  version "4.7.3"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.7.3.tgz#b11c42e7383efba1c043600b5f48ab10bee459bd"
+  integrity sha512-3TB3pJlNc8SEiVMoXBh31ya6t9hX4RwaxhyTFDZJgfy5lcKQhAFDxSNbwU33STmIcJ5ymB4+7eLt+l9b7Rxw1A==
   dependencies:
     balanced-match "^2.0.0"
     css-selector-tokenizer "^0.8.0"
@@ -163,21 +163,21 @@
     postcss-value-parser "^4.1.0"
     toky "^0.1.0"
 
-"@stylable/language-service@^4.7.2":
-  version "4.7.2"
-  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-4.7.2.tgz#e11e4be21d3fccbef00d085922af5dc5f047308d"
-  integrity sha512-RugHNC4we79AOcVut1NE2j61GinTE9qj9KtbSFkE9SXXCVJ9lI4zNXu0WTr85YwzELbIoZI5OLDf2VtNbRYNjw==
+"@stylable/language-service@^4.7.3":
+  version "4.7.3"
+  resolved "https://registry.yarnpkg.com/@stylable/language-service/-/language-service-4.7.3.tgz#0124dcbdcd76ea9a6acc24b93a247f43db90c712"
+  integrity sha512-/wyXkWv4NuE+vNYLoa1mo0svZ104bG8LPMmJ03p4aiDJDYlBgT4tC2UqfulM4mvxQaKGgJICoWTaWc+D/9U1dw==
   dependencies:
     "@file-services/types" "^5.4.0"
     "@file-services/typescript" "^5.4.0"
-    "@stylable/code-formatter" "^4.7.2"
-    "@stylable/core" "^4.7.2"
+    "@stylable/code-formatter" "^4.7.3"
+    "@stylable/core" "^4.7.3"
     css-selector-tokenizer "^0.8.0"
     postcss "^8.3.9"
     postcss-value-parser "^4.1.0"
     vscode-css-languageservice "^5.1.7"
     vscode-languageserver "^7.0.0"
-    vscode-languageserver-textdocument "^1.0.1"
+    vscode-languageserver-textdocument "^1.0.2"
     vscode-uri "^3.0.2"
 
 "@tootallnate/once@1":
