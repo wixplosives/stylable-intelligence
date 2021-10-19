@@ -46,7 +46,7 @@
     "@types/sinon": "^10.0.4",
     "@types/vscode": "1.57.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
-    "@typescript-eslint/parser": "^5.0.0",
+    "@typescript-eslint/parser": "^5.1.0",
     "chai": "^4.3.4",
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.3.0",
