@@ -17,12 +17,12 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@file-services/commonjs@^5.4.2":
-  version "5.4.2"
-  resolved "https://registry.yarnpkg.com/@file-services/commonjs/-/commonjs-5.4.2.tgz#d6cfa4e66b1c64f8ce6d3dc6142bc119811c0caa"
-  integrity sha512-XaIMEBTDi1PYP9Ih5cj4odCoRPIk2Jwtbq4NYff9kIv0pCuifGT6/kLoTnxsMBtjSmxzprPQc2q1qiKgLrYo/g==
+"@file-services/commonjs@^5.5.0":
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/@file-services/commonjs/-/commonjs-5.5.0.tgz#891d9afdb3f5ce63d3780e0b979521be19d32592"
+  integrity sha512-MsboWtFgh3Enzrpsl+WX69qHKx2SYToYobU/rAaxBIxDS6N9EmsCr9GV6WKEaFXeCjWM7Q6C0hiYOlO7BqCWbw==
   dependencies:
-    "@file-services/resolve" "^5.4.0"
+    "@file-services/resolve" "^5.5.0"
     "@file-services/types" "^5.4.0"
 
 "@file-services/memory@^5.4.1":
@@ -49,10 +49,10 @@
   dependencies:
     "@file-services/types" "^5.4.0"
 
-"@file-services/resolve@^5.4.0":
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-5.4.0.tgz#b74d5549515ab15be42ab0f753601700e5c813d7"
-  integrity sha512-z9GuADOWc7B6MRRZRgPeTBR8IZgaJ3IdSnwXS8E1NTXElt6wz90E47wAX+rL96BhBb2PyM65YEqh9YCT2+zEQA==
+"@file-services/resolve@^5.5.0":
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-5.5.0.tgz#57b68aa55fd738efd00a73897f58a019ce214676"
+  integrity sha512-z2cnF+4uvc9DJJ6EXmzb+dyU6zhszrn2t0Q2dnaZbAUpeyMIUzIsseGFjOv2AOL1pKcqJthfqw/i7YAfOrWc3g==
 
 "@file-services/types@^5.4.0":
   version "5.4.0"
