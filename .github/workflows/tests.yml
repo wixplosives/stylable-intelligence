@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
-      - run: npm i
+      - run: npm ci
       - name: npm test
         uses: GabrielBB/xvfb-action@v1.0
         with:
