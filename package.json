@@ -12,15 +12,15 @@
   },
   "scripts": {
     "clean": "rimraf ./dist",
-    "prebuild": "yarn clean",
+    "prebuild": "npm run clean",
     "build": "tsc",
-    "pretest": "yarn lint",
-    "test": "yarn test:unit && yarn test:e2e",
+    "pretest": "npm run lint",
+    "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "mocha \"test/unit/**/*.spec.ts\" \"test/unit/*.spec.ts\"",
-    "pretest:e2e": "yarn build",
+    "pretest:e2e": "npm run build",
     "test:e2e": "node ./run-e2e-tests",
     "lint": "eslint .",
-    "prepack": "yarn build"
+    "prepack": "npm run build"
   },
   "dependencies": {
     "@file-services/node": "^5.4.3",

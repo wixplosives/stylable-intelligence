@@ -8,4 +8,4 @@ run-e2e-test.js
 tsconfig.json
 tsconfig.publish.json
 yarn.lock
-
+package-lock.json

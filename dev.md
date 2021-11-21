@@ -6,8 +6,8 @@ Readme for the extension itself can be found [here](https://github.com/wix/styla
 ## Project Setup
 
 * Clone this repo
-* Run `yarn` to install dependencies
-* Run `yarn test` to test and build the vscode extension
+* Run `npm i` to install dependencies
+* Run `npm test` to test and build the vscode extension
 * To launch and debug the extension:
   1. open the repo in VSCode
   2. open the 'Debug Panel' in VSCode
