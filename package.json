@@ -23,7 +23,7 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@file-services/node": "^5.4.3",
+    "@file-services/node": "^5.7.1",
     "@stylable/core": "^4.9.3",
     "@stylable/language-service": "^4.9.3",
     "typescript": "~4.5.4",
@@ -34,9 +34,9 @@
     "vscode-uri": "^3.0.3"
   },
   "devDependencies": {
-    "@file-services/commonjs": "^5.6.0",
-    "@file-services/memory": "^5.4.1",
-    "@file-services/types": "^5.4.0",
+    "@file-services/commonjs": "^5.7.1",
+    "@file-services/memory": "^5.7.1",
+    "@file-services/types": "^5.7.1",
     "@ts-tools/node": "^3.0.1",
     "@types/chai": "^4.3.0",
     "@types/glob": "^7.2.0",
@@ -45,8 +45,8 @@
     "@types/node": "14",
     "@types/sinon": "^10.0.6",
     "@types/vscode": "1.57.0",
-    "@typescript-eslint/eslint-plugin": "^5.8.0",
-    "@typescript-eslint/parser": "^5.8.0",
+    "@typescript-eslint/eslint-plugin": "^5.8.1",
+    "@typescript-eslint/parser": "^5.8.1",
     "chai": "^4.3.4",
     "eslint": "^8.5.0",
     "eslint-config-prettier": "^8.3.0",
