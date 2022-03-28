@@ -34,7 +34,7 @@
     "vscode-uri": "^3.0.3"
   },
   "devDependencies": {
-    "@file-services/commonjs": "^5.7.1",
+    "@file-services/commonjs": "^6.0.0",
     "@file-services/memory": "^5.7.1",
     "@file-services/types": "^5.7.1",
     "@ts-tools/node": "^3.0.1",
