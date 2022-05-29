@@ -2,7 +2,7 @@ import { createMemoryFs } from '@file-services/memory';
 import { createCjsModuleSystem } from '@file-services/commonjs';
 import { Stylable } from '@stylable/core';
 import { TextDocument, TextEdit } from 'vscode-languageserver-textdocument';
-import { Diagnostic, Range, Location, Color } from 'vscode-languageserver';
+import { Diagnostic, Range, Location, Color, DiagnosticSeverity } from 'vscode-languageserver';
 import { IPCMessageReader, IPCMessageWriter, createConnection } from 'vscode-languageserver/node';
 import { URI } from 'vscode-uri';
 
@@ -12,8 +12,14 @@ import { VscodeStylableLanguageService } from '../../src/lib/vscode-service';
 import { getRangeAndText } from '../testkit/text.spec';
 import { TestDocuments } from '../lsp-testkit/test-documents';
 
-function createExpectedDiagnosis(range: Range, message: string, source = 'stylable', code?: string): Diagnostic {
-    return Diagnostic.create(range, message, 2, code, source);
+function createExpectedDiagnosis(
+    range: Range,
+    message: string,
+    source = 'stylable',
+    severity: DiagnosticSeverity = 2,
+    code?: string
+): Diagnostic {
+    return Diagnostic.create(range, message, severity, code, source);
 }
 
 function trimLiteral(content: TemplateStringsArray, ...keys: string[]): string {
@@ -73,7 +79,7 @@ describe('Service component test', () => {
                         [baseTextDocument.uri]: baseTextDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs, requireModule)
+                    new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
 
                 const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
@@ -128,7 +134,7 @@ describe('Service component test', () => {
                         [topTextDocument.uri]: topTextDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs, requireModule)
+                    new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
 
                 const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
@@ -169,11 +175,12 @@ describe('Service component test', () => {
                 const expectedDiagnostics = [
                     // CSS diagnostics that shouldn't appear:
                     // empty ruleset, unknown property 'varavar', css-rparentexpected, css-identifierexpected
-                    createExpectedDiagnosis(createRange(3, 6, 3, 12), 'unknown pseudo-state "aState"'),
+                    createExpectedDiagnosis(createRange(3, 6, 3, 12), 'unknown pseudo-state "aState"', 'stylable', 1),
                     createExpectedDiagnosis(
                         createRange(5, 2, 5, 8),
                         "Unknown property: 'colorr'",
                         'css',
+                        2,
                         'unknownProperties'
                     ),
                 ];
@@ -187,7 +194,7 @@ describe('Service component test', () => {
                         [baseTextDocument.uri]: baseTextDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs, requireModule)
+                    new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
 
                 const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
@@ -213,7 +220,7 @@ describe('Service component test', () => {
                         [textDocument.uri]: textDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs, requireModule)
+                    new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
                 const expectedFormatting: TextEdit[] = [
                     {
@@ -246,7 +253,7 @@ describe('Service component test', () => {
                         [textDocument.uri]: textDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs, requireModule)
+                    new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
                 const expectedFormatting: TextEdit[] = [
                     {
@@ -310,7 +317,7 @@ describe('Service component test', () => {
                     [importTextDocument.uri]: importTextDocument,
                 }),
                 memFs,
-                new Stylable('/', memFs, requireModule)
+                new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
             );
 
             const docColors = stylableLSP.onDocumentColor({ textDocument: { uri: baseFileUri } });
@@ -372,7 +379,7 @@ describe('Service component test', () => {
                         [textDocument.uri]: textDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs, requireModule)
+                    new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
 
                 const context = { includeDeclaration: true };
