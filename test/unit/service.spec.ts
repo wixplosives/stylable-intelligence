@@ -54,7 +54,7 @@ describe('Service component test', () => {
     describe('Diagnostics', () => {
         it(
             'Diagnostics - single file error',
-            plan(1, () => {
+            plan(1, async () => {
                 const rangeAndText = getRangeAndText('|.gaga .root{}|');
                 const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
                 const baseFileName = '/base-file.st.css';
@@ -82,14 +82,14 @@ describe('Service component test', () => {
                     new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
 
-                const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
+                const diagnostics = await stylableLSP.diagnoseWithVsCodeConfig();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
             })
         );
 
         xit(
             'Diagnostics - cross-file errors',
-            plan(1, () => {
+            plan(1, async () => {
                 const baseFilecContent = trimLiteral`
             |.gaga {
             |    -st-states: aState
@@ -137,14 +137,14 @@ describe('Service component test', () => {
                     new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
 
-                const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
+                const diagnostics = await stylableLSP.diagnoseWithVsCodeConfig();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
             })
         );
 
         it(
             'Diagnostics - CSS errors',
-            plan(1, () => {
+            plan(1, async () => {
                 const baseFilecContent = trimLiteral`
             |:vars {
             |  varvar: binks;
@@ -197,7 +197,7 @@ describe('Service component test', () => {
                     new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
 
-                const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
+                const diagnostics = await stylableLSP.diagnoseWithVsCodeConfig();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
             })
         );

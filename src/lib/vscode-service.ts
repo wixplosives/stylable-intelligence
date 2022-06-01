@@ -127,10 +127,11 @@ export class VscodeStylableLanguageService {
         return [];
     }
 
-    public diagnoseWithVsCodeConfig(): Diagnostic[] {
+    public async diagnoseWithVsCodeConfig() {
         const result: Diagnostic[] = [];
-        this.textDocuments.keys().forEach((key) => {
-            const doc = this.textDocuments.get(key);
+
+        for (const docName of this.textDocuments.keys()) {
+            const doc = this.textDocuments.get(docName);
             if (doc) {
                 if (doc.languageId === 'stylable') {
                     const uri = URI.parse(doc.uri);
@@ -155,21 +156,21 @@ export class VscodeStylableLanguageService {
                         diagnostics = this.languageService.diagnose(fsPath);
                         result.push(...diagnostics);
                     }
-                    this.connection.sendDiagnostics({ uri: doc.uri, diagnostics });
+                    await this.connection.sendDiagnostics({ uri: doc.uri, diagnostics });
                 }
             }
-        });
+        }
 
         return result;
     }
 
     public async onChangeConfig(): Promise<void> {
         await this.loadClientConfiguration();
-        this.diagnoseWithVsCodeConfig();
+        await this.diagnoseWithVsCodeConfig();
     }
 
-    public onDidClose(event: TextDocumentChangeEvent<TextDocument>): void {
-        this.connection.sendDiagnostics({
+    public async onDidClose(event: TextDocumentChangeEvent<TextDocument>): Promise<void> {
+        await this.connection.sendDiagnostics({
             diagnostics: [],
             uri: event.document.uri,
         });

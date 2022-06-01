@@ -12,7 +12,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { initializeResult } from './capabilities';
 import { VscodeStylableLanguageService } from './vscode-service';
 import { wrapFs } from './wrap-fs';
-import { safeParse } from '@stylable/core/dist/index-internal';
+import safeParse from 'postcss-safe-parser';
 
 const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 let vscodeStylableLSP: VscodeStylableLanguageService;
