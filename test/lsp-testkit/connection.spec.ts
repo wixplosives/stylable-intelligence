@@ -131,7 +131,7 @@ describe('LSP connection test driver', () => {
                 'Handle Multiple Requests',
                 plan(1, async () => {
                     testCon.server.onRequest(testRequest, (p1) => {
-                        return p1 + '1';
+                        return `${p1}1`;
                     });
                     const promises: Array<Thenable<string>> = [];
                     promises.push(testCon.client.sendRequest(testRequest, 'foo'));
