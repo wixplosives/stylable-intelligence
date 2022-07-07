@@ -76,7 +76,7 @@ describe('Service component test', () => {
                     new Stylable('/', memFs, requireModule)
                 );
 
-                const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
+                const diagnostics = stylableLSP.emitDiagnosticsForOpenDocuments();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
             })
         );
@@ -131,7 +131,7 @@ describe('Service component test', () => {
                     new Stylable('/', memFs, requireModule)
                 );
 
-                const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
+                const diagnostics = stylableLSP.emitDiagnosticsForOpenDocuments();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
             })
         );
@@ -190,7 +190,7 @@ describe('Service component test', () => {
                     new Stylable('/', memFs, requireModule)
                 );
 
-                const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
+                const diagnostics = stylableLSP.emitDiagnosticsForOpenDocuments();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
             })
         );

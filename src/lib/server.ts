@@ -41,8 +41,11 @@ connection.onInitialize((params) => {
     });
 
     docs.listen(connection);
-    docs.onDidChangeContent(lsp.diagnoseWithVsCodeConfig.bind(lsp));
-    docs.onDidClose(lsp.onDidClose.bind(lsp));
+    docs.onDidChangeContent((event) => {
+        lsp.cleanStylableCacheForDocument(event.document);
+        lsp.emitDiagnosticsForOpenDocuments();
+    });
+    docs.onDidClose((event) => lsp.onDidClose(event));
 
     connection.onCompletion(lsp.onCompletion.bind(lsp));
     connection.onDefinition(lsp.onDefinition.bind(lsp));
