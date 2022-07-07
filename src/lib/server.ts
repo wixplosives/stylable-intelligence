@@ -28,18 +28,6 @@ connection.onInitialize((params) => {
     });
     const lsp = new VSCodeStylableLanguageService(connection, docs, wrappedFs, stylable);
 
-    docs.onDidChangeContent((event) => {
-        const { fsPath } = URI.parse(event.document.uri);
-        stylable.initCache({
-            filter(_, entity) {
-                if ('resolvedPath' in entity) {
-                    return entity.resolvedPath !== fsPath;
-                }
-                return true;
-            },
-        });
-    });
-
     docs.listen(connection);
     docs.onDidChangeContent((event) => {
         lsp.cleanStylableCacheForDocument(event.document);
