@@ -37,13 +37,18 @@ export interface ExtensionConfiguration {
     formatting: CSSBeautifyOptions;
 }
 
-export class VscodeStylableLanguageService {
+export class VSCodeStylableLanguageService {
     public textDocuments: TextDocuments<TextDocument>;
     public languageService: StylableLanguageService;
     private connection: Connection;
     private clientConfig: ExtensionConfiguration = { diagnostics: { ignore: [] }, formatting: {} };
 
-    constructor(connection: Connection, docs: TextDocuments<TextDocument>, fs: IFileSystem, stylable: Stylable) {
+    constructor(
+        connection: Connection,
+        docs: TextDocuments<TextDocument>,
+        fs: IFileSystem,
+        private stylable: Stylable
+    ) {
         this.languageService = new StylableLanguageService({
             fs,
             stylable,
@@ -127,48 +132,45 @@ export class VscodeStylableLanguageService {
         return [];
     }
 
-    public diagnoseWithVsCodeConfig(): Diagnostic[] {
-        const result: Diagnostic[] = [];
-        this.textDocuments.keys().forEach((key) => {
-            const doc = this.textDocuments.get(key);
-            if (doc) {
-                if (doc.languageId === 'stylable') {
-                    const uri = URI.parse(doc.uri);
-                    // on windows, uri.fsPath replaces separators with '\'
-                    // this breaks posix paths in-memory when running on windows
-                    // take raw posix path instead
-                    const fsPath =
-                        uri.scheme === 'file' &&
-                        !uri.authority && // not UNC
-                        uri.path.charCodeAt(2) !== 58 && // the colon in "c:"
-                        path.isAbsolute(uri.path)
-                            ? uri.path
-                            : uri.fsPath;
-                    let diagnostics: Diagnostic[];
-                    if (
-                        this.clientConfig.diagnostics.ignore.some((p) => {
-                            return fsPath.startsWith(p);
-                        })
-                    ) {
-                        diagnostics = [];
-                    } else {
-                        diagnostics = this.languageService.diagnose(fsPath);
-                        result.push(...diagnostics);
+    public cleanStylableCacheForDocument(document: TextDocument) {
+        if (document.languageId === 'stylable') {
+            const fsPath = fsPathCompatibility(URI.parse(document.uri));
+            this.stylable.initCache({
+                filter(_, entity) {
+                    if ('resolvedPath' in entity) {
+                        return entity.resolvedPath !== fsPath;
                     }
-                    this.connection.sendDiagnostics({ uri: doc.uri, diagnostics });
-                }
-            }
-        });
+                    return false;
+                },
+            });
+        }
+    }
 
+    public emitDiagnosticsForOpenDocuments(): Diagnostic[] {
+        const result: Diagnostic[] = [];
+        for (const doc of this.textDocuments.all()) {
+            if (doc.languageId !== 'stylable') {
+                continue;
+            }
+            const fsPath = fsPathCompatibility(URI.parse(doc.uri));
+            const hasIgnoredDiagnostics = this.clientConfig.diagnostics.ignore.some((p) => {
+                return fsPath.startsWith(p);
+            });
+            const diagnostics: Diagnostic[] = hasIgnoredDiagnostics ? [] : this.languageService.diagnose(fsPath);
+            result.push(...diagnostics);
+            this.connection.sendDiagnostics({ uri: doc.uri, diagnostics });
+        }
         return result;
     }
 
     public async onChangeConfig(): Promise<void> {
         await this.loadClientConfiguration();
-        this.diagnoseWithVsCodeConfig();
+        this.stylable.initCache();
+        this.emitDiagnosticsForOpenDocuments();
     }
 
     public onDidClose(event: TextDocumentChangeEvent<TextDocument>): void {
+        this.cleanStylableCacheForDocument(event.document);
         this.connection.sendDiagnostics({
             diagnostics: [],
             uri: event.document.uri,
@@ -193,4 +195,16 @@ export class VscodeStylableLanguageService {
 
         return { fsPath, doc };
     }
+}
+
+function fsPathCompatibility(uri: URI) {
+    // on windows, uri.fsPath replaces separators with '\'
+    // this breaks posix paths in-memory when running on windows
+    // take raw posix path instead
+    return uri.scheme === 'file' &&
+        !uri.authority && // not UNC
+        uri.path.charCodeAt(2) !== 58 && // the colon in "c:"
+        path.isAbsolute(uri.path)
+        ? uri.path
+        : uri.fsPath;
 }
