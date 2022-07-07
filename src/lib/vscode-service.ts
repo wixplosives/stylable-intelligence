@@ -140,7 +140,7 @@ export class VSCodeStylableLanguageService {
                     if ('resolvedPath' in entity) {
                         return entity.resolvedPath !== fsPath;
                     }
-                    return true;
+                    return false;
                 },
             });
         }
