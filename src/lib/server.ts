@@ -12,7 +12,6 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { initializeResult } from './capabilities';
 import { VSCodeStylableLanguageService } from './vscode-service';
 import { wrapFs } from './wrap-fs';
-import { URI } from 'vscode-uri';
 
 const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 
