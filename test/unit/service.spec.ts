@@ -8,7 +8,7 @@ import { URI } from 'vscode-uri';
 
 import { TestConnection } from '../lsp-testkit/connection.spec';
 import { expect, plan } from '../testkit/chai.spec';
-import { VscodeStylableLanguageService } from '../../src/lib/vscode-service';
+import { VSCodeStylableLanguageService } from '../../src/lib/vscode-service';
 import { getRangeAndText } from '../testkit/text.spec';
 import { TestDocuments } from '../lsp-testkit/test-documents';
 
@@ -67,7 +67,7 @@ describe('Service component test', () => {
 
                 const memFs = createMemoryFs({ [baseFileName]: rangeAndText.text });
                 const { requireModule } = createCjsModuleSystem({ fs: memFs });
-                const stylableLSP = new VscodeStylableLanguageService(
+                const stylableLSP = new VSCodeStylableLanguageService(
                     connection,
                     new TestDocuments({
                         [baseTextDocument.uri]: baseTextDocument,
@@ -121,7 +121,7 @@ describe('Service component test', () => {
                 const memFs = createMemoryFs({ [baseFileName]: baseFilecContent, [topFileName]: topFileContent });
                 const { requireModule } = createCjsModuleSystem({ fs: memFs });
 
-                const stylableLSP = new VscodeStylableLanguageService(
+                const stylableLSP = new VSCodeStylableLanguageService(
                     connection,
                     new TestDocuments({
                         [baseTextDocument.uri]: baseTextDocument,
@@ -181,7 +181,7 @@ describe('Service component test', () => {
                 const memFs = createMemoryFs({ [baseFileName]: baseFilecContent });
                 const { requireModule } = createCjsModuleSystem({ fs: memFs });
 
-                const stylableLSP = new VscodeStylableLanguageService(
+                const stylableLSP = new VSCodeStylableLanguageService(
                     connection,
                     new TestDocuments({
                         [baseTextDocument.uri]: baseTextDocument,
@@ -207,7 +207,7 @@ describe('Service component test', () => {
 
                 const memFs = createMemoryFs({ [baseFileName]: text });
                 const { requireModule } = createCjsModuleSystem({ fs: memFs });
-                const stylableLSP = new VscodeStylableLanguageService(
+                const stylableLSP = new VSCodeStylableLanguageService(
                     connection,
                     new TestDocuments({
                         [textDocument.uri]: textDocument,
@@ -240,7 +240,7 @@ describe('Service component test', () => {
 
                 const memFs = createMemoryFs({ [baseFileName]: text });
                 const { requireModule } = createCjsModuleSystem({ fs: memFs });
-                const stylableLSP = new VscodeStylableLanguageService(
+                const stylableLSP = new VSCodeStylableLanguageService(
                     connection,
                     new TestDocuments({
                         [textDocument.uri]: textDocument,
@@ -303,7 +303,7 @@ describe('Service component test', () => {
             const memFs = createMemoryFs({ [baseFileName]: baseFilecContent, [importFileName]: importFileContent });
             const { requireModule } = createCjsModuleSystem({ fs: memFs });
 
-            const stylableLSP = new VscodeStylableLanguageService(
+            const stylableLSP = new VSCodeStylableLanguageService(
                 connection,
                 new TestDocuments({
                     [baseTextDocument.uri]: baseTextDocument,
@@ -366,7 +366,7 @@ describe('Service component test', () => {
                 const memFs = createMemoryFs({ [filePath]: fileText });
                 const { requireModule } = createCjsModuleSystem({ fs: memFs });
 
-                const stylableLSP = new VscodeStylableLanguageService(
+                const stylableLSP = new VSCodeStylableLanguageService(
                     connection,
                     new TestDocuments({
                         [textDocument.uri]: textDocument,

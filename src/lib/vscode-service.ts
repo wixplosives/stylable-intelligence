@@ -37,7 +37,7 @@ export interface ExtensionConfiguration {
     formatting: CSSBeautifyOptions;
 }
 
-export class VscodeStylableLanguageService {
+export class VSCodeStylableLanguageService {
     public textDocuments: TextDocuments<TextDocument>;
     public languageService: StylableLanguageService;
     private connection: Connection;

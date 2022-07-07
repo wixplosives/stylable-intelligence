@@ -10,50 +10,57 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import { initializeResult } from './capabilities';
-import { VscodeStylableLanguageService } from './vscode-service';
+import { VSCodeStylableLanguageService } from './vscode-service';
 import { wrapFs } from './wrap-fs';
+import { URI } from 'vscode-uri';
 
 const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
-let vscodeStylableLSP: VscodeStylableLanguageService;
 
-connection.listen();
 connection.onInitialize((params) => {
     const docs = new TextDocuments(TextDocument);
     const wrappedFs = wrapFs(fs, docs);
+    const stylable = Stylable.create({
+        projectRoot: params.rootPath || '',
+        fileSystem: wrappedFs as MinimalFS,
+        requireModule: require,
+        cssParser: safeParse,
+        resolverCache: new Map(),
+    });
+    const lsp = new VSCodeStylableLanguageService(connection, docs, wrappedFs, stylable);
 
-    vscodeStylableLSP = new VscodeStylableLanguageService(
-        connection,
-        docs,
-        wrappedFs,
-        Stylable.create({
-            projectRoot: params.rootPath || '',
-            fileSystem: wrappedFs as MinimalFS,
-            requireModule: require,
-            cssParser: safeParse
-        })
-    );
+    docs.onDidChangeContent((event) => {
+        const { fsPath } = URI.parse(event.document.uri);
+        stylable.initCache({
+            filter(_, entity) {
+                if ('resolvedPath' in entity) {
+                    return entity.resolvedPath !== fsPath;
+                }
+                return true;
+            },
+        });
+    });
 
     docs.listen(connection);
-    docs.onDidChangeContent(vscodeStylableLSP.diagnoseWithVsCodeConfig.bind(vscodeStylableLSP));
-    docs.onDidClose(vscodeStylableLSP.onDidClose.bind(vscodeStylableLSP));
+    docs.onDidChangeContent(lsp.diagnoseWithVsCodeConfig.bind(lsp));
+    docs.onDidClose(lsp.onDidClose.bind(lsp));
 
-    connection.onCompletion(vscodeStylableLSP.onCompletion.bind(vscodeStylableLSP));
-    connection.onDefinition(vscodeStylableLSP.onDefinition.bind(vscodeStylableLSP));
-    connection.onHover(vscodeStylableLSP.onHover.bind(vscodeStylableLSP));
-    connection.onReferences(vscodeStylableLSP.onReferences.bind(vscodeStylableLSP));
-    connection.onDocumentColor(vscodeStylableLSP.onDocumentColor.bind(vscodeStylableLSP));
-    connection.onColorPresentation(vscodeStylableLSP.onColorPresentation.bind(vscodeStylableLSP));
-    connection.onRenameRequest(vscodeStylableLSP.onRenameRequest.bind(vscodeStylableLSP));
-    connection.onSignatureHelp(vscodeStylableLSP.onSignatureHelp.bind(vscodeStylableLSP));
-    connection.onDocumentFormatting(vscodeStylableLSP.onDocumentFormatting.bind(vscodeStylableLSP));
-    connection.onDocumentRangeFormatting(vscodeStylableLSP.onDocumentRangeFormatting.bind(vscodeStylableLSP));
+    connection.onCompletion(lsp.onCompletion.bind(lsp));
+    connection.onDefinition(lsp.onDefinition.bind(lsp));
+    connection.onHover(lsp.onHover.bind(lsp));
+    connection.onReferences(lsp.onReferences.bind(lsp));
+    connection.onDocumentColor(lsp.onDocumentColor.bind(lsp));
+    connection.onColorPresentation(lsp.onColorPresentation.bind(lsp));
+    connection.onRenameRequest(lsp.onRenameRequest.bind(lsp));
+    connection.onSignatureHelp(lsp.onSignatureHelp.bind(lsp));
+    connection.onDocumentFormatting(lsp.onDocumentFormatting.bind(lsp));
+    connection.onDocumentRangeFormatting(lsp.onDocumentRangeFormatting.bind(lsp));
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    connection.onDidChangeConfiguration(vscodeStylableLSP.onChangeConfig.bind(vscodeStylableLSP));
-
+    connection.onDidChangeConfiguration(lsp.onChangeConfig.bind(lsp));
+    connection.onInitialized(() => {
+        connection.client.register(DidChangeConfigurationNotification.type, undefined).catch(console.error);
+        lsp.loadClientConfiguration().then(console.log).catch(console.error);
+    });
     return initializeResult;
 });
 
-connection.onInitialized(() => {
-    connection.client.register(DidChangeConfigurationNotification.type, undefined).catch(console.error);
-    vscodeStylableLSP.loadClientConfiguration().then(console.log).catch(console.error);
-});
+connection.listen();
