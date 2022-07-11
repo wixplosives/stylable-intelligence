@@ -3,7 +3,7 @@ import vscode, { Range } from 'vscode';
 import path from 'path';
 import { expect } from 'chai';
 import { LanguageClient } from 'vscode-languageclient/node';
-import { processorDiagnostics } from '@stylable/core/dist/stylable-processor';
+import { diagnostics as CSSTypeDiagnostics } from '@stylable/core/dist/features/css-type';
 
 function collectDiagnostics(source: 'stylable' | 'css') {
     const diags = vscode.languages.getDiagnostics();
@@ -42,17 +42,11 @@ suite('test diagnostics', function () {
 
             expect(diags).to.eql([
                 {
-                    range: new Range(0, 0, 0, 13),
-                    message: processorDiagnostics.ROOT_AFTER_SPACING().message,
+                    range: new Range(0, 0, 0, 3),
+                    message: CSSTypeDiagnostics.UNSCOPED_TYPE_SELECTOR('div').message,
                     severity: 1,
                 },
             ]);
-
-            // return assertDiagnosticExist(client, doc, {
-            //     range: new Range(1, 1, 1, 13),
-            //     message: '.root class cannot be used after spacing',
-            //     severity: 0,
-            // });
         } else {
             throw new Error('Where is my extension?!!');
         }

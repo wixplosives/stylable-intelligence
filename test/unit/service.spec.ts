@@ -5,6 +5,7 @@ import { TextDocument, TextEdit } from 'vscode-languageserver-textdocument';
 import { Diagnostic, Range, Location, Color, DiagnosticSeverity } from 'vscode-languageserver';
 import { IPCMessageReader, IPCMessageWriter, createConnection } from 'vscode-languageserver/node';
 import { URI } from 'vscode-uri';
+import { diagnostics as CSSTypeDiagnostics } from '@stylable/core/dist/features/css-type';
 
 import { TestConnection } from '../lsp-testkit/connection.spec';
 import { expect, plan } from '../testkit/chai.spec';
@@ -55,7 +56,7 @@ describe('Service component test', () => {
         it(
             'Diagnostics - single file error',
             plan(1, async () => {
-                const rangeAndText = getRangeAndText('|.gaga .root{}|');
+                const rangeAndText = getRangeAndText('|div| {}');
                 const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
                 const baseFileName = '/base-file.st.css';
                 const baseTextDocument = TextDocument.create(
@@ -67,7 +68,7 @@ describe('Service component test', () => {
                 const expectedDiagnostics = [
                     createExpectedDiagnosis(
                         rangeAndText.range,
-                        '".root" class cannot be used after native elements or selectors external to the stylesheet'
+                        CSSTypeDiagnostics.UNSCOPED_TYPE_SELECTOR('div').message
                     ),
                 ];
 
