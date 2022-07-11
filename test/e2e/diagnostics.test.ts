@@ -1,14 +1,23 @@
 import fs from '@file-services/node';
-import vscode, { Diagnostic, Range, TextDocument } from 'vscode';
+import vscode, { Range } from 'vscode';
 import path from 'path';
 import { expect } from 'chai';
 import { LanguageClient } from 'vscode-languageclient/node';
+import { diagnostics as CSSTypeDiagnostics } from '@stylable/core/dist/features/css-type';
 
-function assertDiagnosticExist(client: LanguageClient, doc: TextDocument, result: Diagnostic) {
-    const diagnostics = client.diagnostics!.get(doc.uri);
+function collectDiagnostics(source: 'stylable' | 'css') {
+    const diags = vscode.languages.getDiagnostics();
+    const res = [];
 
-    expect(diagnostics).to.have.length.greaterThan(0);
-    return expect(diagnostics![0]).to.contain.keys(result);
+    for (const [_pathObj, fileDiags] of diags) {
+        for (const diag of fileDiags) {
+            if (diag.source === source) {
+                res.push({ message: diag.message, range: diag.range, severity: diag.severity });
+            }
+        }
+    }
+
+    return res;
 }
 
 suite('test diagnostics', function () {
@@ -24,14 +33,20 @@ suite('test diagnostics', function () {
         const ext = vscode.extensions.getExtension<LanguageClient>('wix.stylable-intelligence');
 
         if (ext) {
-            const client = await ext.activate();
+            const _client = await ext.activate();
             const doc = await vscode.workspace.openTextDocument(casePath);
+
             await vscode.window.showTextDocument(doc);
-            return assertDiagnosticExist(client, doc, {
-                range: new Range(1, 1, 1, 13),
-                message: '.root class cannot be used after spacing',
-                severity: 0,
-            });
+
+            const diags = collectDiagnostics('stylable');
+
+            expect(diags).to.eql([
+                {
+                    range: new Range(0, 0, 0, 3),
+                    message: CSSTypeDiagnostics.UNSCOPED_TYPE_SELECTOR('div').message,
+                    severity: 1,
+                },
+            ]);
         } else {
             throw new Error('Where is my extension?!!');
         }

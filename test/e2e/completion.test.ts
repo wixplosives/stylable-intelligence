@@ -40,7 +40,7 @@ suite('Extension Tests', function () {
         return Promise.all(
             testCases.map(async ([position, expected]) => {
                 const completions = await getCompletions(testDoc, position);
-                const labels = completions!.items.map((x) => x.label);
+                const labels = completions.items.map((x) => x.label);
 
                 for (const entry of expected) {
                     if (!~labels.indexOf(entry)) {
@@ -73,9 +73,9 @@ suite('Extension Tests', function () {
         const completions = await getCompletions(doc, new vscode.Position(0, 0));
 
         // Stylable completion
-        const stImportCompIndex = completions!.items.findIndex((comp) => comp.label === '@st-import');
+        const stImportCompIndex = completions.items.findIndex((comp) => comp.label === '@st-import');
         // CSS completion
-        const mediaCompIndex = completions!.items.findIndex((comp) => comp.label === '@media');
+        const mediaCompIndex = completions.items.findIndex((comp) => comp.label === '@media');
 
         if (stImportCompIndex === -1 || mediaCompIndex === -1 || stImportCompIndex > mediaCompIndex) {
             assert.fail('completion sorting is wrong, Stylable should have priority');

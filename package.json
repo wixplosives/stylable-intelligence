@@ -24,12 +24,13 @@
   },
   "dependencies": {
     "@file-services/node": "^6.0.0",
-    "@stylable/core": "^4.13.3",
-    "@stylable/language-service": "^4.13.3",
+    "@stylable/core": "^5.0.1",
+    "@stylable/language-service": "^5.0.1",
+    "postcss-safe-parser": "^6.0.0",
     "typescript": "~4.7.4",
-    "vscode-languageclient": "^7.0.0",
-    "vscode-languageserver": "^7.0.0",
-    "vscode-languageserver-protocol": "3.16.0",
+    "vscode-languageclient": "^8.0.1",
+    "vscode-languageserver": "^8.0.1",
+    "vscode-languageserver-protocol": "^3.17.1",
     "vscode-languageserver-textdocument": "^1.0.5",
     "vscode-uri": "^3.0.3"
   },
@@ -43,8 +44,9 @@
     "@types/js-beautify": "^1.13.3",
     "@types/mocha": "^9.1.1",
     "@types/node": "16",
+    "@types/postcss-safe-parser": "^5.0.1",
     "@types/sinon": "^10.0.12",
-    "@types/vscode": "1.57.0",
+    "@types/vscode": "1.65.0",
     "@typescript-eslint/eslint-plugin": "^5.30.5",
     "@typescript-eslint/parser": "^5.30.5",
     "@vscode/test-electron": "^2.1.5",
@@ -67,7 +69,7 @@
     "url": "https://github.com/wix/stylable-intelligence/issues"
   },
   "engines": {
-    "vscode": "^1.57.0"
+    "vscode": "^1.65.0"
   },
   "categories": [
     "Programming Languages",

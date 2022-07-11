@@ -73,47 +73,47 @@ export class StreamConnectionClient {
         return this.connection.sendRequest(ShutdownRequest.type, undefined);
     }
 
-    public exit(): void {
+    public exit() {
         return this.connection.sendNotification(ExitNotification.type);
     }
 
-    public onLogMessage(handler: NotificationHandler<LogMessageParams>): void {
+    public onLogMessage(handler: NotificationHandler<LogMessageParams>) {
         return this.connection.onNotification(LogMessageNotification.type, handler);
     }
 
-    public onShowMessage(handler: NotificationHandler<ShowMessageParams>): void {
+    public onShowMessage(handler: NotificationHandler<ShowMessageParams>) {
         return this.connection.onNotification(ShowMessageNotification.type, handler);
     }
 
-    public onTelemetry(handler: NotificationHandler<any>): void {
+    public onTelemetry(handler: NotificationHandler<any>) {
         return this.connection.onNotification(TelemetryEventNotification.type, handler);
     }
 
-    public didChangeConfiguration(params: DidChangeConfigurationParams): void {
+    public didChangeConfiguration(params: DidChangeConfigurationParams) {
         return this.connection.sendNotification(DidChangeConfigurationNotification.type, params);
     }
 
-    public didChangeWatchedFiles(params: DidChangeWatchedFilesParams): void {
+    public didChangeWatchedFiles(params: DidChangeWatchedFilesParams) {
         return this.connection.sendNotification(DidChangeWatchedFilesNotification.type, params);
     }
 
-    public didOpenTextDocument(params: DidOpenTextDocumentParams): void {
+    public didOpenTextDocument(params: DidOpenTextDocumentParams) {
         return this.connection.sendNotification(DidOpenTextDocumentNotification.type, params);
     }
 
-    public didChangeTextDocument(params: DidChangeTextDocumentParams): void {
+    public didChangeTextDocument(params: DidChangeTextDocumentParams) {
         return this.connection.sendNotification(DidChangeTextDocumentNotification.type, params);
     }
 
-    public didCloseTextDocument(params: DidCloseTextDocumentParams): void {
+    public didCloseTextDocument(params: DidCloseTextDocumentParams) {
         return this.connection.sendNotification(DidCloseTextDocumentNotification.type, params);
     }
 
-    public didSaveTextDocument(params: DidSaveTextDocumentParams): void {
+    public didSaveTextDocument(params: DidSaveTextDocumentParams) {
         return this.connection.sendNotification(DidSaveTextDocumentNotification.type, params);
     }
 
-    public onDiagnostics(handler: NotificationHandler<PublishDiagnosticsParams>): void {
+    public onDiagnostics(handler: NotificationHandler<PublishDiagnosticsParams>) {
         return this.connection.onNotification(PublishDiagnosticsNotification.type, handler);
     }
 

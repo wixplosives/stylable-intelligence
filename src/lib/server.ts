@@ -1,5 +1,5 @@
 import fs from '@file-services/node';
-import { MinimalFS, safeParse, Stylable } from '@stylable/core';
+import { Stylable } from '@stylable/core';
 import {
     createConnection,
     IPCMessageReader,
@@ -12,6 +12,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { initializeResult } from './capabilities';
 import { VscodeStylableLanguageService } from './vscode-service';
 import { wrapFs } from './wrap-fs';
+import safeParse from 'postcss-safe-parser';
 
 const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 let vscodeStylableLSP: VscodeStylableLanguageService;
@@ -25,11 +26,11 @@ connection.onInitialize((params) => {
         connection,
         docs,
         wrappedFs,
-        Stylable.create({
+        new Stylable({
             projectRoot: params.rootPath || '',
-            fileSystem: wrappedFs as MinimalFS,
+            fileSystem: wrappedFs,
             requireModule: require,
-            cssParser: safeParse
+            cssParser: safeParse,
         })
     );
 

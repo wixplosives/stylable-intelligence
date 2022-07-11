@@ -2,9 +2,10 @@ import { createMemoryFs } from '@file-services/memory';
 import { createCjsModuleSystem } from '@file-services/commonjs';
 import { Stylable } from '@stylable/core';
 import { TextDocument, TextEdit } from 'vscode-languageserver-textdocument';
-import { Diagnostic, Range, Location, Color } from 'vscode-languageserver';
+import { Diagnostic, Range, Location, Color, DiagnosticSeverity } from 'vscode-languageserver';
 import { IPCMessageReader, IPCMessageWriter, createConnection } from 'vscode-languageserver/node';
 import { URI } from 'vscode-uri';
+import { diagnostics as CSSTypeDiagnostics } from '@stylable/core/dist/features/css-type';
 
 import { TestConnection } from '../lsp-testkit/connection.spec';
 import { expect, plan } from '../testkit/chai.spec';
@@ -12,8 +13,14 @@ import { VscodeStylableLanguageService } from '../../src/lib/vscode-service';
 import { getRangeAndText } from '../testkit/text.spec';
 import { TestDocuments } from '../lsp-testkit/test-documents';
 
-function createExpectedDiagnosis(range: Range, message: string, source = 'stylable', code?: string): Diagnostic {
-    return Diagnostic.create(range, message, 2, code, source);
+function createExpectedDiagnosis(
+    range: Range,
+    message: string,
+    source = 'stylable',
+    severity: DiagnosticSeverity = 2,
+    code?: string
+): Diagnostic {
+    return Diagnostic.create(range, message, severity, code, source);
 }
 
 function trimLiteral(content: TemplateStringsArray, ...keys: string[]): string {
@@ -48,8 +55,8 @@ describe('Service component test', () => {
     describe('Diagnostics', () => {
         it(
             'Diagnostics - single file error',
-            plan(1, () => {
-                const rangeAndText = getRangeAndText('|.gaga .root{}|');
+            plan(1, async () => {
+                const rangeAndText = getRangeAndText('|div| {}');
                 const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
                 const baseFileName = '/base-file.st.css';
                 const baseTextDocument = TextDocument.create(
@@ -61,7 +68,7 @@ describe('Service component test', () => {
                 const expectedDiagnostics = [
                     createExpectedDiagnosis(
                         rangeAndText.range,
-                        '".root" class cannot be used after native elements or selectors external to the stylesheet'
+                        CSSTypeDiagnostics.UNSCOPED_TYPE_SELECTOR('div').message
                     ),
                 ];
 
@@ -73,17 +80,17 @@ describe('Service component test', () => {
                         [baseTextDocument.uri]: baseTextDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs, requireModule)
+                    new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
 
-                const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
+                const diagnostics = await stylableLSP.diagnoseWithVsCodeConfig();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
             })
         );
 
         xit(
             'Diagnostics - cross-file errors',
-            plan(1, () => {
+            plan(1, async () => {
                 const baseFilecContent = trimLiteral`
             |.gaga {
             |    -st-states: aState
@@ -128,17 +135,17 @@ describe('Service component test', () => {
                         [topTextDocument.uri]: topTextDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs, requireModule)
+                    new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
 
-                const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
+                const diagnostics = await stylableLSP.diagnoseWithVsCodeConfig();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
             })
         );
 
         it(
             'Diagnostics - CSS errors',
-            plan(1, () => {
+            plan(1, async () => {
                 const baseFilecContent = trimLiteral`
             |:vars {
             |  varvar: binks;
@@ -169,11 +176,12 @@ describe('Service component test', () => {
                 const expectedDiagnostics = [
                     // CSS diagnostics that shouldn't appear:
                     // empty ruleset, unknown property 'varavar', css-rparentexpected, css-identifierexpected
-                    createExpectedDiagnosis(createRange(3, 6, 3, 12), 'unknown pseudo-state "aState"'),
+                    createExpectedDiagnosis(createRange(3, 6, 3, 12), 'unknown pseudo-state "aState"', 'stylable', 1),
                     createExpectedDiagnosis(
                         createRange(5, 2, 5, 8),
                         "Unknown property: 'colorr'",
                         'css',
+                        2,
                         'unknownProperties'
                     ),
                 ];
@@ -187,10 +195,10 @@ describe('Service component test', () => {
                         [baseTextDocument.uri]: baseTextDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs, requireModule)
+                    new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
 
-                const diagnostics = stylableLSP.diagnoseWithVsCodeConfig();
+                const diagnostics = await stylableLSP.diagnoseWithVsCodeConfig();
                 expect(diagnostics).to.deep.equal(expectedDiagnostics);
             })
         );
@@ -213,7 +221,7 @@ describe('Service component test', () => {
                         [textDocument.uri]: textDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs, requireModule)
+                    new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
                 const expectedFormatting: TextEdit[] = [
                     {
@@ -246,7 +254,7 @@ describe('Service component test', () => {
                         [textDocument.uri]: textDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs, requireModule)
+                    new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
                 const expectedFormatting: TextEdit[] = [
                     {
@@ -310,7 +318,7 @@ describe('Service component test', () => {
                     [importTextDocument.uri]: importTextDocument,
                 }),
                 memFs,
-                new Stylable('/', memFs, requireModule)
+                new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
             );
 
             const docColors = stylableLSP.onDocumentColor({ textDocument: { uri: baseFileUri } });
@@ -372,7 +380,7 @@ describe('Service component test', () => {
                         [textDocument.uri]: textDocument,
                     }),
                     memFs,
-                    new Stylable('/', memFs, requireModule)
+                    new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
                 );
 
                 const context = { includeDeclaration: true };
