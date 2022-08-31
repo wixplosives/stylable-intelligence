@@ -40,7 +40,7 @@
     "@file-services/types": "^7.0.1",
     "@ts-tools/node": "^4.0.0",
     "@types/chai": "^4.3.3",
-    "@types/glob": "^7.2.0",
+    "@types/glob": "^8.0.0",
     "@types/js-beautify": "^1.13.3",
     "@types/mocha": "^9.1.1",
     "@types/node": "16",
