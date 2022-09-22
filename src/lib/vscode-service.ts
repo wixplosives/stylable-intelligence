@@ -48,6 +48,18 @@ export class VscodeStylableLanguageService {
             fs,
             stylable,
         });
+
+        // TODO: remove workaround and fix unsafe uses in language-service createDiagnosis
+        const originalDiagnose = this.languageService.diagnose.bind(this.languageService);
+        this.languageService.diagnose = (filePath: string) => {
+            try {
+                return originalDiagnose(filePath);
+            } catch (e) {
+                console.log(e);
+                return [];
+            }
+        };
+
         this.textDocuments = docs;
         this.connection = connection;
     }
