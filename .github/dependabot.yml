@@ -1,15 +1,15 @@
 version: 2
 updates:
-- package-ecosystem: npm
-  directory: "/"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  versioning-strategy: increase
-  ignore:
-  - dependency-name: "@types/node"
-    versions:
-    - ">=15"
-  - dependency-name: "@types/vscode"
-    versions:
-    - ">1.56.0"
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 1
+    versioning-strategy: increase
+    ignore:
+      - dependency-name: '@types/node'
+        versions:
+          - '>=15'
+      - dependency-name: '@types/vscode'
+        versions:
+          - '>1.56.0'
