@@ -1,5 +1,5 @@
 import fs from '@file-services/node';
-import { Stylable } from '@stylable/core';
+import { MinimalFS, Stylable, StylableConfig } from '@stylable/core';
 import {
     createConnection,
     IPCMessageReader,
@@ -13,24 +13,53 @@ import { initializeResult } from './capabilities';
 import { VscodeStylableLanguageService } from './vscode-service';
 import { wrapFs } from './wrap-fs';
 import safeParse from 'postcss-safe-parser';
+import { URI } from 'vscode-uri';
+import { join } from 'path';
 
 const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 let vscodeStylableLSP: VscodeStylableLanguageService;
 
 connection.listen();
-connection.onInitialize((params) => {
+connection.onInitialize(async (params) => {
     const docs = new TextDocuments(TextDocument);
     const wrappedFs = wrapFs(fs, docs);
+
+    const rootUri = params.rootUri;
+    const rootFsPath = rootUri && URI.parse(rootUri).fsPath;
+    const configPath = rootFsPath && join(rootFsPath, 'stylable.config.js');
+    let resolveModule;
+
+    console.log('rootUri', rootUri);
+
+    console.log('configPath', configPath);
+    console.log('rootFsPath', rootFsPath);
+
+    try {
+        if (configPath) {
+            const { defaultConfig } = (await import(configPath)) as {
+                defaultConfig: (fs: MinimalFS) => StylableConfig;
+            };
+
+            resolveModule =
+                defaultConfig && typeof defaultConfig === 'function' ? defaultConfig(fs).resolveModule : undefined;
+
+            console.log('defaultConfig', defaultConfig(fs));
+            console.log('resolveModule', resolveModule);
+        }
+    } catch (e: unknown) {
+        console.log(new Error(`Failed to load Stylable config from ${configPath || 'UNKNOWN PATH'}:\n${e as string}`));
+    }
 
     vscodeStylableLSP = new VscodeStylableLanguageService(
         connection,
         docs,
         wrappedFs,
         new Stylable({
-            projectRoot: params.rootPath || '',
+            projectRoot: rootFsPath || '',
             fileSystem: wrappedFs,
             requireModule: require,
             cssParser: safeParse,
+            resolveModule,
         })
     );
 

@@ -1,0 +1,5 @@
+@st-import TestComp from "comps/comp.st.css";
+
+.root {
+    -st-extends: TestComp;
+}
