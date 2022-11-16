@@ -27,28 +27,8 @@ connection.onInitialize(async (params) => {
     const rootUri = params.rootUri;
     const rootFsPath = rootUri && URI.parse(rootUri).fsPath;
     const configPath = rootFsPath && join(rootFsPath, 'stylable.config.js');
-    let resolveModule;
 
-    console.log('rootUri', rootUri);
-
-    console.log('configPath', configPath);
-    console.log('rootFsPath', rootFsPath);
-
-    try {
-        if (configPath) {
-            const { defaultConfig } = (await import(configPath)) as {
-                defaultConfig: (fs: MinimalFS) => StylableConfig;
-            };
-
-            resolveModule =
-                defaultConfig && typeof defaultConfig === 'function' ? defaultConfig(fs).resolveModule : undefined;
-
-            console.log('defaultConfig', defaultConfig(fs));
-            console.log('resolveModule', resolveModule);
-        }
-    } catch (e: unknown) {
-        console.log(new Error(`Failed to load Stylable config from ${configPath || 'UNKNOWN PATH'}:\n${e as string}`));
-    }
+    const resolveModule = await loadConfigFile(configPath);
 
     vscodeStylableLSP = new VscodeStylableLanguageService(
         connection,
@@ -87,3 +67,22 @@ connection.onInitialized(() => {
     connection.client.register(DidChangeConfigurationNotification.type, undefined).catch(console.error);
     vscodeStylableLSP.loadClientConfiguration().then(console.log).catch(console.error);
 });
+
+async function loadConfigFile(configPath: string | null) {
+    let resolveModule;
+
+    try {
+        if (configPath) {
+            const { defaultConfig } = (await import(configPath)) as {
+                defaultConfig: (fs: MinimalFS) => StylableConfig;
+            };
+
+            resolveModule =
+                defaultConfig && typeof defaultConfig === 'function' ? defaultConfig(fs).resolveModule : undefined;
+        }
+    } catch (e: unknown) {
+        console.warn(new Error(`Failed to load Stylable config from ${configPath || 'UNKNOWN PATH'}:\n${e as string}`));
+    }
+
+    return resolveModule;
+}
