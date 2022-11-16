@@ -11,8 +11,15 @@ async function main() {
         // Passed to --extensionTestsPath
         const extensionTestsPath = path.join(__dirname, './dist/test/e2e/index');
 
+        // path to the test fixtures (root directory of test contexts)
+        const pathToOpen = path.join(extensionDevelopmentPath, 'fixtures', 'e2e-cases');
+
         // Download VS Code, unzip it and run the integration test
-        await runTests({ extensionDevelopmentPath, extensionTestsPath });
+        await runTests({
+            extensionDevelopmentPath,
+            extensionTestsPath,
+            launchArgs: [pathToOpen],
+        });
     } catch (err) {
         console.error('Failed to run tests');
         process.exit(1);
