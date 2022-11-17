@@ -81,7 +81,13 @@ async function loadConfigFile(configPath: string | null) {
                 defaultConfig && typeof defaultConfig === 'function' ? defaultConfig(fs).resolveModule : undefined;
         }
     } catch (e: unknown) {
-        console.warn(new Error(`Failed to load Stylable config from ${configPath || 'UNKNOWN PATH'}:\n${e as string}`));
+        console.warn(
+            new Error(
+                `Failed to load Stylable config from ${
+                    configPath || 'UNKNOWN PATH'
+                }, falling back to default config.\n${e as string}`
+            )
+        );
     }
 
     return resolveModule;
