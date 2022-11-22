@@ -1,5 +1,5 @@
 import fs from '@file-services/node';
-import { Stylable } from '@stylable/core';
+import { MinimalFS, Stylable, StylableConfig } from '@stylable/core';
 import {
     createConnection,
     IPCMessageReader,
@@ -13,24 +13,33 @@ import { initializeResult } from './capabilities';
 import { VscodeStylableLanguageService } from './vscode-service';
 import { wrapFs } from './wrap-fs';
 import safeParse from 'postcss-safe-parser';
+import { URI } from 'vscode-uri';
+import { join } from 'path';
 
 const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 let vscodeStylableLSP: VscodeStylableLanguageService;
 
 connection.listen();
-connection.onInitialize((params) => {
+connection.onInitialize(async (params) => {
     const docs = new TextDocuments(TextDocument);
     const wrappedFs = wrapFs(fs, docs);
+
+    const rootUri = params.rootUri;
+    const rootFsPath = rootUri && URI.parse(rootUri).fsPath;
+    const configPath = rootFsPath && join(rootFsPath, 'stylable.config.js');
+
+    const resolveModule = await loadConfigFile(configPath);
 
     vscodeStylableLSP = new VscodeStylableLanguageService(
         connection,
         docs,
         wrappedFs,
         new Stylable({
-            projectRoot: params.rootPath || '',
+            projectRoot: rootFsPath || '',
             fileSystem: wrappedFs,
             requireModule: require,
             cssParser: safeParse,
+            resolveModule,
         })
     );
 
@@ -58,3 +67,28 @@ connection.onInitialized(() => {
     connection.client.register(DidChangeConfigurationNotification.type, undefined).catch(console.error);
     vscodeStylableLSP.loadClientConfiguration().then(console.log).catch(console.error);
 });
+
+async function loadConfigFile(configPath: string | null) {
+    let resolveModule;
+
+    try {
+        if (configPath) {
+            const { defaultConfig } = (await import(configPath)) as {
+                defaultConfig: (fs: MinimalFS) => StylableConfig;
+            };
+
+            resolveModule =
+                defaultConfig && typeof defaultConfig === 'function' ? defaultConfig(fs).resolveModule : undefined;
+        }
+    } catch (e: unknown) {
+        console.warn(
+            new Error(
+                `Failed to load Stylable config from ${
+                    configPath || 'UNKNOWN PATH'
+                }, falling back to default config.\n${e as string}`
+            )
+        );
+    }
+
+    return resolveModule;
+}
