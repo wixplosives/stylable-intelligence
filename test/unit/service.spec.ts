@@ -6,6 +6,7 @@ import { Diagnostic, Range, Location, Color, DiagnosticSeverity } from 'vscode-l
 import { IPCMessageReader, IPCMessageWriter, createConnection } from 'vscode-languageserver/node';
 import { URI } from 'vscode-uri';
 import { diagnostics as CSSTypeDiagnostics } from '@stylable/core/dist/features/css-type';
+import { diagnostics as PseudoClassDiagnostics } from '@stylable/core/dist/features/css-pseudo-class';
 
 import { TestConnection } from '../lsp-testkit/connection.spec';
 import { expect, plan } from '../testkit/chai.spec';
@@ -176,7 +177,12 @@ describe('Service component test', () => {
                 const expectedDiagnostics = [
                     // CSS diagnostics that shouldn't appear:
                     // empty ruleset, unknown property 'varavar', css-rparentexpected, css-identifierexpected
-                    createExpectedDiagnosis(createRange(3, 6, 3, 12), 'unknown pseudo-state "aState"', 'stylable', 1),
+                    createExpectedDiagnosis(
+                        createRange(3, 6, 3, 12),
+                        PseudoClassDiagnostics.UNKNOWN_STATE_USAGE('aState').message,
+                        'stylable',
+                        1
+                    ),
                     createExpectedDiagnosis(
                         createRange(5, 2, 5, 8),
                         "Unknown property: 'colorr'",
