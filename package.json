@@ -57,7 +57,7 @@
     "mocha": "^10.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^15.0.0",
-    "vsce": "^2.14.0"
+    "vsce": "^2.15.0"
   },
   "author": "Tom Raviv",
   "publisher": "wix",
