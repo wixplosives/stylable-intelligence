@@ -278,6 +278,39 @@ describe('Service component test', () => {
                 expect(formatting).to.deep.equal(expectedFormatting);
             })
         );
+        it(
+            'experimental formatter',
+            plan(1, () => {
+                const { range, text } = getRangeAndText('|.root{color:red}|');
+                const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
+                const baseFileName = '/base-file.st.css';
+                const textDocument = TextDocument.create(URI.file(baseFileName).toString(), 'stylable', 0, text);
+
+                const memFs = createMemoryFs({ [baseFileName]: text });
+                const { requireModule } = createCjsModuleSystem({ fs: memFs });
+                const stylableLSP = new VscodeStylableLanguageService(
+                    connection,
+                    new TestDocuments({
+                        [textDocument.uri]: textDocument,
+                    }),
+                    memFs,
+                    new Stylable({ projectRoot: '/', fileSystem: memFs, requireModule })
+                );
+                const expectedFormatting: TextEdit[] = [
+                    {
+                        newText: '.root {\n  color: red;\n}\n',
+                        range: range,
+                    },
+                ];
+
+                const formatting = stylableLSP.onDocumentFormatting({
+                    textDocument,
+                    options: { insertSpaces: true, tabSize: 2, experimental: true },
+                });
+
+                expect(formatting).to.deep.equal(expectedFormatting);
+            })
+        );
     });
 
     xit(

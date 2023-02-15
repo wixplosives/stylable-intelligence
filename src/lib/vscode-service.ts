@@ -112,7 +112,10 @@ export class VscodeStylableLanguageService {
             : [];
     }
 
-    public onDocumentFormatting({ textDocument, options }: DocumentFormattingParams): TextEdit[] {
+    public onDocumentFormatting({
+        textDocument,
+        options,
+    }: DocumentFormattingParams & { options: StylableLangServiceFormattingOptions }): TextEdit[] {
         const { doc } = this.getDocAndPath(textDocument.uri);
 
         if (doc) {
@@ -126,7 +129,11 @@ export class VscodeStylableLanguageService {
         return [];
     }
 
-    public onDocumentRangeFormatting({ textDocument, range, options }: DocumentRangeFormattingParams): TextEdit[] {
+    public onDocumentRangeFormatting({
+        textDocument,
+        range,
+        options,
+    }: DocumentRangeFormattingParams & { options: StylableLangServiceFormattingOptions }): TextEdit[] {
         const { doc } = this.getDocAndPath(textDocument.uri);
 
         if (doc) {

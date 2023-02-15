@@ -9,6 +9,8 @@ export interface VSCodeStylableExtensionConfig {
         newLineBetweenRulesets: boolean;
         endOfLine: string;
         endWithNewLine: boolean;
+        experimental: boolean;
+        wrapLineLength: number;
     };
 }
 

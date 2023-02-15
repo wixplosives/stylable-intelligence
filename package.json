@@ -125,6 +125,16 @@
           "default": true,
           "description": "End Stylable files with a new line"
         },
+        "stylable.formatting.experimental": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use the new experimental formatter (only supports the following configurations: endWithNewline, indentSize, and wrapLineLength)"
+        },
+        "stylable.formatting.wrapLineLength": {
+          "type": "integer",
+          "default": 80,
+          "description": "Desired line length before wrapping (only works with experimental formatter)"
+        },
         "stylable.diagnostics.ignore": {
           "type": "array",
           "scope": "window",
