@@ -1,7 +1,9 @@
 import path from 'path';
 import { IFileSystem } from '@file-services/types';
 import { Stylable } from '@stylable/core';
-import { lspFormattingOptionsToJsBeautifyOptions, StylableLanguageService } from '@stylable/language-service';
+import { StylableLanguageService } from '@stylable/language-service';
+// ToDo: expose formatting interface from index and use it
+import { StylableLangServiceFormattingOptions } from '@stylable/language-service/dist/lib/feature/formatting';
 import {
     ColorInformation,
     ColorPresentation,
@@ -27,14 +29,13 @@ import {
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
-import { normalizeConfig, VSCodeStylableExtensionConfig } from './normalize-config';
-import type { CSSBeautifyOptions } from 'js-beautify';
+import { VSCodeStylableExtensionConfig } from './normalize-config';
 
 export interface ExtensionConfiguration {
     diagnostics: {
         ignore: string[];
     };
-    formatting: CSSBeautifyOptions;
+    formatting: Partial<StylableLangServiceFormattingOptions>;
 }
 
 export class VscodeStylableLanguageService {
@@ -118,7 +119,7 @@ export class VscodeStylableLanguageService {
             return this.languageService.getDocumentFormatting(
                 doc,
                 { start: 0, end: doc.getText().length },
-                { ...lspFormattingOptionsToJsBeautifyOptions(options), ...this.clientConfig.formatting }
+                { ...options, ...this.clientConfig.formatting }
             );
         }
 
@@ -132,7 +133,7 @@ export class VscodeStylableLanguageService {
             return this.languageService.getDocumentFormatting(
                 doc,
                 { start: doc.offsetAt(range.start), end: doc.offsetAt(range.end) },
-                { ...lspFormattingOptionsToJsBeautifyOptions(options), ...this.clientConfig.formatting }
+                { ...options, ...this.clientConfig.formatting }
             );
         }
 
@@ -190,11 +191,9 @@ export class VscodeStylableLanguageService {
 
     public async loadClientConfiguration(): Promise<void> {
         try {
-            const res = (await this.connection.workspace.getConfiguration({
+            this.clientConfig = (await this.connection.workspace.getConfiguration({
                 section: 'stylable',
             })) as VSCodeStylableExtensionConfig;
-
-            this.clientConfig = normalizeConfig(res);
         } catch (e) {
             /*Client has no workspace/configuration method, ignore silently */
         }
