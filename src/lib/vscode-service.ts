@@ -29,13 +29,26 @@ import {
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
-import { VSCodeStylableExtensionConfig } from './normalize-config';
 
 export interface ExtensionConfiguration {
     diagnostics: {
         ignore: string[];
     };
     formatting: Partial<StylableLangServiceFormattingOptions>;
+}
+
+export interface VSCodeStylableExtensionConfig {
+    diagnostics: {
+        ignore: string[];
+    };
+    formatting: {
+        newLineBetweenSelectors: boolean;
+        newLineBetweenRulesets: boolean;
+        endOfLine: string;
+        endWithNewLine: boolean;
+        experimental: boolean;
+        wrapLineLength: number;
+    };
 }
 
 export class VscodeStylableLanguageService {
