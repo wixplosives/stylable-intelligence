@@ -1,7 +1,9 @@
 import path from 'path';
 import { IFileSystem } from '@file-services/types';
 import { Stylable } from '@stylable/core';
-import { lspFormattingOptionsToJsBeautifyOptions, StylableLanguageService } from '@stylable/language-service';
+import { StylableLanguageService } from '@stylable/language-service';
+// ToDo: expose formatting interface from index and use it
+import { StylableLangServiceFormattingOptions } from '@stylable/language-service/dist/lib/feature/formatting';
 import {
     ColorInformation,
     ColorPresentation,
@@ -27,14 +29,26 @@ import {
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
-import { normalizeConfig, VSCodeStylableExtensionConfig } from './normalize-config';
-import type { CSSBeautifyOptions } from 'js-beautify';
 
 export interface ExtensionConfiguration {
     diagnostics: {
         ignore: string[];
     };
-    formatting: CSSBeautifyOptions;
+    formatting: Partial<StylableLangServiceFormattingOptions>;
+}
+
+export interface VSCodeStylableExtensionConfig {
+    diagnostics: {
+        ignore: string[];
+    };
+    formatting: {
+        newLineBetweenSelectors: boolean;
+        newLineBetweenRulesets: boolean;
+        endOfLine: string;
+        endWithNewLine: boolean;
+        experimental: boolean;
+        wrapLineLength: number;
+    };
 }
 
 export class VscodeStylableLanguageService {
@@ -111,28 +125,35 @@ export class VscodeStylableLanguageService {
             : [];
     }
 
-    public onDocumentFormatting({ textDocument, options }: DocumentFormattingParams): TextEdit[] {
+    public onDocumentFormatting({
+        textDocument,
+        options,
+    }: DocumentFormattingParams & { options: StylableLangServiceFormattingOptions }): TextEdit[] {
         const { doc } = this.getDocAndPath(textDocument.uri);
 
         if (doc) {
             return this.languageService.getDocumentFormatting(
                 doc,
                 { start: 0, end: doc.getText().length },
-                { ...lspFormattingOptionsToJsBeautifyOptions(options), ...this.clientConfig.formatting }
+                { ...options, ...this.clientConfig.formatting }
             );
         }
 
         return [];
     }
 
-    public onDocumentRangeFormatting({ textDocument, range, options }: DocumentRangeFormattingParams): TextEdit[] {
+    public onDocumentRangeFormatting({
+        textDocument,
+        range,
+        options,
+    }: DocumentRangeFormattingParams & { options: StylableLangServiceFormattingOptions }): TextEdit[] {
         const { doc } = this.getDocAndPath(textDocument.uri);
 
         if (doc) {
             return this.languageService.getDocumentFormatting(
                 doc,
                 { start: doc.offsetAt(range.start), end: doc.offsetAt(range.end) },
-                { ...lspFormattingOptionsToJsBeautifyOptions(options), ...this.clientConfig.formatting }
+                { ...options, ...this.clientConfig.formatting }
             );
         }
 
@@ -190,11 +211,9 @@ export class VscodeStylableLanguageService {
 
     public async loadClientConfiguration(): Promise<void> {
         try {
-            const res = (await this.connection.workspace.getConfiguration({
+            this.clientConfig = (await this.connection.workspace.getConfiguration({
                 section: 'stylable',
             })) as VSCodeStylableExtensionConfig;
-
-            this.clientConfig = normalizeConfig(res);
         } catch (e) {
             /*Client has no workspace/configuration method, ignore silently */
         }
