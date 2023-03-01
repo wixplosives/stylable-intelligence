@@ -16,7 +16,7 @@ function collectDiagnostics(source: 'stylable' | 'css') {
                     message: diag.message,
                     range: diag.range,
                     severity: diag.severity,
-                    filePath: pathObj.fsPath,
+                    filePath: fs.realpathSync.native(pathObj.fsPath),
                 });
             }
         }
