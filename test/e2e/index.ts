@@ -1,9 +1,7 @@
-import { promisify } from 'util';
 import { normalize } from 'path';
 import Mocha from 'mocha';
-import globCb from 'glob';
+import glob from 'glob';
 
-const glob = promisify(globCb);
 const testsRoot = __dirname;
 
 export async function run(): Promise<void> {
