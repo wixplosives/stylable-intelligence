@@ -1,11 +1,11 @@
 {
-  "name": "stylable-intelligence",
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
-  "license": "BSD-3-Clause",
   "version": "0.10.0",
-  "description": "Stylable Language Services - syntax highlighting, completions, hinting and more for the Stylable CSS preprocessor.",
+  "name": "stylable-intelligence",
+  "description": "Stylable Language Services - syntax highlighting, completions, hinting and more for the Stylable CSS toolchain.",
   "icon": "images/icon.png",
+  "main": "./dist/src/index.js",
+  "license": "BSD-3-Clause",
+  "types": "./dist/src/index.d.ts",
   "galleryBanner": {
     "color": "#ffffff",
     "theme": "light"
