@@ -28,18 +28,18 @@ connection.onInitialize(async (params) => {
     const rootFsPath = rootUri && URI.parse(rootUri).fsPath;
     const configPath = rootFsPath && join(rootFsPath, 'stylable.config.js');
 
-    const resolveModule = await loadConfigFile(configPath);
+    const config = await loadConfigFile(configPath);
 
     vscodeStylableLSP = new VscodeStylableLanguageService(
         connection,
         docs,
         wrappedFs,
         new Stylable({
+            ...config,
             projectRoot: rootFsPath || '',
             fileSystem: wrappedFs,
             requireModule: require,
             cssParser: safeParse,
-            resolveModule,
         })
     );
 
@@ -69,7 +69,7 @@ connection.onInitialized(() => {
 });
 
 async function loadConfigFile(configPath: string | null) {
-    let resolveModule;
+    let config: StylableConfig | undefined = undefined;
 
     try {
         if (configPath) {
@@ -77,8 +77,7 @@ async function loadConfigFile(configPath: string | null) {
                 defaultConfig: (fs: MinimalFS) => StylableConfig;
             };
 
-            resolveModule =
-                defaultConfig && typeof defaultConfig === 'function' ? defaultConfig(fs).resolveModule : undefined;
+            config = defaultConfig && typeof defaultConfig === 'function' ? defaultConfig(fs) : undefined;
         }
     } catch (e: unknown) {
         console.warn(
@@ -90,5 +89,5 @@ async function loadConfigFile(configPath: string | null) {
         );
     }
 
-    return resolveModule;
+    return config;
 }
