@@ -27,7 +27,7 @@
     "@stylable/core": "^5.9.0",
     "@stylable/language-service": "^5.9.0",
     "postcss-safe-parser": "^6.0.0",
-    "typescript": "~5.0.2",
+    "typescript": "~5.0.3",
     "vscode-languageclient": "^8.1.0",
     "vscode-languageserver": "^8.1.0",
     "vscode-languageserver-protocol": "^3.17.3",
