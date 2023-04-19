@@ -1,6 +1,6 @@
 import { normalize } from 'path';
 import Mocha from 'mocha';
-import glob from 'glob';
+import { glob } from 'glob';
 
 const testsRoot = __dirname;
 
