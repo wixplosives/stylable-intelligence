@@ -26,9 +26,9 @@ connection.onInitialize(async (params) => {
 
     const rootUri = params.rootUri;
     const rootFsPath = rootUri && URI.parse(rootUri).fsPath;
-    const configPath = rootFsPath && join(rootFsPath, 'stylable.config.js');
+    const configBasePath = rootFsPath && join(rootFsPath, 'stylable.config');
 
-    const config = await loadConfigFile(configPath);
+    const config = await loadConfigFile(configBasePath, ['js', 'cjs', 'mjs']);
 
     vscodeStylableLSP = new VscodeStylableLanguageService(
         connection,
@@ -68,26 +68,34 @@ connection.onInitialized(() => {
     vscodeStylableLSP.loadClientConfiguration().then(console.log).catch(console.error);
 });
 
-async function loadConfigFile(configPath: string | null) {
-    let config: StylableConfig | undefined = undefined;
+async function loadConfigFile(configBasePath: string | null, suffixes: string[]) {
+    if (!configBasePath) {
+        return;
+    }
 
-    try {
-        if (configPath) {
+    const loadConfig = async (configPath: string) => {
+        try {
             const { defaultConfig } = (await import(configPath)) as {
                 defaultConfig: (fs: MinimalFS) => StylableConfig;
             };
 
-            config = defaultConfig && typeof defaultConfig === 'function' ? defaultConfig(fs) : undefined;
+            return defaultConfig && typeof defaultConfig === 'function' ? defaultConfig(fs) : undefined;
+        } catch {
+            /**/
         }
-    } catch (e: unknown) {
-        console.warn(
-            new Error(
-                `Failed to load Stylable config from ${
-                    configPath || 'UNKNOWN PATH'
-                }, falling back to default config.\n${e as string}`
-            )
-        );
+    };
+
+    for (const suffix of suffixes) {
+        const configPath = configBasePath + '.' + suffix;
+        const config = await loadConfig(configPath);
+        if (config) {
+            console.log(`stylable config loaded from ${configPath}`);
+            return config;
+        }
     }
 
-    return config;
+    const lookupPaths = suffixes.map((suffix) => configBasePath + '.' + suffix).join('\n');
+    console.warn(new Error(`Failed to load Stylable config from\n${lookupPaths}falling back to default config.\n`));
+
+    return;
 }
