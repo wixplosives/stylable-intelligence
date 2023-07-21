@@ -38,7 +38,7 @@
     "@file-services/commonjs": "^7.4.0",
     "@file-services/memory": "^7.4.0",
     "@file-services/types": "^7.4.0",
-    "@ts-tools/node": "^4.0.0",
+    "@ts-tools/node": "^5.0.1",
     "@types/chai": "^4.3.5",
     "@types/glob": "^8.1.0",
     "@types/js-beautify": "^1.13.3",
