@@ -23,7 +23,7 @@
     "prepack": "npm run clean && npm run build"
   },
   "dependencies": {
-    "@file-services/node": "^8.1.1",
+    "@file-services/node": "^8.1.2",
     "@stylable/core": "^5.15.1",
     "@stylable/language-service": "^5.15.1",
     "postcss-safe-parser": "^6.0.0",
