@@ -23,7 +23,7 @@
     "prepack": "npm run clean && npm run build"
   },
   "dependencies": {
-    "@file-services/node": "^8.3.2",
+    "@file-services/node": "^8.3.3",
     "@stylable/core": "^5.16.1",
     "@stylable/language-service": "^5.16.1",
     "postcss-safe-parser": "^7.0.0",
@@ -35,9 +35,9 @@
     "vscode-uri": "^3.0.8"
   },
   "devDependencies": {
-    "@file-services/commonjs": "^8.3.2",
-    "@file-services/memory": "^8.3.2",
-    "@file-services/types": "^8.3.2",
+    "@file-services/commonjs": "^8.3.3",
+    "@file-services/memory": "^8.3.3",
+    "@file-services/types": "^8.3.3",
     "@ts-tools/node": "^5.0.2",
     "@types/chai": "^4.3.10",
     "@types/glob": "^8.1.0",
@@ -47,8 +47,8 @@
     "@types/postcss-safe-parser": "^5.0.4",
     "@types/sinon": "^17.0.1",
     "@types/vscode": "1.65.0",
-    "@typescript-eslint/eslint-plugin": "^6.10.0",
-    "@typescript-eslint/parser": "^6.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@typescript-eslint/parser": "^6.11.0",
     "@vscode/test-electron": "^2.3.6",
     "@vscode/vsce": "^2.22.0",
     "chai": "^4.3.10",
