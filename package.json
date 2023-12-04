@@ -1,5 +1,5 @@
 {
-  "version": "0.14.0",
+  "version": "0.15.0",
   "name": "stylable-intelligence",
   "description": "Stylable Language Services - syntax highlighting, completions, hinting and more for the Stylable CSS toolchain.",
   "icon": "images/icon.png",
