@@ -5,6 +5,7 @@ const { createDefaultResolver } = require('@stylable/core');
 module.exports = {
     defaultConfig(fs) {
         return {
+            flags: { strictCustomProperty: true },
             experimentalSelectorInference: true,
             resolveModule: createDefaultResolver(fs, {
                 alias: {

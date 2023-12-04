@@ -1,3 +1,5 @@
-.root{}
-
-
+.root {
+    color: var(--x);
+    border: 3px;
+    --y: xxx;
+}
