@@ -23,9 +23,9 @@
     "prepack": "npm run clean && npm run build"
   },
   "dependencies": {
-    "@file-services/node": "^8.3.3",
-    "@stylable/core": "^5.18.0",
-    "@stylable/language-service": "^5.18.0",
+    "@file-services/node": "^9.2.1",
+    "@stylable/core": "^6.1.0",
+    "@stylable/language-service": "^6.1.0",
     "postcss-safe-parser": "^7.0.0",
     "typescript": "~5.4.5",
     "vscode-languageclient": "^9.0.1",
@@ -35,9 +35,9 @@
     "vscode-uri": "^3.0.8"
   },
   "devDependencies": {
-    "@file-services/commonjs": "^8.3.3",
-    "@file-services/memory": "^8.3.3",
-    "@file-services/types": "^8.3.3",
+    "@file-services/commonjs": "^9.2.1",
+    "@file-services/memory": "^9.2.1",
+    "@file-services/types": "^9.2.1",
     "@ts-tools/node": "^5.0.2",
     "@types/chai": "^4.3.16",
     "@types/glob": "^8.1.0",
