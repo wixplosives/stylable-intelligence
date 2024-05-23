@@ -1,7 +1,8 @@
+// @ts-check
 const path = require('path');
 const { runTests } = require('@vscode/test-electron');
 
-async function main() {
+async function runSuite(suiteName) {
     try {
         // The folder containing the Extension Manifest package.json
         // Passed to `--extensionDevelopmentPath`
@@ -9,10 +10,10 @@ async function main() {
 
         // The path to the extension test script
         // Passed to --extensionTestsPath
-        const extensionTestsPath = path.join(__dirname, './dist/test/e2e/index');
+        const extensionTestsPath = path.join(__dirname, `./dist/test/e2e/${suiteName}/index`);
 
         // path to the test fixtures (root directory of test contexts)
-        const pathToOpen = path.join(extensionDevelopmentPath, 'fixtures', 'e2e-cases');
+        const pathToOpen = path.join(extensionDevelopmentPath, 'fixtures', suiteName);
 
         // Download VS Code, unzip it and run the integration test
         await runTests({
@@ -26,4 +27,8 @@ async function main() {
     }
 }
 
-main();
+async function runAllSuites() {
+    await runSuite('latest');
+}
+
+runAllSuites();

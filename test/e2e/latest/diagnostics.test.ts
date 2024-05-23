@@ -34,7 +34,7 @@ suite('test diagnostics', function () {
     });
 
     test('should support single file error', async () => {
-        const casePath = path.join(rootDir, 'fixtures', 'e2e-cases', 'single-file-diag.st.css');
+        const casePath = path.join(rootDir, 'fixtures', 'latest', 'single-file-diag.st.css');
         const ext = vscode.extensions.getExtension<LanguageClient>('wix.stylable-intelligence');
 
         if (ext) {
@@ -59,7 +59,7 @@ suite('test diagnostics', function () {
     });
 
     test('should resolve a configured alias with no diagnostics', async () => {
-        const casePath = path.join(rootDir, 'fixtures', 'e2e-cases', 'with-alias.st.css');
+        const casePath = path.join(rootDir, 'fixtures', 'latest', 'with-alias.st.css');
         const ext = vscode.extensions.getExtension<LanguageClient>('wix.stylable-intelligence');
 
         if (ext) {
