@@ -10,7 +10,7 @@ module.exports = {
             resolveModule: createDefaultResolver({
                 fs,
                 alias: {
-                    'comps/*': join(__dirname, 'alias-components', '*'),
+                    'comps/*': join(__dirname, 'alias-components/*'),
                 },
             }),
         };
