@@ -21,7 +21,7 @@ suite('Extension Tests', function () {
     });
 
     async function getWorkingDocument(fileToTest: string) {
-        const casesPath = path.join(rootDir!, 'fixtures', 'e2e-cases', fileToTest);
+        const casesPath = path.join(rootDir!, 'fixtures', 'latest', fileToTest);
         const ext = vscode.extensions.getExtension('wix.stylable-intelligence');
 
         if (ext) {
