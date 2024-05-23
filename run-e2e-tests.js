@@ -29,6 +29,8 @@ async function runSuite(suiteName) {
 
 async function runAllSuites() {
     await runSuite('latest');
+    await runSuite('v5-with-no-config');
+    await runSuite('v5-with-config');
 }
 
 runAllSuites();
