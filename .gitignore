@@ -44,6 +44,9 @@ build/Release
 node_modules/
 jspm_packages/
 
+# 3rd party testing fixtures (order matters!)
+!**/fixtures/**/node_modules
+
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
