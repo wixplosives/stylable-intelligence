@@ -23,7 +23,7 @@
     "prepack": "npm run clean && npm run build"
   },
   "dependencies": {
-    "@file-services/node": "^9.2.1",
+    "@file-services/node": "^9.3.0",
     "@stylable/core": "^6.1.0",
     "@stylable/language-service": "^6.1.0",
     "postcss-safe-parser": "^7.0.0",
@@ -36,9 +36,9 @@
     "vscode-uri": "^3.0.8"
   },
   "devDependencies": {
-    "@file-services/commonjs": "^9.2.1",
-    "@file-services/memory": "^9.2.1",
-    "@file-services/types": "^9.2.1",
+    "@file-services/commonjs": "^9.3.0",
+    "@file-services/memory": "^9.3.0",
+    "@file-services/types": "^9.3.0",
     "@ts-tools/node": "^5.0.2",
     "@types/chai": "^4.3.16",
     "@types/glob": "^8.1.0",
@@ -56,7 +56,7 @@
     "chai": "^4.3.10",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
-    "glob": "^10.3.16",
+    "glob": "^10.4.1",
     "mocha": "^10.4.0",
     "rimraf": "^5.0.7",
     "sinon": "^18.0.0"
