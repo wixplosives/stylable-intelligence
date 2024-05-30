@@ -24,8 +24,8 @@
   },
   "dependencies": {
     "@file-services/node": "^9.3.0",
-    "@stylable/core": "^6.1.0",
-    "@stylable/language-service": "^6.1.0",
+    "@stylable/core": "^6.1.1",
+    "@stylable/language-service": "^6.1.1",
     "postcss-safe-parser": "^7.0.0",
     "semver": "^7.6.2",
     "typescript": "~5.4.5",
