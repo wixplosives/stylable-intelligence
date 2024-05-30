@@ -1,0 +1,15 @@
+.root {
+    -st-states: rootState;
+}
+
+.partA {
+    -st-states: sharedState, partAState;
+}
+
+.partB {
+    -st-states: sharedState, partBState;
+}
+
+/* root state is globaly exposed in v5 */
+.root :rootState {}
+

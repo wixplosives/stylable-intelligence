@@ -15,6 +15,7 @@ import { wrapFs } from './wrap-fs';
 import safeParse from 'postcss-safe-parser';
 import { URI } from 'vscode-uri';
 import { join } from 'path';
+import * as semver from 'semver';
 
 const connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 let vscodeStylableLSP: VscodeStylableLanguageService;
@@ -29,6 +30,9 @@ connection.onInitialize(async (params) => {
     const configBasePath = rootFsPath && join(rootFsPath, 'stylable.config');
 
     const config = await loadConfigFile(configBasePath, ['js', 'cjs', 'mjs']);
+    if (rootFsPath) {
+        fixConfigForOldVersions(config, rootFsPath);
+    }
 
     vscodeStylableLSP = new VscodeStylableLanguageService(
         connection,
@@ -68,9 +72,9 @@ connection.onInitialized(() => {
     vscodeStylableLSP.loadClientConfiguration().then(console.log).catch(console.error);
 });
 
-async function loadConfigFile(configBasePath: string | null, suffixes: string[]) {
+async function loadConfigFile(configBasePath: string | null, suffixes: string[]): Promise<Partial<StylableConfig>> {
     if (!configBasePath) {
-        return;
+        return {};
     }
 
     const loadConfig = async (configPath: string) => {
@@ -79,7 +83,7 @@ async function loadConfigFile(configBasePath: string | null, suffixes: string[])
                 defaultConfig: (fs: MinimalFS) => StylableConfig;
             };
 
-            return defaultConfig && typeof defaultConfig === 'function' ? defaultConfig(fs) : undefined;
+            return defaultConfig && typeof defaultConfig === 'function' ? defaultConfig(fs) : {};
         } catch {
             /**/
         }
@@ -97,5 +101,18 @@ async function loadConfigFile(configBasePath: string | null, suffixes: string[])
     const lookupPaths = suffixes.map((suffix) => configBasePath + '.' + suffix).join('\n');
     console.warn(new Error(`Failed to load Stylable config from\n${lookupPaths}falling back to default config.\n`));
 
-    return;
+    return {};
+}
+
+function fixConfigForOldVersions(config: Partial<StylableConfig>, rootFsPath: string) {
+    const corePackagePath = require.resolve('@stylable/core/package.json', { paths: [rootFsPath] });
+    const corePackageJson = fs.readJsonFileSync(corePackagePath) as { version: string };
+
+    if (corePackageJson?.version && semver.lt(corePackageJson.version, '6.0.0')) {
+        console.log(
+            `\nDetected old Stylable version: ${corePackageJson.version} < 6.0.0\n`,
+            config.experimentalSelectorInference
+        );
+        config.experimentalSelectorInference ??= false;
+    }
 }

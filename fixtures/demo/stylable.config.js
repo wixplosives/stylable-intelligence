@@ -7,9 +7,10 @@ module.exports = {
         return {
             flags: { strictCustomProperty: true },
             experimentalSelectorInference: true,
-            resolveModule: createDefaultResolver(fs, {
+            resolveModule: createDefaultResolver({
+                fs,
                 alias: {
-                    comps: join(__dirname, 'alias-components'),
+                    'comps/*': join(__dirname, 'alias-components') + '/*',
                 },
             }),
         };

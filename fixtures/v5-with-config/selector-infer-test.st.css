@@ -1,0 +1,15 @@
+.root {
+    -st-states: rootState;
+}
+
+.partA {
+    -st-states: sharedState, partAState;
+}
+
+.partB {
+    -st-states: sharedState, partBState;
+}
+
+/* shared state should be inferred in v5 with experimentalSelectorInference */
+:is(.partA, .partB):sharedState {}
+
