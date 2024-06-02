@@ -44,6 +44,18 @@ connection.onInitialize(async (params) => {
             fileSystem: wrappedFs,
             requireModule: require,
             cssParser: safeParse,
+            resolveNamespace(namespace, origin, source) {
+                try {
+                    if (config.resolveNamespace) {
+                        return config.resolveNamespace(namespace, origin, source);
+                    }
+                } catch (e: unknown) {
+                    // can be used to log project level errors
+                    // console.warn('resolveNamespace failed', e);
+                }
+                // fallback to initial namespace
+                return namespace;
+            },
         })
     );
 
