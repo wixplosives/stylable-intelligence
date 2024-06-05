@@ -105,14 +105,19 @@ async function loadConfigFile(configBasePath: string | null, suffixes: string[])
 }
 
 function fixConfigForOldVersions(config: Partial<StylableConfig>, rootFsPath: string) {
-    const corePackagePath = require.resolve('@stylable/core/package.json', { paths: [rootFsPath] });
-    const corePackageJson = fs.readJsonFileSync(corePackagePath) as { version: string };
+    try {
+        const corePackagePath = require.resolve('@stylable/core/package.json', { paths: [rootFsPath] });
+        const corePackageJson = fs.readJsonFileSync(corePackagePath) as { version: string };
 
-    if (corePackageJson?.version && semver.lt(corePackageJson.version, '6.0.0')) {
-        console.log(
-            `\nDetected old Stylable version: ${corePackageJson.version} < 6.0.0\n`,
-            config.experimentalSelectorInference
-        );
-        config.experimentalSelectorInference ??= false;
+        if (corePackageJson?.version && semver.lt(corePackageJson.version, '6.0.0')) {
+            console.log(
+                `\nDetected old Stylable version: ${corePackageJson.version} < 6.0.0\n`,
+                config.experimentalSelectorInference
+            );
+            config.experimentalSelectorInference ??= false;
+        }
+    } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        console.log(`\nFailed to detect project Stylable version: \n${message}\n`);
     }
 }
