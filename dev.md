@@ -28,3 +28,11 @@ Readme for the extension itself can be found [here](https://github.com/wix/styla
   * Bug in completion text matching (mine): https://github.com/Microsoft/vscode/issues/34542
   * Lots of explanations and links to code about how completions are ordered and filtered: https://github.com/Microsoft/vscode/issues/26096
   * Link to activating completion ranking display: https://github.com/Microsoft/vscode/issues/41060#issuecomment-357879748
+
+## Publishing
+
+* git clean -fdx
+* npm it
+* npm version minor
+* npm exec vsce publish (wait to see extension working in the marketplace)
+* git push --follow-tags
