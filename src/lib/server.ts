@@ -98,7 +98,7 @@ async function loadConfigFile(configBasePath: string | null, suffixes: string[])
         }
     }
 
-    const lookupPaths = suffixes.map((suffix) => configBasePath + '.' + suffix).join('\n');
+    const lookupPaths = suffixes.map((suffix) => `\t${configBasePath}.${suffix}`).join('\n');
     console.warn(new Error(`Failed to load Stylable config from\n${lookupPaths}falling back to default config.\n`));
 
     return {};
