@@ -28,7 +28,7 @@ export async function collectAndRunTests({
                 }
             });
         } catch (e) {
-            reject(e);
+            reject(e as Error);
         }
     });
 }
