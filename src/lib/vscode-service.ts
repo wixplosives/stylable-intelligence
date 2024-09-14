@@ -214,7 +214,7 @@ export class VscodeStylableLanguageService {
             this.clientConfig = (await this.connection.workspace.getConfiguration({
                 section: 'stylable',
             })) as VSCodeStylableExtensionConfig;
-        } catch (e) {
+        } catch {
             /*Client has no workspace/configuration method, ignore silently */
         }
     }

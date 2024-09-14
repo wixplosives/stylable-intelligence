@@ -49,7 +49,7 @@ connection.onInitialize(async (params) => {
                     if (config.resolveNamespace) {
                         return config.resolveNamespace(namespace, origin, source);
                     }
-                } catch (e: unknown) {
+                } catch {
                     // can be used to log project level errors
                     // console.warn('resolveNamespace failed', e);
                 }
