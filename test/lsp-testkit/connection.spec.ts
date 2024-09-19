@@ -102,7 +102,6 @@ describe('LSP connection test driver', () => {
                     }
                 }
             });
-            // eslint-disable-next-line @typescript-eslint/unbound-method
             connection.sendRequest(type, 'bar').catch(console.error);
         })
     );
