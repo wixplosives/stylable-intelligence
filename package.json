@@ -19,7 +19,7 @@
     "test:unit": "mocha \"test/unit/**/*.spec.ts\" \"test/unit/*.spec.ts\"",
     "pretest:e2e": "npm run build",
     "test:e2e": "node ./run-e2e-tests",
-    "lint": "eslint .",
+    "lint": "eslint",
     "prepack": "npm run clean && npm run build"
   },
   "dependencies": {
@@ -49,17 +49,16 @@
     "@types/semver": "^7.5.8",
     "@types/sinon": "^17.0.3",
     "@types/vscode": "1.90.0",
-    "@typescript-eslint/eslint-plugin": "^8.5.0",
-    "@typescript-eslint/parser": "^8.5.0",
     "@vscode/test-electron": "^2.4.1",
     "@vscode/vsce": "^3.1.0",
     "chai": "^4.3.10",
-    "eslint": "^8.57.0",
+    "eslint": "^9.10.0",
     "eslint-config-prettier": "^9.1.0",
     "glob": "^11.0.0",
     "mocha": "^10.7.3",
     "rimraf": "^6.0.1",
-    "sinon": "^19.0.2"
+    "sinon": "^19.0.2",
+    "typescript-eslint": "^8.6.0"
   },
   "author": "Tom Raviv",
   "publisher": "wix",
