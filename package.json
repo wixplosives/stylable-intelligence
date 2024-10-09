@@ -28,7 +28,7 @@
     "@stylable/language-service": "^6.1.1",
     "postcss-safe-parser": "^7.0.1",
     "semver": "^7.6.3",
-    "typescript": "~5.6.2",
+    "typescript": "~5.6.3",
     "vscode-languageclient": "^9.0.1",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-protocol": "^3.17.5",
@@ -43,7 +43,7 @@
     "@types/chai": "^4.3.20",
     "@types/glob": "^8.1.0",
     "@types/js-beautify": "^1.14.3",
-    "@types/mocha": "^10.0.8",
+    "@types/mocha": "^10.0.9",
     "@types/node": "20",
     "@types/postcss-safe-parser": "^5.0.4",
     "@types/semver": "^7.5.8",
@@ -58,7 +58,7 @@
     "mocha": "^10.7.3",
     "rimraf": "^6.0.1",
     "sinon": "^19.0.2",
-    "typescript-eslint": "^8.8.0"
+    "typescript-eslint": "^8.8.1"
   },
   "author": "Tom Raviv",
   "publisher": "wix",
