@@ -55,10 +55,10 @@
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",
     "glob": "^11.0.0",
-    "mocha": "^10.7.3",
+    "mocha": "^10.8.1",
     "rimraf": "^6.0.1",
     "sinon": "^19.0.2",
-    "typescript-eslint": "^8.12.1"
+    "typescript-eslint": "^8.12.2"
   },
   "author": "Tom Raviv",
   "publisher": "wix",
