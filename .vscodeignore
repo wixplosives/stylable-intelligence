@@ -1,4 +1,3 @@
-**/*.ts
 .vscode/**/*
 .vscode-test/**/*
 src/**/*

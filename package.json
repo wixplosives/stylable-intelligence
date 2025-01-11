@@ -148,11 +148,6 @@
   "activationEvents": [
     "onLanguage:stylable"
   ],
-  "files": [
-    "dist/src",
-    "service.js",
-    "service.d.ts"
-  ],
   "badges": [
     {
       "url": "https://img.shields.io/vscode-marketplace/v/wix.stylable-intelligence.svg",
